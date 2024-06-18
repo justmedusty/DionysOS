@@ -4,5 +4,5 @@
 
 #ifndef DIONYSOS_KERNEL_ENTRY_H
 #define DIONYSOS_KERNEL_ENTRY_H
-int main(void *fbptr);
+void kernel_main(framebuffer_t *fbptr);
 #endif //DIONYSOS_KERNEL_ENTRY_H

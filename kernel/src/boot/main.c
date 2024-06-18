@@ -6,6 +6,7 @@
 #include "include/types.h"
 #include "include/font.h"
 #include "include/draw.h"
+#include "include/framebuffer.h"
 
 // Set the base revision to 2, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -124,9 +125,13 @@ void _start(void) {
         fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
     }
 
+    framebuffer_t framebuffer1;
+    framebuffer1.phys_address = framebuffer->address;
+    framebuffer1.height = framebuffer->height;
+    framebuffer1.width = framebuffer->width;
+    framebuffer1.pitch = framebuffer->pitch;
 
-
-    main(framebuffer->address);
+    kernel_main(framebuffer1);
     // We're done, just hang...
     hcf();
 }
