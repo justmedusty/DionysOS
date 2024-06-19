@@ -13,8 +13,9 @@
 
 void kernel_main(){
     init_serial();
-    write_string_serial("Hello!");
+    write_string_serial("Serial Initialized");
     init_gdt();
+    write_string_serial("GDT Loaded");
     idt_init();
 
 }

@@ -6,6 +6,7 @@
 #include <include/gdt.h>
 #include "include/x86.h"
 
+extern load_gdt();
 struct gdtentry gdtentry[GDT_SIZE];
 struct gdtdesc gdtdesc;
 
@@ -30,5 +31,6 @@ void init_gdt(void) {
     init_gdt_desc(0, 0, PRESENT | SYSTEM | READ_WRITE, PAGE_GR | BITS64, &gdtentry[2]); // Data
     init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | EXECUTABLE | READ_WRITE, PAGE_GR | BITS64, &gdtentry[3]);    // User code
     init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | READ_WRITE, PAGE_GR | BITS64, &gdtentry[4]); // User data
+    load_gdt(&gdtentry);
 
 }
