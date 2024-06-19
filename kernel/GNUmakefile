@@ -58,6 +58,7 @@ override KCFLAGS += \
     -mno-sse \
     -mno-sse2 \
     -mno-red-zone \
+   	-g \
     -I kernel/src/include \
 
 # Internal C preprocessor flags that should not be changed by the user.

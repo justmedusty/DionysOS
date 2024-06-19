@@ -1,6 +1,13 @@
 
 global gdt_setup, setGdt,reload_segments,reload_CS
+gdtr DW 0 ; For limit storage
+     DQ 0 ; For base storage
 
+setGdt:
+   MOV   [gdtr], DI
+   MOV   [gdtr+2], RSI
+   LGDT  [gdtr]
+   RET
 reload_segments:
    ; Reload CS register:
    PUSH 0x08                 ; Push code segment to stack, 0x08 is a stand-in for your code segment

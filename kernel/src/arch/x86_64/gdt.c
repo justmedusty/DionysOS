@@ -40,7 +40,7 @@ void init_gdt(void) {
     init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | READ_WRITE, PAGE_GR | BITS64, &gdtentry[4]); /* User 
                                                                                                      * Data 
                                                                                                      * Segment 
-                                                                                                     */
+                                                                                                      */
     sti();
 
 }
