@@ -23,6 +23,9 @@ int is_transmit_empty() {
 
 void write_serial(char a) {
     while (is_transmit_empty() == 0);
+    if(a == '\n'){
+        outb(SERIAL_PORT, '\r');
+    }
     outb(SERIAL_PORT, a);
 }
 
