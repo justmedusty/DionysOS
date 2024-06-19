@@ -39,79 +39,6 @@
  * SUCH DAMAGE.
  */
 /*
- * System stack frames.
- */
-
-#ifdef __i386__
-/*
- * Exception/Trap Stack Frame
- */
-
-struct trapframe {
-	int	tf_fs;
-	int	tf_es;
-	int	tf_ds;
-	int	tf_edi;
-	int	tf_esi;
-	int	tf_ebp;
-	int	tf_isp;
-	int	tf_ebx;
-	int	tf_edx;
-	int	tf_ecx;
-	int	tf_eax;
-	int	tf_trapno;
-	/* below portion defined in 386 hardware */
-	int	tf_err;
-	int	tf_eip;
-	int	tf_cs;
-	int	tf_eflags;
-	/* below only when crossing rings (user to kernel) */
-	int	tf_esp;
-	int	tf_ss;
-};
-
-/* Superset of trap frame, for traps from virtual-8086 mode */
-
-struct trapframe_vm86 {
-	int	tf_fs;
-	int	tf_es;
-	int	tf_ds;
-	int	tf_edi;
-	int	tf_esi;
-	int	tf_ebp;
-	int	tf_isp;
-	int	tf_ebx;
-	int	tf_edx;
-	int	tf_ecx;
-	int	tf_eax;
-	int	tf_trapno;
-	/* below portion defined in 386 hardware */
-	int	tf_err;
-	int	tf_eip;
-	int	tf_cs;
-	int	tf_eflags;
-	/* below only when crossing rings (user (including vm86) to kernel) */
-	int	tf_esp;
-	int	tf_ss;
-	/* below only when crossing from vm86 mode to kernel */
-	int	tf_vm86_es;
-	int	tf_vm86_ds;
-	int	tf_vm86_fs;
-	int	tf_vm86_gs;
-};
-
-/*
- * This alias for the MI TRAPF_USERMODE() should be used when we don't
- * care about user mode itself, but need to know if a frame has stack
- * registers.  The difference is only logical, but on i386 the logic
- * for using TRAPF_USERMODE() is complicated by sometimes treating vm86
- * bioscall mode (which is a special ring 3 user mode) as kernel mode.
- */
-#define	TF_HAS_STACKREGS(tf)	TRAPF_USERMODE(tf)
-#endif /* __i386__ */
-
-#ifdef __amd64__
-/*
  * Exception/Trap Stack Frame
  *
  * The ordering of this is specifically so that we can take first 6
@@ -134,13 +61,13 @@ struct trapframe {
     uint64	tf_r13;
     uint64	tf_r14;
     uint64	tf_r15;
-    uint32_t	tf_trapno;
-    uint16_t	tf_fs;
-    uint16_t	tf_gs;
+    uint32	tf_trapno;
+    uint16	tf_fs;
+    uint16	tf_gs;
     uint64	tf_addr;
-    uint32_t	tf_flags;
-    uint16_t	tf_es;
-    uint16_t	tf_ds;
+    uint32	tf_flags;
+    uint16	tf_es;
+    uint16	tf_ds;
     /* below portion defined in hardware */
     uint64	tf_err;
     uint64	tf_rip;
@@ -154,5 +81,4 @@ struct trapframe {
 #define	TF_HASSEGS	0x1
 #define	TF_HASBASES	0x2
 #define	TF_HASFPXSTATE	0x4
-#endif /* __amd64__ */
 #endif //DIONYSOS_TRAPFRAME_H

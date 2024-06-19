@@ -2,9 +2,9 @@
 // Created by dustyn on 6/16/24.
 //
 
-#include "include/types.h"
+#include "../../include/types.h"
 #include <include/gdt.h>
-#include "include/x86.h"
+#include "../../include/x86.h"
 
 struct gdtentry gdtentry[GDT_SIZE];
 struct gdtdesc gdtdesc;

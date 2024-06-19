@@ -4,8 +4,8 @@
 
 #ifndef DIONYSOS_VGA_H
 #define DIONYSOS_VGA_H
-#define VGA_ADDRESS 0xB8000
-#define VGA_WIDTH 80
+#define VGA_ADDRESS       0xB8000
+#define VGA_WIDTH              80
 #define VGA_COLOR_BLACK         0
 #define VGA_COLOR_BLUE          1
 #define VGA_COLOR_GREEN         2
@@ -24,7 +24,7 @@
 #define VGA_COLOR_WHITE         15
 
 void write_string( int colour, const char *string );
-/*
+
 static inline uint8 vga_entry_color(enum vga_color fg, enum vga_color bg) {
     return fg | bg << 4;
 }
@@ -34,10 +34,9 @@ static inline uint16 vga_entry(unsigned char uc, uint8 color) {
 }
 
 void write_string(const char* str, uint8 color, uint16 x, uint16 y) {
-    uint16_t* vga_buffer = (uint16_t*) VGA_ADDRESS;
+    uint16_t *vga_buffer = (uint16_t *) VGA_ADDRESS;
     for (size_t i = 0; str[i] != '\0'; i++) {
         vga_buffer[y * VGA_WIDTH + x + i] = vga_entry(str[i], color);
     }
 }
-*/
 #endif //DIONYSOS_VGA_H
