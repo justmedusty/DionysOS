@@ -3,6 +3,7 @@ global isr_wrapper
 align 16
 
 isr_wrapper:
+
     push rax
     push rcx
     push rdx
@@ -18,8 +19,10 @@ isr_wrapper:
     push r13
     push r14
     push r15
+
     mov rdi, rsp     ; Pass the stack pointer as argument to `trap` function
     call trap        ; Call your trap handler function
+
     pop r15
     pop r14
     pop r13

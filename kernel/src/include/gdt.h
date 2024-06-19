@@ -42,6 +42,7 @@ enum gdtbit { /* https://wiki.osdev.org/File:Gdt_bits_fixed.png */
     ACCESSED = 0x01,            /* 0b00000001 */
 
     /*
+     *
      * Flag
      */
     BYTE_GR = 0x00,             /* 0b0000 */

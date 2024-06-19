@@ -7,6 +7,10 @@
 #ifndef TYPES_H
 #include "include/types.h"
 #endif
+
+
+#define static_assert _Static_assert
+
 void *memcpy(void *dest, const void *src, size n) {
     uint8 *pdest = (uint8 *)dest;
     const uint8 *psrc = (const uint8 *)src;

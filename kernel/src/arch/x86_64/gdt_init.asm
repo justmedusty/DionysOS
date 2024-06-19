@@ -12,4 +12,4 @@ load_gdt:
     POP rdi
     PUSH 0x08
     PUSH rdi
-    RETFQ
+    RETF

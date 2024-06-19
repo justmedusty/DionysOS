@@ -1,8 +1,8 @@
 //
 // Created by dustyn on 6/16/24.
 //
-#include "../../include/types.h"
-#include "../../include/idt.h"
+#include "include/types.h"
+#include "include/idt.h"
 
 struct idt_entry idt[256];
 static unsigned long idt_address;
