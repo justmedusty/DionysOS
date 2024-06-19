@@ -8,10 +8,18 @@ struct idt_entry idt[256];
 static unsigned long idt_address;
 static unsigned long idt_ptr[2];
 
+extern void isr_wrapper();
+
 void idt_init() {
-    idt_address = (unsigned long)idt;
-    idt_ptr[0] = (sizeof (struct idt_entry) * 256) + ((idt_address & 0xffff) << 16);
+
+    for(int i = 0;i<256;i++){
+        idt_register_handler(i, (unsigned long) &isr_wrapper);
+    }
+
+    idt_address = (unsigned long) idt;
+    idt_ptr[0] = (sizeof(struct idt_entry) * 256) + ((idt_address & 0xffff) << 16);
     idt_ptr[1] = idt_address >> 16;
+
 
     __asm__ __volatile__(
             "lidt %0\n\t"

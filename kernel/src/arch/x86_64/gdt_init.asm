@@ -12,4 +12,5 @@ load_gdt:
     POP rdi
     PUSH 0x08
     PUSH rdi
+    ADD rsp , 8
     RETF
