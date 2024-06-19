@@ -13,12 +13,16 @@ define DEFAULT_VAR =
     endif
 endef
 
+
 .PHONY: all
 all: $(IMAGE_NAME).iso
 
 .PHONY: all-hdd
 all-hdd: $(IMAGE_NAME).hdd
 
+.PHONY: run-gdb
+run-gdb: $(IMAGE_NAME).iso
+	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -S -gdb tcp::25000
 .PHONY: run
 run: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d
