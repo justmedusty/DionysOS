@@ -1,4 +1,4 @@
-# Nuke built-in rules and variables.
+﻿# Nuke built-in rules and variables.
 override MAKEFLAGS += -rR
 
 override IMAGE_NAME := template
@@ -33,7 +33,7 @@ run-hdd: $(IMAGE_NAME).hdd
 
 .PHONY: run-hdd-uefi
 run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
-	qemu-system-x86_64 -M q35 -m 2G -bios ovmf/OVMF.fd -hda $(IMAGE_NAME).hdd
+	qemu-system-x86_64 -M q35 -m 2G -serial -append "console=ttyS0,115200" -serial stdio -bios ovmf/OVMF.fd -hda $(IMAGE_NAME).hdd
 
 ovmf:
 	mkdir -p ovmf

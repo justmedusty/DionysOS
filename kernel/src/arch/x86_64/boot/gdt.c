@@ -4,6 +4,7 @@
 
 #include "include/types.h"
 #include <include/gdt.h>
+#include "include/x86.h"
 
 struct gdtentry gdtentry[GDT_SIZE];
 struct gdtdesc gdtdesc;
@@ -21,6 +22,7 @@ void init_gdt_desc(uint32 base, uint32 limit, uint8 access, uint8 flags,
 }
 
 void init_gdt(void) {
+    cli();
     gdtdesc.size = sizeof(struct gdtentry) * GDT_SIZE;
     gdtdesc.offset = (uintptr_t) & gdtentry[0];
 
@@ -39,5 +41,6 @@ void init_gdt(void) {
                                                                                                      * Data 
                                                                                                      * Segment 
                                                                                                      */
+    sti();
 
 }

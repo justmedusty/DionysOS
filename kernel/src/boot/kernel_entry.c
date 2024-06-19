@@ -4,14 +4,16 @@
 #include "include/framebuffer.h"
 #include "include/gdt.h"
 #include "include/idt.h"
+#include "include/uart.h"
 #include "include/types.h"
 #include "include/font.h"
-
+#include "include/x86.h"
 #include "include/draw.h"
 
 
-void kernel_main(framebuffer_t *framebuffer){
-
+void kernel_main(){
+    init_serial();
+    write_serial("Hello!");
     init_gdt();
     idt_init();
 
