@@ -13,7 +13,7 @@
 
 void kernel_main(){
     init_serial();
-    write_serial("Hello!");
+    write_string_serial("Hello!");
     init_gdt();
     idt_init();
 

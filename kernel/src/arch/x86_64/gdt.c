@@ -2,9 +2,9 @@
 // Created by dustyn on 6/16/24.
 //
 
-#include "../../include/types.h"
+#include "include/types.h"
 #include <include/gdt.h>
-#include "../../include/x86.h"
+#include "include/x86.h"
 
 struct gdtentry gdtentry[GDT_SIZE];
 struct gdtdesc gdtdesc;
@@ -22,25 +22,13 @@ void init_gdt_desc(uint32 base, uint32 limit, uint8 access, uint8 flags,
 }
 
 void init_gdt(void) {
-    cli();
     gdtdesc.size = sizeof(struct gdtentry) * GDT_SIZE;
     gdtdesc.offset = (uintptr_t) & gdtentry[0];
 
     init_gdt_desc(0, 0, 0, 0, &gdtentry[0]);    /* NULL Segment */
-    init_gdt_desc(0, 0, PRESENT | SYSTEM | EXECUTABLE | READ_WRITE, PAGE_GR | BITS64, &gdtentry[1]);    /* Code 
-                                                                                                         * segment 
-                                                                                                         */
-    init_gdt_desc(0, 0, PRESENT | SYSTEM | READ_WRITE, PAGE_GR | BITS64, &gdtentry[2]); /* Data 
-                                                                                         * segment 
-                                                                                         */
-    init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | EXECUTABLE | READ_WRITE, PAGE_GR | BITS64, &gdtentry[3]);    /* User 
-                                                                                                                     * Code 
-                                                                                                                     * Segment 
-                                                                                                                     */
-    init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | READ_WRITE, PAGE_GR | BITS64, &gdtentry[4]); /* User 
-                                                                                                     * Data 
-                                                                                                     * Segment 
-                                                                                                      */
-    sti();
+    init_gdt_desc(0, 0, PRESENT | SYSTEM | EXECUTABLE | READ_WRITE, PAGE_GR | BITS64, &gdtentry[1]);    // Code segment
+    init_gdt_desc(0, 0, PRESENT | SYSTEM | READ_WRITE, PAGE_GR | BITS64, &gdtentry[2]); // Data
+    init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | EXECUTABLE | READ_WRITE, PAGE_GR | BITS64, &gdtentry[3]);    // User code
+    init_gdt_desc(0, 0, PRESENT | SYSTEM | USER_PRIV | READ_WRITE, PAGE_GR | BITS64, &gdtentry[4]); // User data
 
 }
