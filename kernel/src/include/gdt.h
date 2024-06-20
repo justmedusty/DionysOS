@@ -4,60 +4,112 @@
 
 #ifndef GDT_H
 #define GDT_H
-#define GDT_SIZE 6
 
 #include <stdint.h>
 #include <stddef.h>
+/**
+ * Symbolic constants which match the above GDT layout.
+ */
+enum gdt_segments {
+    GDT_SEGMENT_NULL,
+    GDT_SEGMENT_RING0_CODE,
+    GDT_SEGMENT_RING0_DATA,
+    GDT_SEGMENT_RING3_CODE,
+    GDT_SEGMENT_RING3_DATA,
 
-struct gdtdesc { /* https://wiki.osdev.org/File:Gdtr.png */
-    uint16_t size;
-    uint32_t offset;
-} __attribute__((packed));
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-
-struct gdtentry { /* https://wiki.osdev.org/File:GDT_Entry.png */
-    uint16_t limit0_15;
-    uint16_t base0_15;
-    uint8_t base16_23;
-    uint8_t access;
-    uint8_t limit16_19:4;
-    uint8_t flags:4;
-    uint8_t base24_31;
-} __attribute__((packed));
-
-#pragma GCC diagnostic pop
-
-enum gdtbit { /* https://wiki.osdev.org/File:Gdt_bits_fixed.png */
-    /*
-     * Access Byte
-     */
-    PRESENT = 0x80,             /* 0b10000000 */
-    SYSTEM = 0x10,              /* 0b00010000 */
-    USER_PRIV = 0x60,           /* 0b01100000 */
-    EXECUTABLE = 0x08,          /* 0b00001000 */
-    GROWS_DOWN = 0x04,          /* 0b00000100 */
-    READ_WRITE = 0x02,          /* 0b00000010 */
-    ACCESSED = 0x01,            /* 0b00000001 */
-
-    /*
-     *
-     * Flag
-     */
-    BYTE_GR = 0x00,             /* 0b0000 */
-    PAGE_GR = 0x08,             /* 0b1000 */
-    BITS16 = 0x00,              /* 0b0000 */
-    BITS32 = 0x04,              /* 0b0100 */
-    BITS64 = 0x02               /* 0b0010 */
+    // Note: This consumes 2 indices. If any segments are added after this, we
+    // need to manually set its index value.
+    GDT_SEGMENT_TSS,
 };
 
-struct tssentry { /* https://wiki.osdev.org/Getting_to_Ring_3#The_TSS */
-    uint32_t reserved0;
+/**
+ * Set up the GDT as above. This performs the following steps:
+ *
+ * 1. Initializes all the GDT entries (including the TSS).
+ * 2. Update the GDT descriptor (with `lgdt`).
+ * 3. Update the TSS descriptor (with `ltr`).
+ * 4. Update segment registers to point at ring0 code/data segments.
+ */
+void gdt_init(void);
+
+/**
+ * The value stored in the GDT register (with `lgdt`/`sgdt`).
+ */
+struct gdt_desc {
+    uint16_t sz;
+    uint64_t off;
+} __attribute__((packed));
+_Static_assert(sizeof(struct gdt_desc) == 10, "sizeof gdt_desc");
+
+/**
+ * Note that reserved fields are named so that we can explicitly zero them if
+ * necessary.
+ */
+struct gdt_segment_desc {
+    uint16_t limit_1;
+    uint16_t base_1;
+    uint8_t base_2;
+    uint8_t access_a : 1;
+    uint8_t access_rw : 1;
+    uint8_t access_dc : 1;
+    uint8_t access_e : 1;
+    uint8_t access_s : 1; // Always 1 for non-system segments.
+    uint8_t access_dpl : 2;
+    uint8_t access_p : 1;
+    uint8_t limit_2 : 4;
+    uint8_t flags_reserved : 1;
+    uint8_t flags_l : 1;
+    uint8_t flags_db : 1;
+    uint8_t flags_g : 1;
+    uint8_t base_3;
+} __attribute__((packed));
+_Static_assert(sizeof(struct gdt_segment_desc) == 8, "sizeof gdt_segment_desc");
+
+/**
+ * 64-bit mode type field, as described in Sec. 3.5. Table 3-2.
+ *
+ * This is also used for IDT gate entries.
+ */
+enum system_segment_type {
+    SSTYPE_LDT = 0x2,
+    SSTYPE_TSS_AVAIL = 0x9,
+    SSTYPE_TSS_BUSY = 0xB,
+    SSTYPE_CALL_GATE = 0xC,
+    SSTYPE_INTERRUPT_GATE = 0xE,
+    SSTYPE_TRAP_GATE = 0xF,
+};
+
+/**
+ * 64-bit mode system segment (LDT or TSS) descriptor. This is 16 bytes rather
+ * than 8 bytes like the 32-bit version.
+ *
+ * Described in Intel SDM, Vol. 3-A, Sec. 3.5.
+ */
+struct gdt_system_segment_desc {
+    uint16_t limit_1;
+    uint16_t base_1;
+    uint8_t base_2;
+    enum system_segment_type access_type : 4;
+    uint8_t access_s : 1; // Always 0 for system segments.
+    uint8_t access_dpl : 2;
+    uint8_t access_p : 1;
+    uint8_t limit_2 : 4;
+    uint8_t flags_reserved : 1;
+    uint8_t flags_l : 1;
+    uint8_t flags_db : 1;
+    uint8_t flags_g : 1;
+    uint64_t base_3 : 40;
+    uint32_t reserved : 32;
+} __attribute__((packed));
+_Static_assert(sizeof(struct gdt_system_segment_desc) == 16,
+"sizeof gdt_system_segment_desc");
+
+struct tss {
+    uint32_t reserved_1;
     uint64_t rsp0;
     uint64_t rsp1;
     uint64_t rsp2;
-    uint64_t reserved1;
+    uint64_t reserved_2;
     uint64_t ist1;
     uint64_t ist2;
     uint64_t ist3;
@@ -65,17 +117,42 @@ struct tssentry { /* https://wiki.osdev.org/Getting_to_Ring_3#The_TSS */
     uint64_t ist5;
     uint64_t ist6;
     uint64_t ist7;
-    uint64_t reserved2;
-    uint16_t reserved3;
-    uint16_t iopb_offset;
+    uint64_t reserved_3;
+    uint16_t reserved_4;
+    uint16_t iopb;
+} __attribute__((packed));
+_Static_assert(sizeof(struct tss) == 104, "sizeof tss");
+
+/**
+ * Read/write the GDT. When writing the GDT, make sure to also update segment
+ * registers. Even though they are cached (hidden part), they will be re-read
+ * from the GDT on some instructions based on the visible part, which may not be
+ * correct anymore.
+ */
+inline void gdt_read(struct gdt_desc *gdt_desc) {
+    __asm__ volatile("sgdt %0" : "=m"(*gdt_desc));
+}
+inline void gdt_write(const struct gdt_desc *const gdt_desc) {
+    __asm__ volatile("lgdt %0" : : "m"(*gdt_desc));
+}
+
+struct segment_selector {
+    uint8_t rpl : 2;
+    uint8_t ti : 1;
+    uint16_t index : 13;
 } __attribute__((packed));
 
+/**
+ * Write the TSS.
+ */
+inline void tss_write(uint16_t tss_segment_index) {
+    struct segment_selector tss_segment_selector = {.index = tss_segment_index};
+    __asm__ volatile("ltr %0" : : "m"(tss_segment_selector) : "ax");
+}
 
-void init_gdt_desc(uint32_t, uint32_t, uint8_t, uint8_t, struct gdtentry *);
-void init_gdt(void);
+/**
+ * Write the kernel stack pointer (rsp0) to return to after an interrupt.
+ */
+void tss_set_kernel_stack(void *rsp0);
 
-void set_kernel_stack(uint32_t);
-
-extern void gdt_flush(uint32_t);
-extern void tss_flush(void);
 #endif //DIONYSOS_GDT_H

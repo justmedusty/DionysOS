@@ -5,28 +5,39 @@
 #ifndef DIONYSOS_IDT_H
 #define DIONYSOS_IDT_H
 #pragma once
+
+#include "include/gdt.h"
+#include <stddef.h>
 #include <stdint.h>
-#define KERNEL_CODE_SEGMENT_OFFSET 0x08
-#define INTERRUPT_GATE 0x8e
-struct idt_entry {
-    unsigned short int offset_lowerbits;
-    unsigned short int selector;
-    unsigned char zero;
-    unsigned char type_attr;
-    unsigned short int offset_higherbits;
-};
 
-struct interrupt_frame {
-    uintptr_t ip;
-    uintptr_t cs;
-    uintptr_t flags;
-    uintptr_t sp;
-    uintptr_t ss;
-};
+struct idtr_desc {
+    uint16_t sz;
+    uint64_t off;
+} __attribute__((packed));
 
-void idt_init();
-void enable_idt();
-void disable_idt();
-void idt_register_handler(uint8_t interrupt, unsigned long address);
+// Gate descriptor describes an ISR.
+struct gate_desc {
+    uint16_t off_1;
+    struct segment_selector segment_selector;
+    uint8_t ist : 3;
+    uint8_t : 5;
+    enum system_segment_type gate_type : 4;
+    uint8_t : 1;
+    uint8_t dpl : 2;
+    uint8_t p : 1;
+    uint16_t off_2;
+    uint32_t off_3;
+    uint32_t : 32;
+} __attribute__((packed));
+
+// Read the IDT. See https://wiki.osdev.org/IDT
+inline void read_idt(struct idtr_desc *idtr) {
+    __asm__ volatile("sidt %0" : "=m"(*idtr));
+}
+
+inline void load_idtr(struct idtr_desc *idtr) {
+    __asm__ volatile("lidt %0" : "=m"(*idtr));
+}
+
 
 #endif //DIONYSOS_IDT_H

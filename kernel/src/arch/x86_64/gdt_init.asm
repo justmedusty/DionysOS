@@ -13,4 +13,4 @@ load_gdt:
     PUSH 0x08
     PUSH rdi
     ADD rsp , 8
-    RETF
+    IRETQ

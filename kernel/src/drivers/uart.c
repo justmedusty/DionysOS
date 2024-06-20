@@ -29,6 +29,32 @@ void write_serial(char a) {
     }
     outb(SERIAL_PORT, a);
 }
+void write_int_serial(int num) {
+    char buffer[20];
+
+    if (num < 0) {
+        write_serial('-');
+        num = -num;
+    }
+
+    // Special case for 0
+    if (num == 0) {
+        write_serial('0');
+        return;
+    }
+
+    int index = 0;
+    while (num != 0) {
+        int digit = num % 10;
+        buffer[index++] = '0' + digit;
+        num /= 10;
+    }
+
+    // Reverse the buffer to get the correct order of digits
+    for (int i = index - 1; i >= 0; i--) {
+        write_serial(buffer[i]);
+    }
+}
 
 void write_string_serial(const char *str) {
     while (*str) {
