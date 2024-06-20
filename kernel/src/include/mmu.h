@@ -124,59 +124,6 @@ struct segdesc {
 #ifndef __ASSEMBLER__
 typedef uint64 pte_t;
 
-// Task state segment format
-struct taskstate {
-    uint64 link;         // Old ts selector
-    uint64 rsp0;         // Stack pointers and segment selectors
-    uint16 ss0;        //   after an increase in privilege level
-    uint16 padding1;
-    uint64 *rsp1;
-    uint16 ss1;
-    uint16 padding2;
-    uint64 *rsp2;
-    uint16 ss2;
-    uint16 padding3;
-    void *cr3;         // Page directory base
-    uint64 *rip;         // Saved state from last task switch
-    uint64 eflags;
-    uint64 rax;          // More saved state (registers)
-    uint64 rcx;
-    uint64 rdx;
-    uint64 rbx;
-    uint64 *rsp;
-    uint64 *rbp;
-    uint64 rsi;
-    uint64 rdi;
-    uint16 es;         // Even more saved state (segment selectors)
-    uint16 padding4;
-    uint16 cs;
-    uint16 padding5;
-    uint16 ss;
-    uint16 padding6;
-    uint16 ds;
-    uint16 padding7;
-    uint16 fs;
-    uint16 padding8;
-    uint16 gs;
-    uint16 padding9;
-    uint16 ldt;
-    uint16 padding10;
-    uint16 t;          // Trap on task switch
-    uint16 iomb;       // I/O map base address
-};
-
-// Gate descriptors for trap and traps
-struct gatedesc {
-    uint64 off_15_0 : 16;   // low 16 bits of offset in segment
-    uint64 cs : 16;         // code segment selector
-    uint64 args : 5;        // # args, 0 for interrupt/trap gates
-    uint64 rsv1 : 3;        // reserved(should be zero I guess)
-    uint64 type : 4;        // type(STS_{IG64,TG64})
-    uint64 s : 1;           // must be 0 (system)
-    uint64 dpl : 2;         // descriptor(meaning new) privilege level
-    uint64 p : 1;           // Present
-    uint64 off_31_16 : 16;  // high bits of offset in segment
-};
 
 // Set up a normal interrupt/trap gate descriptor.
 // - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.

@@ -18,6 +18,5 @@ void kernel_main(){
     write_string_serial("GDT Loaded\n");
     idt_init();
     write_string_serial("IDT Loaded, ISRs mapped\n");
-    asm("lgdt 0");
 
 }
