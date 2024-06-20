@@ -87,7 +87,7 @@ __attribute__((naked)) static void _gdt_init_jmp() {
 
 void gdt_init(void) {
     // Fill in GDT descriptors.
-    memset(&_gdt[0], 0, sizeof _gdt[GDT_SEGMENT_NULL]);
+    memset(&_gdt[GDT_SEGMENT_NULL], 0, sizeof _gdt[GDT_SEGMENT_NULL]);
     _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_CODE], true, 0);
     _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_DATA], false, 0);
     _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING3_CODE], true, 3);

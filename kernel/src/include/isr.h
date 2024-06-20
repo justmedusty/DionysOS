@@ -6,8 +6,5 @@
 #define DIONYSOS_ISR_H
 #pragma once
 #include <include/idt.h>
-
-
 void isr_install(void);
-
 #endif //DIONYSOS_ISR_H

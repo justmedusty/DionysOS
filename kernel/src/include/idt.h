@@ -39,5 +39,10 @@ inline void load_idtr(struct idtr_desc *idtr) {
     __asm__ volatile("lidt %0" : "=m"(*idtr));
 }
 
+/**
+ * Set up basic interrupt table.
+ */
+void idt_init(void);
+
 
 #endif //DIONYSOS_IDT_H
