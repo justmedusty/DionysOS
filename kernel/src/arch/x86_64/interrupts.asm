@@ -15,7 +15,6 @@ extern segment_not_present
 extern stack_exception
 extern general_protection_fault
 extern page_fault
-extern isr_routine_15
 extern floating_point_error
 extern alignment_check
 extern machine_check
