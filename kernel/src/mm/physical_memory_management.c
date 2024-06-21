@@ -16,10 +16,12 @@ static inline void bitmap_set(void *bitmap, uint64 bit);
 
 static inline void bitmap_clear(void *bitmap, uint64 bit);
 
+struct limine_memmap_response memmap_response;
 
 volatile struct limine_memmap_request memmap_request = {
         .id = LIMINE_MEMMAP_REQUEST,
-        .revision = 0
+        .revision = 0,
+        .response = &memmap_response
 };
 
 volatile struct limine_hhdm_request hhdm_request = {
@@ -56,8 +58,6 @@ int phys_init() {
 
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
-    write_int_serial(&memmap->entries);
-    bootleg_panic("Here");
     struct limine_memmap_entry **entries = memmap->entries;
 
     uint64 highest_address = 0;

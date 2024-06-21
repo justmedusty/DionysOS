@@ -5,6 +5,7 @@
 #include "include/framebuffer.h"
 #include "kernel_entry.h"
 #include "include/types.h"
+#include "include/physical_memory_management.h"
 #include "include/font.h"
 #include "include/draw.h"
 
