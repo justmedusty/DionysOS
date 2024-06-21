@@ -123,7 +123,6 @@ void idt_init(void) {
       } else{
           create_void_gate(&gates[i]);
       }
-
   }
     load_idtr(&idtr);
     //enable interrupts (locally)
