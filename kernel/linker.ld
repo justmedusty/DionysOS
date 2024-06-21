@@ -34,25 +34,25 @@ SECTIONS
         *(.rodata .rodata.*)
     } :rodata
 
-    /* Move to the next memory page for .data */
+    /* Move to the next memory page for .types */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
     .data : {
         *(.data .data.*)
 
-        /* Place the sections that contain the Limine requests as part of the .data */
+        /* Place the sections that contain the Limine requests as part of the .types */
         /* output section. */
         KEEP(*(.requests_start_marker))
         KEEP(*(.requests))
         KEEP(*(.requests_end_marker))
     } :data
 
-    /* Dynamic section for relocations, both in its own PHDR and inside data PHDR */
+    /* Dynamic section for relocations, both in its own PHDR and inside types PHDR */
     .dynamic : {
         *(.dynamic)
     } :data :dynamic
 
-    /* NOTE: .bss needs to be the last thing mapped to :data, otherwise lots of */
+    /* NOTE: .bss needs to be the last thing mapped to :types, otherwise lots of */
     /* unnecessary zeros will be written to the binary. */
     /* If you need, for example, .init_array and .fini_array, those should be placed */
     /* above this. */

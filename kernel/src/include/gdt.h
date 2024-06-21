@@ -28,7 +28,7 @@ enum gdt_segments {
  * 1. Initializes all the GDT entries (including the TSS).
  * 2. Update the GDT descriptor (with `lgdt`).
  * 3. Update the TSS descriptor (with `ltr`).
- * 4. Update segment registers to point at ring0 code/data segments.
+ * 4. Update segment registers to point at ring0 code/types segments.
  */
 void gdt_init(void);
 
