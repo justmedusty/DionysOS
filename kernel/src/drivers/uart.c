@@ -62,3 +62,9 @@ void write_string_serial(const char *str) {
     }
 }
 
+void bootleg_panic(const char *str){
+    write_string_serial(str);
+    for(;;){
+        asm("hlt");
+    }
+}

@@ -4,6 +4,9 @@
 
 #ifndef DIONYSOS_TYPES_H
 #define DIONYSOS_TYPES_H
+
+#define NULL (void *) 0
+
 typedef unsigned int uint32;
 typedef int int32;
 typedef unsigned short uint16;

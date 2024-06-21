@@ -4,10 +4,7 @@
 
 #ifndef DIONYSOS_STRING_H
 #define DIONYSOS_STRING_H
-#ifndef TYPES_H
-#include "include/types.h"
-#endif
-
+#include <stddef.h>
 
 
 void *memcpy(void *dest, const void *src, size_t n) {

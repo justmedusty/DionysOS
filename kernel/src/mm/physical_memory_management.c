@@ -2,65 +2,168 @@
 // Created by dustyn on 6/21/24.
 //
 #include "include/types.h"
-#include "physical_memory_management.h"
+#include "../include/physical_memory_management.h"
+#include "include/limine.h"
+#include "stddef.h"
+#include "include/mem.h"
+#include "include/uart.h"
 
-int64 frame_map[];
-uint64 npages; // This should be initialized with the number of pages available
-pageframe_t pre_frames[PRE_ALLOC];
-pageframe_t *startframe; // This should be initialized with the start address of the frames
+static inline bool
 
-static pageframe_t __kalloc_frame()
-{
-    uint32 i = 0;
-    while(frame_map[i] != FREE)
-    {
-        i++;
-        if(i == npages)
-        {
-            return(ERROR);
-        }
-    }
-    frame_map[i] = USED;
-    return(startframe + (i*0x1000));//return the address of the page frame based on the location declared free
-    //in the array
+bitmap_get(void *bitmap, uint64 bit);
+
+static inline void bitmap_set(void *bitmap, uint64 bit);
+
+static inline void bitmap_clear(void *bitmap, uint64 bit);
+
+
+volatile struct limine_memmap_request memmap_request = {
+        .id = LIMINE_MEMMAP_REQUEST,
+        .revision = 0
+};
+
+volatile struct limine_hhdm_request hhdm_request = {
+        .id = LIMINE_HHDM_REQUEST,
+        .revision = 0
+};
+
+uint8 *bitmap = NULL;
+uint64 highest_page_index = 0;
+uint64 last_used_index = 0;
+uint64 usable_pages = 0;
+uint64 used_pages = 0;
+uint64 reserved_pages = 0;
+
+
+static inline bool
+
+bitmap_get(void *bitmap, uint64 bit) {
+    uint8 *bitmap_byte = bitmap;
+    return bitmap_byte[bit / 8] & (1 << (bit % 8));
 }
 
-pageframe_t kalloc_frame(){
-    static uint8_t allocate = 1;//whether or not we are going to allocate a new set of preframes
-    static uint8_t pframe = 0;
-    pageframe_t ret;
-
-    if(pframe == 20)
-    {
-        allocate = 1;
-    }
-
-    if(allocate == 1)
-    {
-        for(int i = 0; i<20; i++)
-        {
-            pre_frames[i] = kalloc_frame_int();
-        }
-        pframe = 0;
-        allocate = 0;
-    }
-    ret = pre_frames[pframe];
-    pframe++;
-    return(ret);
+static inline void bitmap_set(void *bitmap, uint64 bit) {
+    uint8 *bitmap_byte = bitmap;
+    bitmap_byte[bit / 8] |= (1 << (bit % 8));
 }
 
+static inline void bitmap_clear(void *bitmap, uint64 bit) {
+    uint8 *bitmap_byte = bitmap;
+    bitmap_byte[bit / 8] &= ~(1 << (bit % 8));
+}
 
-void kfree_frame(pageframe_t a)
-{
-    a = a - startframe;//get the offset from the first frame
-    if(a == 0)//in case it is the first frame we are freeing
-    {
-        uint32_t index = (uint32_t)a;
-        frame_map[index] = FREE;
+int phys_init() {
+
+    struct limine_memmap_response *memmap = memmap_request.response;
+    struct limine_hhdm_response *hhdm = hhdm_request.response;
+    write_int_serial(&memmap->entries);
+    bootleg_panic("Here");
+    struct limine_memmap_entry **entries = memmap->entries;
+
+    uint64 highest_address = 0;
+
+    for (uint64 i = 0; i < memmap->entry_count; i++) {
+        struct limine_memmap_entry *entry = entries[i];
+
+        switch (entry->type) {
+            case LIMINE_MEMMAP_USABLE:
+                usable_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
+                highest_address = highest_address > (entry->base + entry->length) ? highest_address : (entry->base +
+                                                                                                       entry->length);
+                break;
+            case LIMINE_MEMMAP_RESERVED:
+            case LIMINE_MEMMAP_ACPI_RECLAIMABLE:
+            case LIMINE_MEMMAP_ACPI_NVS:
+            case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
+            case LIMINE_MEMMAP_KERNEL_AND_MODULES:
+                reserved_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
+                break;
+        }
     }
-    else{
-        a = a;
-        uint32_t index = ((uint32_t)a)/0x1000; //divide by 4kb to get the index to declare free
-        frame_map[index] = FREE;
+
+    highest_page_index = highest_address / PAGE_SIZE;
+    uint64 bitmap_size = ((highest_page_index / 8) + (PAGE_SIZE - 1)) / PAGE_SIZE * PAGE_SIZE;
+
+    for (uint64 i = 0; i < memmap->entry_count; i++) {
+        struct limine_memmap_entry *entry = entries[i];
+
+        if (entry->type != LIMINE_MEMMAP_USABLE) {
+            continue;
+        }
+
+        if (entry->length >= bitmap_size) {
+            bitmap = (uint8 *) (entry->base + hhdm->offset);
+
+            memset(bitmap, 0xFF, bitmap_size);
+
+            entry->length -= bitmap_size;
+            entry->base += bitmap_size;
+
+            break;
+        }
     }
+
+    for (uint64 i = 0; i < memmap->entry_count; i++) {
+        struct limine_memmap_entry *entry = entries[i];
+
+        if (entry->type != LIMINE_MEMMAP_USABLE) {
+            continue;
+        }
+
+        for (uint64 j = 0; j < entry->length; j += PAGE_SIZE) {
+            bitmap_clear(bitmap, (entry->base + j) / PAGE_SIZE);
+        }
+    }
+    uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+    write_string_serial("Mib found :");
+    write_int_serial(pages_mib);
+    write_int_serial("\n");
+    
+
+
+    return 0;
+}
+
+static void *inner_allocate(uint64 pages, uint64 limit) {
+    uint64 p = 0;
+
+    while (last_used_index < limit) {
+        if (!bitmap_get(bitmap, last_used_index++)) {
+            if (++p == pages) {
+                uint64 page = last_used_index - pages;
+                for (uint64 i = page; i < last_used_index; i++) {
+                    bitmap_set(bitmap, i);
+                }
+                return (void *) (page * PAGE_SIZE);
+            }
+        } else {
+            p = 0;
+        }
+    }
+
+    return NULL;
+}
+
+void *phys_alloc(uint64 pages) {
+    uint64 last = last_used_index;
+    void *return_value = inner_allocate(pages, highest_page_index);
+
+    if (return_value == NULL) {
+        last_used_index = 0;
+        return_value = inner_allocate(pages, last);
+    }
+
+    used_pages += pages;
+
+    return return_value;
+}
+
+void phys_dealloc(void *address, uint64 pages) {
+    uint64 page = (uint64) address / PAGE_SIZE;
+
+    for (uint64 i = page; i < page + pages; i++) {
+        bitmap_clear(bitmap, i);
+    }
+
+    used_pages -= pages;
 }

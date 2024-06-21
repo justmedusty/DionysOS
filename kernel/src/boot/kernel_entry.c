@@ -5,6 +5,7 @@
 #include "include/gdt.h"
 #include "include/uart.h"
 #include "include/idt.h"
+#include "include/physical_memory_management.h"
 #include "include/types.h"
 #include "include/font.h"
 #include "include/x86.h"
@@ -18,5 +19,7 @@ void kernel_main(){
     write_string_serial("GDT Loaded\n");
     idt_init();
     write_string_serial("IDT Loaded, ISRs mapped\n");
+    phys_init();
+
 
 }
