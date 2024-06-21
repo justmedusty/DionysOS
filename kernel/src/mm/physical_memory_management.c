@@ -61,7 +61,7 @@ int phys_init() {
     struct limine_memmap_entry **entries = memmap->entries;
     uint64 highest_address = 0;
     write_string_serial("Entry count :");
-    write_hex_serial(memmap->entry_count);
+    write_hex_serial(&memmap->entry_count);
     write_serial('\n');
     for (uint64 i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];
