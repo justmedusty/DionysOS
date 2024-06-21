@@ -42,7 +42,7 @@ void write_hex_serial(uint64 num) {
 
 void write_binary_serial(uint64 num) {
     int separator = 0;
-    for (uint64 i = 0; i < 64; i++) {
+    for (uint64 i = 64; i >=0 0; i--) {
         if (((num >> i) & 1)) {
             write_serial('1');
         } else {
