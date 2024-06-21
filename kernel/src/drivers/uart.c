@@ -31,25 +31,13 @@ void write_serial(char a) {
 }
 
 void write_hex_serial(uint64 num) {
-    int nibble_counter = 0;
-    uint8 nibble = 0;
     write_string_serial("0x");
-    for (uint64 i = 64; i > 0; i--) {
-        if (nibble_counter == 4) {
-            nibble_counter = 0;
-            write_serial(get_hex_char(nibble));
-            nibble = 0;
-        }
-        if (((num >> i) & 1)) {
-            nibble = ((nibble << nibble_counter) | 1);
-        } else {
-            nibble = ((nibble << nibble_counter) | 0);
-        }
-        nibble_counter++;
+
+    for (int i = 60; i >= 0; i -= 4) {
+        uint8 nibble = (num >> i) & 0xF;  // Extract 4 bits
+        write_serial(get_hex_char(nibble));
     }
-
 }
-
 
 
 void write_binary_serial(uint64 num) {

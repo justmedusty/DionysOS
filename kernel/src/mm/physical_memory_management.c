@@ -59,7 +59,6 @@ int phys_init() {
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
-    write_hex_serial(4096);
     uint64 highest_address = 0;
     write_string_serial("Entry count :");
     write_hex_serial(memmap->entry_count);
