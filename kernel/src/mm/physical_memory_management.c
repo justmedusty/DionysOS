@@ -59,9 +59,11 @@ int phys_init() {
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
-
+    write_hex_serial(4096);
     uint64 highest_address = 0;
-
+    write_string_serial("Entry count :");
+    write_hex_serial(memmap->entry_count);
+    write_serial('\n');
     for (uint64 i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];
 
@@ -116,8 +118,8 @@ int phys_init() {
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
     write_string_serial("Physical Memory Init Complete. MiB Found : ");
-    write_int_serial(usable_pages);
-    write_int_serial("\n");
+    write_hex_serial(usable_pages);
+    write_serial('\n');
     
 
 

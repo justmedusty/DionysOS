@@ -24,35 +24,47 @@ int is_transmit_empty() {
 void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
-    if(a == '\n'){
+    if (a == '\n') {
         outb(SERIAL_PORT, '\r');
     }
     outb(SERIAL_PORT, a);
 }
-void write_int_serial(uint64 num) {
-    char buffer[100];
 
-    // Special case for 0
-    if (num == 0) {
-        write_serial('0');
-        return;
+void write_hex_serial(uint64 num) {
+    int nibble_counter = 0;
+    uint8 nibble = 0;
+    write_string_serial("0x");
+    for (uint64 i = 64; i > 0; i--) {
+        if (nibble_counter == 4) {
+            nibble_counter = 0;
+            write_serial(get_hex_char(nibble));
+            nibble = 0;
+        }
+        if (((num >> i) & 1)) {
+            nibble = ((nibble << nibble_counter) | 1);
+        } else {
+            nibble = ((nibble << nibble_counter) | 0);
+        }
+        nibble_counter++;
     }
 
-    if (num < 0) {
-        write_serial('-');
-        num = -num;
-    }
+}
 
-    uint64 index = 0;
-    while (num != 0) {
-        uint64 digit = num % 10;
-        buffer[index++] = '0' + digit;
-        num /= 10;
-    }
 
-    // Reverse the buffer to get the correct order of digits
-    for (int i = index - 1; i >= 0; i--) {
-        write_serial(buffer[i]);
+
+void write_binary_serial(uint64 num) {
+    int separator = 0;
+    for (uint64 i = 0; i < 64; i++) {
+        if (((num >> i) & 1)) {
+            write_serial('1');
+        } else {
+            write_serial('0');
+        }
+
+        separator++;
+        if (separator % 4 == 0 && (i != 63)) {
+            write_serial('-');
+        }
     }
 }
 
@@ -63,11 +75,51 @@ void write_string_serial(const char *str) {
 }
 
 //this is just for early testing and debugging
-void bootleg_panic(const char *str){
+void bootleg_panic(const char *str) {
     write_string_serial("Panic! ");
     write_string_serial(str);
-    for(;;){
+    for (;;) {
         asm("cli");
         asm("hlt");
+    }
+}
+
+
+char get_hex_char(uint8 nibble) {
+    switch (nibble) {
+        case 0x0:
+            return '0';
+        case 0x1:
+            return '1';
+        case 0x2:
+            return '2';
+        case 0x3:
+            return '3';
+        case 0x4:
+            return '4';
+        case 0x5:
+            return '5';
+        case 0x6:
+            return '6';
+        case 0x7:
+            return '7';
+        case 0x8:
+            return '8';
+        case 0x9:
+            return '9';
+        case 0xA:
+            return 'A';
+        case 0xB:
+            return 'B';
+        case 0xC:
+            return 'C';
+        case 0xD:
+            return 'D';
+        case 0xE:
+            return 'E';
+        case 0xF:
+            return 'F';
+        default:
+            return '?'; // Handle invalid input
     }
 }
