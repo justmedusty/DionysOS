@@ -115,8 +115,8 @@ int phys_init() {
         }
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-    write_string_serial("Mib found :");
-    write_int_serial(pages_mib);
+    write_string_serial("Physical Memory Init Complete. MiB Found : ");
+    write_int_serial(usable_pages);
     write_int_serial("\n");
     
 

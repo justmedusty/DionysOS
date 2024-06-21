@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 6/19/24.
 //
-
+#include "include/types.h"
 #include "include/uart.h"
 #include "include/x86.h"
 
@@ -29,13 +29,8 @@ void write_serial(char a) {
     }
     outb(SERIAL_PORT, a);
 }
-void write_int_serial(int num) {
-    char buffer[20];
-
-    if (num < 0) {
-        write_serial('-');
-        num = -num;
-    }
+void write_int_serial(uint64 num) {
+    char buffer[100];
 
     // Special case for 0
     if (num == 0) {
@@ -43,9 +38,14 @@ void write_int_serial(int num) {
         return;
     }
 
-    int index = 0;
+    if (num < 0) {
+        write_serial('-');
+        num = -num;
+    }
+
+    uint64 index = 0;
     while (num != 0) {
-        int digit = num % 10;
+        uint64 digit = num % 10;
         buffer[index++] = '0' + digit;
         num /= 10;
     }
@@ -62,9 +62,12 @@ void write_string_serial(const char *str) {
     }
 }
 
+//this is just for early testing and debugging
 void bootleg_panic(const char *str){
+    write_string_serial("Panic! ");
     write_string_serial(str);
     for(;;){
+        asm("cli");
         asm("hlt");
     }
 }
