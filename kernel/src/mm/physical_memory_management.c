@@ -16,6 +16,7 @@ static inline void bitmap_set(void *bitmap, uint64 bit);
 
 static inline void bitmap_clear(void *bitmap, uint64 bit);
 
+
 __attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
         .id = LIMINE_MEMMAP_REQUEST,
@@ -51,14 +52,11 @@ static inline void bitmap_clear(void *bitmap, uint64 bit) {
 }
 
 int phys_init() {
-
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
     uint64 highest_address = 0;
-    write_string_serial("Entry count :");
-    write_hex_serial(&memmap->entry_count);
-    write_serial('\n');
+
     for (uint64 i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];
 
@@ -113,7 +111,7 @@ int phys_init() {
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
     write_string_serial("Physical Memory Init Complete. MiB Found : ");
-    write_hex_serial(usable_pages);
+    write_hex_serial(pages_mib,32);
     write_serial('\n');
     
 
@@ -121,7 +119,7 @@ int phys_init() {
     return 0;
 }
 
-static void *inner_allocate(uint64 pages, uint64 limit) {
+static void *__phys_alloc(uint64 pages, uint64 limit) {
     uint64 p = 0;
 
     while (last_used_index < limit) {
