@@ -1,7 +1,6 @@
 //
 // Created by dustyn on 6/22/24.
 //
-
 #pragma once
 
 #include "types.h"
@@ -35,15 +34,9 @@ static inline slab_t *heap_slab_for(uint64 size) {
 }
 
 int heap_init();
-
 void heap_create_slab(slab_t *slab, uint64 entry_size);
-
 void *heap_allocate_from_slab(slab_t *slab);
-
 void heap_free_in_slab(slab_t *slab, void *address);
-
-void *kmalloc(uint64 size);
-
+void *kalloc(uint64 size);
 void *krealloc(void *address, uint64 new_size);
-
 void kfree(void *address);

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "include/kheap.h"
-#include "include/physical_memory_management.h"
+#include "include/pmm.h"
 #include "include/mem.h"
 #include "include/uart.h"
 
@@ -75,7 +75,7 @@ int heap_init() {
     return 0;
 }
 
-void *kmalloc(uint64 size) {
+void *kalloc(uint64 size) {
     slab_t *slab = heap_slab_for(size);
     if (slab != NULL) {
         return heap_allocate_from_slab(slab);
@@ -99,7 +99,7 @@ void *kmalloc(uint64 size) {
 
 void *krealloc(void *address, uint64 new_size) {
     if (address == NULL) {
-        return kmalloc(new_size);
+        return kalloc(new_size);
     }
 
     if (((uint64) address & 0xFFF) == 0) {
@@ -109,7 +109,7 @@ void *krealloc(void *address, uint64 new_size) {
             return address;
         }
 
-        void *new_address = kmalloc(new_size);
+        void *new_address = kalloc(new_size);
         if (new_address == NULL) {
             return NULL;
         }
@@ -128,7 +128,7 @@ void *krealloc(void *address, uint64 new_size) {
     slab_t *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
-        void *new_address = kmalloc(new_size);
+        void *new_address = kalloc(new_size);
         if (new_address == NULL) {
             return NULL;
         }

@@ -5,7 +5,7 @@
 #include "include/framebuffer.h"
 #include "kernel_entry.h"
 #include "include/types.h"
-#include "include/physical_memory_management.h"
+#include "include/pmm.h"
 #include "include/font.h"
 #include "include/draw.h"
 
@@ -128,7 +128,7 @@ void _start(void) {
         fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
     }
 */
-    kernel_main();
+    kernel_bootstrap();
     // We're done, just hang...
     hcf();
 }

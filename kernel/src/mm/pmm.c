@@ -2,7 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 #include "include/types.h"
-#include "../include/physical_memory_management.h"
+#include "include/pmm.h"
 #include "include/limine.h"
 #include "stddef.h"
 #include "include/mem.h"

@@ -5,7 +5,7 @@
 #include "include/gdt.h"
 #include "include/uart.h"
 #include "include/idt.h"
-#include "include/physical_memory_management.h"
+#include "include/pmm.h"
 #include "include/kheap.h"
 #include "include/types.h"
 #include "include/font.h"
@@ -13,13 +13,10 @@
 #include "include/draw.h"
 
 
-void kernel_main(){
+void kernel_bootstrap(){
     init_serial();
     gdt_init();
     idt_init();
     phys_init();
     heap_init();
-
-
-
 }
