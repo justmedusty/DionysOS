@@ -8,13 +8,10 @@
 #include "include/mem.h"
 #include "include/uart.h"
 
-static inline bool
-
-bitmap_get(void *bitmap, uint64 bit);
-
+static inline bool bitmap_get(void *bitmap, uint64 bit);
 static inline void bitmap_set(void *bitmap, uint64 bit);
-
 static inline void bitmap_clear(void *bitmap, uint64 bit);
+
 
 
 __attribute__((used, section(".requests")))
@@ -27,14 +24,6 @@ volatile struct limine_hhdm_request hhdm_request = {
         .id = LIMINE_HHDM_REQUEST,
         .revision = 0
 };
-
-uint8 *bitmap = NULL;
-uint64 highest_page_index = 0;
-uint64 last_used_index = 0;
-uint64 usable_pages = 0;
-uint64 used_pages = 0;
-uint64 reserved_pages = 0;
-
 
 static inline bool bitmap_get(void *bitmap, uint64 bit) {
     uint8 *bitmap_byte = bitmap;
@@ -50,6 +39,15 @@ static inline void bitmap_clear(void *bitmap, uint64 bit) {
     uint8 *bitmap_byte = bitmap;
     bitmap_byte[bit / 8] &= ~(1 << (bit % 8));
 }
+
+
+uint8 *bitmap = NULL;
+uint64 highest_page_index = 0;
+uint64 last_used_index = 0;
+uint64 usable_pages = 0;
+uint64 used_pages = 0;
+uint64 reserved_pages = 0;
+
 
 int phys_init() {
     struct limine_memmap_response *memmap = memmap_request.response;
@@ -109,16 +107,18 @@ int phys_init() {
             bitmap_clear(bitmap, (entry->base + j) / PAGE_SIZE);
         }
     }
-    uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+    uint16 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
     write_string_serial("Physical Memory Init Complete. MiB Found : ");
-    write_hex_serial(pages_mib,32);
+    write_hex_serial(pages_mib,16);
     write_serial('\n');
     
 
 
     return 0;
 }
-
+/*
+ * Internal allocation function, just tries
+ */
 static void *__phys_alloc(uint64 pages, uint64 limit) {
     uint64 p = 0;
 
@@ -141,11 +141,11 @@ static void *__phys_alloc(uint64 pages, uint64 limit) {
 
 void *phys_alloc(uint64 pages) {
     uint64 last = last_used_index;
-    void *return_value = inner_allocate(pages, highest_page_index);
+    void *return_value = __phys_alloc(pages, highest_page_index);
 
     if (return_value == NULL) {
         last_used_index = 0;
-        return_value = inner_allocate(pages, last);
+        return_value = __phys_alloc(pages, last);
     }
 
     used_pages += pages;

@@ -1,4 +1,5 @@
-# DionysOS, The OS of Wine, Insanity, & Ritual Madness
+# DionysOS. 
+# The OS of Wine, Insanity, & Ritual Madness
 ✓Serial
 
 ✓Load a new GDT

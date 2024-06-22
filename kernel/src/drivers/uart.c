@@ -32,7 +32,7 @@ void write_serial(char a) {
 //size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes
 void write_hex_serial(uint64 num,int8 size) {
     write_string_serial("0x");
-    for (int8 i = size; i >= 0; i -= 4) {
+    for (int8 i = (size - 4); i >= 0; i -= 4) {
         uint8 nibble = (num >> i) & 0xF;  // Extract 4 bits
         write_serial(get_hex_char(nibble));
     }
