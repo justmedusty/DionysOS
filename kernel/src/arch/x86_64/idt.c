@@ -7,6 +7,7 @@
 #include "include/x86.h"
 #include "include/idt.h"
 #include "traps.h"
+#include "include/uart.h"
 
 extern void isr_wrapper_0();
 extern void isr_wrapper_1();
@@ -127,4 +128,5 @@ void idt_init(void) {
     load_idtr(&idtr);
     //enable interrupts (locally)
     __asm__ volatile("sti");
+    write_string_serial("IDT Loaded, ISRs mapped\n");
 }

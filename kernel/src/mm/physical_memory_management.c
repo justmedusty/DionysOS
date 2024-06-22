@@ -111,6 +111,13 @@ int phys_init() {
     write_string_serial("Physical Memory Init Complete. MiB Found : ");
     write_hex_serial(pages_mib,16);
     write_serial('\n');
+
+    write_string_serial("Reserved Pages : ");
+    write_hex_serial(reserved_pages,64);
+    write_serial('\n');
+    write_string_serial("Highest Page Index : ");
+    write_hex_serial(highest_page_index,64);
+    write_serial('\n');
     
 
 
@@ -142,23 +149,18 @@ static void *__phys_alloc(uint64 pages, uint64 limit) {
 void *phys_alloc(uint64 pages) {
     uint64 last = last_used_index;
     void *return_value = __phys_alloc(pages, highest_page_index);
-
     if (return_value == NULL) {
         last_used_index = 0;
         return_value = __phys_alloc(pages, last);
     }
-
     used_pages += pages;
-
     return return_value;
 }
 
 void phys_dealloc(void *address, uint64 pages) {
     uint64 page = (uint64) address / PAGE_SIZE;
-
     for (uint64 i = page; i < page + pages; i++) {
         bitmap_clear(bitmap, i);
     }
-
     used_pages -= pages;
 }

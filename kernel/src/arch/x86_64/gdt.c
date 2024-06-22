@@ -6,6 +6,7 @@
 #include <include/gdt.h>
 #include "include/x86.h"
 #include "include/uart.h"
+#include "include/mem.h"
 #include "stdbool.h"
 
 static struct gdt_segment_desc _gdt[7];
@@ -110,6 +111,7 @@ void gdt_init(void) {
 
     // Update CS register with a far jump.
     _gdt_init_jmp();
+    write_string_serial("GDT Loaded\n");
 }
 
 void tss_set_kernel_stack(void *rsp0) { _tss.rsp0 = (uint64_t)rsp0; }

@@ -15,6 +15,7 @@ void init_serial() {
     outb(SERIAL_PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
     outb(SERIAL_PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
     outb(SERIAL_PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    write_string_serial("Serial Initialized\n");
 }
 
 int is_transmit_empty() {
