@@ -16,14 +16,12 @@ static inline void bitmap_set(void *bitmap, uint64 bit);
 
 static inline void bitmap_clear(void *bitmap, uint64 bit);
 
-struct limine_memmap_response memmap_response;
-
+__attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
         .id = LIMINE_MEMMAP_REQUEST,
         .revision = 0,
-        .response = &memmap_response
 };
-
+__attribute__((used, section(".requests")))
 volatile struct limine_hhdm_request hhdm_request = {
         .id = LIMINE_HHDM_REQUEST,
         .revision = 0
@@ -37,9 +35,7 @@ uint64 used_pages = 0;
 uint64 reserved_pages = 0;
 
 
-static inline bool
-
-bitmap_get(void *bitmap, uint64 bit) {
+static inline bool bitmap_get(void *bitmap, uint64 bit) {
     uint8 *bitmap_byte = bitmap;
     return bitmap_byte[bit / 8] & (1 << (bit % 8));
 }
