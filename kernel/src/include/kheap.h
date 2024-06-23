@@ -22,7 +22,7 @@ typedef struct {
     uint64 size;
 } metadata_t;
 
-extern slab_t slabs[15];
+extern slab_t slabs[10];
 
 static inline slab_t *heap_slab_for(uint64 size) {
     for (uint64 i = 0; i < (sizeof(slabs) / sizeof(slabs[0])); i++) {

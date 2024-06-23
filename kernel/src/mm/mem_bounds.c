@@ -6,6 +6,7 @@
 #include "include/paging.h"
 #include "include/limine.h"
 #include "include/uart.h"
+#include "include/pmm.h"
 
 extern char _kernel_end[];
 

@@ -9,7 +9,7 @@
 #include "include/uart.h"
 
 //Kernel heap
-slab_t slabs[15];
+slab_t slabs[10];
 
 /*
  * Create a slab of physical memory,
@@ -68,9 +68,15 @@ void heap_free_in_slab(slab_t *slab, void *address) {
 int heap_init() {
     int size = 8;
     for (uint64 i = 0; i < 15 ; i++) {
+
+        if(size >= PAGE_SIZE){
+            write_string_serial("Entry too large , skipping slab alloc.\n");
+            continue;
+        }
         heap_create_slab(&slabs[i], size);
         // i *= 2
         size = (size << 1);
+
         write_string_serial("Slab size : ");
         write_hex_serial(size,32);
         write_serial('\n');
