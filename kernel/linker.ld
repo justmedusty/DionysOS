@@ -60,8 +60,11 @@ SECTIONS
         *(.bss .bss.*)
         *(COMMON)
         ebss = .;
-        end_kernel = .;
     } :data
+
+
+
+    _kernel_end = .;
 
     /* Discard .note.* and .eh_frame* since they may cause issues on some hosts. */
     /* Also discard the program interpreter section since we do not need one. This is */

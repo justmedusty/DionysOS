@@ -10,6 +10,9 @@ typedef struct {
     uint64 entry_size;
 } slab_t;
 
+/*
+ * This will be used to create a more sophisticated data structure later
+ */
 typedef struct {
     slab_t *slab;
 } header;
@@ -19,7 +22,7 @@ typedef struct {
     uint64 size;
 } metadata_t;
 
-extern slab_t slabs[10];
+extern slab_t slabs[15];
 
 static inline slab_t *heap_slab_for(uint64 size) {
     for (uint64 i = 0; i < (sizeof(slabs) / sizeof(slabs[0])); i++) {

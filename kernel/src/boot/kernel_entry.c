@@ -1,16 +1,14 @@
 //
 // Created by dustyn on 6/17/24.
 //
-#include "include/framebuffer.h"
+#include "include/types.h"
 #include "include/gdt.h"
 #include "include/uart.h"
 #include "include/idt.h"
 #include "include/pmm.h"
 #include "include/kheap.h"
-#include "include/types.h"
-#include "include/font.h"
-#include "include/x86.h"
-#include "include/draw.h"
+#include "include/mem_bounds.h"
+
 
 
 void kernel_bootstrap(){
@@ -19,4 +17,5 @@ void kernel_bootstrap(){
     idt_init();
     phys_init();
     heap_init();
+    mem_bounds_init();
 }

@@ -9,8 +9,11 @@
 #include "include/uart.h"
 
 //Kernel heap
-slab_t slabs[10];
+slab_t slabs[15];
 
+/*
+ * Create a slab of physical memory,
+ */
 void heap_create_slab(slab_t *slab, uint64 entry_size) {
 
     slab->first_free = phys_alloc(1) + hhdm_request.response->offset;
@@ -31,10 +34,8 @@ void heap_create_slab(slab_t *slab, uint64 entry_size) {
     for (uint64 i = 0; i < max; i++) {
         array[i * fact] = &array[(i + 1) * fact];
     }
-
     array[max * fact] = NULL;
 }
-
 
 void *heap_allocate_from_slab(slab_t *slab) {
     if (slab->first_free == NULL) {
@@ -48,32 +49,37 @@ void *heap_allocate_from_slab(slab_t *slab) {
     return old_free;
 }
 
+/*
+ * Free part of a slab, setting it new head to the first_free field
+ * This can be useful
+ */
 void heap_free_in_slab(slab_t *slab, void *address) {
     if (address == NULL) {
         return;
     }
-
     void **new_head = address;
     *new_head = slab->first_free;
     slab->first_free = new_head;
 }
 
+/*
+ * Init Memory for Kernel Heap
+ */
 int heap_init() {
-    heap_create_slab(&slabs[0], 8);
-    heap_create_slab(&slabs[1], 16);
-    heap_create_slab(&slabs[2], 24);
-    heap_create_slab(&slabs[3], 32);
-    heap_create_slab(&slabs[4], 48);
-    heap_create_slab(&slabs[5], 64);
-    heap_create_slab(&slabs[6], 128);
-    heap_create_slab(&slabs[7], 256);
-    heap_create_slab(&slabs[8], 512);
-    heap_create_slab(&slabs[9], 1024);
+    int size = 8;
+    for (uint64 i = 0; i < 15 ; i++) {
+        heap_create_slab(&slabs[i], size);
+        // i *= 2
+        size = (size << 1);
+        write_string_serial("Slab size : ");
+        write_hex_serial(size,32);
+        write_serial('\n');
+    }
+
     write_string_serial("Kernel Heap Initialized\n");
-
-
     return 0;
 }
+
 
 void *kalloc(uint64 size) {
     slab_t *slab = heap_slab_for(size);

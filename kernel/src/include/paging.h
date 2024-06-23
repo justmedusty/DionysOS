@@ -33,7 +33,7 @@
 #define NPUDENTRIES     512    // # directory entries per page upper directory
 #define NPMDENTRIES     512    // # directory entries per page middle directory
 #define NPTENTRIES      512    // # PTEs per page table
-#define PAGESIZE          4096   // bytes mapped by a page
+#define PAGE_SIZE          4096   // bytes mapped by a page
 
 #define PTXSHIFT        12      // offset of PTX in a linear address
 #define PMDXSHIFT       21     // offset of PMDX in a linear address
