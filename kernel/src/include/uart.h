@@ -11,4 +11,5 @@ void write_string_serial(const char *str);
 void write_hex_serial(uint64 num,int8 size);
 void bootleg_panic(const char *str);
 char get_hex_char(uint8 nibble);
+void serial_printf(char *str, ...);
 #endif //KERNEL_UART_H

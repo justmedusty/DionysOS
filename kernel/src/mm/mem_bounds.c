@@ -37,21 +37,13 @@ void mem_bounds_init() {
     userspace_addr_size = (userspace_addr_max / PAGE_SIZE) * PAGE_SIZE;
     userspace_addr_size = userspace_addr_max - userspace_addr_min;
 
-    write_string_serial("Bounds Initialized. Kernel size : ");
-    write_hex_serial(kernel_size, 64);
-    write_string_serial("\nKernel upper virtual limit : ");
-    write_hex_serial(kernel_max, 64);
-    write_string_serial("\nKernel lower virtual limit : ");
-    write_hex_serial(kernel_min, 64);
-    write_string_serial("\nKernel upper physical limit : ");
-    write_hex_serial(kernel_phys_max, 64);
-    write_string_serial("\nKernel lower physical limit : ");
-    write_hex_serial(kernel_phys_min, 64);
-    write_string_serial("\nUserspace size : ");
-    write_hex_serial(userspace_addr_size, 64);
-    write_string_serial("\nUserspace lower limit : ");
-    write_hex_serial(userspace_addr_min, 16);
-    write_string_serial("\nUserspace upper limit : ");
-    write_hex_serial(userspace_addr_max, 64);
-    write_serial('\n');
+    serial_printf("Bounds Initialized. Kernel size : %x\n",kernel_size);
+    serial_printf("Kernel upper virtual limit : %x\n",kernel_max);
+    serial_printf("Kernel lower virtual limit : %x\n",kernel_min);
+    serial_printf("Kernel upper physical limit : %x\n",kernel_phys_max);
+    serial_printf("Kernel lower physical limit : %x\n",kernel_phys_min);
+    serial_printf("Userspace size : %x\n",userspace_addr_size);
+    serial_printf("Userspace lower limit : %x\n",userspace_addr_min);
+    serial_printf("Userspace upper limit : %x\n",userspace_addr_max);
+
 }

@@ -4,7 +4,7 @@
 #include "include/types.h"
 #include "include/uart.h"
 #include "include/x86.h"
-
+#include "stdarg.h"
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
 void init_serial() {
@@ -30,8 +30,9 @@ void write_serial(char a) {
     }
     outb(SERIAL_PORT, a);
 }
+
 //size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes
-void write_hex_serial(uint64 num,int8 size) {
+void write_hex_serial(uint64 num, int8 size) {
     write_string_serial("0x");
     for (int8 i = (size - 4); i >= 0; i -= 4) {
         uint8 nibble = (num >> i) & 0xF;  // Extract 4 bits
@@ -40,9 +41,9 @@ void write_hex_serial(uint64 num,int8 size) {
 }
 
 
-void write_binary_serial(uint64 num,uint8 size) {
+void write_binary_serial(uint64 num, uint8 size) {
     int separator = 0;
-    for (uint8 i = size; i >= 0 ; i--) {
+    for (uint8 i = size; i >= 0; i--) {
         if (((num >> i) & 1)) {
             write_serial('1');
         } else {
@@ -110,4 +111,50 @@ char get_hex_char(uint8 nibble) {
         default:
             return '?'; // Handle invalid input
     }
+}
+
+void serial_printf(char *str, ...) {
+    va_list args;
+    va_start(args, str);
+
+    while (*str) {
+
+        if(*str == '\n'){
+            write_string_serial("\n");
+            str++;
+            continue;
+        }
+
+        if (*str != '%') {
+                write_serial(*str);
+        } else {
+            str++;
+            switch (*str) {
+                case 'x': {
+                    uint64 value = va_arg(args, uint64);
+                    write_hex_serial(value,64);
+                    break;
+                }
+                case 'b':{
+                    uint64 value = va_arg(args,uint64);
+                    write_binary_serial(value,64);
+                    break;
+                }
+
+                case 's':{
+                    char *value = va_arg(args,char);
+                    write_string_serial(value);
+                    break;
+                }
+
+                default:
+                    write_serial('%');
+                    write_serial(*str);
+                    break;
+            }
+        }
+        str++;
+    }
+
+    va_end(args);
 }

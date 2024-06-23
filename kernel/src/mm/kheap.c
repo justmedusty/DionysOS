@@ -67,7 +67,7 @@ void heap_free_in_slab(slab_t *slab, void *address) {
  */
 int heap_init() {
     int size = 8;
-    for (uint64 i = 0; i < 15 ; i++) {
+    for (uint64 i = 0; i < 9 ; i++) {
 
         if(size >= PAGE_SIZE){
             write_string_serial("Entry too large , skipping slab alloc.\n");
@@ -77,9 +77,7 @@ int heap_init() {
         // i *= 2
         size = (size << 1);
 
-        write_string_serial("Slab size : ");
-        write_hex_serial(size,32);
-        write_serial('\n');
+        serial_printf("Allocated slab of size %x\n",size);
     }
 
     write_string_serial("Kernel Heap Initialized\n");

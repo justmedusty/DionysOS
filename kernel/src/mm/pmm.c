@@ -8,10 +8,13 @@
 #include "include/mem.h"
 #include "include/uart.h"
 
-static inline bool bitmap_get(void *bitmap, uint64 bit);
-static inline void bitmap_set(void *bitmap, uint64 bit);
-static inline void bitmap_clear(void *bitmap, uint64 bit);
+static inline bool
 
+bitmap_get(void *bitmap, uint64 bit);
+
+static inline void bitmap_set(void *bitmap, uint64 bit);
+
+static inline void bitmap_clear(void *bitmap, uint64 bit);
 
 
 __attribute__((used, section(".requests")))
@@ -41,7 +44,7 @@ static inline void bitmap_clear(void *bitmap, uint64 bit) {
 }
 
 
-uint8 *bitmap = NULL;
+uint8 *mem_map= NULL;
 uint64 highest_page_index = 0;
 uint64 last_used_index = 0;
 uint64 usable_pages = 0;
@@ -64,13 +67,13 @@ int phys_init() {
                 highest_address = highest_address > (entry->base + entry->length) ? highest_address : (entry->base +
                                                                                                        entry->length);
                 break;
-            case LIMINE_MEMMAP_RESERVED:
-            case LIMINE_MEMMAP_ACPI_RECLAIMABLE:
-            case LIMINE_MEMMAP_ACPI_NVS:
-            case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
+
             case LIMINE_MEMMAP_KERNEL_AND_MODULES:
                 reserved_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
                 break;
+
+            default:
+                continue;
         }
     }
 
@@ -85,9 +88,9 @@ int phys_init() {
         }
 
         if (entry->length >= bitmap_size) {
-            bitmap = (uint8 *) (entry->base + hhdm->offset);
+            mem_map = (uint8 *) (entry->base + hhdm->offset);
 
-            memset(bitmap, 0xFF, bitmap_size);
+            memset(mem_map, 0xFF, bitmap_size);
 
             entry->length -= bitmap_size;
             entry->base += bitmap_size;
@@ -104,25 +107,14 @@ int phys_init() {
         }
 
         for (uint64 j = 0; j < entry->length; j += PAGE_SIZE) {
-            bitmap_clear(bitmap, (entry->base + j) / PAGE_SIZE);
+            bitmap_clear(mem_map, (entry->base + j) / PAGE_SIZE);
         }
     }
     uint16 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-    write_string_serial("Physical Memory Init Complete. MiB Found : ");
-    write_hex_serial(pages_mib,16);
-    write_serial('\n');
-
-    write_string_serial("Reserved Pages : ");
-    write_hex_serial(reserved_pages,64);
-    write_serial('\n');
-    write_string_serial("Highest Page Index : ");
-    write_hex_serial(highest_page_index,64);
-    write_serial('\n');
-    
-
-
+    serial_printf("Physical Memory Init Complete. MiB found: %x\nReserved Pages : %x\nHighest Page Index : %x\n",pages_mib,reserved_pages,highest_page_index);
     return 0;
 }
+
 /*
  * Internal allocation function, just tries
  */
@@ -130,11 +122,11 @@ static void *__phys_alloc(uint64 pages, uint64 limit) {
     uint64 p = 0;
 
     while (last_used_index < limit) {
-        if (!bitmap_get(bitmap, last_used_index++)) {
+        if (!bitmap_get(mem_map, last_used_index++)) {
             if (++p == pages) {
                 uint64 page = last_used_index - pages;
                 for (uint64 i = page; i < last_used_index; i++) {
-                    bitmap_set(bitmap, i);
+                    bitmap_set(mem_map, i);
                 }
                 return (void *) (page * PAGE_SIZE);
             }
@@ -160,7 +152,7 @@ void *phys_alloc(uint64 pages) {
 void phys_dealloc(void *address, uint64 pages) {
     uint64 page = (uint64) address / PAGE_SIZE;
     for (uint64 i = page; i < page + pages; i++) {
-        bitmap_clear(bitmap, i);
+        bitmap_clear(mem_map, i);
     }
     used_pages -= pages;
 }
