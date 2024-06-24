@@ -77,7 +77,7 @@ int heap_init() {
         // i *= 2
         size = (size << 1);
 
-        serial_printf("Allocated slab of size %x\n",size);
+        serial_printf("Allocated slab of size %x.16\n",size);
     }
 
     write_string_serial("Kernel Heap Initialized\n");

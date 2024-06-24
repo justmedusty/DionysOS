@@ -5,6 +5,7 @@
 #include "include/uart.h"
 #include "include/x86.h"
 #include "stdarg.h"
+
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
 void init_serial() {
@@ -119,30 +120,76 @@ void serial_printf(char *str, ...) {
 
     while (*str) {
 
-        if(*str == '\n'){
+        if (*str == '\n') {
             write_string_serial("\n");
             str++;
             continue;
         }
 
         if (*str != '%') {
-                write_serial(*str);
+            write_serial(*str);
         } else {
             str++;
             switch (*str) {
                 case 'x': {
-                    uint64 value = va_arg(args, uint64);
-                    write_hex_serial(value,64);
+                    if (*(str + 1) == '.') {
+                        str = str + 2;
+
+                        /*
+                         * We will check the length of the hex number, because I am lazy I will only check the first char and skip the second. No need to check the second anyway.
+                         * You will still be expected to put the second number there even though the internals do not require it, makes your code more readable anyway.
+                         * Usage looks like this :
+                         * %x.8 = print 8 bit hex
+                         * %x.16 = print 16 bit hex
+                         * %x.32 = print 32 bit hex
+                         * %x.64 = print 64 bit hex
+                         */
+
+                        switch (*str) {
+
+                            case '8':
+
+                                uint64 value8 = va_arg(args, uint32);
+                                write_hex_serial(value8, 8);
+                                str++;
+                                break;
+                            case '1':
+                                uint64 value16 = va_arg(args, uint32);
+                                write_hex_serial(value16, 16);
+                                str++;
+                                break;
+                            case '3' :
+                                uint64 value32 = va_arg(args, uint32);
+                                write_hex_serial(value32, 32);
+                                str++;
+                                break;
+                            case '6' :
+                                uint64 value64 = va_arg(args, uint64);
+                                write_hex_serial(value64, 64);
+                                str++;
+                                break;
+                            default:
+                                uint64 value = va_arg(args, uint64);
+                                write_hex_serial(value, 64);
+                                break;
+
+                        }
+
+                    } else {
+                        uint64 value = va_arg(args, uint64);
+                        write_hex_serial(value, 64);
+                    }
                     break;
                 }
-                case 'b':{
-                    uint64 value = va_arg(args,uint64);
-                    write_binary_serial(value,64);
+                case 'b': {
+                    uint64 value = va_arg(args, uint64);
+                    write_binary_serial(value, 64);
                     break;
                 }
 
-                case 's':{
-                    char *value = va_arg(args,char);
+                case 's': {
+                    char *value = va_arg(args,
+                    char);
                     write_string_serial(value);
                     break;
                 }
