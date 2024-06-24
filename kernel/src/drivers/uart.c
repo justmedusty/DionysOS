@@ -74,7 +74,9 @@ void bootleg_panic(const char *str) {
     }
 }
 
-
+/*
+ * You could also just index into a mapped array if you want to be as clean as possible but for this I am okay with a big switch.
+ */
 char get_hex_char(uint8 nibble) {
     switch (nibble) {
         case 0x0:
