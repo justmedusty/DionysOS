@@ -5,7 +5,7 @@
 #include "include/uart.h"
 #include "include/x86.h"
 #include "stdarg.h"
-
+//The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
 void init_serial() {
@@ -143,6 +143,11 @@ void serial_printf(char *str, ...) {
                          * %x.16 = print 16 bit hex
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
+                         *
+                         * Important note, newline character needs to be separated from your x.x by a space..
+                         * So like this : x.8 \n
+                         * If you do x.8\n
+                         * the newline will not work properly.
                          */
 
                         switch (*str) {
