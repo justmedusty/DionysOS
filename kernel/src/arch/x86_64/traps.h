@@ -72,7 +72,7 @@ void trap(void);
 #define T_SYSCALL       63      // system call
 #define T_DEFAULT      500      // catchall
 
-#define T_IRQ0          32      // IRQ 0 corresponds to int T_IRQ
+#define IRQ(irq_no) (irq_no + 32)
 
 #define IRQ_TIMER        0
 #define IRQ_KBD          1
