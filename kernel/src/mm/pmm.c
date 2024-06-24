@@ -111,7 +111,7 @@ int phys_init() {
         }
     }
     uint16 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-    serial_printf("Physical Memory Init Complete. MiB found: %x\nReserved Pages : %x\nHighest Page Index : %x\n",pages_mib,reserved_pages,highest_page_index);
+    serial_printf("Physical Memory Init Complete. MiB found: %x.16\nReserved Pages : %x.16\nHighest Page Index : %x.16\n",pages_mib,reserved_pages,highest_page_index);
     return 0;
 }
 

@@ -146,9 +146,7 @@ void serial_printf(char *str, ...) {
                          */
 
                         switch (*str) {
-
                             case '8':
-
                                 uint64 value8 = va_arg(args, uint32);
                                 write_hex_serial(value8, 8);
                                 str++;
@@ -172,7 +170,6 @@ void serial_printf(char *str, ...) {
                                 uint64 value = va_arg(args, uint64);
                                 write_hex_serial(value, 64);
                                 break;
-
                         }
 
                     } else {

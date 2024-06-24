@@ -8,11 +8,13 @@
 #include "include/pmm.h"
 #include "include/kheap.h"
 #include "include/mem_bounds.h"
+#include "include/arch_paging.h"
 
 
 
 void kernel_bootstrap(){
     init_serial();
+    arch_paging_init();
     gdt_init();
     idt_init();
     phys_init();
