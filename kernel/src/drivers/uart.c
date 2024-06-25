@@ -5,6 +5,7 @@
 #include "include/uart.h"
 #include "include/x86.h"
 #include "stdarg.h"
+
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
@@ -64,8 +65,8 @@ void write_string_serial(const char *str) {
     }
 }
 
-//this is just for early testing and debugging
-void bootleg_panic(const char *str) {
+//this is just for early panicking
+void bootstrap_panic(const char *str) {
     write_string_serial("Panic! ");
     write_string_serial(str);
     for (;;) {

@@ -18,7 +18,7 @@ static volatile struct limine_smp_request smp_request = {
 void arch_smp_query(){
     struct limine_smp_response *response = smp_request.response;
     if(!response){
-        bootleg_panic("SMP Response NULL");
+        bootstrap_panic("SMP Response NULL");
     }
     bootstrap_lapic_id = response->bsp_lapic_id;
     cpu_count = response->cpu_count;
