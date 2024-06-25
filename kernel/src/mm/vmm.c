@@ -3,3 +3,7 @@
 //
 
 #include "vmm.h"
+
+void kvm_init(){
+
+}

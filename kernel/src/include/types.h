@@ -16,8 +16,9 @@ typedef char int8;
 typedef unsigned long long uint64;
 typedef long long int64;
 
-typedef uint32 pte_t;
-typedef uint32 pmd_t;
-typedef uint32 pud_t;
-typedef uint16 p4d_t;
+/*For x86_64 paging, when I implement RISC-V in the future this will be a different layout and need to be ifdefd*/
+typedef uint64 pte_t;
+typedef uint64 pmd_t;
+typedef uint64 pud_t;
+typedef uint64 p4d_t;
 #endif //DIONYSOS_TYPES_H

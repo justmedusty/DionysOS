@@ -3,7 +3,7 @@
 //
 
 #include "include/types.h"
-#include "include/paging.h"
+#include "include/arch_paging.h"
 #include "include/limine.h"
 #include "include/uart.h"
 #include "include/pmm.h"
