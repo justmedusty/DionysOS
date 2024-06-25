@@ -1,14 +1,16 @@
 //
 // Created by dustyn on 6/25/24.
 //
-#include "arch_paging.h"
 #include "include/types.h"
+#include "include/arch_paging.h"
 
-p4d_t *global_pg_dir[NP4DENTRIES];
-pud_t *upper_pg_dir[NPUDENTRIES];
-pmd_t *middle_pg_dir[NPMDENTRIES];
-pte_t *page_table_entries[NPTENTRIES];
 
+p4d_t global_pg_dir[NP4DENTRIES];
+pud_t upper_pg_dir[NPUDENTRIES];
+pmd_t middle_pg_dir[NPMDENTRIES];
+pte_t page_table_entries[NPTENTRIES];
+//comment this out until it's functional
+/*
 void *get_physaddr(uint64 *virtualaddr) {
 
     // Here you need to check whether the PD entry is present.
@@ -38,3 +40,4 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
     // Now you need to flush the entry in the TLB
     // or you might not notice the change.
 }
+ */

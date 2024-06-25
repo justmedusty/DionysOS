@@ -5,10 +5,18 @@
 #ifndef KERNEL_ARCH_PAGING_H
 #define KERNEL_ARCH_PAGING_H
 void arch_paging_init();
-extern p4d *global_pg_dir;
-extern pud_t *upper_pg_dir
-extern pmd_t *middle_pg_dir
-extern pte_t *page_table_entries
+
+// Page directory and page table constants.
+#define NP4DENTRIES     512    // # directory entries per page middle directory
+#define NPUDENTRIES     512    // # directory entries per page upper directory
+#define NPMDENTRIES     512    // # directory entries per page middle directory
+#define NPTENTRIES      512    // # PTEs per page table
+#define PAGE_SIZE          4096   // bytes mapped by a page
+
+extern p4d_t global_pg_dir[NP4DENTRIES];
+extern pud_t upper_pg_dir[NPUDENTRIES];
+extern pmd_t middle_pg_dir[NPMDENTRIES];
+extern pte_t page_table_entries[NPTENTRIES];
 
 // A virtual address has a 5 part, 6 if we were using 5 level paging structure as follows:
 //
@@ -33,12 +41,7 @@ extern pte_t *page_table_entries
 // construct virtual address from indexes (long mode) and offset
 #define PGADDR(p4d,pud,pmd, pte, offset) ((uint64)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
 
-// Page directory and page table constants.
-#define NP4DENTRIES     512    // # directory entries per page middle directory
-#define NPUDENTRIES     512    // # directory entries per page upper directory
-#define NPMDENTRIES     512    // # directory entries per page middle directory
-#define NPTENTRIES      512    // # PTEs per page table
-#define PAGE_SIZE          4096   // bytes mapped by a page
+
 
 #define PTXSHIFT        12      // offset of PTX in a linear address
 #define PMDXSHIFT       21     // offset of PMDX in a linear address
