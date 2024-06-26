@@ -22,21 +22,25 @@ void arch_paging_init();
 #define NPTENTRIES      512    // # PTEs per page table
 #define PAGE_SIZE       4096   // bytes mapped by a page
 
+#define PAGE_DIR_MASK 0x1FF
+#define PAGE_OFFSET_MASK 0x3FF
+#define PTE_ADDRESS_MASK ~0xFFF
+
 extern p4d_t global_pg_dir[NP4DENTRIES];
 extern pud_t upper_pg_dir[NPUDENTRIES];
 extern pmd_t middle_pg_dir[NPMDENTRIES];
 extern pte_t page_table_entries[NPTENTRIES];
 
 // page 4 directory index
-#define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & 0x1FF)
+#define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & PAGE_DIR_MASK)
 // page upper directory index
-#define PUDX(va)         (((uint64)(va) >> PUDXSHIFT) & 0x1FF)
+#define PUDX(va)         (((uint64)(va) >> PUDXSHIFT) & PAGE_DIR_MASK)
 
 // page middle directory index
-#define PMDX(va)         (((uint64)(va) >> PMDXSHIFT) & 0x1FF)
+#define PMDX(va)         (((uint64)(va) >> PMDXSHIFT) & PAGE_DIR_MASK)
 
 // page table index
-#define PTX(va)         (((uint64)(va) >> PTXSHIFT) & 0x1FF)
+#define PTX(va)         (((uint64)(va) >> PTXSHIFT) & PAGE_DIR_MASK)
 
 // construct virtual address from indexes (long mode) and offset
 #define PGADDR(p4d,pud,pmd, pte, offset) ((uint64)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
@@ -53,10 +57,11 @@ extern pte_t page_table_entries[NPTENTRIES];
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
-#define PTE_W           0x002   // Writeable
+#define PTE_RW          0x2
 #define PTE_U           0x004   // User
 #define PTE_A           0x020   //accessed , for demand paging
 #define PTE_PS          0x080   // Page Size
+
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint64)(pte) & ~0xFFF)

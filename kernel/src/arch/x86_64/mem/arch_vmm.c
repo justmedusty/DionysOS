@@ -4,7 +4,7 @@
 #include "include/types.h"
 #include "include/arch_paging.h"
 #include "include/pmm.h"
-
+#include "include/x86.h"
 
 p4d_t global_pg_dir[NP4DENTRIES];
 pud_t upper_pg_dir[NPUDENTRIES];
@@ -15,7 +15,6 @@ pte_t page_table_entries[NPTENTRIES];
 
 
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
-
     p4d_t *p4d;
     pud_t *pud;
     pmd_t *pmd;
@@ -48,7 +47,12 @@ void *get_phys_addr(uint64 *virtualaddr) {
     pte = &pmd[PTX(va)];
 
     // Here you need to check whether the PT entry is present.
-    return (uint64 *)((pte[PT] & ~0xFFF) + ((unsigned long)virtualaddr & 0xFFF));
+    if(*pte & PTE_P){
+        return (uint64 *)((pte & ~0xFFF) + ((uint64)virtualaddr & 0xFFF));
+    } else{
+        return 0;
+    }
+
 }
 
 /*
