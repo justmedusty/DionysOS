@@ -13,6 +13,7 @@ pte_t page_table_entries[NPTENTRIES];
 
 
 
+
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
     p4d_t *p4d;
@@ -24,6 +25,10 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
     pud = &p4d[PUDX(va)];
     pmd = &pud[PMDX(va)];
     pte = &pmd[PTX(va)];
+
+    if(pte && (*pte & PTE_P)){
+
+    }
 }
 
 /*
@@ -32,9 +37,18 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 void *get_phys_addr(uint64 *virtualaddr) {
 
     // Here you need to check whether the PD entry is present.
-    pte_t *pte = &
+    p4d_t *p4d;
+    pud_t *pud;
+    pmd_t *pmd;
+    pte_t *pte;
+
+    p4d = &pgdir[P4DX(va)];
+    pud = &p4d[PUDX(va)];
+    pmd = &pud[PMDX(va)];
+    pte = &pmd[PTX(va)];
+
     // Here you need to check whether the PT entry is present.
-    //return (void *)((pt[ptindex] & ~0xFFF) + ((unsigned long)virtualaddr & 0xFFF));
+    return (uint64 *)((pte[PT] & ~0xFFF) + ((unsigned long)virtualaddr & 0xFFF));
 }
 
 /*
@@ -43,8 +57,15 @@ void *get_phys_addr(uint64 *virtualaddr) {
 void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
     // Make sure that both addresses are page-aligned.
 
-    unsigned long pdindex = (unsigned long)virtualaddr >> 22;
-    unsigned long ptindex = (unsigned long)virtualaddr >> 12 & 0x03FF;
+    p4d_t *p4d;
+    pud_t *pud;
+    pmd_t *pmd;
+    pte_t *pte;
+
+    p4d = &pgdir[P4DX(va)];
+    pud = &p4d[PUDX(va)];
+    pmd = &pud[PMDX(va)];
+    pte = &pmd[PTX(va)];
 
     unsigned long *pd = (unsigned long *)0xFFFFF000;
     // Here you need to check whether the PD entry is present.

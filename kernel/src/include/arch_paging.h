@@ -7,7 +7,7 @@
 void arch_paging_init();
 
 
-// A virtual address has a 5 part, 6 if we were using 5 level paging structure as follows:
+// A virtual address has  5 parts, 6 if we were using 5 level paging structure as follows:
 //
 // +-------9--------+----------9--------+---------9---------+---------9---------+---------12---------+
 // |   P4D  Table   |     PUD Table     |      PMD Table    |      PTE Table    |   Offset within    |
@@ -20,16 +20,12 @@ void arch_paging_init();
 #define NPUDENTRIES     512    // # directory entries per page upper directory
 #define NPMDENTRIES     512    // # directory entries per page middle directory
 #define NPTENTRIES      512    // # PTEs per page table
-#define PAGE_SIZE          4096   // bytes mapped by a page
-
+#define PAGE_SIZE       4096   // bytes mapped by a page
 
 extern p4d_t global_pg_dir[NP4DENTRIES];
 extern pud_t upper_pg_dir[NPUDENTRIES];
 extern pmd_t middle_pg_dir[NPMDENTRIES];
 extern pte_t page_table_entries[NPTENTRIES];
-
-
-
 
 // page 4 directory index
 #define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & 0x1FF)
