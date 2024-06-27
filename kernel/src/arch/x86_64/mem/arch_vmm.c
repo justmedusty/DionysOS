@@ -15,6 +15,9 @@ pte_t page_table_entries[NPTENTRIES];
 
 
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
+
+    pte_t result;
+
     p4d_t *p4d;
     pud_t *pud;
     pmd_t *pmd;
@@ -27,7 +30,14 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
     if(pte && (*pte & PTE_P)){
 
+       result = PTE_ADDR(pte);
+
+    } else{
+
+        result = 1;
+
     }
+    return result;
 }
 
 /*
