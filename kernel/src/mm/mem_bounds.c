@@ -4,7 +4,7 @@
 
 #include "include/types.h"
 #include "include/arch_paging.h"
-#include "include/limine.h"
+#include "limine.h"
 #include "include/uart.h"
 #include "include/pmm.h"
 

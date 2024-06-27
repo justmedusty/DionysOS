@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 6/24/24.
 //
-#include "include/limine.h"
+#include "limine.h"
 #include "include/types.h"
 #include "include/uart.h"
 

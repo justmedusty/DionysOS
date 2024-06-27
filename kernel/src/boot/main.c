@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "../include/limine.h"
+#include "limine.h"
 #include "include/framebuffer.h"
 #include "kernel_bootstrap.h"
 #include "include/types.h"

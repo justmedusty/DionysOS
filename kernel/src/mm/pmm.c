@@ -3,7 +3,7 @@
 //
 #include "include/types.h"
 #include "include/pmm.h"
-#include "include/limine.h"
+#include "limine.h"
 #include "stddef.h"
 #include "include/mem.h"
 #include "include/uart.h"
