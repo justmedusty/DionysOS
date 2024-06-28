@@ -50,6 +50,7 @@ uint64 last_used_index = 0;
 uint64 usable_pages = 0;
 uint64 used_pages = 0;
 uint64 reserved_pages = 0;
+uint64 hhdm_offset = 0;
 
 
 int phys_init() {
@@ -57,6 +58,7 @@ int phys_init() {
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
     uint64 highest_address = 0;
+    hhdm_offset = hhdm->offset;
 
     for (uint64 i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];

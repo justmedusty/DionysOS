@@ -10,17 +10,29 @@ p4d_t global_pg_dir[NP4DENTRIES];
 
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
+    if(!pgdir){
+        return 0;
+    }
+
     pte_t result;
 
-    p4d_t *p4d;
     pud_t *pud;
     pmd_t *pmd;
     pte_t *pte;
 
-    p4d = &pgdir[P4DX(va)];
-    pud = &p4d[PUDX(va)];
-    pmd = &pud[PMDX(va)];
-    pte = &pmd[PTX(va)];
+    pud = &pgdir[PUDX(va)] + hhdm_offset;
+
+    if(!pud || !(*pud & PTE_P)){
+        return 0;
+    }
+
+    pmd = PTE_ADDR(pud[PMDX(va)] + hhdm_offset);
+
+    if(!pmd || !(*pmd & PTE_P)){
+        return 0;
+    }
+
+    pte = PTE_ADDR(pmd[PTX(va)] + hhdm_offset);
 
     if(pte && (*pte & PTE_P)){
 
@@ -28,7 +40,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
     } else{
 
-        result = 1;
+        result = 0;
 
     }
     return result;
@@ -40,7 +52,7 @@ void *get_phys_addr(uint64 *va) {
     pud_t *pud;
     pmd_t *pmd;
     pte_t *pte;
-  //  p4d = &pgdir[P4DX(va)];
+    p4d = &global_pg_dir[P4DX(va)];
     pud = &p4d[PUDX(va)];
     pmd = &pud[PMDX(va)];
     pte = &pmd[PTX(va)];
@@ -57,13 +69,11 @@ void *get_phys_addr(uint64 *va) {
 void map_pages(p4d_t *page_dir, uint64 *physaddr, uint64 *va, unsigned int flags,uint32 size) {
     // Make sure that both addresses are page-aligned.
 
-    p4d_t *p4d;
     pud_t *pud;
     pmd_t *pmd;
     pte_t *pte;
 
-    p4d = &page_dir[P4DX(va)];
-    pud = &p4d[PUDX(va)];
+    pud = &page_dir[PUDX(va)];
     pmd = &pud[PMDX(va)];
     pte = &pmd[PTX(va)];
 
