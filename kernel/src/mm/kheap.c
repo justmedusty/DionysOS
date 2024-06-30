@@ -74,7 +74,6 @@ int heap_init() {
             continue;
         }
         heap_create_slab(&slabs[i], size);
-        // i *= 2
         size = (size << 1);
 
         serial_printf("Allocated slab of size %x.16\n",size);
