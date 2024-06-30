@@ -8,7 +8,7 @@
 #include "include/uart.h"
 #include "include/pmm.h"
 
-extern char _kernel_end[];
+extern char end[];
 
 uint64 kernel_min, kernel_max, kernel_size;
 uint64 kernel_phys_min, kernel_phys_max, kernel_phys_size;
@@ -24,7 +24,7 @@ static volatile struct limine_kernel_address_request kernel_address_request = {
 void mem_bounds_init() {
     // kernel's virtual memory bounds
     kernel_min = kernel_address_request.response->virtual_base;
-    kernel_max = (uint64 *) &_kernel_end;
+    kernel_max = (uint64 *) &end;
     kernel_size = kernel_max - kernel_min;
 
     /* The kernel's phys memory bounds */

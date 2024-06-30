@@ -64,7 +64,7 @@ SECTIONS
 
 
 
-    _kernel_end = .;
+    PROVIDE(end = .);
 
     /* Discard .note.* and .eh_frame* since they may cause issues on some hosts. */
     /* Also discard the program interpreter section since we do not need one. This is */

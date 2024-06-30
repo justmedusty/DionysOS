@@ -11,10 +11,6 @@
 p4d_t global_pg_dir[NP4DENTRIES];
 p4d_t kernel_pg_dir;
 
-/*
- * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
- */
-
 static struct kmap {
     void *virt;
     uint64 phys_start;
@@ -22,15 +18,22 @@ static struct kmap {
     int32 perm;
     //This needs to change
 } kmap[] = {
+        /*
         { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
         { (void*)KERNLINK, V2P(KERNLINK), V2P(data), 0},     // kern text+rodata
         { (void*)data,     V2P(data),     PHYSTOP,   PTE_W}, // kern data+memory
         { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W}, // more devices
+         */
 };
 //This will set up the kernel page dir and load the CR3 register
 void kernel_vm_setup(){
 
 }
+
+/*
+ * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
+ */
+
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
     if(!pgdir){
