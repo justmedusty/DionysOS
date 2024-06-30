@@ -6,9 +6,31 @@
 #include "include/pmm.h"
 #include "include/kheap.h"
 #include "include/x86.h"
+#include "include/mem_bounds.h"
 
 p4d_t global_pg_dir[NP4DENTRIES];
+p4d_t kernel_pg_dir;
 
+/*
+ * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
+ */
+
+static struct kmap {
+    void *virt;
+    uint64 phys_start;
+    uint64 phys_end;
+    int32 perm;
+    //This needs to change
+} kmap[] = {
+        { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
+        { (void*)KERNLINK, V2P(KERNLINK), V2P(data), 0},     // kern text+rodata
+        { (void*)data,     V2P(data),     PHYSTOP,   PTE_W}, // kern data+memory
+        { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W}, // more devices
+};
+//This will set up the kernel page dir and load the CR3 register
+void kernel_vm_setup(){
+
+}
 static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 
     if(!pgdir){
@@ -53,10 +75,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
     return PTE_ADDR(*pte);
 }
 
-/*
- * Boiler plate right now will change obviously
- */
-void map_pages(p4d_t *pgdir, uint64 *physaddr, uint64 *va, unsigned int flags,uint32 size) {
+void map_pages(p4d_t *pgdir, uint64 *physaddr, uint64 *va, uint32 flags,uint32 size) {
     // Make sure that both addresses are page-aligned.
 
     if(!pgdir){
@@ -93,4 +112,10 @@ void map_pages(p4d_t *pgdir, uint64 *physaddr, uint64 *va, unsigned int flags,ui
 
     // Now you need to flush the entry in the TLB
     // or you might not notice the change.
+}
+
+
+//this will switch to the kernel page dir
+void kvm_switch(){
+
 }
