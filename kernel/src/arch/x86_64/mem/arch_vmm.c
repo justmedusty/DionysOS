@@ -1,6 +1,11 @@
 //
 // Created by dustyn on 6/25/24.
 //
+
+/*
+ * Taking inspo from xv6 to keep things as readable and simple as possible here.
+ */
+
 #include "include/types.h"
 #include "include/arch_paging.h"
 #include "include/pmm.h"
@@ -12,19 +17,14 @@
 p4d_t global_pg_dir[NP4DENTRIES];
 p4d_t kernel_pg_dir;
 
-static struct kmap {
+static struct dev_map {
     void *virt;
     uint64 phys_start;
     uint64 phys_end;
     int32 perm;
-    //This needs to change
-} kmap[] = {
-        /*
-        { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
-        { (void*)KERNLINK, V2P(KERNLINK), V2P(data), 0},     // kern text+rodata
-        { (void*)data,     V2P(data),     PHYSTOP,   PTE_W}, // kern data+memory
-        { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W}, // more devices
-         */
+} dev_map[] = {
+        { (void*)kernel_min,          kernel_phys_min,      EXTMEM,    PTE_W}, // I/O space
+        { (void*)DEVSPACE,kernel_phys_max - DEVSPACE, kernel_phys_max, PTE_W}, // more devices
 };
 //This will set up the kernel page dir and load the CR3 register
 void kernel_vm_setup(){
