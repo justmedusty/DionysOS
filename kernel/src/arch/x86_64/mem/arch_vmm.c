@@ -7,6 +7,7 @@
 #include "include/kheap.h"
 #include "include/x86.h"
 #include "include/mem_bounds.h"
+#include "include/uart.h"
 
 p4d_t global_pg_dir[NP4DENTRIES];
 p4d_t kernel_pg_dir;
@@ -77,45 +78,38 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
     }
     return PTE_ADDR(*pte);
 }
+/*
+ * Maps pages from VA/PA to size in page size increments.
+ */
+void map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 size) {
 
-void map_pages(p4d_t *pgdir, uint64 *physaddr, uint64 *va, uint32 flags,uint32 size) {
-    // Make sure that both addresses are page-aligned.
-
-    if(!pgdir){
-        return 0;
-    }
-
-    pte_t result;
-
-    pud_t *pud;
-    pmd_t *pmd;
+    uint64 *address, *last;
     pte_t *pte;
+    address = PGROUNDDOWN((uint64)va);
+    last = PGROUNDDOWN(((uint64)va) + size - 1);
 
-    pud = &pgdir[PUDX(va)] + hhdm_offset;
+    for(;;){
 
-    if(!pud || !(*pud & PTE_P)){
+        if((pte = walkpgdir(pgdir, address, 1)) == 0){
+            return -1;
+        }
 
-        return 0;
+        if(*pte & PTE_P) {
+            bootstrap_panic("remap");
+        }
+
+        *pte = physaddr | perms | PTE_P;
+
+        if(address == last){
+            break;
+        }
+
+        address += PAGE_SIZE;
+        physaddr += PAGE_SIZE;
     }
-
-    pmd = PTE_ADDR(pud[PMDX(va)] + hhdm_offset);
-
-    if(!pmd || !(*pmd & PTE_P)){
-        return 0;
-    }
-
-    pte = PTE_ADDR(pmd[PTX(va)] + hhdm_offset);
-
-
-
-
-
-
-    // pt[ptindex] = ((unsigned long)physaddr) | (flags & 0xFFF) | 0x01; // Present
-
-    // Now you need to flush the entry in the TLB
-    // or you might not notice the change.
+    return 0;
 }
+
 
 
 //this will switch to the kernel page dir

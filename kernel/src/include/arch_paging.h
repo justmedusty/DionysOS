@@ -49,8 +49,8 @@ extern p4d_t global_pg_dir[NP4DENTRIES];
 #define PUDXSHIFT       30     // offset of PUDX in a linear address
 #define P4DXSHIFT       39     // offset of P4DX
 
-#define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
-#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
+#define PGROUNDUP(sz)  (((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
+#define PGROUNDDOWN(a) (((a)) & ~(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
