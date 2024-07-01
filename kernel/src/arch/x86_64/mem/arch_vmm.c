@@ -16,7 +16,7 @@
 
 p4d_t global_pg_dir[NP4DENTRIES];
 p4d_t kernel_pg_dir;
-
+/*
 static struct dev_map {
     void *virt;
     uint64 phys_start;
@@ -26,9 +26,10 @@ static struct dev_map {
         { (void*)kernel_min,          kernel_phys_min,      EXTMEM,    PTE_W}, // I/O space
         { (void*)DEVSPACE,kernel_phys_max - DEVSPACE, kernel_phys_max, PTE_W}, // more devices
 };
-//This will set up the kernel page dir and load the CR3 register
-void kernel_vm_setup(){
+ */
 
+void switch_page_table(p4d_t *page_dir){
+    lcr3(page_dir);
 }
 
 /*
@@ -108,11 +109,4 @@ void map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 si
         physaddr += PAGE_SIZE;
     }
     return 0;
-}
-
-
-
-//this will switch to the kernel page dir
-void kvm_switch(){
-
 }
