@@ -118,7 +118,7 @@ int phys_init() {
 }
 
 /*
- * Internal allocation function, just tries
+ * Internal allocation function
  */
 static void *__phys_alloc(uint64 pages, uint64 limit) {
     uint64 p = 0;

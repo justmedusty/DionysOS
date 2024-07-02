@@ -13,6 +13,7 @@
 #include "include/x86.h"
 #include "include/mem_bounds.h"
 #include "include/uart.h"
+#include "include/cpu.h"
 
 p4d_t global_pg_dir[NP4DENTRIES];
 p4d_t kernel_pg_dir;
@@ -97,7 +98,7 @@ void map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 si
         }
 
         if(*pte & PTE_P) {
-            bootstrap_panic("remap");
+            panic("remap");
         }
 
         *pte = physaddr | perms | PTE_P;

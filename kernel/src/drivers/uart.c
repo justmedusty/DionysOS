@@ -65,16 +65,6 @@ void write_string_serial(const char *str) {
     }
 }
 
-//this is just for early panicking
-void bootstrap_panic(const char *str) {
-    write_string_serial("Panic! ");
-    write_string_serial(str);
-    for (;;) {
-        asm("cli");
-        asm("hlt");
-    }
-}
-
 /*
  * You could also just index into a mapped array if you want to be as clean as possible but for this I am okay with a big switch.
  */

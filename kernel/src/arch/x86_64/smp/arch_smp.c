@@ -4,6 +4,7 @@
 #include "include/types.h"
 #include "limine.h"
 #include "include/uart.h"
+#include "include/cpu.h"
 
 uint64 bootstrap_lapic_id;
 uint64 cpu_count;
@@ -18,7 +19,7 @@ static volatile struct limine_smp_request smp_request = {
 void arch_smp_query(){
     struct limine_smp_response *response = smp_request.response;
     if(!response){
-        bootstrap_panic("SMP Response NULL");
+        panic("SMP Response NULL");
     }
     bootstrap_lapic_id = response->bsp_lapic_id;
     cpu_count = response->cpu_count;
