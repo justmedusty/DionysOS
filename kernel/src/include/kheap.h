@@ -8,6 +8,11 @@
 typedef struct {
     void **first_free;
     uint64 entry_size;
+    void *start_address;
+    /*
+     * This isn't strictly needed right now but once we have slabs spanning multiple pages it will be needed
+     */
+    void *end_address;
 } slab_t;
 
 /*
@@ -37,7 +42,7 @@ static inline slab_t *heap_slab_for(uint64 size) {
 }
 
 int heap_init();
-void heap_create_slab(slab_t *slab, uint64 entry_size);
+void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages);
 void *heap_allocate_from_slab(slab_t *slab);
 void heap_free_in_slab(slab_t *slab, void *address);
 void *kalloc(uint64 size);

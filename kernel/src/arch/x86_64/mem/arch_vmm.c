@@ -79,6 +79,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
     }
     return PTE_ADDR(*pte);
 }
+
 /*
  * Maps pages from VA/PA to size in page size increments.
  */

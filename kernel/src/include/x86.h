@@ -129,7 +129,7 @@ static inline void sti(void) {
 // Atomic exchange of a value.
 static inline uint64 xchg(volatile unsigned long long *addr, uint32 newval) {
     uint32 result;
-    asm volatile("lock; xchgq %0, %1" :
+    asm volatile("lock; xchg %0, %1" :
             "+m" (*addr), "=a" (result) :
             "1" (newval) :
             "cc");
