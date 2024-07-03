@@ -23,8 +23,8 @@ all-hdd: $(IMAGE_NAME).hdd
 .PHONY: run-gdb
 run-gdb: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -S -gdb tcp::25000
-.PHONY: run
-run: $(IMAGE_NAME).iso
+.PHONY: run-x86
+run-x86: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d -d cpu_reset,guest_errors -D qemu_debug.log -monitor stdio
 
 .PHONY: run-uefi
