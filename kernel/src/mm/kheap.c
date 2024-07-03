@@ -31,12 +31,12 @@ void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages) {
     void **array = (void **) slab->first_free;
 
     uint64 max = available_size / entry_size - 1;
-    uint64 fact = entry_size / sizeof(void *);
+    uint64 factor = entry_size / sizeof(void *);
 
     for (uint64 i = 0; i < max; i++) {
-        array[i * fact] = &array[(i + 1) * fact];
+        array[i * factor] = &array[(i + 1) * factor];
     }
-    array[max * fact] = NULL;
+    array[max * factor] = NULL;
 }
 
 
@@ -59,6 +59,7 @@ void *heap_allocate_from_slab(slab_t *slab) {
  * Free part of a slab, setting it new head to the first_free field
  * This can be useful
  */
+
 void heap_free_in_slab(slab_t *slab, void *address) {
     if (address == NULL) {
         return;
@@ -72,9 +73,6 @@ void heap_free_in_slab(slab_t *slab, void *address) {
     *new_head = slab->first_free;
     slab->first_free = new_head;
 }
-
-
-
 
 /*
  * Init Memory for Kernel Heap
