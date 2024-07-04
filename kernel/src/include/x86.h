@@ -148,6 +148,13 @@ static inline void lcr3(uint64 val) {
     asm volatile("movq %0,%%cr3" : : "r" (val));
 }
 
+// reads a value from the CR3 register.
+static inline void rcr3(uint64 destination) {
+    asm volatile("movq %%cr3,%0" : "=r"(destination));
+}
+
+
+
 static inline void flush_tlb(){
     asm volatile("mov %%cr3, %%rax\n\t"
                  "mov %%rax, %%cr3\n\t"

@@ -24,15 +24,15 @@ void switch_page_table(p4d_t *page_dir){
 }
 
 void arch_init_vmm(){
-    uint64 page_directory_physical = 0;
-    switch_page_table(page_directory_physical);
 
+    uint64 page_directory_physical = 0;
+    asm volatile("movq %%cr3,%0" : "=r"(page_directory_physical));
     if (!page_directory_physical) {
         panic("No page directory!");
     }
     uint64 page_directory_virtual = page_directory_physical + hhdm_offset;
     global_pg_dir = (uint64 *)page_directory_virtual;
-    serial_printf("VMM initialized\n");
+    serial_printf("VMM initialized.\nPhysical Page Directory Located at %x.64\n",page_directory_physical);
 }
 
 
