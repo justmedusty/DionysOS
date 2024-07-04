@@ -10,6 +10,7 @@
 #include "include/mem_bounds.h"
 #include "include/arch_paging.h"
 #include "include/arch_smp.h"
+#include "include/arch_vmm.h"
 
 void kernel_bootstrap(){
     init_serial();
@@ -20,4 +21,5 @@ void kernel_bootstrap(){
     phys_init();
     heap_init();
     mem_bounds_init();
+    arch_init_vmm();
 }

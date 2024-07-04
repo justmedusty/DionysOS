@@ -26,7 +26,7 @@ void arch_paging_init();
 #define PAGE_OFFSET_MASK 0x3FF
 #define PTE_ADDRESS_MASK ~0xFFF
 
-extern p4d_t global_pg_dir[NP4DENTRIES];
+extern p4d_t *global_pg_dir;
 
 // page 4 directory index
 #define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & PAGE_DIR_MASK)

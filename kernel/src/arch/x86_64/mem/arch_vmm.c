@@ -14,24 +14,28 @@
 #include "include/mem_bounds.h"
 #include "include/uart.h"
 #include "include/cpu.h"
+#include "include/arch_vmm.h"
 
-p4d_t global_pg_dir[NP4DENTRIES];
+p4d_t *global_pg_dir = 0;
 p4d_t kernel_pg_dir;
-/*
-static struct dev_map {
-    void *virt;
-    uint64 phys_start;
-    uint64 phys_end;
-    int32 perm;
-} dev_map[] = {
-        { (void*)kernel_min,          kernel_phys_min,      EXTMEM,    PTE_W}, // I/O space
-        { (void*)DEVSPACE,kernel_phys_max - DEVSPACE, kernel_phys_max, PTE_W}, // more devices
-};
- */
 
 void switch_page_table(p4d_t *page_dir){
     lcr3(page_dir);
 }
+
+void arch_init_vmm(){
+    uint64 page_directory_physical = 0;
+    switch_page_table(page_directory_physical);
+
+    if (!page_directory_physical) {
+        panic("No page directory!");
+    }
+    uint64 page_directory_virtual = page_directory_physical + hhdm_offset;
+    global_pg_dir = (uint64 *)page_directory_virtual;
+    serial_printf("VMM initialized\n");
+}
+
+
 
 /*
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
