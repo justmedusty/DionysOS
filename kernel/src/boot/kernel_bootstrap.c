@@ -6,7 +6,7 @@
 #include "include/uart.h"
 #include "include/idt.h"
 #include "include/pmm.h"
-#include "include/kheap.h"
+#include "include/kalloc.h"
 #include "include/mem_bounds.h"
 #include "include/arch_paging.h"
 #include "include/arch_smp.h"

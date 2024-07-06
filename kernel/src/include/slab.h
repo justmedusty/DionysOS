@@ -45,6 +45,4 @@ int heap_init();
 void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages);
 void *heap_allocate_from_slab(slab_t *slab);
 void heap_free_in_slab(slab_t *slab, void *address);
-void *kalloc(uint64 size);
-void *krealloc(void *address, uint64 new_size);
-void kfree(void *address);
+

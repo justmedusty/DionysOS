@@ -9,7 +9,7 @@
 #include "include/types.h"
 #include "include/arch_paging.h"
 #include "include/pmm.h"
-#include "include/kheap.h"
+#include "include/kalloc.h"
 #include "include/x86.h"
 #include "include/mem_bounds.h"
 #include "include/uart.h"
@@ -88,7 +88,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-void map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 size) {
+int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 size) {
 
     uint64 *address, *last;
     pte_t *pte;
