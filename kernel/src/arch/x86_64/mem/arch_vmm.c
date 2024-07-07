@@ -10,7 +10,7 @@
 #include "include/arch_paging.h"
 #include "include/pmm.h"
 #include "include/kalloc.h"
-#include "include/x86.h"
+#include "include/arch_asm_functions.h"
 #include "include/mem_bounds.h"
 #include "include/uart.h"
 #include "include/cpu.h"

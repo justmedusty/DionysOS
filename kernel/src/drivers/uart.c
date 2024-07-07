@@ -3,7 +3,7 @@
 //
 #include "include/types.h"
 #include "include/uart.h"
-#include "include/x86.h"
+#include "include/arch_asm_functions.h"
 #include "stdarg.h"
 
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later

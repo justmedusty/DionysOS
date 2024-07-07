@@ -4,7 +4,7 @@
 
 
 #include "include/gdt.h"
-#include "include/x86.h"
+#include "include/arch_asm_functions.h"
 #include "include/idt.h"
 #include "traps.h"
 #include "include/uart.h"
