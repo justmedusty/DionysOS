@@ -8,7 +8,7 @@
 
 ✓Write a physical memory allocator, a good starting point is a bitmap allocator.
 
-Write a virtual memory manager that can map, remap and unmap pages.
+✓Write a virtual memory manager that can map, remap and unmap pages.
 
 Begin parsing ACPI tables, the most important one is the MADT since it contains information about the APIC.
 
