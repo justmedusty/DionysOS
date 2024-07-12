@@ -22,21 +22,22 @@ SECTIONS
     /* Any address in this region will do, but often 0xffffffff80000000 is chosen as */
     /* that is the beginning of the region. */
     . = 0xffffffff80000000;
-
+    text_start = .;
     .text : {
         *(.text .text.*)
     } :text
-
+    text_end = .;
     /* Move to the next memory page for .rodata */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
-
+     rodata_start = .;
     .rodata : {
         *(.rodata .rodata.*)
     } :rodata
-
+    rodata_end = .;
     /* Move to the next memory page for .types */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
+    data_start = .;
     .data : {
         *(.data .data.*)
 
@@ -61,7 +62,7 @@ SECTIONS
         *(COMMON)
         ebss = .;
     } :data
-
+    data_end = .;
 
 
     PROVIDE(end = .);
