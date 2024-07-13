@@ -7,6 +7,7 @@
  */
 
 #include "include/types.h"
+#include "include/mem.h"
 #include "include/arch_paging.h"
 #include "include/pmm.h"
 #include "include/kalloc.h"
@@ -16,15 +17,16 @@
 #include "include/cpu.h"
 #include "include/arch_vmm.h"
 
+
 p4d_t *global_pg_dir = 0;
-p4d_t kernel_pg_dir;
+p4d_t *kernel_pg_dir;
 
 void switch_page_table(p4d_t *page_dir){
     lcr3(page_dir);
 }
 
 void arch_init_vmm(){
-
+    /*
     uint64 page_directory_physical = 0;
     asm volatile("movq %%cr3,%0" : "=r"(page_directory_physical));
     if (!page_directory_physical) {
@@ -33,6 +35,11 @@ void arch_init_vmm(){
     uint64 page_directory_virtual = page_directory_physical + hhdm_offset;
     global_pg_dir = (uint64 *)page_directory_virtual;
     serial_printf("VMM initialized.\nPhysical Page Directory Located at %x.64\n",page_directory_physical);
+     */
+
+    kernel_pg_dir = P2V(kalloc(PAGE_SIZE));
+   // memset(kernel_pg_dir,0,PAGE_SIZE);
+
 }
 
 
@@ -53,7 +60,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
     pmd_t *pmd;
     pte_t *pte;
 
-    pud = PTE_ADDR(pgdir[PUDX(va)]) + hhdm_offset;
+    pud = V2P(PTE_ADDR(pgdir[PUDX(va)]));
 
     if(!pud || !(*pud & PTE_P)){
         if(alloc){
@@ -63,7 +70,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
         }
     }
 
-    pmd = PTE_ADDR(pud[PMDX(va)] + hhdm_offset);
+    pmd = V2P(PTE_ADDR(pud[PMDX(va)]));
 
     if(!pmd || !(*pmd & PTE_P)){
         if(alloc){
@@ -73,7 +80,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
         }
     }
 
-    pte = PTE_ADDR(pmd[PTX(va)] + hhdm_offset);
+    pte = V2P(PTE_ADDR(pmd[PTX(va)]));
 
     if(!pte || !(*pte & PTE_P)){
         if(alloc){

@@ -8,9 +8,7 @@
 #include "include/mem.h"
 #include "include/uart.h"
 
-static inline bool
-
-bitmap_get(void *bitmap, uint64 bit);
+static inline bool bitmap_get(void *bitmap, uint64 bit);
 
 static inline void bitmap_set(void *bitmap, uint64 bit);
 
