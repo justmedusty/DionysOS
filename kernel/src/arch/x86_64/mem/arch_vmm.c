@@ -19,26 +19,22 @@
 
 
 p4d_t *global_pg_dir = 0;
-p4d_t *kernel_pg_dir;
+struct virt_map *kernel_pg_map;
 
 void switch_page_table(p4d_t *page_dir){
     lcr3(page_dir);
 }
 
 void arch_init_vmm(){
-    /*
-    uint64 page_directory_physical = 0;
-    asm volatile("movq %%cr3,%0" : "=r"(page_directory_physical));
-    if (!page_directory_physical) {
-        panic("No page directory!");
-    }
-    uint64 page_directory_virtual = page_directory_physical + hhdm_offset;
-    global_pg_dir = (uint64 *)page_directory_virtual;
-    serial_printf("VMM initialized.\nPhysical Page Directory Located at %x.64\n",page_directory_physical);
-     */
 
-    kernel_pg_dir = P2V(kalloc(PAGE_SIZE));
-   // memset(kernel_pg_dir,0,PAGE_SIZE);
+    kernel_pg_map = (struct virt_map*)P2V(phys_alloc(1));
+    serial_printf("Kernel Page Dir: %x.64\n",kernel_pg_map);
+    memset(kernel_pg_map,0,PAGE_SIZE);
+    kernel_pg_map->top_level = P2V(phys_alloc(1));
+    memset(kernel_pg_map->top_level,0,PAGE_SIZE);
+    kernel_pg_map->vm_region_head = P2V(phys_alloc(1));
+    memset(kernel_pg_map->vm_region_head,0,PAGE_SIZE);
+
 
 }
 
@@ -122,4 +118,8 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 siz
         physaddr += PAGE_SIZE;
     }
     return 0;
+}
+
+struct vm_region *create_region(){
+
 }

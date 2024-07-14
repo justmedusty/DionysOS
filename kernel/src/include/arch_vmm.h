@@ -29,6 +29,11 @@ typedef struct virtual_region {
 
 } virtual_region;
 
+typedef struct virt_map {
+    uint64 *top_level;
+    struct vm_region *vm_region_head;
+};
+
 extern text_start;
 extern text_end;
 extern rodata_start;
