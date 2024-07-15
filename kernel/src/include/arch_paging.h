@@ -52,8 +52,8 @@ extern p4d_t *global_pg_dir;
 #define PUDXSHIFT       30     // offset of PUDX in a linear address
 #define P4DXSHIFT       39     // offset of P4DX
 
-#define PGROUNDUP(sz)  (((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
-#define PGROUNDDOWN(a) (((a)) & ~(PAGE_SIZE-1))
+#define PGROUNDUP(sz)  (uint64)(((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
+#define PGROUNDDOWN(a) (uint64)(((a)) & ~(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
@@ -61,7 +61,7 @@ extern p4d_t *global_pg_dir;
 #define PTE_U           0x004   // User
 #define PTE_A           0x020   //accessed , for demand paging
 #define PTE_PS          0x080   // Page Size
-#define PTE_NX          1 << 63 // no execute
+#define PTE_NX          (uint64) 1 << 63 // no execute
 
 
 // Address in page table or page directory entry

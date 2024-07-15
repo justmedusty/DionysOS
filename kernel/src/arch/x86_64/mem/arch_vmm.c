@@ -50,7 +50,11 @@ void arch_init_vmm(){
     uint64 k_data_end = PGROUNDUP(&data_start);
 
     for(uint64 text = k_text_start; text < k_text_end; text += PAGE_SIZE){
-        map_pages(kernel_pg_map->top_level,text,text,)
+        map_pages(kernel_pg_map->top_level,text,text - kernel_min + kernel_phys_min,PTE_P,text_end - text_start);
+    }
+
+    for(uint64 rodata = k_rodata_start; rodata < k_rodata_end; rodata += PAGE_SIZE){
+        map_pages(kernel_pg_map->top_level,rodata,rodata - kernel_min + kernel_phys_min,PTE_P | PTE_NX, rodata_end - rodata_start);
     }
 
 
