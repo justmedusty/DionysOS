@@ -4,8 +4,8 @@
 
 #pragma once
 
-#define ALIGN_UP(value,aligned_to) ((x + y(y-1)) / y) * y
-#define ALIGN_DOWN(value,aligned_to) (x /y) * y
+#define ALIGN_UP(value,aligned_to) ((value+ aligned_to(aligned_to-1)) / aligned_to) * aligned_to
+#define ALIGN_DOWN(value,aligned_to) (value /aligned_to) * aligned_to
 
 static inline void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
@@ -36,12 +36,12 @@ typedef struct virt_map {
     struct virtual_region *vm_region_head;
 };
 
-extern uint64 text_start;
-extern uint64 text_end;
-extern uint64 rodata_start;
-extern uint64 rodata_end;
-extern uint64 data_start;
-extern uint64 data_end;
+extern char text_start[];
+extern char text_end[];
+extern char rodata_start[];
+extern char rodata_end[];
+extern char data_start[];
+extern char data_end[];
 
 void arch_init_vmm();
 void switch_page_table(p4d_t *page_dir);

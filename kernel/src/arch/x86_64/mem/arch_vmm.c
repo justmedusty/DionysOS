@@ -40,14 +40,14 @@ void arch_init_vmm(){
     /*
      * Map symbols in the linker script
      */
-    uint64 k_text_start = PGROUNDDOWN(&text_start);
-    uint64 k_text_end = PGROUNDUP(&text_end);
+    uint64 k_text_start = ALIGN_DOWN(text_start,PAGE_SIZE);
+    uint64 k_text_end = ALIGN_UP(text_end,PAGE_SIZE);
 
-    uint64 k_rodata_start = PGROUNDDOWN(&rodata_start);
-    uint64 k_rodata_end = PGROUNDUP(&rodata_end);
+    uint64 k_rodata_start =  ALIGN_DOWN(rodata_start,PAGE_SIZE);
+    uint64 k_rodata_end = ALIGN_UP(rodata_end,PAGE_SIZE);
 
-    uint64 k_data_start = PGROUNDDOWN(&data_start);
-    uint64 k_data_end = PGROUNDUP(&data_start);
+    uint64 k_data_start = ALIGN_DOWN(data_start,PAGE_SIZE);
+    uint64 k_data_end = ALIGN_UP(data_end,PAGE_SIZE);
 
     for(uint64 text = k_text_start; text < k_text_end; text += PAGE_SIZE){
         map_pages(kernel_pg_map->top_level,text,text - kernel_min + kernel_phys_min,PTE_P,text_end - text_start);

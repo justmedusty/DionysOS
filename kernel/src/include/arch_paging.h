@@ -23,7 +23,6 @@ void arch_paging_init();
 #define NPUDENTRIES     512    // # directory entries per page upper directory
 #define NPMDENTRIES     512    // # directory entries per page middle directory
 #define NPTENTRIES      512    // # PTEs per page table
-#define PAGE_SIZE       4096   // bytes mapped by a page
 
 #define PAGE_DIR_MASK 0x1FF
 #define PAGE_OFFSET_MASK 0x3FF
@@ -52,8 +51,8 @@ extern p4d_t *global_pg_dir;
 #define PUDXSHIFT       30     // offset of PUDX in a linear address
 #define P4DXSHIFT       39     // offset of P4DX
 
-#define PGROUNDUP(sz)  (uint64)(((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
-#define PGROUNDDOWN(a) (uint64)(((a)) & ~(PAGE_SIZE-1))
+#define PGROUNDUP(sz)  (uint64) (((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
+#define PGROUNDDOWN(a) (uint64) (((a)) & ~(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
