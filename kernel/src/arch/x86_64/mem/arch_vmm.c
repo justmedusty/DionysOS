@@ -28,12 +28,31 @@ void switch_page_table(p4d_t *page_dir){
 void arch_init_vmm(){
 
     kernel_pg_map = (struct virt_map*)P2V(phys_alloc(1));
-    serial_printf("Kernel Page Dir: %x.64\n",kernel_pg_map);
     memset(kernel_pg_map,0,PAGE_SIZE);
     kernel_pg_map->top_level = P2V(phys_alloc(1));
     memset(kernel_pg_map->top_level,0,PAGE_SIZE);
     kernel_pg_map->vm_region_head = P2V(phys_alloc(1));
     memset(kernel_pg_map->vm_region_head,0,PAGE_SIZE);
+
+    kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
+    kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
+
+    /*
+     * Map symbols in the linker script
+     */
+    uint64 k_text_start = PGROUNDDOWN(&text_start);
+    uint64 k_text_end = PGROUNDUP(&text_end);
+
+    uint64 k_rodata_start = PGROUNDDOWN(&rodata_start);
+    uint64 k_rodata_end = PGROUNDUP(&rodata_end);
+
+    uint64 k_data_start = PGROUNDDOWN(&data_start);
+    uint64 k_data_end = PGROUNDUP(&data_start);
+
+    for(uint64 text = k_text_start; text < k_text_end; text += PAGE_SIZE){
+        map_pages(kernel_pg_map->top_level,text,text,)
+    }
+
 
 
 }
