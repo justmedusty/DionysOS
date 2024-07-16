@@ -82,36 +82,37 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
     pte_t result;
 
-    pud_t *pud;
-    pmd_t *pmd;
-    pte_t *pte;
+    pud_t pud_idx = PUDX(va);
+    pmd_t pmd_idx = PMDX(va);
+    pte_t pte_idx = PTX(va);
 
-    pud = V2P(PTE_ADDR(pgdir[PUDX(va)]));
-    write_hex_serial(*pud,64);
+    pud_t *pud = pgdir[pud_idx];
+    write_hex_serial(pud,64);
+    panic("here");
     panic("here");
     if (!pud || !(*pud & PTE_P)) {
         if (alloc) {
-            *pud = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
+            *pud = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
 
-    pmd = V2P(PTE_ADDR(pud[PMDX(va)]));
+    pmd_t *pmd = pud[pmd_idx];
 
     if (!pmd || !(*pmd & PTE_P)) {
         if (alloc) {
-            *pmd = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
+            *pmd = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
 
-    pte = V2P(PTE_ADDR(pmd[PTX(va)]));
+    pte_t *pte = V2P(PTE_ADDR(pmd[PTX(va)]));
 
     if (!pte || !(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
+            *pte = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
