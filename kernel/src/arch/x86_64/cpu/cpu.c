@@ -8,7 +8,8 @@
 int8 panicked = 0;
 
 void panic(const char *str){
-    serial_printf("%s\nPanic!\n",str);
+    write_string_serial("\nPanic!\n");
+    write_string_serial(str);
     panicked = 1;
     asm("cli");
     asm("hlt");

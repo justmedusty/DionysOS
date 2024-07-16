@@ -11,6 +11,8 @@
 #include "include/arch_paging.h"
 #include "include/arch_smp.h"
 #include "include/arch_vmm.h"
+#include "include/slab.h"
+#include "include/cpu.h"
 
 void kernel_bootstrap(){
     init_serial();

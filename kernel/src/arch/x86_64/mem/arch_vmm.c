@@ -26,7 +26,6 @@ void switch_page_table(p4d_t *page_dir) {
 }
 
 void arch_init_vmm() {
-
     kernel_pg_map = (struct virt_map *) P2V(phys_alloc(1));
     memset(kernel_pg_map, 0, PAGE_SIZE);
     kernel_pg_map->top_level = P2V(phys_alloc(1));
@@ -88,7 +87,8 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
     pte_t *pte;
 
     pud = V2P(PTE_ADDR(pgdir[PUDX(va)]));
-
+    write_hex_serial(*pud,64);
+    panic("here");
     if (!pud || !(*pud & PTE_P)) {
         if (alloc) {
             *pud = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
@@ -130,15 +130,13 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     last = PGROUNDDOWN(((uint64) va) + size - 1);
 
     for (;;) {
-
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
             return -1;
         }
-
+        panic("here");
         if (*pte & PTE_P) {
             panic("remap");
         }
-
         *pte = physaddr | perms | PTE_P;
 
         if (address == last) {
@@ -147,6 +145,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
         address += PAGE_SIZE;
         physaddr += PAGE_SIZE;
+
     }
     return 0;
 }
