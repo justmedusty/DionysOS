@@ -40,14 +40,14 @@ void arch_init_vmm(){
     /*
      * Map symbols in the linker script
      */
-    uint64 k_text_start = ALIGN_DOWN(text_start,PAGE_SIZE);
-    uint64 k_text_end = ALIGN_UP(text_end,PAGE_SIZE);
+    uint64 k_text_start = ALIGN_DOWN((uint64*)text_start,PAGE_SIZE);
+    uint64 k_text_end = ALIGN_UP((uint64*)text_end,PAGE_SIZE);
 
-    uint64 k_rodata_start =  ALIGN_DOWN(rodata_start,PAGE_SIZE);
-    uint64 k_rodata_end = ALIGN_UP(rodata_end,PAGE_SIZE);
+    uint64 k_rodata_start =  ALIGN_DOWN((uint64*)rodata_start,PAGE_SIZE);
+    uint64 k_rodata_end = ALIGN_UP((uint64*)rodata_end,PAGE_SIZE);
 
-    uint64 k_data_start = ALIGN_DOWN(data_start,PAGE_SIZE);
-    uint64 k_data_end = ALIGN_UP(data_end,PAGE_SIZE);
+    uint64 k_data_start = ALIGN_DOWN((uint64*)data_start,PAGE_SIZE);
+    uint64 k_data_end = ALIGN_UP((uint64*)data_end,PAGE_SIZE);
 
     for(uint64 text = k_text_start; text < k_text_end; text += PAGE_SIZE){
         map_pages(kernel_pg_map->top_level,text,text - kernel_min + kernel_phys_min,PTE_P,text_end - text_start);
@@ -114,7 +114,7 @@ static pte_t* walkpgdir(p4d_t *pgdir, const uint64 *va,int alloc){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 size) {
+int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint64 size) {
 
     uint64 *address, *last;
     pte_t *pte;

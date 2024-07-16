@@ -4,8 +4,8 @@
 
 #pragma once
 
-#define ALIGN_UP(value,aligned_to) ((value+ aligned_to(aligned_to-1)) / aligned_to) * aligned_to
-#define ALIGN_DOWN(value,aligned_to) (value /aligned_to) * aligned_to
+#define ALIGN_UP(value,aligned_to) ((uint64)value + ((uint64)aligned_to-1) / (uint64)aligned_to) * (uint64)aligned_to
+#define ALIGN_DOWN(value,aligned_to) ((uint64)value / (uint64)aligned_to) * (uint64)aligned_to
 
 static inline void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
@@ -45,4 +45,4 @@ extern char data_end[];
 
 void arch_init_vmm();
 void switch_page_table(p4d_t *page_dir);
-int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint32 perms,uint64 size);
+int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint64 size);
