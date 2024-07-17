@@ -86,29 +86,26 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t *pud = pgdir[pud_idx];
-    write_hex_serial(pud,64);
-    panic("here");
-    panic("here");
+    pud_t *pud = &pgdir[pud_idx];
     if (!pud || !(*pud & PTE_P)) {
         if (alloc) {
-            *pud = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
+            *pud = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
 
-    pmd_t *pmd = pud[pmd_idx];
+    pmd_t *pmd = &pud[pmd_idx];
 
     if (!pmd || !(*pmd & PTE_P)) {
         if (alloc) {
-            *pmd = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
+            *pmd = (uint64) (kalloc(8)) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
 
-    pte_t *pte = V2P(PTE_ADDR(pmd[PTX(va)]));
+    pte_t *pte = &pmd[pte_idx];
 
     if (!pte || !(*pte & PTE_P)) {
         if (alloc) {
@@ -134,16 +131,15 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
             return -1;
         }
-        panic("here");
         if (*pte & PTE_P) {
             panic("remap");
         }
+        panic("here");
         *pte = physaddr | perms | PTE_P;
 
         if (address == last) {
             break;
         }
-
         address += PAGE_SIZE;
         physaddr += PAGE_SIZE;
 
