@@ -99,7 +99,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
     if (!pmd || !(*pmd & PTE_P)) {
         if (alloc) {
-            *pmd = (uint64) (kalloc(8)) | PTE_P | PTE_RW | PTE_U;
+            *pmd = (uint64) kalloc(8) | PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
@@ -107,14 +107,16 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
     pte_t *pte = &pmd[pte_idx];
 
-    if (!pte || !(*pte & PTE_P)) {
+    if (!(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) P2V(kalloc(8)) | PTE_P | PTE_RW | PTE_U;
+            pte = (uint64) kalloc(8);
+            memset(*pte,0,PAGE_SIZE);
+            *pte = (uint64) V2P(pte) | PTE_P | PTE_RW ;
         } else {
             return 0;
         }
     }
-    return PTE_ADDR(*pte);
+    return *pte;
 }
 
 /*
@@ -134,7 +136,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
         if (*pte & PTE_P) {
             panic("remap");
         }
-        panic("here");
+
         *pte = physaddr | perms | PTE_P;
 
         if (address == last) {
