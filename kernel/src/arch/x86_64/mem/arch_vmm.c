@@ -26,6 +26,7 @@ void switch_page_table(p4d_t *page_dir) {
 }
 
 void arch_init_vmm() {
+
     kernel_pg_map = (struct virt_map *) P2V(phys_alloc(1));
     memset(kernel_pg_map, 0, PAGE_SIZE);
     kernel_pg_map->top_level = P2V(phys_alloc(1));
@@ -55,16 +56,18 @@ void arch_init_vmm() {
     if (map_pages(kernel_pg_map->top_level, k_text_start, k_text_start - kernel_min + kernel_phys_min, PTE_P | PTE_NX, k_rodata_end - k_text_start) == -1) {
         panic("Mapping rodata!");
     }
-
+/*
     if (map_pages(kernel_pg_map->top_level, k_data_start, k_data_start - kernel_min + kernel_phys_min, PTE_P | PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
+    */
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
     if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0xFFFFFFFF) == -1){
         panic("Mapping first 4gb!");
     }
+    serial_printf("Kernel page table built\n");
 
 
 }
@@ -87,35 +90,49 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
     pte_t pte_idx = PTX(va);
 
     pud_t *pud = &pgdir[pud_idx];
+
     if (!(*pud & PTE_P)) {
+
         if (alloc) {
+
             *pud = (uint64) kalloc(PAGE_SIZE);
             memset(*pud,0,PAGE_SIZE);
             *pud = (uint64) V2P(pud) | PTE_P | PTE_RW;
 
         } else {
+
             return 0;
+
         }
     }
 
     pmd_t *pmd = &pud[pmd_idx];
 
     if (!(*pmd & PTE_P)) {
+
         if (alloc) {
+
             *pmd = (uint64) kalloc(PAGE_SIZE);
             memset(*pmd,0,PAGE_SIZE);
             *pmd = (uint64) V2P(pmd) | PTE_P | PTE_RW;
+
         } else {
+
             return 0;
+
         }
     }
 
     pte_t *pte = &pmd[pte_idx];
 
     if (!(*pte & PTE_P)) {
+
         if (alloc) {
+
             *pte = (uint64) kalloc(PAGE_SIZE);
+
             memset(*pte,0,PAGE_SIZE);
+
         } else {
             return 0;
         }
@@ -134,18 +151,28 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     last = PGROUNDDOWN(((uint64) va) + size - 1);
 
     for (;;) {
+
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
+
             return -1;
+
         }
+
         if (*pte & PTE_P) {
-            panic("remap");
+
+            //serial_printf("Remap!\n");
+           // panic("remap");
+
         }
 
         *pte = physaddr | perms | PTE_P;
 
         if (address == last) {
+
             break;
+
         }
+
         address += PAGE_SIZE;
         physaddr += PAGE_SIZE;
 
