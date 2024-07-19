@@ -44,6 +44,7 @@ void arch_init_vmm() {
     uint64 k_text_end = ALIGN_UP((uint64 *) text_end, PAGE_SIZE);
 
     serial_printf("  Ktext start %x.64 , Ktext end %x.64\n",k_text_start,k_text_end);
+    panic("");
 
     uint64 k_rodata_start = ALIGN_DOWN((uint64 *) rodata_start, PAGE_SIZE);
     uint64 k_rodata_end = ALIGN_UP((uint64 *) rodata_end, PAGE_SIZE);
@@ -56,19 +57,19 @@ void arch_init_vmm() {
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
 
 
-    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start - kernel_min + kernel_phys_min,(k_text_start - kernel_min + kernel_phys_min) + k_text_end - k_text_start);
+    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,(k_text_start - kernel_min + kernel_phys_min) + (k_text_end - k_text_start));
 
-    if (map_pages(kernel_pg_map->top_level, k_text_start - kernel_min + kernel_phys_min, V2P(k_text_start), 0, k_text_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, V2P(k_text_start), k_text_start, 0, k_text_end - k_text_start) == -1) {
         panic("Mapping text!");
     }
+    panic("done");
+    serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start,(k_rodata_start - kernel_min + kernel_phys_min) + (k_rodata_end - k_rodata_start));
 
-    serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start - kernel_min + kernel_phys_min,(k_rodata_start - kernel_min + kernel_phys_min) + k_rodata_end - k_rodata_start);
-
-    if (map_pages(kernel_pg_map->top_level, k_rodata_start - kernel_min + kernel_phys_min,k_rodata_start, PTE_NX, k_rodata_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, V2P(k_rodata_start),P2V(k_rodata_start), PTE_NX, k_rodata_end - k_text_start) == -1) {
         panic("Mapping rodata!");
     }
 
-    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n",k_data_start - kernel_min + kernel_phys_min,(k_data_start - kernel_min + kernel_phys_min) + k_data_end - k_data_start );
+    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n",k_data_start - kernel_min + kernel_phys_min,(k_data_start - kernel_min + kernel_phys_min) + (k_data_end - k_data_start) );
     if (map_pages(kernel_pg_map->top_level, k_data_start - kernel_min + kernel_phys_min,k_data_start, PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
@@ -91,7 +92,7 @@ void arch_init_vmm() {
  */
 
 static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
-
+    serial_printf("va is %x.64\n",va);
     if (!pgdir) {
         return 0;
     }
@@ -110,7 +111,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
             *pud = (uint64) kalloc(PAGE_SIZE);
             memset(*pud,0,PAGE_SIZE);
-            *pud = (uint64) V2P(pud) | PTE_P | PTE_RW | PTE_U;
+            *pud = (uint64) P2V(pud) | PTE_P | PTE_RW | PTE_U;
 
         } else {
 
@@ -118,7 +119,6 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
         }
     }
-
     pmd_t *pmd = &pud[pmd_idx];
 
     if (!(*pmd & PTE_P)) {
@@ -127,7 +127,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
 
             *pmd = (uint64) kalloc(PAGE_SIZE);
             memset(*pmd,0,PAGE_SIZE);
-            *pmd = (uint64) V2P(pmd) | PTE_P | PTE_RW | PTE_U;
+            *pmd = (uint64) P2V(pmd) | PTE_P | PTE_RW | PTE_U;
 
         } else {
 
@@ -141,7 +141,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
     if (!(*pte & PTE_P)) {
         if (alloc) {
             *pte = (uint64) kalloc(PAGE_SIZE);
-            memset(*pte,0,PAGE_SIZE);
+            memset(pte,0,PAGE_SIZE);
         } else {
             return 0;
         }
@@ -155,10 +155,13 @@ static pte_t *walkpgdir(p4d_t *pgdir, const uint64 *va, int alloc) {
  */
 int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 size) {
 
-    uint64 * address, *last;
+
+    uint64 *address, *last;
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
+    serial_printf("address : %x.64 last : %x.64 size : %x.64\n",address,last,size);
+    panic("");
 
     for (;;) {
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
@@ -167,14 +170,13 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
         if(*pte & PTE_P){
             serial_printf("Remap! Address being remapped is %x.64\n",*pte);
-            panic("remap");
+            //panic("remap");
         }
 
         *pte = physaddr | perms | PTE_P;
 
         if (address == last) {
             break;
-
         }
 
         address += PAGE_SIZE;
@@ -182,6 +184,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
 
     }
+    panic("dopne");
     return 0;
 }
 
