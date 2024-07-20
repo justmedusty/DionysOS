@@ -51,8 +51,8 @@ extern p4d_t *global_pg_dir;
 #define PUDXSHIFT       30     // offset of PUDX in a linear address
 #define P4DXSHIFT       39     // offset of P4DX
 
-#define PGROUNDUP(sz)  (uint64) (((sz)+PAGE_SIZE-1) & ~(PAGE_SIZE-1))
-#define PGROUNDDOWN(a) (uint64) (((a)) & ~(PAGE_SIZE-1))
+#define PGROUNDUP(sz)  (uint64) (uint64)((((uint64)sz)+PAGE_SIZE-1) & ~(uint64)(PAGE_SIZE-1))
+#define PGROUNDDOWN(a) (uint64) ((((uint64)a)) & ~(uint64)(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
