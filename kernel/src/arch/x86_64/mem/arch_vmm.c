@@ -40,26 +40,27 @@ void arch_init_vmm() {
     /*
      * Map symbols in the linker script
      */
-    uint64 k_text_start = ALIGN_DOWN((uint64 *) text_start, PAGE_SIZE);
-    uint64 k_text_end = ALIGN_UP((uint64 *) text_end, PAGE_SIZE);
+    uint64 k_text_start = ALIGN_DOWN((uint64 *) (void*)text_start, PAGE_SIZE);
+    uint64 k_text_end = ALIGN_UP((uint64 *) (void*)text_end, PAGE_SIZE);
 
     serial_printf("  Ktext start %x.64 , Ktext end %x.64\n",k_text_start,k_text_end);
-    panic("");
 
-    uint64 k_rodata_start = ALIGN_DOWN((uint64 *) rodata_start, PAGE_SIZE);
-    uint64 k_rodata_end = ALIGN_UP((uint64 *) rodata_end, PAGE_SIZE);
+    uint64 k_rodata_start = ALIGN_DOWN((uint64 *) (void*)rodata_start, PAGE_SIZE);
+    uint64 k_rodata_end = ALIGN_UP((uint64 *) (void*)rodata_end, PAGE_SIZE);
 
     serial_printf("Krodata start %x.64,Krodata end %x.64\n",k_rodata_start,k_rodata_end);
 
-    uint64 k_data_start = ALIGN_DOWN((uint64 *) data_start, PAGE_SIZE);
-    uint64 k_data_end = ALIGN_UP((uint64 *) data_end, PAGE_SIZE);
+    uint64 k_data_start = ALIGN_DOWN((uint64 *) (void*)data_start, PAGE_SIZE);
+    uint64 k_data_end = ALIGN_UP((uint64 *) (void*)data_end, PAGE_SIZE);
 
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
 
-
-    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,(k_text_start - kernel_min + kernel_phys_min) + (k_text_end - k_text_start));
-
-    if (map_pages(kernel_pg_map->top_level, V2P(k_text_start), k_text_start, 0, k_text_end - k_text_start) == -1) {
+    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,k_text_end);
+    if(k_text_start > k_text_end){
+        panic("Start higher than end");
+    }
+    panic("");
+    if (map_pages(kernel_pg_map->top_level, k_text_start - kernel_min + kernel_phys_min, k_text_start, 0, k_text_end - k_text_start) == -1) {
         panic("Mapping text!");
     }
     panic("done");
@@ -160,7 +161,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
-    serial_printf("address : %x.64 last : %x.64 size : %x.64\n",address,last,size);
+    serial_printf("address : %x.64 last : %x.64 size : %x.6\n",address,last,size);
     panic("");
 
     for (;;) {
