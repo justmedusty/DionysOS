@@ -70,20 +70,24 @@ void arch_init_vmm() {
     if (map_pages(kernel_pg_map->top_level, k_data_start - kernel_min + kernel_phys_min,k_data_start, PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
+
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0x100000000) == -1){
+
+    serial_printf("Mapping HHDM\n");
+    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_P | PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0x1000 - 1, P2V(0), PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
     serial_printf("Kernel page table built in table located at %x.64\n",kernel_pg_map->top_level);
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
+    panic("Done");
 
 
 }
@@ -98,7 +102,6 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         return 0;
     }
 
-    pte_t result;
 
     pud_t pud_idx = PUDX(va);
     pmd_t pmd_idx = PMDX(va);
@@ -115,9 +118,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
             *pud = (uint64) V2P(PTE_ADDR(pud)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
-
             return 0;
-
         }
     }
     pmd_t *pmd = &pud[pmd_idx];
@@ -131,9 +132,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
             *pmd = (uint64)  V2P(PTE_ADDR(pmd)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
-
             return 0;
-
         }
     }
 
