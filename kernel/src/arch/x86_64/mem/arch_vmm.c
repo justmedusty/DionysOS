@@ -76,15 +76,14 @@ void arch_init_vmm() {
      */
 
     serial_printf("Mapping HHDM\n");
-    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0 , 0, PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0x1000 - 1, P2V(0), PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0xFFF, (void *)P2V(0), PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
-
-    serial_printf("Kernel page table built in table located at %x.64\n",kernel_pg_map->top_level);
+    serial_printf("Kernel page table built in table located at %x.64\n", V2P(kernel_pg_map->top_level));
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
