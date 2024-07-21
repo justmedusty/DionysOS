@@ -22,7 +22,7 @@ p4d_t *global_pg_dir = 0;
 struct virt_map *kernel_pg_map;
 
 void switch_page_table(p4d_t *page_dir) {
-    lcr3(page_dir);
+    lcr3(V2P(page_dir));
 }
 
 void arch_init_vmm() {
@@ -73,15 +73,13 @@ void arch_init_vmm() {
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_P | PTE_RW, 0x10001000) == -1){
         panic("Mapping first 4gb!");
     }
 
 
     serial_printf("Kernel page table built\n");
-    serial_printf("Addr : %x.64",V2P(kernel_pg_map->top_level));
-    switch_page_table(V2P(kernel_pg_map->top_level));
-
+    switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
 
 
@@ -110,7 +108,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         if (alloc) {
 
             *pud = (uint64) kalloc(PAGE_SIZE);
-            memset(*pud,0,PAGE_SIZE);
+            memset(pud,0,PAGE_SIZE);
             *pud = (uint64) V2P(PTE_ADDR(pud)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -126,7 +124,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         if (alloc) {
 
             *pmd = (uint64) kalloc(PAGE_SIZE);
-            memset(*pmd,0,PAGE_SIZE);
+            memset(pmd,0,PAGE_SIZE);
             *pmd = (uint64)  V2P(PTE_ADDR(pmd)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -160,17 +158,13 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
-    if(address > last){
-        panic("Address larger than last!");
-    }
-
+  
     for (;;) {
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
             return -1;
         }
 
         if(*pte & PTE_P){
-            *pte &= ~PTE_P;
             serial_printf("Remap! Address being remapped is %x.64\n",*pte);
             //panic("remap");
         }
@@ -186,6 +180,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
 
     }
+    serial_printf("Area mapped, final virt addr : %x.64\n",address);
 
     return 0;
 }

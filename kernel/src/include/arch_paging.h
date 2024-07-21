@@ -5,8 +5,8 @@
 #ifndef KERNEL_ARCH_PAGING_H
 #define KERNEL_ARCH_PAGING_H
 
-#define P2V(addr) ((void *)((uint64)addr) + hhdm_offset)
-#define V2P(addr) ((void *)((uint64)addr) - hhdm_offset)
+#define P2V(addr) ((void *)((uint64)addr) + (uint64)hhdm_offset)
+#define V2P(addr) ((void *)((uint64)addr) - (uint64)hhdm_offset)
 
 void arch_paging_init();
 
