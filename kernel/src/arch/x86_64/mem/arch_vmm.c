@@ -61,7 +61,7 @@ void arch_init_vmm() {
     }
 
     serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start,k_rodata_end);
-    panic("done");
+
     if (map_pages(kernel_pg_map->top_level, k_rodata_start - kernel_min + kernel_phys_min,k_rodata_start, PTE_NX, k_rodata_end - k_text_start) == -1) {
         panic("Mapping rodata!");
     }
@@ -72,6 +72,7 @@ void arch_init_vmm() {
         panic("Mapping data!");
     }
 
+
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
@@ -79,7 +80,9 @@ void arch_init_vmm() {
         panic("Mapping first 4gb!");
     }
     serial_printf("Kernel page table built\n");
-
+    switch_page_table(kernel_pg_map->top_level);
+    serial_printf("VMM mapped and initialized");
+    panic("");
 
 
 }
@@ -108,7 +111,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
             *pud = (uint64) kalloc(PAGE_SIZE);
             memset(*pud,0,PAGE_SIZE);
-            *pud = (uint64) P2V(pud) | PTE_P | PTE_RW | PTE_U;
+            *pud = (uint64) V2P(PTE_ADDR(pud)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
 
@@ -124,7 +127,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
             *pmd = (uint64) kalloc(PAGE_SIZE);
             memset(*pmd,0,PAGE_SIZE);
-            *pmd = (uint64) P2V(pmd) | PTE_P | PTE_RW | PTE_U;
+            *pmd = (uint64)  V2P(PTE_ADDR(pmd)) | PTE_P | PTE_RW | PTE_U;
 
         } else {
 
@@ -158,7 +161,9 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
     serial_printf("address : %x.64 last : %x.64 size : %x.64\n",address,last,size);
-
+    if(address > last){
+        panic("Address larger than last!");
+    }
 
     for (;;) {
         if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
@@ -173,12 +178,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
         *pte = physaddr | perms | PTE_P;
 
-        if(address > last){
-            serial_printf("address : %x.64 last : %x.64 \n",address,last);
-            panic("here");
-        }
         if (address == last) {
-
             break;
         }
 
