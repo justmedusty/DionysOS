@@ -26,7 +26,6 @@ void switch_page_table(p4d_t *page_dir) {
 }
 
 void arch_init_vmm() {
-
     kernel_pg_map = (struct virt_map *) P2V(phys_alloc(1));
     memset(kernel_pg_map, 0, PAGE_SIZE);
     kernel_pg_map->top_level = P2V(phys_alloc(1));
