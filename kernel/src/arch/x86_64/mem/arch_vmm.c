@@ -65,23 +65,24 @@ void arch_init_vmm() {
         panic("Mapping rodata!");
     }
 
-    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n",(k_data_start - kernel_min + kernel_phys_min) + (k_data_end - k_data_start) );
+    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n", k_data_start, k_data_end );
 
-    if (map_pages(kernel_pg_map->top_level, V2P(k_data_start),k_data_start, PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, k_data_start - kernel_min + kernel_phys_min,k_data_start, PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
-
-
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0xFFFFFFFF) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
+
+
     serial_printf("Kernel page table built\n");
-    switch_page_table(kernel_pg_map->top_level);
+    serial_printf("Addr : %x.64",V2P(kernel_pg_map->top_level));
+    switch_page_table(V2P(kernel_pg_map->top_level));
+
     serial_printf("VMM mapped and initialized");
-    panic("");
 
 
 }
@@ -140,7 +141,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     if (!(*pte & PTE_P)) {
         if (alloc) {
             *pte = (uint64) kalloc(PAGE_SIZE);
-            memset(pte,0,PAGE_SIZE);
+            memset(*pte,0,PAGE_SIZE);
         } else {
             return 0;
         }
@@ -159,7 +160,6 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
-    serial_printf("address : %x.64 last : %x.64 size : %x.64\n",address,last,size);
     if(address > last){
         panic("Address larger than last!");
     }
