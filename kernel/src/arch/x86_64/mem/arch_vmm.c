@@ -73,12 +73,15 @@ void arch_init_vmm() {
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_P | PTE_RW, 0x10001000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0, 0, PTE_P | PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
+    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_P | PTE_RW, 0x100000000) == -1){
+        panic("Mapping first 4gb!");
+    }
 
-    serial_printf("Kernel page table built\n");
+    serial_printf("Kernel page table built in table located at %x.64\n",kernel_pg_map->top_level);
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
 
@@ -139,7 +142,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     if (!(*pte & PTE_P)) {
         if (alloc) {
             *pte = (uint64) kalloc(PAGE_SIZE);
-            memset(*pte,0,PAGE_SIZE);
+            memset(pte,0,PAGE_SIZE);
         } else {
             return 0;
         }
@@ -165,7 +168,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
         }
 
         if(*pte & PTE_P){
-            serial_printf("Remap! Address being remapped is %x.64\n",*pte);
+            //serial_printf("Remap! Address being remapped is %x.64\n",*pte);
             //panic("remap");
         }
 
