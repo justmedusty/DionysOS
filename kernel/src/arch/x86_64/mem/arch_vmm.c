@@ -71,7 +71,7 @@ void arch_init_vmm() {
         panic("Mapping data!");
     }
 
-    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min ,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level,  0 ,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
         panic("Mapping kernel!");
     }
 
@@ -91,8 +91,8 @@ void arch_init_vmm() {
     }
 
     serial_printf("Kernel page table built in table located at %x.64\n", V2P(kernel_pg_map->top_level));
-    panic("");
-    lcr3(V2P(kernel_pg_map->top_level));
+    switch_page_table(kernel_pg_map->top_level);
+    init_serial();
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
