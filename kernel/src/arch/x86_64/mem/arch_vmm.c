@@ -22,7 +22,7 @@ p4d_t *global_pg_dir = 0;
 struct virt_map *kernel_pg_map;
 
 void switch_page_table(p4d_t *page_dir) {
-    lcr3(V2P(page_dir));
+    lcr3(page_dir);
 }
 
 void arch_init_vmm() {
@@ -39,18 +39,18 @@ void arch_init_vmm() {
     /*
      * Map symbols in the linker script
      */
-    uint64 k_text_start = PGROUNDDOWN(text_start);
-    uint64 k_text_end = PGROUNDUP(text_end);
+    uint64 k_text_start = PGROUNDDOWN(&text_start);
+    uint64 k_text_end = PGROUNDUP(&text_end);
 
     serial_printf("  Ktext start %x.64 , Ktext end %x.64\n",k_text_start,k_text_end);
 
-    uint64 k_rodata_start = PGROUNDDOWN(rodata_start);
-    uint64 k_rodata_end = PGROUNDUP(rodata_end);
+    uint64 k_rodata_start = PGROUNDDOWN(&rodata_start);
+    uint64 k_rodata_end = PGROUNDUP(&rodata_end);
 
     serial_printf("Krodata start %x.64,Krodata end %x.64\n",k_rodata_start,k_rodata_end);
 
-    uint64 k_data_start = PGROUNDDOWN(data_start);
-    uint64 k_data_end = PGROUNDUP(data_end);
+    uint64 k_data_start = PGROUNDDOWN(&data_start);
+    uint64 k_data_end = PGROUNDUP(&data_end);
 
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
     serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,k_text_end);
@@ -86,11 +86,13 @@ void arch_init_vmm() {
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0xFFF, (void *)P2V(0), PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
+
     serial_printf("Kernel page table built in table located at %x.64\n", V2P(kernel_pg_map->top_level));
-    switch_page_table(kernel_pg_map->top_level);
+    panic("");
+    lcr3(V2P(kernel_pg_map->top_level));
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
