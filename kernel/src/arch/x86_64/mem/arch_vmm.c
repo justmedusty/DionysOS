@@ -55,21 +55,27 @@ void arch_init_vmm() {
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
     serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,k_text_end);
 
-    if (map_pages(kernel_pg_map->top_level, text_start - kernel_min + kernel_phys_min, k_text_start, 0, k_text_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, kernel_phys_min, kernel_min, 0, k_text_end - k_text_start) == -1) {
         panic("Mapping text!");
     }
 
     serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start,k_rodata_end);
 
-    if (map_pages(kernel_pg_map->top_level, k_rodata_start - kernel_min + kernel_phys_min,k_rodata_start, PTE_NX, k_rodata_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, kernel_phys_min + (text_end - text_start),kernel_min + (text_end - text_start), PTE_NX, k_rodata_end - k_text_start) == -1) {
         panic("Mapping rodata!");
     }
 
     serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n", k_data_start, k_data_end );
 
-    if (map_pages(kernel_pg_map->top_level, k_data_start - kernel_min + kernel_phys_min,k_data_start, PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min + (text_end - text_start) + (rodata_end - rodata_start),kernel_min + (text_end - text_start) + (rodata_end - rodata_start), PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
+
+    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min ,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
+        panic("Mapping kernel!");
+    }
+
+
 
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping

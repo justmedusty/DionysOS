@@ -42,6 +42,8 @@ extern char rodata_start[];
 extern char rodata_end[];
 extern char data_start[];
 extern char data_end[];
+extern char kernel_start[];
+extern char kernel_end[];
 
 void arch_init_vmm();
 void switch_page_table(p4d_t *page_dir);
