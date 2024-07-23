@@ -55,23 +55,25 @@ void arch_init_vmm() {
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
     serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,k_text_end);
 
-    if (map_pages(kernel_pg_map->top_level, kernel_phys_min, kernel_min, 0, k_text_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, kernel_phys_min, (uint64 *) kernel_min, 0, k_text_end - k_text_start) == -1) {
         panic("Mapping text!");
     }
 
     serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start,k_rodata_end);
 
-    if (map_pages(kernel_pg_map->top_level, kernel_phys_min + (text_end - text_start),kernel_min + (text_end - text_start), PTE_NX, k_rodata_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, kernel_phys_min + (text_end - text_start),
+                  (uint64 *) (kernel_min + (text_end - text_start)), PTE_NX, k_rodata_end - k_text_start) == -1) {
         panic("Mapping rodata!");
     }
 
     serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n", k_data_start, k_data_end );
 
-    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min + (text_end - text_start) + (rodata_end - rodata_start),kernel_min + (text_end - text_start) + (rodata_end - rodata_start), PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min + (text_end - text_start) + (rodata_end - rodata_start),
+                  (uint64 *) (kernel_min + (text_end - text_start) + (rodata_end - rodata_start)), PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
         panic("Mapping data!");
     }
 
-    if (map_pages(kernel_pg_map->top_level,  0,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, 0, (uint64 *) kernel_min, PTE_RW, kernel_end - kernel_start) == -1) {
         panic("Mapping kernel!");
     }
 
@@ -82,11 +84,11 @@ void arch_init_vmm() {
      */
 
     serial_printf("Mapping HHDM\n");
-    if(map_pages(kernel_pg_map->top_level, 0 , kernel_min, PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0 , 0, PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0, kernel_min, PTE_RW, 0x100000000) == -1) {
+    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_RW, 0x100000000) == -1) {
         panic("Mapping first 4gb!");
     }
 
@@ -162,13 +164,13 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 size) {
 
 
-    char *address, *last;
+    uint64 address, last;
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
     last = PGROUNDDOWN(((uint64) va) + size - 1);
   
     for (;;) {
-        if ((pte = walkpgdir(pgdir, address, 1)) == 0) {
+        if ((pte = walkpgdir(pgdir, (void *) address, 1)) == 0) {
             return -1;
         }
 

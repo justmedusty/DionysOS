@@ -8,7 +8,7 @@
 
 void arch_atomic_swap(uint64 *field, uint64 new_value){
     // The xchg is atomic.
-    while(xchg(*field, new_value) != 0)
+    while(xchg(field, new_value) != 0)
         ;
 
     // Tell the C compiler and the processor to not move loads or stores
