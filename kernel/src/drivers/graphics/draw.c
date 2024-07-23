@@ -10,7 +10,7 @@
 void draw_char(uint32 *framebuffer, int32 fb_width, int32 fb_height, int32 fb_pitch,int8 c, int32 x, int32 y, uint32 color) {
 
     if (c < 0 || c >= 128) return; // Ensure the character is within the font bounds
-    const uint8 *bitmap = default_font.data[(int32)c];
+    const uint8 *bitmap = &default_font.data[(int32)c];
     for (int cy = 0; cy < 8; cy++) { // 8 rows for each character
         for (int cx = 0; cx < 8; cx++) { // 8 columns for each character
             if (bitmap[cy] & (1 << (7 - cx))) { // Check if the pixel should be set
@@ -22,4 +22,3 @@ void draw_char(uint32 *framebuffer, int32 fb_width, int32 fb_height, int32 fb_pi
         }
     }
 }
-

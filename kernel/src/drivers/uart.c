@@ -184,7 +184,7 @@ void serial_printf(char *str, ...) {
 
                 case 's': {
                     char *value = va_arg(args,
-                    char);
+                    char*);
                     write_string_serial(value);
                     break;
                 }

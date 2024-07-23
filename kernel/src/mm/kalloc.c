@@ -5,6 +5,8 @@
 #include "include/pmm.h"
 #include "include/kalloc.h"
 #include "include/slab.h"
+#include "include/uart.h"
+#include "include/mem.h"
 
 
 /*
