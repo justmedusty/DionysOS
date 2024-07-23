@@ -22,7 +22,7 @@ p4d_t *global_pg_dir = 0;
 struct virt_map *kernel_pg_map;
 
 void switch_page_table(p4d_t *page_dir) {
-    lcr3(page_dir);
+    lcr3((uint64)V2P(page_dir));
 }
 
 void arch_init_vmm() {
@@ -71,7 +71,7 @@ void arch_init_vmm() {
         panic("Mapping data!");
     }
 
-    if (map_pages(kernel_pg_map->top_level,  0 ,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level,  0,kernel_min ,  PTE_RW, kernel_end - kernel_start) == -1) {
         panic("Mapping kernel!");
     }
 
@@ -82,17 +82,16 @@ void arch_init_vmm() {
      */
 
     serial_printf("Mapping HHDM\n");
-    if(map_pages(kernel_pg_map->top_level, 0 , 0, PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0 , kernel_min, PTE_RW, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0, kernel_min, PTE_RW, 0x100000000) == -1) {
         panic("Mapping first 4gb!");
     }
 
     serial_printf("Kernel page table built in table located at %x.64\n", V2P(kernel_pg_map->top_level));
     switch_page_table(kernel_pg_map->top_level);
-    init_serial();
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
