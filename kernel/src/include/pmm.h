@@ -6,8 +6,7 @@
 #include "limine.h"
 
 extern volatile struct limine_hhdm_request hhdm_request;
-extern volatile struct limine_memmap_response *memmap;
-extern volatile struct limine_memmap_entry **entries;
+extern volatile struct limine_memmap_request memmap_request;
 #define PAGE_SIZE 4096
 extern uint64 hhdm_offset;
 int phys_init();

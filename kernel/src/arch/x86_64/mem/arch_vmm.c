@@ -78,6 +78,8 @@ void arch_init_vmm() {
     if(map_pages(kernel_pg_map->top_level, 0 , 0 + hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
+    struct limine_memmap_response *memmap = memmap_request.response;
+    struct limine_memmap_entry **entries = memmap->entries;
 
     for(uint64 i = 0;i < memmap->entry_count;i++){
         uint64 base = ALIGN_DOWN(entries[i]->base,PAGE_SIZE);
@@ -96,11 +98,12 @@ void arch_init_vmm() {
         }
 
     }
+    serial_printf("Mapped limine memory map into kernel page table\n");
 
 
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3((uint64) kernel_pg_map->top_level);
+    lcr3(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
