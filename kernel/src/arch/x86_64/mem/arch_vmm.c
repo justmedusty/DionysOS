@@ -71,14 +71,30 @@ void arch_init_vmm() {
         panic("Mapping data!");
     }
 
-
-
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
     serial_printf("Mapping HHDM\n");
     if(map_pages(kernel_pg_map->top_level, 0 , 0 + hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
+    }
+
+    for(uint64 i = 0;i < memmap->entry_count;i++){
+        uint64 base = ALIGN_DOWN(entries[i]->base,PAGE_SIZE);
+        uint64 top  = ALIGN_UP(entries[i]->base + entries[i]->length,PAGE_SIZE);
+        if(top < 0x100000000){
+            continue;
+        }
+        for(uint64 j = base; j < top;j+=PAGE_SIZE ){
+            if(j < (uint64)0x100000000){
+                continue;
+            }
+           if(map_pages(kernel_pg_map->top_level, j ,j+ hhdm_offset,PTE_NX | PTE_RW,PAGE_SIZE) == -1){
+               panic("hhdm mapping");
+           }
+
+        }
+
     }
 
 
@@ -183,8 +199,6 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
 
     }
-    serial_printf("Area mapped, final virt addr : %x.64\n",address);
-
     return 0;
 }
 
