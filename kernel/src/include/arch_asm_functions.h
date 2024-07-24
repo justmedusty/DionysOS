@@ -145,12 +145,12 @@ static inline uint64 rcr2(void) {
 
 // Loads a value into the CR3 register.
 static inline void lcr3(uint64 val) {
-    asm volatile("movq %0,%%cr3" : : "r" (val));
+    asm volatile("mov %0,%%cr3" : : "r" (val));
 }
 
 // reads a value from the CR3 register.
 static inline void rcr3(uint64 destination) {
-    asm volatile("movq %%cr3,%0" : "=r"(destination));
+    asm volatile("mov %%cr3,%0" : "=r"(destination));
 }
 
 

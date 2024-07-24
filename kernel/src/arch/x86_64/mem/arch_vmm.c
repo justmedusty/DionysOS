@@ -81,8 +81,10 @@ void arch_init_vmm() {
         panic("Mapping first 4gb!");
     }
 
+
+
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    switch_page_table(kernel_pg_map->top_level);
+    lcr3((uint64) kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
@@ -110,7 +112,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
         if (alloc) {
 
-            *pud = (uint64) kalloc(PAGE_SIZE);
+            *pud = (uint64) phys_alloc(1);
             memset(pud,0,PAGE_SIZE);
             *pud = (uint64) V2P(PTE_ADDR(pud)) | PTE_P | PTE_RW | PTE_U;
 
@@ -124,7 +126,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
         if (alloc) {
 
-            *pmd = (uint64) kalloc(PAGE_SIZE);
+            *pmd = (uint64) phys_alloc(1);
             memset(pmd,0,PAGE_SIZE);
             *pmd = (uint64)  V2P(PTE_ADDR(pmd)) | PTE_P | PTE_RW | PTE_U;
 
@@ -137,7 +139,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     if (!(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) kalloc(PAGE_SIZE);
+            *pte = (uint64) phys_alloc(1);
             memset(pte,0,PAGE_SIZE);
         } else {
             return 0;
@@ -151,8 +153,6 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
  * Maps pages from VA/PA to size in page size increments.
  */
 int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 size) {
-    size = PGROUNDDOWN(size);
-
 
     uint64 address, last;
     pte_t *pte;
