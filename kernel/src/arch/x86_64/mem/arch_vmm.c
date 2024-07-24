@@ -53,28 +53,22 @@ void arch_init_vmm() {
     uint64 k_data_end = PGROUNDUP(&data_end);
 
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n",k_data_start,k_data_end);
-    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",k_text_start,k_text_end);
+    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n",text_start,text_end);
 
-    if (map_pages(kernel_pg_map->top_level, kernel_phys_min, (uint64 *) kernel_min, 0, k_text_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64 *) rodata_start, 0, (uint64) text_end - (uint64) text_start) == -1) {
         panic("Mapping text!");
     }
 
-    serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",k_rodata_start,k_rodata_end);
+    serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n",rodata_start,rodata_end);
 
-    if (map_pages(kernel_pg_map->top_level, kernel_phys_min + (text_end - text_start),
-                  (uint64 *) (kernel_min + (text_end - text_start)), PTE_NX, k_rodata_end - k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64 *) rodata_start, PTE_NX, (uint64) rodata_end - (uint64) text_start) == -1) {
         panic("Mapping rodata!");
     }
 
-    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n", k_data_start, k_data_end );
+    serial_printf("Mapping kernel data Start: %x.64 End: %x.64\n", data_start, data_end );
 
-    if (map_pages(kernel_pg_map->top_level,  kernel_phys_min + (text_end - text_start) + (rodata_end - rodata_start),
-                  (uint64 *) (kernel_min + (text_end - text_start) + (rodata_end - rodata_start)), PTE_NX | PTE_RW, k_data_end - k_data_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_data_start - kernel_min) + kernel_phys_min, (uint64 *) data_start, PTE_NX | PTE_RW, (uint64) data_end - (uint64) data_start) == -1) {
         panic("Mapping data!");
-    }
-
-    if (map_pages(kernel_pg_map->top_level, 0, (uint64 *) kernel_min, PTE_RW, kernel_end - kernel_start) == -1) {
-        panic("Mapping kernel!");
     }
 
 
@@ -82,17 +76,12 @@ void arch_init_vmm() {
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-
     serial_printf("Mapping HHDM\n");
-    if(map_pages(kernel_pg_map->top_level, 0 , 0, PTE_RW, 0x100000000) == -1){
+    if(map_pages(kernel_pg_map->top_level, 0 , 0 + hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
-    if(map_pages(kernel_pg_map->top_level, 0, P2V(0), PTE_RW, 0x100000000) == -1) {
-        panic("Mapping first 4gb!");
-    }
-
-    serial_printf("Kernel page table built in table located at %x.64\n", V2P(kernel_pg_map->top_level));
+    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
@@ -162,6 +151,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
  * Maps pages from VA/PA to size in page size increments.
  */
 int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 size) {
+    size = PGROUNDDOWN(size);
 
 
     uint64 address, last;
@@ -175,6 +165,9 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
         }
 
         if(*pte & PTE_P){
+            /*
+             * Can either keep the xv6 panic in here or can free it but will leave it for now
+             */
             //serial_printf("Remap! Address being remapped is %x.64\n",*pte);
             //panic("remap");
         }

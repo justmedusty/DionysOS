@@ -77,5 +77,4 @@ SECTIONS
         *(.note .note.*)
         *(.interp)
     }
-    kernel_end = .;
 }

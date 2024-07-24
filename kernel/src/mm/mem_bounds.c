@@ -24,7 +24,7 @@ static volatile struct limine_kernel_address_request kernel_address_request = {
 void mem_bounds_init() {
     // kernel's virtual memory bounds
     kernel_min = kernel_address_request.response->virtual_base;
-    kernel_max = *(uint64 *) &end;
+    kernel_max = (uint64 *) end;
     kernel_size = kernel_max - kernel_min;
 
     /* The kernel's phys memory bounds */
@@ -37,7 +37,7 @@ void mem_bounds_init() {
     userspace_addr_size = (userspace_addr_max / PAGE_SIZE) * PAGE_SIZE;
     userspace_addr_size = userspace_addr_max - userspace_addr_min;
 
-    serial_printf("Bounds Initialized. Kernel size : %x\n",kernel_size);
+    serial_printf("Bounds Discovered. Kernel size : %x\n",kernel_size);
     serial_printf("Kernel upper virtual limit : %x\n",kernel_max);
     serial_printf("Kernel lower virtual limit : %x\n",kernel_min);
     serial_printf("Kernel upper physical limit : %x\n",kernel_phys_max);
