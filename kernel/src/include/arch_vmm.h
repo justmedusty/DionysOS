@@ -3,9 +3,12 @@
 //
 
 #pragma once
-
-#define ALIGN_UP(value,aligned_to) ((uint64)value + ((uint64)aligned_to-1) / (uint64)aligned_to) * (uint64)aligned_to
-#define ALIGN_DOWN(value,aligned_to) ((uint64)value / (uint64)aligned_to) * (uint64)aligned_to
+/*
+ * x = value, y = align by
+ */
+#define DIV_ROUND_UP(x,y) (x + (y -1)) / y
+#define ALIGN_UP(x,y) DIV_ROUND_UP(x,y) * y
+#define ALIGN_DOWN(x,y) (x / y) * y
 
 static inline void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
