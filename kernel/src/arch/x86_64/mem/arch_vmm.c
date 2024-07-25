@@ -31,9 +31,9 @@ void arch_init_vmm() {
 
     kernel_pg_map = (struct virt_map *) kalloc(sizeof kernel_pg_map);
     memset(kernel_pg_map, 0, sizeof kernel_pg_map);
-    kernel_pg_map->top_level = kalloc(PAGE_SIZE);
+    kernel_pg_map->top_level = P2V(phys_alloc(1));
     memset(kernel_pg_map->top_level, 0, PAGE_SIZE);
-    kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
+    kernel_pg_map->vm_region_head =  P2V(phys_alloc(1));
     memset(kernel_pg_map->vm_region_head, 0, PAGE_SIZE);
 
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
@@ -108,7 +108,7 @@ void arch_init_vmm() {
 
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3(kernel_pg_map->top_level);
+    lcr3(kernel_pg_map->top_level - hhdm_offset);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
