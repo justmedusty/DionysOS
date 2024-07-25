@@ -35,7 +35,7 @@ typedef struct virtual_region {
 } virtual_region;
 
 typedef struct virt_map {
-    void *top_level;
+    uint64 *top_level;
     struct virtual_region *vm_region_head;
 };
 

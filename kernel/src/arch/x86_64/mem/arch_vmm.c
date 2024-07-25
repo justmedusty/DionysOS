@@ -107,8 +107,8 @@ void arch_init_vmm() {
     serial_printf("Mapped limine memory map into kernel page table\n");
 
 
-    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3(kernel_pg_map->top_level - hhdm_offset);
+    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level - hhdm_offset);
+    lcr3((uint64)kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
@@ -130,41 +130,37 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t *pud = &pgdir[pud_idx];
+    pud_t *pud = P2V(&pgdir[pud_idx]);
 
     if (!(*pud & PTE_P)) {
 
         if (alloc) {
-
             *pud = (uint64) phys_alloc(1);
-            memset(pud, 0, PAGE_SIZE);
-            *pud = (uint64) V2P(PTE_ADDR(pud)) | PTE_P | PTE_RW | PTE_U;
+            *pud |= PTE_P | PTE_RW | PTE_U;
 
         } else {
             return 0;
         }
     }
-    pmd_t *pmd = &pud[pmd_idx];
+    pmd_t *pmd = P2V(&pud[pmd_idx]);
 
     if (!(*pmd & PTE_P)) {
 
         if (alloc) {
 
             *pmd = (uint64) phys_alloc(1);
-            memset(pmd, 0, PAGE_SIZE);
-            *pmd = (uint64) V2P(PTE_ADDR(pmd)) | PTE_P | PTE_RW | PTE_U;
+            *pmd |=  PTE_P | PTE_RW | PTE_U;
 
         } else {
             return 0;
         }
     }
 
-    pte_t *pte = &pmd[pte_idx];
+    pte_t *pte = P2V(&pmd[pte_idx]);
 
     if (!(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) phys_alloc(1);
-            memset(pte, 0, PAGE_SIZE);
+            *pte = (uint64) P2V(phys_alloc(1));
         } else {
             return 0;
         }
