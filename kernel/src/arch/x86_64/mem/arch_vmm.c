@@ -119,24 +119,36 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         return 0;
     }
 
-
+    p4d_t p4d_idx = P4DX(va);
     pud_t pud_idx = PUDX(va);
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
 
+    p4d_t *p4d = &pgdir[p4d_idx];
 
-    pud_t *pud = &pgdir[pud_idx];
-    if (!(*pud & PTE_P)) {
+
+    if(!(*p4d & PTE_P)){
         if (alloc) {
-            *pud = (uint64) kalloc(PAGE_SIZE);
-            *pud |= PTE_P | PTE_RW | PTE_U;
-
+            *p4d = (uint64) kalloc(PAGE_SIZE);
+            *p4d |= PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
+    pud_t *pud = &p4d[pud_idx];
+
+    if (!(*pud & PTE_P)) {
+        if (alloc) {
+            *pud = (uint64) kalloc(PAGE_SIZE);
+            *pud |= PTE_P | PTE_RW | PTE_U;
+        } else {
+            return 0;
+        }
+    }
+
     pmd_t *pmd = &pud[pmd_idx];
+
 
     if (!(*pmd & PTE_P)) {
 
@@ -144,6 +156,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
             *pmd = (uint64) kalloc(PAGE_SIZE);
             *pmd |=  PTE_P | PTE_RW | PTE_U;
+            panic("");
 
         } else {
             return 0;
@@ -151,6 +164,8 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     }
 
     pte_t *pte = &pmd[pte_idx];
+
+
     if (!(*pte & PTE_P)) {
         if (alloc) {
             *pte = (uint64) kalloc(PAGE_SIZE);
