@@ -124,6 +124,8 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
+
+
     pud_t *pud = &pgdir[pud_idx];
     if (!(*pud & PTE_P)) {
         if (alloc) {
@@ -149,16 +151,17 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     }
 
     pte_t *pte = &pmd[pte_idx];
-
     if (!(*pte & PTE_P)) {
         if (alloc) {
             *pte = (uint64) kalloc(PAGE_SIZE);
+            *pte |=  PTE_P | PTE_RW | PTE_U;
+
         } else {
             return 0;
         }
     }
 
-    return pte;
+    return &pte[pte_idx];
 }
 
 /*
