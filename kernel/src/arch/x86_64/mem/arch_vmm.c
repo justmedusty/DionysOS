@@ -27,7 +27,7 @@ void switch_page_table(p4d_t *page_dir) {
 
 void arch_init_vmm() {
 
-    kernel_pg_map = (struct virt_map *) kalloc(sizeof kernel_pg_map);
+    kernel_pg_map = kalloc(PAGE_SIZE);
     kernel_pg_map->top_level = kalloc(PAGE_SIZE);
     memset(kernel_pg_map->top_level, 0, PAGE_SIZE);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
@@ -51,9 +51,9 @@ void arch_init_vmm() {
 
     uint64 k_data_start = PGROUNDDOWN(&data_start);
     uint64 k_data_end = PGROUNDUP(&data_end);
-
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n", k_data_start, k_data_end);
-    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n", text_start, text_end);
+
+    serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n", text_start, &text_end);
     if (map_pages(kernel_pg_map->top_level, (text_start - kernel_min) + kernel_phys_min, (uint64 *) text_start, 0,(uint64) text_end - (uint64) text_start) == -1) {
         panic("Mapping text!");
     }
@@ -101,10 +101,8 @@ void arch_init_vmm() {
 
     }
     serial_printf("Mapped limine memory map into kernel page table\n");
-
-
-    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level - hhdm_offset);
-    lcr3((uint64)kernel_pg_map->top_level);
+    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
+    lcr3(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
@@ -126,27 +124,23 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t *pud = P2V(&pgdir[pud_idx]);
-    serial_printf("%x.64\n",*pud);
-
+    pud_t *pud = &pgdir[pud_idx];
     if (!(*pud & PTE_P)) {
-        panic("");
-
         if (alloc) {
-            pud = (uint64) kalloc(PAGE_SIZE);
+            *pud = (uint64) kalloc(PAGE_SIZE);
             *pud |= PTE_P | PTE_RW | PTE_U;
 
         } else {
             return 0;
         }
     }
-    pmd_t *pmd = P2V(&pud[pmd_idx]);
+    pmd_t *pmd = &pud[pmd_idx];
 
     if (!(*pmd & PTE_P)) {
 
         if (alloc) {
 
-            pmd = (uint64) kalloc(PAGE_SIZE);
+            *pmd = (uint64) kalloc(PAGE_SIZE);
             *pmd |=  PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -154,17 +148,17 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         }
     }
 
-    pte_t *pte = P2V(&pmd[pte_idx]);
+    pte_t *pte = &pmd[pte_idx];
 
     if (!(*pte & PTE_P)) {
         if (alloc) {
-            pte = (uint64) kalloc(PAGE_SIZE);
+            *pte = (uint64) kalloc(PAGE_SIZE);
         } else {
             return 0;
         }
     }
 
-    return *pte;
+    return pte;
 }
 
 /*
