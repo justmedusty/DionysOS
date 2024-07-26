@@ -7,6 +7,7 @@
 #include "include/slab.h"
 #include "include/uart.h"
 #include "include/mem.h"
+#include "include/arch_paging.h"
 
 
 /*
@@ -42,13 +43,12 @@ void *kalloc(uint64 size) {
     }
 
     uint64 page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
-    void *return_value = phys_alloc(page_count + 1);
+    void *return_value = P2V(phys_alloc(page_count + 1));
 
     if (return_value == NULL) {
         return NULL;
     }
 
-    return_value += hhdm_request.response->offset;
     metadata_t *metadata = (metadata_t *) return_value;
 
     metadata->pages = page_count;

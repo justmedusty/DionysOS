@@ -27,13 +27,10 @@ void switch_page_table(p4d_t *page_dir) {
 
 void arch_init_vmm() {
 
-    uint64 *page_tb = rcr3();
-
     kernel_pg_map = (struct virt_map *) kalloc(sizeof kernel_pg_map);
-    memset(kernel_pg_map, 0, sizeof kernel_pg_map);
-    kernel_pg_map->top_level = P2V(phys_alloc(1));
+    kernel_pg_map->top_level = kalloc(PAGE_SIZE);
     memset(kernel_pg_map->top_level, 0, PAGE_SIZE);
-    kernel_pg_map->vm_region_head =  P2V(phys_alloc(1));
+    kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     memset(kernel_pg_map->vm_region_head, 0, PAGE_SIZE);
 
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
@@ -57,16 +54,13 @@ void arch_init_vmm() {
 
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n", k_data_start, k_data_end);
     serial_printf("Mapping kernel text Start: %x.64 End: %x.64\n", text_start, text_end);
-
-    if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64 *) rodata_start, 0,
-                  (uint64) text_end - (uint64) text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (text_start - kernel_min) + kernel_phys_min, (uint64 *) text_start, 0,(uint64) text_end - (uint64) text_start) == -1) {
         panic("Mapping text!");
     }
 
     serial_printf("Mapping kernel rodata Start: %x.64 End: %x.64\n", rodata_start, rodata_end);
 
-    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64 *) rodata_start,
-                  PTE_NX, (uint64) rodata_end - (uint64) text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64 *) rodata_start,PTE_NX, (uint64) rodata_end - (uint64) text_start) == -1) {
         panic("Mapping rodata!");
     }
 
@@ -81,9 +75,11 @@ void arch_init_vmm() {
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
     serial_printf("Mapping HHDM\n");
+
     if (map_pages(kernel_pg_map->top_level, 0, 0 + hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1) {
         panic("Mapping first 4gb!");
     }
+
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
 
@@ -131,11 +127,13 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pte_t pte_idx = PTX(va);
 
     pud_t *pud = P2V(&pgdir[pud_idx]);
+    serial_printf("%x.64\n",*pud);
 
     if (!(*pud & PTE_P)) {
+        panic("");
 
         if (alloc) {
-            *pud = (uint64) phys_alloc(1);
+            pud = (uint64) kalloc(PAGE_SIZE);
             *pud |= PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -148,7 +146,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
         if (alloc) {
 
-            *pmd = (uint64) phys_alloc(1);
+            pmd = (uint64) kalloc(PAGE_SIZE);
             *pmd |=  PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -160,13 +158,13 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     if (!(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) P2V(phys_alloc(1));
+            pte = (uint64) kalloc(PAGE_SIZE);
         } else {
             return 0;
         }
     }
 
-    return pte;
+    return *pte;
 }
 
 /*
@@ -177,12 +175,12 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
     uint64 address, last;
     pte_t *pte;
     address = PGROUNDDOWN((uint64) va);
-    last = PGROUNDDOWN(((uint64) va) + size - 1);
-
+    last = PGROUNDUP(((uint64) va) + size - 1);
     for (;;) {
         if ((pte = walkpgdir(pgdir, (void *) address, 1)) == 0) {
             return -1;
         }
+
 
         if (*pte & PTE_P) {
             /*
@@ -203,6 +201,7 @@ int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms, uint64 si
 
 
     }
+
     return 0;
 }
 
