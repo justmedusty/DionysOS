@@ -50,4 +50,4 @@ extern char kernel_end[];
 
 void arch_init_vmm();
 void switch_page_table(p4d_t *page_dir);
-int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint64 size,int init);
+int map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint64 size);
