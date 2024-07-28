@@ -124,26 +124,24 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
 
     p4d_t *p4d = pgdir;
-    pud_t *pud = &p4d[p4d_idx] + hhdm_offset;
+    pud_t *pud = (pud_t *) &p4d[p4d_idx] + hhdm_offset;
 
     if (*pud & PTE_P) {
-
     } else {
 
         if (alloc) {
-            *pud = (uint64) phys_alloc(1);
+            *pud = (pud_t *) phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
-
     pmd_t *pmd = &pud[pud_idx] + hhdm_offset;
     if (*pmd & PTE_P) {
 
     }else{
         if (alloc) {
-            *pmd = (uint64) phys_alloc(1);
+            *pmd = (pmd_t *) phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -158,7 +156,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     }else{
         if (alloc) {
-            *pte = (uint64) phys_alloc(1);
+            *pte = (pte_t *) phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
 
         } else {
