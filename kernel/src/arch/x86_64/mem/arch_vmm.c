@@ -128,7 +128,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
 
     p4d_t *p4d = pgdir;
-    pud_t *pud = &p4d[pud_idx];
+    pud_t *pud = &p4d[p4d_idx];
 
 
     if (*pud & PTE_P) {

@@ -148,7 +148,6 @@ void *phys_alloc(uint64 pages) {
     }
     used_pages += pages;
     if(return_value != NULL){
-        serial_printf("%x.64 return val , pages %x.16",return_value,pages);
         memset(P2V(return_value),0,PAGE_SIZE * pages);
     }
     return return_value;
