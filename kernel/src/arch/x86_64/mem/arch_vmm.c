@@ -124,22 +124,16 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pte_t pte_idx = PTX(va);
 
 
-    p4d_t *p4d = &pgdir[p4d_idx];
 
 
-    if(!(*p4d & PTE_P)){
-        if (alloc) {
-            *p4d = (uint64) kalloc(PAGE_SIZE);
-            *p4d |= PTE_P | PTE_RW | PTE_U;
-        } else {
-            return 0;
-        }
-    }
+    p4d_t *p4d = pgdir;
+
     pud_t *pud = &p4d[pud_idx];
 
     if (!(*pud & PTE_P)) {
         if (alloc) {
-            *pud = (uint64) kalloc(PAGE_SIZE);
+            *pud = (uint64) phys_alloc(1);
+            memset(*pud,0,PAGE_SIZE);
             *pud |= PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
@@ -153,8 +147,8 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     if (!(*pmd & PTE_P)) {
 
         if (alloc) {
-
-            *pmd = (uint64) kalloc(PAGE_SIZE);
+            *pmd = (uint64) phys_alloc(1);
+            memset(*pmd,0,PAGE_SIZE);
             *pmd |=  PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -167,7 +161,8 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     if (!(*pte & PTE_P)) {
         if (alloc) {
-            *pte = (uint64) kalloc(PAGE_SIZE);
+            *pte = (uint64) phys_alloc(1);
+            memset(*pte,0,PAGE_SIZE);
             *pte |=  PTE_P | PTE_RW | PTE_U;
 
         } else {
