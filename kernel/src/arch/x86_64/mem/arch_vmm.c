@@ -28,10 +28,8 @@ void switch_page_table(p4d_t *page_dir) {
 void arch_init_vmm() {
 
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = kalloc(PAGE_SIZE);
-    memset(kernel_pg_map->top_level, 0, PAGE_SIZE);
+    kernel_pg_map->top_level = phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
-    memset(kernel_pg_map->vm_region_head, 0, PAGE_SIZE);
 
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
@@ -52,8 +50,6 @@ void arch_init_vmm() {
     uint64 k_data_start = ALIGN_DOWN((uint64) &data_start, PAGE_SIZE);
     uint64 k_data_end = ALIGN_UP((uint64) &data_end, PAGE_SIZE);
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n", k_data_start, k_data_end);
-
-
     if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64 *) k_text_start, 0,
                   (uint64) k_text_end - (uint64) k_text_start) == -1) {
         panic("Mapping text!");
@@ -128,8 +124,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
 
     p4d_t *p4d = pgdir;
-    pud_t *pud = &p4d[p4d_idx];
-
+    pud_t *pud = &p4d[p4d_idx] + hhdm_offset;
 
     if (*pud & PTE_P) {
 
@@ -143,9 +138,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         }
     }
 
-    pmd_t *pmd = &pud[pud_idx];
-
-
+    pmd_t *pmd = &pud[pud_idx] + hhdm_offset;
     if (*pmd & PTE_P) {
 
     }else{
@@ -158,7 +151,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         }
     }
 
-    pte_t *pte = &pmd[pmd_idx];
+    pte_t *pte = &pmd[pmd_idx] + hhdm_offset;
 
 
     if (*pte & PTE_P) {
@@ -173,7 +166,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
         }
     }
 
-    return &pte[pte_idx];
+    return &pte[pte_idx] + hhdm_offset;
 }
 
 /*
