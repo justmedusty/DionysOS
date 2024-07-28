@@ -22,7 +22,7 @@ p4d_t *global_pg_dir = 0;
 struct virt_map *kernel_pg_map;
 
 void switch_page_table(p4d_t *page_dir) {
-    lcr3((uint64)(page_dir));
+    lcr3((uint64) (page_dir));
 }
 
 void arch_init_vmm() {
@@ -40,33 +40,36 @@ void arch_init_vmm() {
      * Map symbols in the linker script
      */
     uint64 k_text_start = ALIGN_DOWN((uint64) &text_start, PAGE_SIZE);
-    uint64 k_text_end = ALIGN_UP((uint64) &text_end,PAGE_SIZE);
+    uint64 k_text_end = ALIGN_UP((uint64) &text_end, PAGE_SIZE);
 
     serial_printf("  Ktext start %x.64 , Ktext end %x.64\n", k_text_start, k_text_end);
 
-    uint64 k_rodata_start =  ALIGN_DOWN((uint64) &rodata_start, PAGE_SIZE);
-    uint64 k_rodata_end =  ALIGN_UP((uint64) &rodata_end, PAGE_SIZE);
+    uint64 k_rodata_start = ALIGN_DOWN((uint64) &rodata_start, PAGE_SIZE);
+    uint64 k_rodata_end = ALIGN_UP((uint64) &rodata_end, PAGE_SIZE);
 
     serial_printf("Krodata start %x.64,Krodata end %x.64\n", k_rodata_start, k_rodata_end);
 
-    uint64 k_data_start =  ALIGN_DOWN((uint64) &data_start, PAGE_SIZE);
-    uint64 k_data_end =  ALIGN_UP((uint64) &data_end, PAGE_SIZE);
+    uint64 k_data_start = ALIGN_DOWN((uint64) &data_start, PAGE_SIZE);
+    uint64 k_data_end = ALIGN_UP((uint64) &data_end, PAGE_SIZE);
     serial_printf("  Kdata start %x.64 , Kdata end %x.64\n", k_data_start, k_data_end);
 
 
-    if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64 *) k_text_start, 0,(uint64) k_text_end - (uint64) k_text_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64 *) k_text_start, 0,
+                  (uint64) k_text_end - (uint64) k_text_start) == -1) {
         panic("Mapping text!");
     }
     serial_printf("Kernel Text Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64 *) k_rodata_start,PTE_NX, (uint64) k_rodata_end - (uint64) k_rodata_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64 *) k_rodata_start,
+                  PTE_NX, (uint64) k_rodata_end - (uint64) k_rodata_start) == -1) {
         panic("Mapping rodata!");
     }
     serial_printf("Kernel Rodata Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (k_data_start - kernel_min) + kernel_phys_min, (uint64 *) k_data_start,PTE_NX | PTE_RW, (uint64) k_data_end - (uint64) k_data_start) == -1) {
+    if (map_pages(kernel_pg_map->top_level, (k_data_start - kernel_min) + kernel_phys_min, (uint64 *) k_data_start,
+                  PTE_NX | PTE_RW, (uint64) k_data_end - (uint64) k_data_start) == -1) {
         panic("Mapping data!");
     }
     serial_printf("Kernel Data Mapped\n");
@@ -124,46 +127,46 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
     pte_t pte_idx = PTX(va);
 
 
-
-
     p4d_t *p4d = pgdir;
-
     pud_t *pud = &p4d[pud_idx];
 
-    if (!(*pud & PTE_P)) {
+
+    if (*pud & PTE_P) {
+
+    } else {
+
         if (alloc) {
             *pud = (uint64) phys_alloc(1);
-            memset(*pud,0,PAGE_SIZE);
             *pud |= PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
         }
     }
 
+    pmd_t *pmd = &pud[pud_idx];
 
-    pmd_t *pmd = &pud[pmd_idx];
 
+    if (*pmd & PTE_P) {
 
-    if (!(*pmd & PTE_P)) {
-
+    }else{
         if (alloc) {
             *pmd = (uint64) phys_alloc(1);
-            memset(*pmd,0,PAGE_SIZE);
-            *pmd |=  PTE_P | PTE_RW | PTE_U;
+            *pmd |= PTE_P | PTE_RW | PTE_U;
 
         } else {
             return 0;
         }
     }
 
-    pte_t *pte = &pmd[pte_idx];
+    pte_t *pte = &pmd[pmd_idx];
 
 
-    if (!(*pte & PTE_P)) {
+    if (*pte & PTE_P) {
+
+    }else{
         if (alloc) {
             *pte = (uint64) phys_alloc(1);
-            memset(*pte,0,PAGE_SIZE);
-            *pte |=  PTE_P | PTE_RW | PTE_U;
+            *pte |= PTE_P | PTE_RW | PTE_U;
 
         } else {
             return 0;
