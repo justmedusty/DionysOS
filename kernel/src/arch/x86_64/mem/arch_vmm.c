@@ -32,13 +32,12 @@ void arch_init_vmm() {
     kernel_pg_map->top_level = phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
 
-    kernel_pg_map->vm_region_head->next  = kernel_pg_map->vm_region_head;
+    kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
-    for(int i =0;i<512;i++){
-        kernel_pg_map->top_level + hhdm_offset + (i * 8) = phys_alloc(1);
-        }
-    panic("");
+    for (int i = 0; i < 512; i++) {
+        *((uint64 *)((kernel_pg_map)->top_level) + (hhdm_offset) + (sizeof(uint64) + i)) = phys_alloc(1);
+    }
 
     /*
      * Map symbols in the linker script
@@ -131,8 +130,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
 
     p4d_t *p4d = pgdir;
-    pud_t *pud = (pud_t *) &p4d[p4d_idx];
-
+    pud_t *pud = (pud_t *) &p4d[p4d_idx] + hhdm_offset;
     if (*pud & PTE_P) {
 
     } else {
