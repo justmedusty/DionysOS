@@ -27,16 +27,23 @@ void switch_page_table(p4d_t *page_dir) {
 
 void arch_init_vmm() {
 
+
     kernel_pg_map = kalloc(PAGE_SIZE);
     kernel_pg_map->top_level = phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
 
-    kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
+    kernel_pg_map->vm_region_head->next  = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
+
+    for(int i =0;i<512;i++){
+        kernel_pg_map->top_level + hhdm_offset + (i * 8) = phys_alloc(1);
+        }
+    panic("");
 
     /*
      * Map symbols in the linker script
      */
+
     uint64 k_text_start = ALIGN_DOWN((uint64) &text_start, PAGE_SIZE);
     uint64 k_text_end = ALIGN_UP((uint64) &text_end, PAGE_SIZE);
 
@@ -124,11 +131,11 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
 
     p4d_t *p4d = pgdir;
-    pud_t *pud = (pud_t *) &p4d[p4d_idx] + hhdm_offset;
+    pud_t *pud = (pud_t *) &p4d[p4d_idx];
 
     if (*pud & PTE_P) {
-    } else {
 
+    } else {
         if (alloc) {
             *pud = (pud_t *) phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
@@ -136,10 +143,12 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
             return 0;
         }
     }
+
     pmd_t *pmd = &pud[pud_idx] + hhdm_offset;
+
     if (*pmd & PTE_P) {
 
-    }else{
+    } else {
         if (alloc) {
             *pmd = (pmd_t *) phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
@@ -154,7 +163,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     if (*pte & PTE_P) {
 
-    }else{
+    } else {
         if (alloc) {
             *pte = (pte_t *) phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
