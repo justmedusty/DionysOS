@@ -35,9 +35,8 @@ void arch_init_vmm(){
     for (int i = 0; i < 512; i++){
         uint64* address = kernel_pg_map->top_level + (i * 8);
         // Assign the newly allocated memory
-        address = (uint64*)phys_alloc(1);
+        address = (uint64*)kalloc(PAGE_SIZE);
     }
-    panic("");
     /*
      * Map symbols in the linker script
      */
@@ -102,7 +101,6 @@ void arch_init_vmm(){
     }
     serial_printf("Mapped limine memory map into kernel page table\n");
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    panic("lcr3");
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
@@ -114,6 +112,7 @@ void arch_init_vmm(){
  */
 
 static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
+    pgdir = P2V(pgdir);
     if (!pgdir){
         return 0;
     }
@@ -123,9 +122,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-
-    p4d_t* p4d = pgdir + hhdm_offset;
-    pud_t* pud = (pud_t *) p4d[p4d_idx] + hhdm_offset;
+    pud_t* pud = (pud_t *) &pgdir[p4d_idx];
     if (*pud & PTE_P){
     }
     else{
@@ -137,8 +134,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
             return 0;
         }
     }
-
-    pmd_t* pmd = &pud[pud_idx] + hhdm_offset;
+    pmd_t* pmd = (pmd_t *) &pud[pud_idx];
 
     if (*pmd & PTE_P){
     }
@@ -152,7 +148,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pte_t* pte = &pmd[pmd_idx] + hhdm_offset;
+    pte_t* pte = (pte_t *)&pmd[pmd_idx];
 
 
     if (*pte & PTE_P){
@@ -167,7 +163,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    return &pte[pte_idx] + hhdm_offset;
+    return (pte_t * )&pte[pte_idx];
 }
 
 /*
