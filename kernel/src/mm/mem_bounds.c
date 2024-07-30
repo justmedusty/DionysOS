@@ -24,7 +24,7 @@ static volatile struct limine_kernel_address_request kernel_address_request = {
 void mem_bounds_init() {
     // kernel's virtual memory bounds
     kernel_min = kernel_address_request.response->virtual_base;
-    kernel_max = (uint64 *) end;
+    kernel_max = (uint64) end;
     kernel_size = kernel_max - kernel_min;
 
     /* The kernel's phys memory bounds */

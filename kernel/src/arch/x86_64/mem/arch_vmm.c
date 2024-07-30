@@ -36,7 +36,11 @@ void arch_init_vmm() {
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
     for (int i = 0; i < 512; i++) {
-        *((uint64 *)((kernel_pg_map)->top_level) + (hhdm_offset) + (sizeof(uint64) + i)) = phys_alloc(1);
+        uint64 *address = (uint64 *)((uint64 *)(kernel_pg_map->top_level) + hhdm_offset + i * sizeof(uint64));
+
+        // Assign the newly allocated memory
+        address[i] = (uint64)phys_alloc(1);
+
     }
 
     /*
@@ -79,7 +83,7 @@ void arch_init_vmm() {
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if (map_pages(kernel_pg_map->top_level, 0, 0 + hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1) {
+    if (map_pages(kernel_pg_map->top_level, 0, 0 + (uint64 *)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1) {
         panic("Mapping first 4gb!");
     }
     serial_printf("Kernel HHDM Mapped\n");
@@ -97,7 +101,7 @@ void arch_init_vmm() {
             if (j < (uint64) 0x100000000) {
                 continue;
             }
-            if (map_pages(kernel_pg_map->top_level, j, j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1) {
+            if (map_pages(kernel_pg_map->top_level, j, (uint64 *)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1) {
                 panic("hhdm mapping");
             }
 
@@ -106,7 +110,8 @@ void arch_init_vmm() {
     }
     serial_printf("Mapped limine memory map into kernel page table\n");
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3(kernel_pg_map->top_level);
+    panic("");
+    lcr3(*kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 
@@ -135,7 +140,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     } else {
         if (alloc) {
-            *pud = (pud_t *) phys_alloc(1);
+            pud = (pud_t *) phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
         } else {
             return 0;
@@ -148,7 +153,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     } else {
         if (alloc) {
-            *pmd = (pmd_t *) phys_alloc(1);
+            pmd = (pmd_t *) phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
 
         } else {
@@ -163,7 +168,7 @@ static pte_t *walkpgdir(p4d_t *pgdir, const void *va, int alloc) {
 
     } else {
         if (alloc) {
-            *pte = (pte_t *) phys_alloc(1);
+            pte = (pte_t *) phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
 
         } else {
