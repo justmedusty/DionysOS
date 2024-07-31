@@ -34,8 +34,7 @@ void arch_init_vmm(){
 
     for (int i = 0; i < 512; i++){
         uint64* address = kernel_pg_map->top_level + (i * 8);
-        // Assign the newly allocated memory
-        address = (uint64*)kalloc(PAGE_SIZE);
+        address = (uint64*)phys_alloc(1);
     }
     /*
      * Map symbols in the linker script
@@ -112,7 +111,6 @@ void arch_init_vmm(){
  */
 
 static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
-    pgdir = P2V(pgdir);
     if (!pgdir){
         return 0;
     }
@@ -122,7 +120,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t* pud = (pud_t *) &pgdir[p4d_idx];
+    pud_t* pud = (pud_t *) &pgdir[p4d_idx] + hhdm_offset;
     if (*pud & PTE_P){
     }
     else{
@@ -134,7 +132,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
             return 0;
         }
     }
-    pmd_t* pmd = (pmd_t *) &pud[pud_idx];
+    pmd_t* pmd = (pmd_t *) &pud[pud_idx]  + hhdm_offset;
 
     if (*pmd & PTE_P){
     }
@@ -148,7 +146,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pte_t* pte = (pte_t *)&pmd[pmd_idx];
+    pte_t* pte = (pte_t *)&pmd[pmd_idx]  + hhdm_offset;
 
 
     if (*pte & PTE_P){
@@ -163,7 +161,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    return (pte_t * )&pte[pte_idx];
+    return (pte_t * )pte[pte_idx];
 }
 
 /*
