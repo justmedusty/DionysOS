@@ -55,11 +55,11 @@ extern p4d_t *global_pg_dir;
 #define PGROUNDDOWN(a) (uint64) ((((uint64)a)) & ~(uint64)(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
-#define PTE_P           0x001   // Present
-#define PTE_RW          0x2
-#define PTE_U           0x004   // User
-#define PTE_A           0x020   //accessed , for demand paging
-#define PTE_PS          0x080   // Page Size
+#define PTE_P           (uint64)0x001   // Present
+#define PTE_RW          (uint64)0x2
+#define PTE_U           (uint64)0x004   // User
+#define PTE_A           (uint64)0x020   //accessed , for demand paging
+#define PTE_PS          (uint64)0x080   // Page Size
 #define PTE_NX          (uint64) 1 << 63 // no execute
 
 
