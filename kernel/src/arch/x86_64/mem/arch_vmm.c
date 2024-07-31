@@ -99,6 +99,7 @@ void arch_init_vmm(){
         }
     }
     serial_printf("Mapped limine memory map into kernel page table\n");
+
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
     switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
@@ -136,7 +137,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pmd_t* pmd = P2V(pud);
+    pmd_t* pmd = P2V(*pud);
     pmd += pud_idx;
 
     if (*pmd & PTE_P){
@@ -151,7 +152,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pte_t* pte = (pte_t *)P2V(pmd);
+    pte_t* pte = P2V(*pmd);
     pte += pmd_idx;
 
 
@@ -166,7 +167,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
             return 0;
         }
     }
-
+    serial_printf("%x.64\n",pte[pte_idx]);
     return (pte_t * )pte[pte_idx];
 }
 
