@@ -16,10 +16,10 @@
 
 void kernel_bootstrap(){
     init_serial();
-    arch_smp_query();
-    arch_paging_init();
     gdt_init();
     idt_init();
+    arch_smp_query();
+    arch_paging_init();
     phys_init();
     heap_init();
     mem_bounds_init();

@@ -164,22 +164,16 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
  * Maps pages from VA/PA to size in page size increments.
  */
 int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
-    uint64 address, last;
     pte_t* pte;
-    address = ALIGN_DOWN((uint64) va,PAGE_SIZE);
-    last = ALIGN_UP(((uint64) va) + size - 1,PAGE_SIZE);
+    uint64 address = ALIGN_DOWN((uint64) va, PAGE_SIZE);
+    uint64 last = ALIGN_UP(((uint64) va) + size - 1, PAGE_SIZE);
     for (;;){
         if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
             return -1;
         }
 
-
-        if (*pte & PTE_P){
-            /*
-             * Can either keep the xv6 panic in here or can free it but will leave it for now
-             */
-            //serial_printf("Remap! Address being remapped is %x.64\n",*pte);
-            //panic("remap");
+        if ((perms & PTE_U) && *pte & PTE_P){
+            panic("remap");
         }
 
         *pte = physaddr | perms | PTE_P;
