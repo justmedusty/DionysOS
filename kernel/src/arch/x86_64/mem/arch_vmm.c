@@ -26,49 +26,34 @@ void switch_page_table(p4d_t* page_dir){
 }
 
 void arch_init_vmm(){
+
     kernel_pg_map = kalloc(PAGE_SIZE);
     kernel_pg_map->top_level = phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
-    for (int i = 0; i < 512; i++){
-        uint64* address = kernel_pg_map->top_level + (i * 8);
-        address = (uint64*)phys_alloc(1);
-    }
     /*
      * Map symbols in the linker script
      */
 
-    uint64 k_text_start = ALIGN_DOWN((uint64) &text_start, PAGE_SIZE);
-    uint64 k_text_end = ALIGN_UP((uint64) &text_end, PAGE_SIZE);
 
-    serial_printf("  Ktext start %x.64 , Ktext end %x.64\n", k_text_start, k_text_end);
-    uint64 k_rodata_start = ALIGN_DOWN((uint64) &rodata_start, PAGE_SIZE);
-    uint64 k_rodata_end = ALIGN_UP((uint64) &rodata_end, PAGE_SIZE);
-
-    serial_printf("Krodata start %x.64,Krodata end %x.64\n", k_rodata_start, k_rodata_end);
-
-    uint64 k_data_start = ALIGN_DOWN((uint64) &data_start, PAGE_SIZE);
-    uint64 k_data_end = ALIGN_UP((uint64) &data_end, PAGE_SIZE);
-    serial_printf("  Kdata start %x.64 , Kdata end %x.64\n", k_data_start, k_data_end);
-
-    if (map_pages(kernel_pg_map->top_level, (k_text_start - kernel_min) + kernel_phys_min, (uint64*)k_text_start, 0,
-                  k_text_end - k_text_start) == -1){
+    if (map_pages(kernel_pg_map->top_level,(uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start ,0,
+                  text_end - text_start) == -1){
         panic("Mapping text!");
     }
     serial_printf("Kernel Text Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (k_rodata_start - kernel_min) + kernel_phys_min, (uint64*)k_rodata_start,
-                  PTE_NX, k_rodata_end - k_rodata_start) == -1){
+    if (map_pages(kernel_pg_map->top_level, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start,
+                  PTE_NX, rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
     serial_printf("Kernel Rodata Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (k_data_start - kernel_min) + kernel_phys_min, (uint64*)k_data_start,
-                  PTE_NX | PTE_RW, k_data_end - k_data_start) == -1){
+    if (map_pages(kernel_pg_map->top_level, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
+                  PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
     }
     serial_printf("Kernel Data Mapped\n");
@@ -78,6 +63,7 @@ void arch_init_vmm(){
     if (map_pages(kernel_pg_map->top_level, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
+
     serial_printf("Kernel HHDM Mapped\n");
 
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -180,8 +166,8 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
 int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
     uint64 address, last;
     pte_t* pte;
-    address = PGROUNDDOWN((uint64) va);
-    last = PGROUNDUP(((uint64) va) + size - 1);
+    address = ALIGN_DOWN((uint64) va,PAGE_SIZE);
+    last = ALIGN_UP(((uint64) va) + size - 1,PAGE_SIZE);
     for (;;){
         if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
             return -1;
