@@ -109,10 +109,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
 
     pud_t* pud =  P2V(pgdir);
     pud += p4d_idx;
-    if (*pud & PTE_P){
-
-    }
-    else{
+    if (!*pud & PTE_P){
         if (alloc){
             *pud = (pud_t)phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
@@ -126,9 +123,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pmd_t* pmd = P2V(*pud);
     pmd += pud_idx;
 
-    if (*pmd & PTE_P){
-    }
-    else{
+    if (!*pmd & PTE_P){
         if (alloc){
             *pmd = (pmd_t)phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
@@ -142,9 +137,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pte += pmd_idx;
 
 
-    if (*pte & PTE_P){
-    }
-    else{
+    if (!*pte & PTE_P){
         if (alloc){
             *pte = (pte_t)phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
