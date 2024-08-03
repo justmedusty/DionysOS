@@ -2,9 +2,8 @@
 // Created by dustyn on 6/24/24.
 //
 
-#ifndef KERNEL_ARCH_PAGING_H
-#define KERNEL_ARCH_PAGING_H
-
+#pragma once
+#include "include/pmm.h"
 #define P2V(addr) (void *)(((uint64)addr) + (uint64)hhdm_offset)
 #define V2P(addr) (void *)(((uint64)addr) - (uint64)hhdm_offset)
 
@@ -66,4 +65,4 @@ extern p4d_t *global_pg_dir;
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint64)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint64)(pte) &  0xFFF)
-#endif //KERNEL_ARCH_PAGING_H
+

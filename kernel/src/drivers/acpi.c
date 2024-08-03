@@ -4,11 +4,64 @@
 
 #include "acpi.h"
 #include "include/uart.h"
+#include "include/arch_paging.h"
+#include "include/mem.h"
 #include "limine.h"
 
 __attribute__((used, section(".requests")))
-static volatile struct limine_rsdp_request rdsp_request = {
+static volatile struct limine_rsdp_request rsdp_request = {
     .id = LIMINE_RSDP_REQUEST,
     .revision = 0,
 };
 
+int8 acpi_extended = 0;
+
+void* acpi_root_sdt;
+
+void* acpi_find_table(const char* name) {
+  if (!acpi_extended) {
+    acpi_rsdt* rsdt = (acpi_rsdt*)acpi_root_sdt;
+    uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
+
+    for (int i = 0; i < entries; i++) {
+      acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint32*)rsdt->table + i));
+      if (!memcmp(sdt->sign, name, 4))
+        return (void*)sdt;
+    }
+    return NULL;
+  }
+
+  // Use XSDT
+  acpi_xsdt* xsdt = (acpi_xsdt*)acpi_root_sdt;
+  uint32 entries = (xsdt->sdt.len - sizeof(xsdt->sdt)) / 8;
+
+  for (int i = 0; i < entries; i++) {
+    acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64*)xsdt->table + i));
+    if (!memcmp(sdt->sign, name, 4)) {
+      return (void*)sdt;
+    }
+  }
+
+  return NULL;
+}
+
+uint64 acpi_init() {
+  void* addr = (void*)rsdp_request.response->address;
+  acpi_rsdp* rsdp = (acpi_rsdp*)addr;
+
+  if (memcmp(rsdp->sign, "RSD PTR", 7)){
+
+    return 0;
+}
+  if (rsdp->revision != 0) {
+    // Use XSDT
+    acpi_extended = 1;
+    acpi_xsdp* xsdp = (acpi_xsdp*)addr;
+    acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
+    return xsdp->xsdt_addr;
+  }
+
+  acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->rsdt_addr);
+
+  return rsdp->rsdt_addr;
+}
