@@ -18,7 +18,7 @@ int8 acpi_extended = 0;
 
 void* acpi_root_sdt;
 
-void* acpi_find_table(const char* name) {
+void* find_acpi_table(const int8* name) {
   if (!acpi_extended) {
     acpi_rsdt* rsdt = (acpi_rsdt*)acpi_root_sdt;
     uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
