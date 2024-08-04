@@ -13,6 +13,8 @@
 #include "include/arch_vmm.h"
 #include "include/slab.h"
 #include "include/cpu.h"
+#include "acpi.h"
+#include "madt.h"
 
 void kernel_bootstrap(){
     init_serial();
@@ -24,4 +26,6 @@ void kernel_bootstrap(){
     heap_init();
     mem_bounds_init();
     arch_init_vmm();
+    madt_init();
+    acpi_init();
 }
