@@ -136,16 +136,15 @@ static inline uint64 xchg(volatile unsigned long long *addr, uint32 newval) {
     return result;
 }
 
-// Reads the CR2 register.
 static inline uint64 rcr2(void) {
-    uint32 val;
-    asm volatile("movq %%cr2,%0" : "=r" (val));
+    uint64 val;
+    asm volatile("mov %%cr2, %0" : "=r" (val));
     return val;
 }
 
 // Loads a value into the CR3 register.
 static inline void lcr3(uint64 val) {
-    asm volatile("mov %0,%%cr3" : : "r" (val));
+    asm volatile("movq %0,%%cr3" : : "r" (val));
 }
 
 // reads a value from the CR3 register.

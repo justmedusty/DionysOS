@@ -16,7 +16,7 @@
 #include "include/uart.h"
 #include "include/cpu.h"
 #include "include/arch_vmm.h"
-
+#include "include/arch_asm_functions.h"
 
 p4d_t* global_pg_dir = 0;
 struct virt_map* kernel_pg_map;
@@ -28,10 +28,13 @@ void switch_page_table(p4d_t* page_dir){
 void arch_init_vmm(){
 
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = phys_alloc(1);
+    kernel_pg_map->top_level = (uint64 *) rcr3();
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
+
+    uint64 *boot_table = (uint64 *) rcr3();
+    serial_printf("Boot table located at %x.64\n",boot_table);
 
     /*
      * Map symbols in the linker script
@@ -69,8 +72,8 @@ void arch_init_vmm(){
     struct limine_memmap_entry** entries = memmap->entries;
 
     for (uint64 i = 0; i < memmap->entry_count; i++){
-        uint64 base = ALIGN_DOWN(entries[i]->base, PAGE_SIZE);
-        uint64 top = ALIGN_UP(entries[i]->base + entries[i]->length, PAGE_SIZE);
+        uint64 base = PGROUNDDOWN(entries[i]->base);
+        uint64 top = PGROUNDUP(entries[i]->base + entries[i]->length);
         if (top < 0x100000000){
             continue;
         }
@@ -110,6 +113,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
 
     if (!(*pud & PTE_P)){
         if (alloc){
+            serial_printf("pud\n");
             *pud = (pud_t)phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
         }
@@ -123,6 +127,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
 
     if (!(*pmd & PTE_P)){
         if (alloc){
+            serial_printf("pmd\n");
             *pmd = (pmd_t)phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
         }
@@ -137,6 +142,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
 
     if (!(*pte & PTE_P)){
         if (alloc){
+            serial_printf("pte\n");
             *pte = (pte_t)phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
         }
@@ -156,8 +162,8 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
  */
 int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
     pte_t* pte;
-    uint64 address = ALIGN_DOWN((uint64) va, PAGE_SIZE);
-    uint64 last = ALIGN_UP(((uint64) va) + size - 1, PAGE_SIZE);
+    uint64 address = PGROUNDDOWN((uint64) va);
+    uint64 last = PGROUNDUP(((uint64) va) + size - 1);
 
     for (;;){
 
