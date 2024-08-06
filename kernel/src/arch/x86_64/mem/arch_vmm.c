@@ -198,7 +198,7 @@ uint64 dealloc_va(p4d_t* pgdir, uint64 address){
     }
 
     if (*entry & PTE_P){
-
+        phys_dealloc((void *)PTE_ADDR(*entry),1);
         *entry = 0;
         native_flush_tlb_single(aligned_address);
         return 1;
