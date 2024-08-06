@@ -26,28 +26,28 @@ void switch_page_table(p4d_t* page_dir){
 }
 
 void arch_init_vmm(){
-
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64 *) rcr3();
+    kernel_pg_map->top_level = (uint64*)rcr3();
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
-    uint64 *boot_table = (uint64 *) rcr3();
-    serial_printf("Boot table located at %x.64\n",boot_table);
+    uint64* boot_table = (uint64*)rcr3();
+    serial_printf("Boot table located at %x.64\n", boot_table);
 
     /*
      * Map symbols in the linker script
      */
 
-    if (map_pages(kernel_pg_map->top_level,(uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start ,0,
+    if (map_pages(kernel_pg_map->top_level, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
     serial_printf("Kernel Text Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start,
+    if (map_pages(kernel_pg_map->top_level, (uint64)(rodata_start - kernel_min) + kernel_phys_min,
+                  (uint64*)rodata_start,
                   PTE_NX, rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
@@ -88,7 +88,7 @@ void arch_init_vmm(){
     }
     serial_printf("Mapped limine memory map into kernel page table\n");
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3((uint64) kernel_pg_map->top_level);
+    lcr3((uint64)kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
     panic("Done");
 }
@@ -108,7 +108,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t* pud =  P2V(pgdir);
+    pud_t* pud = P2V(pgdir);
     pud += p4d_idx;
 
     if (!(*pud & PTE_P)){
@@ -152,7 +152,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     }
 
     pte_t* entry = P2V(*pte);
-    entry+= pte_idx;
+    entry += pte_idx;
 
     return entry;
 }
@@ -166,7 +166,6 @@ int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 si
     uint64 last = PGROUNDUP(((uint64) va) + size - 1);
 
     for (;;){
-
         if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
             return -1;
         }
@@ -186,6 +185,34 @@ int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 si
     }
 
     return 0;
+}
+
+
+
+uint64 dealloc_va(p4d_t* pgdir, uint64 address){
+    uint64 aligned_address = PGROUNDDOWN(address);
+    pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
+
+    if (!entry){
+        return 0;
+    }
+
+    if (*entry & PTE_P){
+
+        *entry = 0;
+        native_flush_tlb_single(aligned_address);
+        return 1;
+
+    }
+    return 0;
+}
+
+void dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
+    uint64 aligned_size = PGROUNDUP(size);
+
+    for (uint64 i = 0; i > aligned_size; i += PAGE_SIZE){
+        dealloc_va(pgdir, address + i);
+    }
 }
 
 struct vm_region* create_region(){
