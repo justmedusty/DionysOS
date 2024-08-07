@@ -22,7 +22,6 @@ SECTIONS
     /* Any address in this region will do, but often 0xffffffff80000000 is chosen as */
     /* that is the beginning of the region. */
     . = 0xffffffff80000000;
-    kernel_start = .;
     text_start = .;
     .text : {
         *(.text .text.*)
@@ -66,7 +65,7 @@ SECTIONS
     data_end = .;
 
 
-    PROVIDE(end = .);
+
 
     /* Discard .note.* and .eh_frame* since they may cause issues on some hosts. */
     /* Also discard the program interpreter section since we do not need one. This is */

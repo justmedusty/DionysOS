@@ -3,12 +3,18 @@
 //
 
 #pragma once
+#include "include/types.h"
+#include "include/arch_paging.h"
 /*
  * x = value, y = align by
  */
 #define DIV_ROUND_UP(x,y) (x + (y -1)) / y
 #define ALIGN_UP(x,y) DIV_ROUND_UP(x,y) * y
 #define ALIGN_DOWN(x,y) (x / y) * y
+
+//walkpgdir flags , going to add a flag for debugging
+#define ALLOC 0x1
+#define DEBUG 0x2
 
 static inline void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");

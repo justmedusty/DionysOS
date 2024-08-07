@@ -27,17 +27,15 @@ void switch_page_table(p4d_t* page_dir){
 
 void arch_init_vmm(){
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64*)rcr3();
+    kernel_pg_map->top_level = (uint64 *)phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
-    uint64* boot_table = (uint64*)rcr3();
-    serial_printf("Boot table located at %x.64\n", boot_table);
-
     /*
      * Map symbols in the linker script
      */
+
 
     if (map_pages(kernel_pg_map->top_level, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
                   text_end - text_start) == -1){
@@ -98,9 +96,9 @@ void arch_init_vmm(){
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
  */
 
-static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
-    if (!pgdir){
-        return 0;
+static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int flags){
+    if (pgdir == 0){
+        panic("page dir zero");
     }
 
     p4d_t p4d_idx = P4DX(va);
@@ -112,8 +110,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
     pud += p4d_idx;
 
     if (!(*pud & PTE_P)){
-        if (alloc){
-            serial_printf("pud\n");
+        if (flags & ALLOC){
             *pud = (pud_t)phys_alloc(1);
             *pud |= PTE_P | PTE_RW | PTE_U;
         }
@@ -122,12 +119,11 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pmd_t* pmd = P2V(*pud);
+    pmd_t* pmd = P2V(PTE_ADDR(*pud));
     pmd += pud_idx;
 
     if (!(*pmd & PTE_P)){
-        if (alloc){
-            serial_printf("pmd\n");
+        if (flags & ALLOC){
             *pmd = (pmd_t)phys_alloc(1);
             *pmd |= PTE_P | PTE_RW | PTE_U;
         }
@@ -136,13 +132,12 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pte_t* pte = P2V(*pmd);
+    pte_t* pte = P2V(PTE_ADDR(*pmd));
     pte += pmd_idx;
 
 
     if (!(*pte & PTE_P)){
-        if (alloc){
-            serial_printf("pte\n");
+        if (flags & ALLOC){
             *pte = (pte_t)phys_alloc(1);
             *pte |= PTE_P | PTE_RW | PTE_U;
         }
@@ -151,7 +146,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int alloc){
         }
     }
 
-    pte_t* entry = P2V(*pte);
+    pte_t* entry = P2V(PTE_ADDR(*pte));
     entry += pte_idx;
 
     return entry;
@@ -188,29 +183,32 @@ int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 si
 }
 
 
-
 uint64 dealloc_va(p4d_t* pgdir, uint64 address){
-    uint64 aligned_address = PGROUNDDOWN(address);
+
+    uint64 aligned_address = ALIGN_DOWN(address,PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
-    if (!entry){
+    if (entry == 0){
+        panic("");
         return 0;
     }
-
     if (*entry & PTE_P){
-        phys_dealloc((void *)PTE_ADDR(*entry),1);
+
+        phys_dealloc((void*)PTE_ADDR(*entry), 1);
         *entry = 0;
         native_flush_tlb_single(aligned_address);
-        return 1;
 
+        return 1;
     }
+
     return 0;
 }
 
 void dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
-    uint64 aligned_size = PGROUNDUP(size);
 
-    for (uint64 i = 0; i > aligned_size; i += PAGE_SIZE){
+    uint64 aligned_size = ALIGN_UP(size,PAGE_SIZE);
+    serial_printf("Aligned size %x.64\n",aligned_size);
+    for (uint64 i = 0; i <= aligned_size; i += PAGE_SIZE){
         dealloc_va(pgdir, address + i);
     }
 }
