@@ -88,7 +88,6 @@ void arch_init_vmm(){
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
     lcr3((uint64)kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized");
-    panic("Done");
 }
 
 
