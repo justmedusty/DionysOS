@@ -1,9 +1,10 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include "ioapic.h"
+#include "include/ioapic.h"
 
 #include <include/arch_paging.h>
+#include <include/uart.h>
 
 void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value){
     *((volatile uint32*)P2V(ioapic->apic_addr) + IOAPIC_REG_SELECT) = reg;
@@ -84,5 +85,22 @@ uint32 ioapic_get_redirect_irq(uint8 irq){
     }
 }
 
-uint64 ioapic_init(){
+uint64 ioapic_init() {
+    madt_ioapic* ioapic = madt_ioapic_list[0];
+
+    uint32 val = read_ioapic(ioapic, IOAPIC_VERSION);
+    uint32 count = ((val >> 16) & 0xFF);
+
+    if ((read_ioapic(ioapic, 0) >> 24) != ioapic->apic_id) {
+        return 0;
+    }
+
+    for (uint8 i = 0; i <= count; ++i) {
+        write_ioapic(ioapic, IOAPIC_REDTBL+2*i, 0x00010000 | (32 + i));
+        write_ioapic(ioapic, IOAPIC_REDTBL+2*i+1, 0); // redir cpu
+    }
+
+    serial_printf("Ioapic Initialised\n");
+
+    return 1;
 }

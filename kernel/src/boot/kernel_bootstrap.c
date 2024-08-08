@@ -15,6 +15,7 @@
 #include "include/cpu.h"
 #include "include/acpi.h"
 #include "include/madt.h"
+#include "include/ioapic.h"
 
 void kernel_bootstrap(){
     init_serial();
@@ -28,4 +29,5 @@ void kernel_bootstrap(){
     arch_init_vmm();
     acpi_init();
     madt_init();
+    ioapic_init();
 }
