@@ -16,11 +16,11 @@
 #define ALLOC 0x1
 #define DEBUG 0x2
 
-static inline void native_flush_tlb_single(unsigned long vaddr) {
+static void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
 }
 
-static inline void native_flush_tlb_range(unsigned long vaddr,uint64 pages) {
+static void native_flush_tlb_range(unsigned long vaddr,uint64 pages) {
     for(int i = 0; i < pages; i++){
         asm volatile("invlpg (%0)" ::"r" (vaddr + (i * PAGE_SIZE)) : "memory");
     }

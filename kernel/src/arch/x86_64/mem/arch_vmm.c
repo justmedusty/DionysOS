@@ -207,5 +207,15 @@ void dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
     }
 }
 
+
 struct vm_region* create_region(){
 }
+
+void attatch_region(struct virt_map *){
+
+}
+
+void detatch_region(struct virt_map *){
+
+}
+
