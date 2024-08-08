@@ -6,6 +6,8 @@
 #include "include/uart.h"
 #include "include/arch_paging.h"
 #include "include/mem.h"
+#include "include/uart.h"
+#include "include/cpu.h"
 #include "limine.h"
 
 __attribute__((used, section(".requests")))
@@ -50,10 +52,12 @@ uint64 acpi_init() {
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
 
   if (memcmp(rsdp->sign, "RSD PTR", 7)){
+    serial_printf("Error occurred parsing rsdp table\n");
     return 0;
 }
   if (rsdp->revision != 0) {
     // Use XSDT
+    serial_printf("Using xsdt\n");
     acpi_extended = 1;
     acpi_xsdp* xsdp = (acpi_xsdp*)addr;
     acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
@@ -61,6 +65,6 @@ uint64 acpi_init() {
   }
 
   acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->rsdt_addr);
-
+  serial_printf("Using xsdt\n");
   return rsdp->rsdt_addr;
 }

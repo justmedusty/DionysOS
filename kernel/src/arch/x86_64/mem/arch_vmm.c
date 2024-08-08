@@ -27,7 +27,7 @@ void switch_page_table(p4d_t* page_dir){
 
 void arch_init_vmm(){
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64 *)phys_alloc(1);
+    kernel_pg_map->top_level = (uint64*)phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
@@ -35,36 +35,39 @@ void arch_init_vmm(){
     /*
      * Map symbols in the linker script
      */
+    map_kernel_address_space(kernel_pg_map->top_level);
 
 
-    if (map_pages(kernel_pg_map->top_level, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
+    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
+    lcr3((uint64)kernel_pg_map->top_level);
+    serial_printf("VMM mapped and initialized\n");
+}
+
+
+void map_kernel_address_space(p4d_t* pgdir){
+
+    if (map_pages(pgdir, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
-    serial_printf("Kernel Text Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (uint64)(rodata_start - kernel_min) + kernel_phys_min,
-                  (uint64*)rodata_start,
-                  PTE_NX, rodata_end - rodata_start) == -1){
+    if (map_pages(pgdir, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start, PTE_NX,
+                  rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
-    serial_printf("Kernel Rodata Mapped\n");
 
 
-    if (map_pages(kernel_pg_map->top_level, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
+    if (map_pages(pgdir, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
     }
-    serial_printf("Kernel Data Mapped\n");
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if (map_pages(kernel_pg_map->top_level, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
+    if (map_pages(pgdir, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
-
-    serial_printf("Kernel HHDM Mapped\n");
 
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
@@ -84,12 +87,7 @@ void arch_init_vmm(){
             }
         }
     }
-    serial_printf("Mapped limine memory map into kernel page table\n");
-    serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3((uint64)kernel_pg_map->top_level);
-    serial_printf("VMM mapped and initialized");
 }
-
 
 /*
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
@@ -183,8 +181,7 @@ int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 si
 
 
 uint64 dealloc_va(p4d_t* pgdir, uint64 address){
-
-    uint64 aligned_address = ALIGN_DOWN(address,PAGE_SIZE);
+    uint64 aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0){
@@ -192,7 +189,6 @@ uint64 dealloc_va(p4d_t* pgdir, uint64 address){
         return 0;
     }
     if (*entry & PTE_P){
-
         phys_dealloc((void*)PTE_ADDR(*entry), 1);
         *entry = 0;
         native_flush_tlb_single(aligned_address);
@@ -204,9 +200,8 @@ uint64 dealloc_va(p4d_t* pgdir, uint64 address){
 }
 
 void dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
-
-    uint64 aligned_size = ALIGN_UP(size,PAGE_SIZE);
-    serial_printf("Aligned size %x.64\n",aligned_size);
+    uint64 aligned_size = ALIGN_UP(size, PAGE_SIZE);
+    serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64 i = 0; i <= aligned_size; i += PAGE_SIZE){
         dealloc_va(pgdir, address + i);
     }
