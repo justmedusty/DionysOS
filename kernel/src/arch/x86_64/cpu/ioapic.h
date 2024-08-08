@@ -21,5 +21,7 @@ uint32 read_ioapic(madt_ioapic *ioapic, uint8 register);
 void ioapic_set_entry(madt_ioapic *ioapic, uint8 index, uint64 data);
 void ioapic_redirect_irq(uint32 lapic_id,uint8 vector,uint8 irq,uint8 mask);
 uint32 ioapic_get_redirect_irq(uint32 lapic_id,uint8 vector,uint8 irq,uint8 mask);
+void ioapic_redirect_gsi(uint32 lapic_id,uint8 vector,uint32 gsi,uint16 flags,uint8 mask);
+madt_ioapic* ioapic_get_gsi(uint32 gsi);
 uint64 ioapic_init();
 #endif //IOAPIC_H
