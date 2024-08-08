@@ -13,8 +13,8 @@
 #include "include/arch_vmm.h"
 #include "include/slab.h"
 #include "include/cpu.h"
-#include "acpi.h"
-#include "madt.h"
+#include "include/acpi.h"
+#include "include/madt.h"
 
 void kernel_bootstrap(){
     init_serial();

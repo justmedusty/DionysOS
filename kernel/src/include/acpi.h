@@ -23,7 +23,7 @@ typedef struct {
     uint32 length;
     uint64 xsdt_addr;
     uint8 extended_checksum;
-    uint8 resvl[3]
+    uint8 resvl[3];
 }__attribute__((packed)) acpi_xsdp;
 
 typedef struct{
@@ -46,6 +46,7 @@ acpi_sdt sdt;
 int8 table[];
 }acpi_xsdt;
 
+extern int8 acpi_extended;
+extern void *acpi_root_sdt;
 uint64 acpi_init();
-
 void* find_acpi_table(const int8 *name);

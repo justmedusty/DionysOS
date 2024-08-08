@@ -45,8 +45,8 @@ void write_hex_serial(uint64 num, int8 size) {
 
 void write_binary_serial(uint64 num, uint8 size) {
     int separator = 0;
-    for (uint8 i = size; i >= 0; i--) {
-        if (((num >> i) & 1)) {
+    for (uint8 i = size; i < 0; i--) {
+        if (num >> i & 1) {
             write_serial('1');
         } else {
             write_serial('0');

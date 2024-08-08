@@ -2,7 +2,7 @@
 // Created by dustyn on 8/3/24.
 //
 
-#include "acpi.h"
+#include "include/acpi.h"
 #include "include/uart.h"
 #include "include/arch_paging.h"
 #include "include/mem.h"
@@ -50,7 +50,6 @@ uint64 acpi_init() {
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
 
   if (memcmp(rsdp->sign, "RSD PTR", 7)){
-
     return 0;
 }
   if (rsdp->revision != 0) {

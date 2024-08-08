@@ -3,8 +3,8 @@
 //
 
 
-#include "acpi.h"
-#include "madt.h"
+#include "include/acpi.h"
+#include "include/madt.h"
 
 
 madt_ioapic* madt_ioapic_list[128] = {0};
