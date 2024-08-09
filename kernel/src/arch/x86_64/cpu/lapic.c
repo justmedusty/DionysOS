@@ -10,7 +10,7 @@ uint64 apic_ticks = 0;
 
 void lapic_init() {
     lapic_write(0xf0, 0x1ff);
-    serial_printf("LAPICInitialised.\n");
+    serial_printf("LAPIC Initialised.\n");
 }
 
 void lapic_timer_stop() {
