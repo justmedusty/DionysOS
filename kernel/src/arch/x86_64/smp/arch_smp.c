@@ -8,6 +8,8 @@
 
 uint64 bootstrap_lapic_id;
 uint64 cpu_count;
+cpu cpu_list[32];
+
 struct limine_smp_info **smp_info;
 
 __attribute__((used, section(".requests")))

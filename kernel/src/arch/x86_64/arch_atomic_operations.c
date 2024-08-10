@@ -5,7 +5,6 @@
 #include "include/arch_atomic_operations.h"
 #include "include/arch_asm_functions.h"
 
-
 void arch_atomic_swap(uint64 *field, uint64 new_value){
     // The xchg is atomic.
     while(xchg(field, new_value) != 0)

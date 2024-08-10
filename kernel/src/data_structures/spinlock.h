@@ -8,9 +8,9 @@
 // Mutual exclusion lock.
 
 struct spinlock{
-    uint8 locked;
+    uint64 locked;
     char* name;
     cpu* cpu;
     uint64 program_counters[10];
 };
-#endif //KERNEL_SPINLOCK_H
+
