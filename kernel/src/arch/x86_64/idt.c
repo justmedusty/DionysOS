@@ -8,6 +8,8 @@
 #include "include/idt.h"
 #include "traps.h"
 #include "include/uart.h"
+#include "include/lapic.h"
+#include "include/ioapic.h"
 
 extern void isr_wrapper_0();
 extern void isr_wrapper_1();
@@ -30,6 +32,7 @@ extern void isr_wrapper_17();
 extern void isr_wrapper_18();
 extern void isr_wrapper_19();
 
+void* irq_routines[256] = {};
 
 //Going to index this array when setting up the idt
 void (*isr_wrappers[33])() = {
@@ -129,4 +132,11 @@ void idt_init(void) {
     //enable interrupts (locally)
     __asm__ volatile("sti");
     write_string_serial("IDT Loaded, ISRs mapped\n");
+}
+
+void irq_register(uint8 vec, void* handler){
+    if(vec < 15){
+        ioapic_redirect_irq(bsp_lapic)
+    }
+
 }

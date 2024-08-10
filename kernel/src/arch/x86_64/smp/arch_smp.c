@@ -28,3 +28,4 @@ void arch_smp_query(){
     serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n",bootstrap_lapic_id,cpu_count);
 
 }
+
