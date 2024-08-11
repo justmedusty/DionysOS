@@ -10,7 +10,7 @@
 #include "include/mem_bounds.h"
 #include "include/arch_paging.h"
 #include "include/arch_smp.h"
-#include "include/arch_vmm.h"
+#include "include/vmm.h"
 #include "include/slab.h"
 #include "include/cpu.h"
 #include "include/acpi.h"
@@ -26,7 +26,7 @@ void kernel_bootstrap(){
     phys_init();
     heap_init();
     mem_bounds_init();
-    arch_init_vmm();
+    vmm_init();
     acpi_init();
     madt_init();
     ioapic_init();

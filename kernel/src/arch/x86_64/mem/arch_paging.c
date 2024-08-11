@@ -1,10 +1,10 @@
 //
 // Created by dustyn on 6/24/24.
 //
-#include "limine.h"
-#include "include/types.h"
-#include "include/uart.h"
-#include "include/cpu.h"
+#include "../../../limine.h"
+#include "../../../include/types.h"
+#include "../../../include/uart.h"
+#include "../../../include/cpu.h"
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_paging_mode_request arch_page_request = {

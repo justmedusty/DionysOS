@@ -5,7 +5,7 @@
 /*
  * Taking inspo from xv6 to keep things as readable and simple as possible here.
  */
-
+#include "include/vmm.h"
 #include "include/types.h"
 #include "include/mem.h"
 #include "include/arch_paging.h"
@@ -18,10 +18,11 @@
 #include "include/arch_vmm.h"
 #include "include/arch_asm_functions.h"
 
-p4d_t* global_pg_dir = 0;
-struct virt_map* kernel_pg_map;
 
-void switch_page_table(p4d_t* page_dir){
+p4d_t* global_pg_dir = 0;
+
+
+void arch_switch_page_table(p4d_t* page_dir){
     lcr3((uint64)(page_dir));
 }
 
@@ -35,37 +36,36 @@ void arch_init_vmm(){
     /*
      * Map symbols in the linker script
      */
-    map_kernel_address_space(kernel_pg_map->top_level);
+    arch_map_kernel_address_space(kernel_pg_map->top_level);
 
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    lcr3((uint64)kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized\n");
 }
 
 
-void map_kernel_address_space(p4d_t* pgdir){
+void arch_map_kernel_address_space(p4d_t* pgdir){
 
-    if (map_pages(pgdir, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
+    if (arch_map_pages(pgdir, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
 
 
-    if (map_pages(pgdir, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start, PTE_NX,
+    if (arch_map_pages(pgdir, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
 
 
-    if (map_pages(pgdir, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
+    if (arch_map_pages(pgdir, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
     }
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if (map_pages(pgdir, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
+    if (arch_map_pages(pgdir, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
@@ -82,7 +82,7 @@ void map_kernel_address_space(p4d_t* pgdir){
             if (j < (uint64)0x100000000){
                 continue;
             }
-            if (map_pages(kernel_pg_map->top_level, j, (uint64*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
+            if (arch_map_pages(kernel_pg_map->top_level, j, (uint64*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
                 panic("hhdm mapping");
             }
         }
@@ -152,7 +152,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int flags){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
+int arch_map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
     pte_t* pte;
     uint64 address = PGROUNDDOWN((uint64) va);
     uint64 last = PGROUNDUP(((uint64) va) + size - 1);
@@ -180,7 +180,7 @@ int map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 si
 }
 
 
-uint64 dealloc_va(p4d_t* pgdir, uint64 address){
+uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address){
     uint64 aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
@@ -199,23 +199,13 @@ uint64 dealloc_va(p4d_t* pgdir, uint64 address){
     return 0;
 }
 
-void dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
+void arch_dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
     uint64 aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64 i = 0; i <= aligned_size; i += PAGE_SIZE){
-        dealloc_va(pgdir, address + i);
+        arch_dealloc_va(pgdir, address + i);
     }
 }
 
 
-struct vm_region* create_region(){
-}
-
-void attatch_region(struct virt_map *){
-
-}
-
-void detatch_region(struct virt_map *){
-
-}
 

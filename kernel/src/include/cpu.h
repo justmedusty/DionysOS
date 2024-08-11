@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/cpu.h"
-#include "arch_vmm.h"
+#include "vmm.h"
 #include "include/types.h"
 
 typedef struct{
