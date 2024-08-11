@@ -6,7 +6,7 @@
 #include "limine.h"
 #include "stddef.h"
 #include "include/mem.h"
-#include "include/arch_paging.h"
+#include "include/arch/arch_paging.h"
 #include "include/uart.h"
 
 static inline bool bitmap_get(void *bitmap, uint64 bit);

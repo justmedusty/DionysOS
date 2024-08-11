@@ -4,7 +4,7 @@
 
 #include "include/acpi.h"
 #include "include/uart.h"
-#include "include/arch_paging.h"
+#include "include/arch//arch_paging.h"
 #include "include/mem.h"
 #include "include/uart.h"
 #include "include/cpu.h"

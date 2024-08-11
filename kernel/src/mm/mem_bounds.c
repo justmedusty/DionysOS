@@ -2,9 +2,9 @@
 // Created by dustyn on 6/23/24.
 //
 
-#include <include/arch_vmm.h>
+#include <include/arch/arch_vmm.h>
 #include "include/types.h"
-#include "include/arch_paging.h"
+#include "include/arch/arch_paging.h"
 #include "limine.h"
 #include "include/uart.h"
 #include "include/pmm.h"

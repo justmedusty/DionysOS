@@ -2,7 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 
-#include "include/arch_asm_functions.h"
+#include "include/arch//arch_asm_functions.h"
 #include "include/idt.h"
 #include "include/pit.h"
 

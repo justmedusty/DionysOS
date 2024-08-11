@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/types.h"
-#include "include/arch_paging.h"
+#include "include/arch//arch_paging.h"
 
 //walkpgdir flags , going to add a flag for debugging
 #define ALLOC 0x1

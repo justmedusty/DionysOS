@@ -3,7 +3,7 @@
 //
 #include "include/ioapic.h"
 
-#include <include/arch_paging.h>
+#include <include/arch/arch_paging.h>
 #include <include/uart.h>
 
 void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value) {

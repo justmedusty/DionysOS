@@ -3,7 +3,7 @@
 //
 
 #include "include/vmm.h"
-#include "include/arch_vmm.h"
+#include "include/arch/arch_vmm.h"
 
 struct virt_map* kernel_pg_map;
 

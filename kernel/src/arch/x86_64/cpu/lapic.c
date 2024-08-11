@@ -4,7 +4,7 @@
 #include "include/types.h"
 #include "include/uart.h"
 #include "include/lapic.h"
-#include <include/arch_paging.h>
+#include <include/arch/arch_paging.h>
 
 uint64 apic_ticks = 0;
 
