@@ -4,7 +4,7 @@
 #include "include/types.h"
 #include "include/cpu.h"
 #include "include/uart.h"
-#include "include/lapic.h"
+#include "include/arch/arch_lapic.h"
 
 int8 panicked = 0;
 

@@ -3,13 +3,13 @@
 //
 
 
-#include "include/gdt.h"
+#include "gdt.h"
 #include "include/arch//arch_asm_functions.h"
-#include "include/idt.h"
-#include "traps.h"
+#include "idt.h"
+#include "include/arch/arch_traps.h"
 #include "include/uart.h"
-#include "include/lapic.h"
-#include "include/ioapic.h"
+#include "include/arch/arch_lapic.h"
+#include "include/arch/arch_ioapic.h"
 
 extern void isr_wrapper_0();
 extern void isr_wrapper_1();

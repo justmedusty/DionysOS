@@ -1,7 +1,8 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include "include/ioapic.h"
+#include "include/arch/arch_ioapic.h"
+
 
 #include <include/arch/arch_paging.h>
 #include <include/uart.h>

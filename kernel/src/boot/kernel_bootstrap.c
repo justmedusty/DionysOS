@@ -2,9 +2,9 @@
 // Created by dustyn on 6/17/24.
 //
 #include "include/types.h"
-#include "include/gdt.h"
+#include "include/arch/arch_memory_init.h"
 #include "include/uart.h"
-#include "include/idt.h"
+#include "include/arch/arch_interrupts.h"
 #include "include/pmm.h"
 #include "include/kalloc.h"
 #include "include/mem_bounds.h"
@@ -15,12 +15,12 @@
 #include "include/cpu.h"
 #include "include/acpi.h"
 #include "include/madt.h"
-#include "include/ioapic.h"
+#include "include/arch/arch_ioapic.h"
 
 void kernel_bootstrap(){
     init_serial();
-    gdt_init();
-    idt_init();
+    arch_init_segments();
+    arch_setup_interrupts();
     arch_smp_query();
     arch_paging_init();
     phys_init();

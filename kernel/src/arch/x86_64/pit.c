@@ -3,8 +3,8 @@
 //
 
 #include "include/arch//arch_asm_functions.h"
-#include "include/idt.h"
-#include "include/pit.h"
+#include "idt.h"
+#include "include/arch/arch_pit.h"
 
 
 uint64 pit_ticks = 0;

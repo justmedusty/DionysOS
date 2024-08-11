@@ -2,7 +2,7 @@
 // Created by dustyn on 6/19/24.
 //
 #include "include/types.h"
-#include "include/trapframe.h"
+#include "include/arch/arch_trapframe.h"
 #include "include/uart.h"
 
 //Exception 0

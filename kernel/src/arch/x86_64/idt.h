@@ -6,7 +6,7 @@
 #define DIONYSOS_IDT_H
 #pragma once
 
-#include "include/gdt.h"
+#include "gdt.h"
 #include <stddef.h>
 #include <stdint.h>
 
