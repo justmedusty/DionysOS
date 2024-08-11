@@ -15,7 +15,6 @@
 #define IOAPIC_REG_SELECT 0x0
 #define IOAPIC_IOWIN 0x10
 
-
 void write_ioapic(madt_ioapic *ioapic, uint8 register, uint32 value);
 uint32 read_ioapic(madt_ioapic *ioapic, uint8 register);
 void ioapic_set_entry(madt_ioapic *ioapic, uint8 index, uint64 data);

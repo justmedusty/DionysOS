@@ -5,8 +5,8 @@
 #include "spinlock.h"
 
 #include <include/arch_asm_functions.h>
-
 #include "include/arch_atomic_operations.h"
+#include "include/cpu.h"
 
 
 void initlock(struct spinlock *spinlock,char *name){
@@ -18,5 +18,5 @@ void initlock(struct spinlock *spinlock,char *name){
 void acquire_spinlock(struct spinlock *spinlock){
     cli();
     arch_atomic_swap(&spinlock->locked,1);
-    //spinlock->cpu = mycpu();
+    spinlock->cpu = 0;//&cpu_list[mycpu()];
 }

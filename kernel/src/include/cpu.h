@@ -1,18 +1,22 @@
 //
-// Created by dustyn on 6/25/24.
+// Created by dustyn on 8/11/24.
 //
 
 #pragma once
+#include "include/cpu.h"
+#include "arch_vmm.h"
 #include "include/types.h"
-#include "include/arch_vmm.h"
 
-//commenting out not yet implemented data structures
 typedef struct{
     uint64 cpu_id;
-    struct virt_map* page_map;
-    //struct queue *local_rq;
-    //struct proc *curr_proc
+    struct virt_map page_map;
+    //struct queue local_rq;
+    //struct proc *curr_proc;
 } cpu;
 
-void panic(const char* str);
+//static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
+extern cpu cpu_list[32];
+cpu *mycpu();
+void panic(const char *str);
+
 

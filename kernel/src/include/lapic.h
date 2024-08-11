@@ -8,6 +8,7 @@
 #include "include/acpi.h"
 #include "include/types.h"
 
+#define LAPIC_ID_REG 0x0020
 #define LAPIC_PPR 0x00a0
 #define LAPIC_ICRLO 0x0300
 #define LAPIC_ICRHI 0x0310
