@@ -55,9 +55,9 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
 
     redirect |= (uint64_t)lapic_id << 56;
 
+    //this line is page faulting not sure why
+    uint32 redir_table = ((gsi - ioapic->gsi_base) * 2 + 16);
     panic("");
-    uint32 redir_table = (gsi - ioapic->gsi_base) * 2 + 16;
-
     write_ioapic(ioapic, redir_table, redirect);
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
 }
