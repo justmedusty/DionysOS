@@ -7,6 +7,9 @@
 #include "include/arch//arch_asm_functions.h"
 #include "include/types.h"
 #include "idt.h"
+
+#include <include/cpu.h>
+
 #include "include/arch/arch_traps.h"
 #include "include/uart.h"
 #include "include/arch/arch_global_interrupt_controller.h"

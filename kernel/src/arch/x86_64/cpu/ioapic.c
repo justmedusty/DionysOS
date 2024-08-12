@@ -1,6 +1,8 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#include <include/cpu.h>
+
 #include "include/arch/arch_global_interrupt_controller.h"
 
 
@@ -53,18 +55,22 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
 
     redirect |= (uint64_t)lapic_id << 56;
 
+    panic("");
     uint32 redir_table = (gsi - ioapic->gsi_base) * 2 + 16;
+
     write_ioapic(ioapic, redir_table, redirect);
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
 }
 
 void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
+
     uint32 index = 0;
     madt_iso* iso = NULL;
 
     while (index < madt_iso_len) {
         iso = madt_iso_list[index];
         if (iso->irq_src == irq) {
+
             ioapic_redirect_gsi(lapic_id, vector, iso->gsi, iso->flags, mask);
             return;
         }

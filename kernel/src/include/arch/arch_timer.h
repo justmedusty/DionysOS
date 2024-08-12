@@ -3,4 +3,8 @@
 //
 
 #pragma once
+#include "arch/x86_64/pit.h"
 
+void arch_timer_init(){
+    pit_init();
+}
