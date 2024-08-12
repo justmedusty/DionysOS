@@ -5,11 +5,13 @@
 
 #include "gdt.h"
 #include "include/arch//arch_asm_functions.h"
+#include "include/types.h"
 #include "idt.h"
 #include "include/arch/arch_traps.h"
 #include "include/uart.h"
-#include "include/arch/arch_lapic.h"
-#include "include/arch/arch_ioapic.h"
+#include "include/arch/arch_global_interrupt_controller.h"
+#include "include/arch/arch_local_interrupt_controller.h"
+
 
 extern void isr_wrapper_0();
 extern void isr_wrapper_1();
@@ -137,6 +139,11 @@ void idt_init(void){
 
 void irq_register(uint8 vec, void* handler){
     if (vec < 15){
-        //ioapic_redirect_irq()
+        ioapic_redirect_irq(0,vec + 32, vec,0);
     }
+    irq_routines[vec] = handler;
+}
+
+void irq_unregister(uint8 vec) {
+    irq_routines[vec]  = NULL;
 }

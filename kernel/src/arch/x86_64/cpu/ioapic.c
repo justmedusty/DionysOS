@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include "include/arch/arch_ioapic.h"
+#include "include/arch/arch_global_interrupt_controller.h"
 
 
 #include <include/arch/arch_paging.h>

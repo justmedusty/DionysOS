@@ -15,7 +15,7 @@
 #include "include/cpu.h"
 #include "include/acpi.h"
 #include "include/madt.h"
-#include "include/arch/arch_ioapic.h"
+#include "include/arch/arch_global_interrupt_controller.h"
 
 void kernel_bootstrap(){
     init_serial();

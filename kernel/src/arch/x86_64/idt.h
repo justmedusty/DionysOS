@@ -7,6 +7,7 @@
 #pragma once
 
 #include "gdt.h"
+#include "include/types.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -43,6 +44,7 @@ inline void load_idtr(struct idtr_desc *idtr) {
  * Set up basic interrupt table.
  */
 void idt_init(void);
-
+void irq_register(uint8 vec, void* handler);
+void irq_unregister(uint8 vec);
 
 #endif //DIONYSOS_IDT_H

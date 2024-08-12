@@ -3,7 +3,7 @@
 //
 #include "include/types.h"
 #include "include/uart.h"
-#include "include/arch/arch_lapic.h"
+#include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 
 uint64 apic_ticks = 0;
