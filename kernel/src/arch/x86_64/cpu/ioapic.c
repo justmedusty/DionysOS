@@ -30,22 +30,20 @@ uint64 ioapic_gsi_count(madt_ioapic* ioapic) {
 }
 
 madt_ioapic* ioapic_get_gsi(uint32 gsi) {
+
     for (uint64 i = 0; i < madt_ioapic_len; i++) {
         madt_ioapic* ioapic = madt_ioapic_list[i];
-        serial_printf("ioapic gsi base %x.64\n",ioapic->gsi_base);
+        uint64 num = ioapic_gsi_count(ioapic);
+        serial_printf("madt len :  %x.32 ioapic gsi base %x.32, apic id %x.8 apic address %x.32 gsi count %x.64\n",madt_ioapic_len,ioapic->gsi_base, ioapic->apic_id,ioapic->apic_addr,num);
         if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(ioapic) > gsi)
             return ioapic;
     }
-    return NULL;
+    panic("Cannot determine IOAPIC from GSI");
 }
 
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
 
     madt_ioapic* ioapic = ioapic_get_gsi(gsi);
-    if(ioapic == NULL) {
-        panic("ioapic_get_gsi() returned NULL\n");
-    }
-
 
     uint64 redirect = vector;
 
@@ -63,7 +61,6 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     redirect |= (uint64_t)lapic_id << 56;
 
     uint32 redir_table = (gsi - ioapic->gsi_base) * 2 + 16;
-    panic("");
     write_ioapic(ioapic, redir_table, redirect);
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
 }
@@ -80,6 +77,7 @@ void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
         }
         index++;
     }
+    ioapic_redirect_gsi(lapic_id,vector,irq,0,mask);
 }
 
 

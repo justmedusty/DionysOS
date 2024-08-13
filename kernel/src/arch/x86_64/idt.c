@@ -125,7 +125,7 @@ void create_void_gate(struct gate_desc* gate_desc){
 }
 
 void idt_init(void){
-    //just exceptions for now, no IRQs
+    //just exceptions
     for (int i = 0; i < 32; i++){
         if (exceptions[i] != T_NONE){
             create_interrupt_gate(&gates[i], isr_wrappers[i]);

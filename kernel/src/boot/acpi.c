@@ -52,7 +52,7 @@ uint64 acpi_init() {
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
 
   if (memcmp(rsdp->sign, "RSD PTR", 7)){
-    serial_printf("Error occurred parsing rsdp table\n");
+    panic("Error occurred parsing rsdp table\n");
     return 0;
 }
   if (rsdp->revision != 0) {
@@ -61,10 +61,15 @@ uint64 acpi_init() {
     acpi_extended = 1;
     acpi_xsdp* xsdp = (acpi_xsdp*)addr;
     acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
+    serial_printf("xsdt addr %x.64 \n",xsdp->xsdt_addr);
+    panic("");
     return xsdp->xsdt_addr;
   }
 
   acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->rsdt_addr);
-  serial_printf("Using xsdt\n");
+
+  if(rsdp->rsdt_addr == 0){
+     panic("acpi init failed\n");
+  }
   return rsdp->rsdt_addr;
 }
