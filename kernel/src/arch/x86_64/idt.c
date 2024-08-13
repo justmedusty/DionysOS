@@ -14,7 +14,7 @@
 #include "include/uart.h"
 #include "include/arch/arch_global_interrupt_controller.h"
 #include "include/arch/arch_local_interrupt_controller.h"
-
+#include "include/arch/arch_smp.h"
 
 extern void isr_wrapper_0();
 extern void isr_wrapper_1();
@@ -142,7 +142,7 @@ void idt_init(void){
 
 void irq_register(uint8 vec, void* handler){
     if (vec < 15){
-        ioapic_redirect_irq(0,vec + 32, vec,0);
+        ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,0);
     }
     irq_routines[vec] = handler;
 }

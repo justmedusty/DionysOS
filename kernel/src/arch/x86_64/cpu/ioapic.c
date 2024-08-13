@@ -7,6 +7,7 @@
 
 
 #include <include/arch/arch_paging.h>
+
 #include <include/uart.h>
 
 void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value) {
@@ -31,6 +32,7 @@ uint64 ioapic_gsi_count(madt_ioapic* ioapic) {
 madt_ioapic* ioapic_get_gsi(uint32 gsi) {
     for (uint64 i = 0; i < madt_ioapic_len; i++) {
         madt_ioapic* ioapic = madt_ioapic_list[i];
+        serial_printf("ioapic gsi base %x.64\n",ioapic->gsi_base);
         if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(ioapic) > gsi)
             return ioapic;
     }
@@ -38,7 +40,12 @@ madt_ioapic* ioapic_get_gsi(uint32 gsi) {
 }
 
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
+
     madt_ioapic* ioapic = ioapic_get_gsi(gsi);
+    if(ioapic == NULL) {
+        panic("ioapic_get_gsi() returned NULL\n");
+    }
+
 
     uint64 redirect = vector;
 
@@ -55,22 +62,19 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
 
     redirect |= (uint64_t)lapic_id << 56;
 
-    //this line is page faulting not sure why
-    uint32 redir_table = ((gsi - ioapic->gsi_base) * 2 + 16);
+    uint32 redir_table = (gsi - ioapic->gsi_base) * 2 + 16;
     panic("");
     write_ioapic(ioapic, redir_table, redirect);
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
 }
 
 void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
-
     uint32 index = 0;
     madt_iso* iso = NULL;
 
     while (index < madt_iso_len) {
         iso = madt_iso_list[index];
         if (iso->irq_src == irq) {
-
             ioapic_redirect_gsi(lapic_id, vector, iso->gsi, iso->flags, mask);
             return;
         }
