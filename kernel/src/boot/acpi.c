@@ -45,10 +45,10 @@ void* find_acpi_table(const int8* name) {
     }
   }
 
-  return NULL;
+  panic("ACPI Table not found");
 }
 
-uint64 acpi_init() {
+void acpi_init() {
   void* addr = (void*)rsdp_request.response->address;
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
   if(!rsdp){
@@ -65,7 +65,7 @@ uint64 acpi_init() {
     acpi_xsdp* xsdp = (acpi_xsdp*)addr;
     acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
     serial_printf("xsdt addr %x.64 \n",xsdp->xsdt_addr);
-    return xsdp->xsdt_addr;
+    goto init;
   }
 
   acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->rsdt_addr);
@@ -74,7 +74,6 @@ uint64 acpi_init() {
      panic("acpi init failed\n");
   }
 
-
+init:
   madt_init();
-  return rsdp->rsdt_addr;
 }

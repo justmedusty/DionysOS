@@ -48,5 +48,5 @@ int8 table[];
 
 extern int8 acpi_extended;
 extern void *acpi_root_sdt;
-uint64 acpi_init();
+void acpi_init();
 void* find_acpi_table(const int8 *name);
