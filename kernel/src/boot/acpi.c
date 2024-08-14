@@ -65,15 +65,21 @@ void acpi_init() {
     acpi_xsdp* xsdp = (acpi_xsdp*)addr;
     acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
     serial_printf("xsdt addr %x.64 \n",xsdp->xsdt_addr);
-    goto init;
+    if(xsdp->xsdt_addr == 0){
+      panic("acpi init failed\n");
+    }
+
+  }else{
+    acpi_root_sdt = (acpi_rsdt*)P2V((uint32)rsdp->rsdt_addr);
+    serial_printf("rsdt addr %x.32 \n",rsdp->rsdt_addr);
+    if(rsdp->rsdt_addr == 0){
+      panic("acpi init failed\n");
+    }
   }
 
-  acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->rsdt_addr);
 
-  if(rsdp->rsdt_addr == 0){
-     panic("acpi init failed\n");
-  }
 
-init:
+
+
   madt_init();
 }
