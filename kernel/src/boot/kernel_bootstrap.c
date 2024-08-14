@@ -29,7 +29,6 @@ void kernel_bootstrap(){
     mem_bounds_init();
     vmm_init();
     acpi_init();
-    madt_init();
     ioapic_init();
     arch_timer_init();
 }

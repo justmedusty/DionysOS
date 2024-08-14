@@ -8,6 +8,7 @@
 #include "include/mem.h"
 #include "include/uart.h"
 #include "include/cpu.h"
+#include "include/madt.h"
 #include "limine.h"
 
 __attribute__((used, section(".requests")))
@@ -50,11 +51,13 @@ void* find_acpi_table(const int8* name) {
 uint64 acpi_init() {
   void* addr = (void*)rsdp_request.response->address;
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
+  if(!rsdp){
+    panic("rsdp null");
+  }
 
-  if (memcmp(rsdp->sign, "RSD PTR", 7)){
-    panic("Error occurred parsing rsdp table\n");
-    return 0;
-}
+  serial_printf("acpi revision %x.64 \n",rsdp->revision);
+
+
   if (rsdp->revision != 0) {
     // Use XSDT
     serial_printf("Using xsdt\n");
@@ -62,7 +65,6 @@ uint64 acpi_init() {
     acpi_xsdp* xsdp = (acpi_xsdp*)addr;
     acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
     serial_printf("xsdt addr %x.64 \n",xsdp->xsdt_addr);
-    panic("");
     return xsdp->xsdt_addr;
   }
 
@@ -71,5 +73,8 @@ uint64 acpi_init() {
   if(rsdp->rsdt_addr == 0){
      panic("acpi init failed\n");
   }
+
+
+  madt_init();
   return rsdp->rsdt_addr;
 }
