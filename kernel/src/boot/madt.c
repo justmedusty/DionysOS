@@ -5,7 +5,7 @@
 
 #include "include/acpi.h"
 #include "include/madt.h"
-
+#include "include/uart.h"
 
 madt_ioapic* madt_ioapic_list[128] = {0};
 madt_iso* madt_iso_list[128] = {0};
@@ -28,7 +28,7 @@ void madt_init() {
       break;
     
     madt_entry* entry = (madt_entry*)(madt->table + offset);
-
+    serial_printf("iso len %x.32 \n",entry->type);
     switch (entry->type) {
       case 0:
         current_idx++;
@@ -38,6 +38,7 @@ void madt_init() {
         break;
       case 2:
         madt_iso_list[madt_iso_len++] = (madt_iso*)entry;
+
         break;
       case 5:
         lapic_addr = (uint64*)((madt_lapic_addr*)entry)->phys_lapic;

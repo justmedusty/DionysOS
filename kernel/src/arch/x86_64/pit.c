@@ -9,7 +9,7 @@
 #include <include/cpu.h>
 
 #include "include/uart.h"
-
+#include "include/arch/arch_smp.h"
 
 uint64 pit_ticks = 0;
 
@@ -25,7 +25,7 @@ void pit_init() {
     uint16 div = (uint16)(1193180 / PIT_FREQ);
     outb(CHANNEL0_DATA, (uint8)div);
     outb(CHANNEL0_DATA, (uint8)(div >> 8));
-    irq_register(0,pit_interrupt);
+    irq_register(bootstrap_lapic_id,pit_interrupt);
 }
 
 void pit_sleep(uint64 ms) {

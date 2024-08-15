@@ -25,7 +25,7 @@ run-gdb: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -m 2G -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -S -gdb tcp::25000
 .PHONY: run-x86
 run-x86: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -smp 4 -m 4G -cdrom $(IMAGE_NAME).iso -boot d -d cpu_reset,guest_errors -D qemu_debug.log -monitor stdio
+	qemu-system-x86_64 -M q35,smm=off -smp 4 -m 4G -cdrom $(IMAGE_NAME).iso -boot d -d cpu_reset,guest_errors -D qemu_debug.log -monitor stdio
 
 .PHONY: run-uefi
 run-uefi: ovmf $(IMAGE_NAME).iso
