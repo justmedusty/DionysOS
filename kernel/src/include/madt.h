@@ -6,56 +6,44 @@
 #include "acpi.h"
 
 typedef struct {
-  int8 sign[4];
-  uint32 len;
-  uint8 revision;
-  uint8 checksum;
-  int8 oem_id[6];
-  int8 oem_table_id[8];
-  uint32 oem_revision;
-  uint32 creator_id;
-  uint32 creator_revision;
-
-  /* MADT Specs */
   uint32 lapic_address;
   uint32 flags;
-
   int8 table[];
-} acpi_madt;
+}__attribute__((packed))  acpi_madt;
 
 typedef struct {
   uint8 type;
   uint8 len;
-} madt_entry;
+}__attribute__((packed))  madt_header;
 
 typedef struct {
-  madt_entry un;
+  madt_header header;
   uint8 cpu_id;
   uint8 apic_id;
   uint32 flags;
-} madt_cpu_lapic;
+}__attribute__((packed))  madt_cpu_lapic;
 
 typedef struct {
-  madt_entry un;
+  madt_header header;
   uint8 apic_id;
   uint8 resv;
   uint32 apic_addr;
   uint32 gsi_base;
-} madt_ioapic;
+} __attribute__((packed)) madt_ioapic;
 
 typedef struct {
-  madt_entry un;
+  madt_header header;
   uint8 bus_src;
   uint8 irq_src;
   uint32 gsi;
   uint16 flags;
-} madt_iso;
+}__attribute__((packed))  madt_iso;
 
 typedef struct {
-  madt_entry un;
+  madt_header header;
   uint16 resv;
   uint64 phys_lapic;
-} madt_lapic_addr;
+}__attribute__((packed))  madt_lapic_addr;
 
 extern madt_ioapic* madt_ioapic_list[128];
 extern madt_iso* madt_iso_list[128];
