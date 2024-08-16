@@ -6,7 +6,7 @@
 #include "include/types.h"
 
 typedef struct {
-    char signature[8];
+    int8 signature[8];
     uint8 checksum;
     int8 oem_id[6];
     uint8 revision;
@@ -14,11 +14,11 @@ typedef struct {
     uint32 length;
     uint64 xsdt_addr;
     uint8 extended_checksum;
-    uint8 resvl[3];
+    uint8 reserved[3];
 }__attribute__((packed)) acpi_rsdp;
 
 typedef struct {
-    char signature[4];
+    int8 signature[4];
     uint32 len;
     uint8 revision;
     uint8 checksum;
@@ -34,10 +34,6 @@ typedef struct {
     int8 table[];
 } acpi_rsdt;
 
-typedef struct {
-    acpi_sdt sdt;
-    int8 table[];
-} acpi_xsdt;
 
 extern int8 acpi_extended;
 extern void* acpi_root_sdt;
