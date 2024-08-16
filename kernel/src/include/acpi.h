@@ -10,7 +10,7 @@ typedef struct {
     uint8 checksum;
     int8 oem_id[6];
     uint8 revision;
-    uint32 rsdt_address;
+    uint32 rsdt_addr;
     uint32 length;
     uint64 xsdt_addr;
     uint8 extended_checksum;
@@ -32,7 +32,7 @@ typedef struct {
 typedef struct {
     acpi_sdt sdt;
     int8 table[];
-} acpi_rsdt;
+} __attribute__((packed))acpi_rsdt;
 
 
 extern int8 acpi_extended;

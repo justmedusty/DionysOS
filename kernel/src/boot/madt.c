@@ -6,6 +6,7 @@
 #include "include/acpi.h"
 #include "include/madt.h"
 #include "include/uart.h"
+#include "include/cpu.h";
 
 madt_ioapic* madt_ioapic_list[128] = {0};
 madt_iso* madt_iso_list[128] = {0};
@@ -17,6 +18,10 @@ uint64* lapic_addr = NULL;
 
 void madt_init() {
   acpi_madt* madt = (acpi_madt*)find_acpi_table("APIC");
+  
+  if(madt == 0){
+    panic("No MADT!");
+  }
 
   uint64 offset = 0;
   int current_idx = 0;
@@ -27,25 +32,25 @@ void madt_init() {
     if (offset > madt->len - sizeof(madt))
       break;
     
-    madt_entry* entry = (madt_entry*)(madt->table + offset);
-    serial_printf("iso len %x.32 \n",entry->type);
-    switch (entry->type) {
+    madt_header* header = (madt_header*)(madt->table + offset);
+    serial_printf("iso len %x.32 \n",header->type);
+    switch (header->type) {
       case 0:
         current_idx++;
         break;
       case 1:
-        madt_ioapic_list[madt_ioapic_len++] = (madt_ioapic*)entry;
+        madt_ioapic_list[madt_ioapic_len++] = (madt_ioapic*)header;
         break;
       case 2:
-        madt_iso_list[madt_iso_len++] = (madt_iso*)entry;
+        madt_iso_list[madt_iso_len++] = (madt_iso*)header;
 
         break;
       case 5:
-        lapic_addr = (uint64*)((madt_lapic_addr*)entry)->phys_lapic;
+        lapic_addr = (uint64*)((madt_lapic_addr*)header)->phys_lapic;
         break;
     }
 
-    offset += entry->len;
+    offset += header->len;
   }
 
 }

@@ -45,6 +45,13 @@ typedef struct {
   uint64 phys_lapic;
 }__attribute__((packed))  madt_lapic_addr;
 
+typedef struct {
+  madt_header header;
+  uint8 processor;
+  uint16 flags;
+  uint8 lint;
+}__attribute__((packed)) madt_nmi;
+
 extern madt_ioapic* madt_ioapic_list[128];
 extern madt_iso* madt_iso_list[128];
 

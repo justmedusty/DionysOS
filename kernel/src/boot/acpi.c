@@ -22,25 +22,24 @@ int8 acpi_extended = 0;
 void* acpi_root_sdt;
 
 void* find_acpi_table(const int8* name) {
+  acpi_rsdt* rsdt = (acpi_rsdt*)acpi_root_sdt;
   if (!acpi_extended) {
-    acpi_rsdt* rsdt = (acpi_rsdt*)acpi_root_sdt;
     uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
 
     for (int i = 0; i < entries; i++) {
       acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint32*)rsdt->table + i));
-      if (!memcmp(sdt->sign, name, 4))
+      if (!memcmp(sdt->signature, name, 4))
         return (void*)sdt;
     }
     return NULL;
   }
 
-  // Use XSDT
-  acpi_xsdt* xsdt = (acpi_xsdt*)acpi_root_sdt;
-  uint32 entries = (xsdt->sdt.len - sizeof(xsdt->sdt)) / 8;
+  // Extended
+  uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 8;
 
   for (int i = 0; i < entries; i++) {
-    acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64*)xsdt->table + i));
-    if (!memcmp(sdt->sign, name, 4)) {
+    acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64*)rsdt->table + i));
+    if (!memcmp(sdt->signature, name, 4)) {
       return (void*)sdt;
     }
   }
@@ -62,10 +61,9 @@ void acpi_init() {
     // Use XSDT
     serial_printf("Using xsdt\n");
     acpi_extended = 1;
-    acpi_xsdp* xsdp = (acpi_xsdp*)addr;
-    acpi_root_sdt = (acpi_xsdt*)P2V((uint64)xsdp->xsdt_addr);
-    serial_printf("xsdt addr %x.64 \n",xsdp->xsdt_addr);
-    if(xsdp->xsdt_addr == 0){
+    acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->xsdt_addr);
+    serial_printf("xsdt addr %x.64 \n",rsdp->xsdt_addr);
+    if(rsdp->xsdt_addr == 0){
       panic("acpi init failed\n");
     }
 
