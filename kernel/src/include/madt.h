@@ -21,7 +21,7 @@ typedef struct {
   uint8 cpu_id;
   uint8 apic_id;
   uint32 flags;
-}__attribute__((packed))  madt_cpu_lapic;
+}__attribute__((packed))  madt_lapic;
 
 typedef struct {
   madt_header header;

@@ -9,6 +9,7 @@
 #include "include/cpu.h";
 
 madt_ioapic* madt_ioapic_list[128] = {0};
+madt_lapic* madt_lapic_list[128] = {0};
 madt_iso* madt_iso_list[128] = {0};
 
 uint32 madt_ioapic_len = 0;
@@ -24,19 +25,28 @@ void madt_init() {
   }
 
   uint64 offset = 0;
-  int current_idx = 0;
+  uint64 current_idx = 0;
   madt_ioapic_len = 0;
   madt_iso_len = 0;
 
+
+
   while (1) {
-    if (offset > madt->len - sizeof(madt))
-      break;
-    
     madt_header* header = (madt_header*)(madt->table + offset);
-    serial_printf("iso len %x.32 \n",header->type);
+    if (offset > header->len - sizeof(madt))
+      break;
+
+
+
+
+    serial_printf("iso len %x.32 \n",header->len);
     switch (header->type) {
       case 0:
+        madt_lapic_list[current_idx] = (madt_lapic*) header;
+
         current_idx++;
+        serial_printf("Found local APIC\n");
+
         break;
       case 1:
         madt_ioapic_list[madt_ioapic_len++] = (madt_ioapic*)header;
@@ -45,7 +55,7 @@ void madt_init() {
         madt_iso_list[madt_iso_len++] = (madt_iso*)header;
 
         break;
-      case 5:
+      case 4:
         lapic_addr = (uint64*)((madt_lapic_addr*)header)->phys_lapic;
         break;
     }
