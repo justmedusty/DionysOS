@@ -6,6 +6,7 @@
 #include "acpi.h"
 
 typedef struct {
+  acpi_sdt header;
   uint32 lapic_address;
   uint32 flags;
   int8 table[];
@@ -52,12 +53,13 @@ typedef struct {
   uint8 lint;
 }__attribute__((packed)) madt_nmi;
 
-extern madt_ioapic* madt_ioapic_list[128];
-extern madt_iso* madt_iso_list[128];
+extern madt_ioapic* madt_ioapic_list[32];
+extern madt_lapic* madt_lapic_list[32];
+extern madt_iso* madt_iso_list[32];
+extern madt_nmi* madt_nmi_list[32];
 
 extern uint32 madt_ioapic_len;
 extern uint32 madt_iso_len;
-
-extern uint64* lapic_addr;
+extern uint32 madt_lapic_len;
 
 void madt_init();
