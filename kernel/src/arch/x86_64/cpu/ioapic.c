@@ -16,8 +16,8 @@ void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value) {
 }
 
 uint32 read_ioapic(madt_ioapic* ioapic, uint8 reg) {
-    *((volatile uint32*)P2V(ioapic->apic_addr) + IOAPIC_REG_SELECT) = reg;
-    return *((volatile uint32*)P2V(ioapic->apic_addr) + IOAPIC_IOWIN);
+  uint64 *base = (uint64 *)P2V((uint64*)ioapic->apic_addr);
+
 }
 
 void ioapic_set_entry(madt_ioapic* ioapic, uint8 index, uint64 data) {

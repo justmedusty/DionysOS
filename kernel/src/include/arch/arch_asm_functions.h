@@ -7,6 +7,13 @@
 #include "include/types.h"
 // Routines to let C code use special x86 instructions.
 
+static inline mem_in(void* addr) {
+
+}
+
+static inline mem_out(void* addr) {
+
+}
 // Reads a byte from the specified I/O port.
 static inline uint8 inb(uint16 port) {
     uint8 data;
