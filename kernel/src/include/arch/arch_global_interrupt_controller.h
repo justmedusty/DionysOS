@@ -11,9 +11,9 @@
 #define IOAPIC_VERSION 0x1
 #define IOAPIC_ARB 0x02
 #define IOAPIC_REDTBL 0x10
-
 #define IOAPIC_REG_SELECT 0x0
 #define IOAPIC_IOWIN 0x10
+
 
 void write_ioapic(madt_ioapic *ioapic, uint8 register, uint32 value);
 uint32 read_ioapic(madt_ioapic *ioapic, uint8 register);

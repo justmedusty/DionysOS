@@ -48,6 +48,7 @@ void madt_init() {
       case 1:
         serial_printf("Found IOAPIC\n");
         madt_ioapic_list[madt_ioapic_len++] = (madt_ioapic*)header;
+        serial_printf("gsi base %x.64\n",(madt_ioapic*)madt_ioapic_list[madt_ioapic_len - 1 ]->gsi_base);
         break;
       case 2:
         serial_printf("Found MADT ISO\n");
@@ -55,8 +56,11 @@ void madt_init() {
         break;
       case 4:
         serial_printf("Found NMI\n");
-      madt_nmi_list[madt_nmi_len++] = (madt_nmi*)header;
+        madt_nmi_list[madt_nmi_len++] = (madt_nmi*)header;
         break;
+        case 9:
+          serial_printf("Found x2apic, ignoring\n");
+          break;
     }
     offset += header->len;
   }

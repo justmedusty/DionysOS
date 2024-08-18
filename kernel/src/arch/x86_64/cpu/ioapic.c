@@ -105,7 +105,7 @@ uint64 ioapic_init() {
     }
 
     for (uint8 i = 0; i <= count; ++i) {
-        write_ioapic(ioapic, IOAPIC_REDTBL + 2 * i, 0x00010000 | (32 + i));
+        write_ioapic(ioapic, IOAPIC_REDTBL + 2 * i, 0x00010000 | 32 + i);
         write_ioapic(ioapic, IOAPIC_REDTBL + 2 * i + 1, 0); // redir cpu
     }
 
