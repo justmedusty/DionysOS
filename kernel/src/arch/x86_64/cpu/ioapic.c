@@ -7,17 +7,19 @@
 
 
 #include <include/arch/arch_paging.h>
-
+#include "include/arch/arch_asm_functions.h"
 #include <include/uart.h>
 
 void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value) {
-    *((volatile uint32*)P2V(ioapic->apic_addr) + IOAPIC_REG_SELECT) = reg;
-    *((volatile uint32*)P2V(ioapic->apic_addr) + IOAPIC_IOWIN) = value;
+    uint64* base = (uint64*)P2V((uint64*)ioapic->apic_addr);
+    mem_out((uint32*)base, reg);
+    mem_out((uint32*)base + 16, value);
 }
 
 uint32 read_ioapic(madt_ioapic* ioapic, uint8 reg) {
-  uint64 *base = (uint64 *)P2V((uint64*)ioapic->apic_addr);
-
+    uint64* base = (uint64*)P2V((uint64*)ioapic->apic_addr);
+    mem_out((uint32*)base, reg);
+    return mem_in((uint32*)base + 16);
 }
 
 void ioapic_set_entry(madt_ioapic* ioapic, uint8 index, uint64 data) {
@@ -30,11 +32,11 @@ uint64 ioapic_gsi_count(madt_ioapic* ioapic) {
 }
 
 madt_ioapic* ioapic_get_gsi(uint32 gsi) {
-
     for (uint64 i = 0; i < madt_ioapic_len; i++) {
         madt_ioapic* ioapic = madt_ioapic_list[i];
         uint64 num = ioapic_gsi_count(ioapic);
-        serial_printf("madt len :  %x.32 ioapic gsi base %x.32, apic id %x.8 apic address %x.32 gsi count %x.64\n",madt_ioapic_len,ioapic->gsi_base, ioapic->apic_id,ioapic->apic_addr,num);
+        serial_printf("madt len :  %x.32 ioapic gsi base %x.32, apic id %x.8 apic address %x.32 gsi count %x.64\n",
+                      madt_ioapic_len, ioapic->gsi_base, ioapic->apic_id, ioapic->apic_addr, num);
         if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(ioapic) > gsi)
             return ioapic;
     }
@@ -42,7 +44,6 @@ madt_ioapic* ioapic_get_gsi(uint32 gsi) {
 }
 
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
-
     madt_ioapic* ioapic = ioapic_get_gsi(gsi);
 
     uint64 redirect = vector;
@@ -77,7 +78,7 @@ void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
         }
         index++;
     }
-    ioapic_redirect_gsi(lapic_id,vector,irq,0,mask);
+    ioapic_redirect_gsi(lapic_id, vector, irq, 0, mask);
 }
 
 
