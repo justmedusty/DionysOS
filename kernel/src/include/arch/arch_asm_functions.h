@@ -7,13 +7,26 @@
 #include "include/types.h"
 // Routines to let C code use special x86 instructions.
 
-static inline mem_in(void* addr) {
-
+static inline uint64 mem_in(void* addr) {
+    uint64 ret = 0;
+    asm volatile(
+          "mov (%[addr]), %[ret]"
+          : [ret] "=r"(ret)
+          : [addr] "r"(addr)
+          : "memory"
+      );
+    return ret;
 }
 
-static inline mem_out(void* addr) {
-
+static inline void mem_out(void* addr, uint64 value) {
+    asm volatile(
+        "mov %[val], %[mem]"
+        : [mem] "+m"(*(volatile uint64*)addr)
+        : [val] "r"(value)
+        : "memory"
+    );
 }
+
 // Reads a byte from the specified I/O port.
 static inline uint8 inb(uint16 port) {
     uint8 data;
@@ -22,19 +35,19 @@ static inline uint8 inb(uint16 port) {
 }
 
 // Reads a sequence of 32-bit values from the specified I/O port into memory.
-static inline void insl(int port, void *addr, int cnt) {
+static inline void insl(int port, void* addr, int cnt) {
     asm volatile("cld; rep insl" :
-            "=D" (addr), "=c" (cnt) :
-            "d" (port), "0" (addr), "1" (cnt) :
-            "memory", "cc");
+        "=D" (addr), "=c" (cnt) :
+        "d" (port), "0" (addr), "1" (cnt) :
+        "memory", "cc");
 }
 
 // Reads a sequence of 64-bit values from the specified I/O port into memory.
-static inline void insq(int port, void *addr, int cnt) {
+static inline void insq(int port, void* addr, int cnt) {
     asm volatile("cld; rep insq" :
-            "=D" (addr), "=c" (cnt) :
-            "d" (port), "0" (addr), "1" (cnt) :
-            "memory", "cc");
+        "=D" (addr), "=c" (cnt) :
+        "d" (port), "0" (addr), "1" (cnt) :
+        "memory", "cc");
 }
 
 // Writes a byte to the specified I/O port.
@@ -48,61 +61,61 @@ static inline void outw(uint16 port, uint16 data) {
 }
 
 // Writes a sequence of 32-bit values from memory to the specified I/O port.
-static inline void outsl(int port, const void *addr, int cnt) {
+static inline void outsl(int port, const void* addr, int cnt) {
     asm volatile("cld; rep outsl" :
-            "=S" (addr), "=c" (cnt) :
-            "d" (port), "0" (addr), "1" (cnt) :
-            "cc");
+        "=S" (addr), "=c" (cnt) :
+        "d" (port), "0" (addr), "1" (cnt) :
+        "cc");
 }
 
 // Writes a sequence of 64-bit values from memory to the specified I/O port.
-static inline void outsq(int port, const void *addr, int cnt) {
+static inline void outsq(int port, const void* addr, int cnt) {
     asm volatile("cld; rep outsq" :
-            "=S" (addr), "=c" (cnt) :
-            "d" (port), "0" (addr), "1" (cnt) :
-            "cc");
+        "=S" (addr), "=c" (cnt) :
+        "d" (port), "0" (addr), "1" (cnt) :
+        "cc");
 }
 
 // Writes a byte value repeatedly to a memory location.
-static inline void stosb(void *addr, int data, int cnt) {
+static inline void stosb(void* addr, int data, int cnt) {
     asm volatile("cld; rep stosb" :
-            "=D" (addr), "=c" (cnt) :
-            "0" (addr), "1" (cnt), "a" (data) :
-            "memory", "cc");
+        "=D" (addr), "=c" (cnt) :
+        "0" (addr), "1" (cnt), "a" (data) :
+        "memory", "cc");
 }
 
 // Writes a 32-bit value repeatedly to a memory location.
-static inline void stosl(void *addr, int data, int cnt) {
+static inline void stosl(void* addr, int data, int cnt) {
     asm volatile("cld; rep stosl" :
-            "=D" (addr), "=c" (cnt) :
-            "0" (addr), "1" (cnt), "a" (data) :
-            "memory", "cc");
+        "=D" (addr), "=c" (cnt) :
+        "0" (addr), "1" (cnt), "a" (data) :
+        "memory", "cc");
 }
 
 // Writes a 64-bit value repeatedly to a memory location.
-static inline void stosq(void *addr, long long data, int cnt) {
+static inline void stosq(void* addr, long long data, int cnt) {
     asm volatile("cld; rep stosq" :
-            "=D" (addr), "=c" (cnt) :
-            "0" (addr), "1" (cnt), "a" (data) :
-            "memory", "cc");
+        "=D" (addr), "=c" (cnt) :
+        "0" (addr), "1" (cnt), "a" (data) :
+        "memory", "cc");
 }
 
 
 // Loads the Global Descriptor Table (GDT) register.
-static inline void lgdt(struct segdesc *p, int size) {
+static inline void lgdt(struct segdesc* p, int size) {
     volatile uint16 pd[3];
     pd[0] = size - 1;
-    pd[1] = (uint32) p;
-    pd[2] = (uint32) p >> 16;
+    pd[1] = (uint32)p;
+    pd[2] = (uint32)p >> 16;
     asm volatile("lgdt (%0)" : : "r" (pd));
 }
 
 // Loads the Interrupt Descriptor Table (IDT) register.
-static inline void lidt(struct gatedesc *p, int size) {
+static inline void lidt(struct gatedesc* p, int size) {
     volatile uint16 pd[3];
     pd[0] = size - 1;
-    pd[1] = (uint32) p;
-    pd[2] = (uint32) p >> 16;
+    pd[1] = (uint32)p;
+    pd[2] = (uint32)p >> 16;
     asm volatile("lidt (%0)" : : "r" (pd));
 }
 
@@ -134,12 +147,12 @@ static inline void sti(void) {
 }
 
 // Atomic exchange of a value.
-static inline uint64 xchg(volatile unsigned long long *addr, uint32 newval) {
+static inline uint64 xchg(volatile unsigned long long* addr, uint32 newval) {
     uint32 result;
     asm volatile("lock; xchg %0, %1" :
-            "+m" (*addr), "=a" (result) :
-            "1" (newval) :
-            "cc");
+        "+m" (*addr), "=a" (result) :
+        "1" (newval) :
+        "cc");
     return result;
 }
 
@@ -162,13 +175,12 @@ static inline uint64 rcr3(void) {
 }
 
 
-
-static inline void flush_tlb(){
+static inline void flush_tlb() {
     asm volatile("mov %%cr3, %%rax\n\t"
-                 "mov %%rax, %%cr3\n\t"
-            :
-            :
-            : "rax");
+        "mov %%rax, %%cr3\n\t"
+        :
+        :
+        : "rax");
 }
 
 //PAGEBREAK: 36
@@ -179,7 +191,7 @@ struct trapframe {
     unsigned long long rdi;
     unsigned long long rsi;
     unsigned long long rbp;
-    unsigned long long resp;      // useless & ignored
+    unsigned long long resp; // useless & ignored
     unsigned long long rbx;
     unsigned long long rdx;
     unsigned long long rcx;
