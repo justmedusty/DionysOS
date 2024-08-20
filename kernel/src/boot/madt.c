@@ -53,6 +53,7 @@ void madt_init() {
       case 2:
         serial_printf("Found MADT ISO\n");
         madt_iso_list[madt_iso_len++] = (madt_iso*)header;
+      serial_printf("ISO gsi %x.32 ISO irq src  %x.8 \n",madt_iso_list[madt_iso_len - 1]->gsi,madt_iso_list[madt_iso_len - 1]->irq_src);
         break;
       case 4:
         serial_printf("Found NMI\n");
