@@ -17,6 +17,7 @@
 #include "include/madt.h"
 #include "include/arch/arch_global_interrupt_controller.h"
 #include "include/arch/arch_timer.h"
+#include "include/arch/arch_local_interrupt_controller.h"
 
 void kernel_bootstrap(){
     init_serial();
@@ -29,6 +30,7 @@ void kernel_bootstrap(){
     mem_bounds_init();
     vmm_init();
     acpi_init();
+    lapic_init();
     ioapic_init();
     arch_timer_init();
 }
