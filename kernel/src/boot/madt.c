@@ -6,7 +6,7 @@
 #include "include/acpi.h"
 #include "include/madt.h"
 #include "include/uart.h"
-#include "include/cpu.h";
+#include "include/cpu.h"
 
 madt_ioapic* madt_ioapic_list[32] = {0};
 madt_lapic* madt_lapic_list[32] = {0};
