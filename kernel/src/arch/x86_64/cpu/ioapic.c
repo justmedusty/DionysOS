@@ -56,8 +56,9 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
         redirect |= (1 << 15);
     }
 
-    if (mask) redirect |= (1 << 16);
-    else redirect &= ~(1 << 16);
+    if(!mask) {
+        redirect |= (1 << 16);
+    }
 
     redirect |= (uint64_t)lapic_id << 56;
 
@@ -68,11 +69,14 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
 
 void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
     uint32 index = 0;
-    madt_iso* iso = NULL;
+    madt_iso* iso;
 
     while (index < madt_iso_len) {
         iso = madt_iso_list[index];
         if (iso->irq_src == irq) {
+            if(mask) {
+                serial_printf("IRQ %x.8  override\n",irq);
+            }
             ioapic_redirect_gsi(lapic_id, vector, iso->gsi, iso->flags, mask);
             return;
         }
@@ -82,18 +86,6 @@ void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
 }
 
 
-uint32 ioapic_get_redirect_irq(uint8 irq) {
-    uint8 index = 0;
-    madt_iso* iso;
-
-    while (index < madt_iso_len) {
-        iso = madt_iso_list[index];
-        if (iso->irq_src == irq) {
-            return iso->gsi;
-        }
-        index++;
-    }
-}
 
 uint64 ioapic_init() {
     madt_ioapic* ioapic = madt_ioapic_list[0];

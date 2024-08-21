@@ -142,7 +142,7 @@ void idt_init(void){
 
 void irq_register(uint8 vec, void* handler){
     if (vec < 15){
-        ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,0);
+        ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
     }
     irq_routines[vec] = handler;
 }
