@@ -71,12 +71,13 @@ void write_string_serial(const char *str) {
     Index into the char array if the value is valid
  */
 char get_hex_char(uint8 nibble) {
-    if(nibble >= 16) {
-      return '?';
+    if(nibble <= 16) {
+        return characters[nibble];
      } else {
-       return characters[nibble];
-       }
+    return '?';
+     }
 }
+
 
 void serial_printf(char *str, ...) {
     va_list args;
