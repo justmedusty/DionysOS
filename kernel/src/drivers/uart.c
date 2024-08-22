@@ -9,6 +9,8 @@
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
+char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
 void init_serial() {
     outb(SERIAL_PORT + 1, 0x00);    // Disable all interrupts
     outb(SERIAL_PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -66,45 +68,14 @@ void write_string_serial(const char *str) {
 }
 
 /*
- * You could also just index into a mapped array if you want to be as clean as possible but for this I am okay with a big switch.
+    Index into the char array if the value is valid
  */
 char get_hex_char(uint8 nibble) {
-    switch (nibble) {
-        case 0x0:
-            return '0';
-        case 0x1:
-            return '1';
-        case 0x2:
-            return '2';
-        case 0x3:
-            return '3';
-        case 0x4:
-            return '4';
-        case 0x5:
-            return '5';
-        case 0x6:
-            return '6';
-        case 0x7:
-            return '7';
-        case 0x8:
-            return '8';
-        case 0x9:
-            return '9';
-        case 0xA:
-            return 'A';
-        case 0xB:
-            return 'B';
-        case 0xC:
-            return 'C';
-        case 0xD:
-            return 'D';
-        case 0xE:
-            return 'E';
-        case 0xF:
-            return 'F';
-        default:
-            return '?'; // Handle invalid input
-    }
+    if(nibble >= 16) {
+      return '?';
+     } else {
+       return characters[nibble];
+       }
 }
 
 void serial_printf(char *str, ...) {
