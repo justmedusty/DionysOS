@@ -25,6 +25,9 @@ void ioapic_set_entry(madt_ioapic* ioapic, uint8 index, uint64 data) {
 }
 
 uint64 ioapic_gsi_count(uint32 ioapic) {
+ 	if(ioapic > madt_ioapic_len) {
+          return 0;
+ 	}
     return (read_ioapic(madt_ioapic_list[ioapic], 1) & 0xff0000) >> 16;
 }
 
@@ -32,16 +35,22 @@ madt_ioapic* ioapic_get_gsi(uint32 gsi) {
     for (uint64 i = 0; i < madt_ioapic_len; i++) {
         madt_ioapic* ioapic = madt_ioapic_list[i];
         uint64 num = ioapic_gsi_count(i);
+        serial_printf("num = %x.8\n", num);
         serial_printf("madt len : %x.32 ioapic gsi base %x.32, apic id %x.8  apic address %x.32 gsi count %x.64\n",
                       madt_ioapic_len, ioapic->gsi_base, ioapic->apic_id, ioapic->apic_addr, num);
-        if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(i) > gsi)
+        if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(i) > gsi){
+
             return ioapic;
+            }
     }
     panic("Cannot determine IOAPIC from GSI");
 }
 
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
+
+
     madt_ioapic* ioapic = ioapic_get_gsi(gsi);
+
 
     uint64 redirect = vector;
 
@@ -96,9 +105,8 @@ uint64 ioapic_init() {
     for (uint8 i = 0; i <= count; ++i) {
         write_ioapic(ioapic, IOAPIC_REDTBL + 2 * i, 0x00010000 | 32 + i);
         write_ioapic(ioapic, IOAPIC_REDTBL + 2 * i + 1, 0); // redir cpu
-    }
 
+}
     serial_printf("Ioapic Initialised\n");
-
     return 1;
 }

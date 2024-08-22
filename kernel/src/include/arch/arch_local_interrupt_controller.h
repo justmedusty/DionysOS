@@ -28,6 +28,8 @@
 #define LAPIC_TIMER_DISABLE 0x10000
 #define LAPIC_TIMER_CURCNT 0x390
 #define LAPIC_TIMER_PERIODIC 0x20000
+#define LAPIC_SPURIOUS 0x0F0
+#define LAPIC_EOI 0x0B0
 
 void lapic_init();
 void lapic_timer_stop();
