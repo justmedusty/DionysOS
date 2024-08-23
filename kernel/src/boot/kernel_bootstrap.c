@@ -31,6 +31,5 @@ void kernel_bootstrap(){
     vmm_init();
     acpi_init();
     lapic_init();
-    ioapic_init();
     arch_timer_init();
 }

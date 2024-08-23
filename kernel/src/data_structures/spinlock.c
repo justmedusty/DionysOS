@@ -20,3 +20,8 @@ void acquire_spinlock(struct spinlock *spinlock){
     arch_atomic_swap(&spinlock->locked,1);
     spinlock->cpu = 0;//&cpu_list[mycpu()];
 }
+
+void release_spinlock(struct spinlock *spinlock){
+  spinlock->cpu = 0;
+  spinlock->locked = 0;
+}

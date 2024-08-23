@@ -37,7 +37,7 @@ extern void isr_wrapper_17();
 extern void isr_wrapper_18();
 extern void isr_wrapper_19();
 
-void* irq_routines[256] = {};
+void* irq_routines[64] = {};
 
 //Going to index this array when setting up the idt
 void (*isr_wrappers[33])() = {
@@ -77,7 +77,8 @@ void (*isr_wrappers[33])() = {
 
 };
 
-struct gate_desc gates[64] = {};
+struct gate_desc gates[256] = {};
+
 struct idtr_desc idtr = {
     .off = (uint64_t)&gates,
     .sz = sizeof(gates) - 1,
@@ -136,15 +137,14 @@ void idt_init(void){
     }
     load_idtr(&idtr);
     //enable interrupts (locally)
-    __asm__ volatile("sti");
+    asm volatile("sti");
     write_string_serial("IDT Loaded, ISRs mapped\n");
 }
 
 void irq_register(uint8 vec, void* handler){
-    if (vec < 15){
-        ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
-    }
-    irq_routines[vec] = handler;
+  	create_interrupt_gate(&gates[vec + 32], handler);
+        serial_printf("IRQ %x.8  loaded\n");
+   // ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
 }
 
 void irq_unregister(uint8 vec) {

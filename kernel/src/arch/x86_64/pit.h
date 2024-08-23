@@ -15,4 +15,6 @@ void pit_interrupt();
 
 void pit_init();
 void pit_sleep(uint64 ms);
+void pit_set_reload_value(uint16 new_reload_value);
+void pit_set_freq(uint64 freq);
 #endif //PIT_H

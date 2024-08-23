@@ -16,7 +16,7 @@ void write_ioapic(madt_ioapic* ioapic, uint8 reg, uint32 value) {
 uint32 read_ioapic(madt_ioapic* ioapic, uint8 reg) {
     uint64* base = (uint64*)P2V((uint64)ioapic->apic_addr);
     mem_out((uint32*)base, reg);
-    return mem_in((uint32*)base + 16);
+    return (uint32)mem_in((uint32*)base + 16);
 }
 
 void ioapic_set_entry(madt_ioapic* ioapic, uint8 index, uint64 data) {
@@ -35,11 +35,8 @@ madt_ioapic* ioapic_get_gsi(uint32 gsi) {
     for (uint64 i = 0; i < madt_ioapic_len; i++) {
         madt_ioapic* ioapic = madt_ioapic_list[i];
         uint64 num = ioapic_gsi_count(i);
-        serial_printf("num = %x.8\n", num);
-        serial_printf("madt len : %x.32 ioapic gsi base %x.32, apic id %x.8  apic address %x.32 gsi count %x.64\n",
-                      madt_ioapic_len, ioapic->gsi_base, ioapic->apic_id, ioapic->apic_addr, num);
+        serial_printf("madt len : %x.32 ioapic gsi base %x.32, apic id %x.8  apic address %x.32 gsi count %x.64\n",madt_ioapic_len, ioapic->gsi_base, ioapic->apic_id, ioapic->apic_addr, num);
         if (ioapic->gsi_base <= gsi && ioapic->gsi_base + ioapic_gsi_count(i) > gsi){
-
             return ioapic;
             }
     }
