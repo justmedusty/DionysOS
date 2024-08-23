@@ -14,8 +14,7 @@
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
-  	pit_ticks++;
-    serial_printf("pit tick\n");
+  	panic("pit_interrupt");
 }
 
 void pit_set_freq(uint64 freq) {
@@ -23,7 +22,7 @@ void pit_set_freq(uint64 freq) {
   if(PIT_FREQ % freq > freq / 2){
       new_divisor++;
       }
-
+	pit_set_reload_value(new_divisor);
 }
 
 void pit_set_reload_value(uint16 new_reload_value) {
@@ -34,9 +33,8 @@ void pit_set_reload_value(uint16 new_reload_value) {
 
 void pit_init() {
     outb(CMD, 0x36);
-    uint16 div = (uint16)(1193180 / PIT_FREQ);
-    outb(CHANNEL0_DATA, (uint8)div);
-    outb(CHANNEL0_DATA, (uint8)(div >> 8));
+    //I think this should set frew to 20hz but will verify that
+    pit_set_freq(20);
     irq_register(0,&pit_interrupt);
 }
 

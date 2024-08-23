@@ -127,7 +127,7 @@ void create_void_gate(struct gate_desc* gate_desc){
 
 void idt_init(void){
     //just exceptions
-    for (int i = 0; i < 32; i++){
+    for (int i = 0; i < 31; i++){
         if (exceptions[i] != T_NONE){
             create_interrupt_gate(&gates[i], isr_wrappers[i]);
         }
@@ -143,7 +143,9 @@ void idt_init(void){
 
 void irq_register(uint8 vec, void* handler){
   	create_interrupt_gate(&gates[vec + 32], handler);
-        serial_printf("IRQ %x.8  loaded\n");
+    load_idtr(&idtr);
+     serial_printf("IRQ %x.8  loaded\n",vec);
+
    // ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
 }
 
