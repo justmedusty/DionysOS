@@ -39,6 +39,8 @@ extern void isr_wrapper_19();
 
 void* irq_routines[64] = {};
 
+uint8 idt_free_vec = 32;
+
 //Going to index this array when setting up the idt
 void (*isr_wrappers[33])() = {
     isr_wrapper_0,
@@ -141,12 +143,15 @@ void idt_init(void){
     write_string_serial("IDT Loaded, ISRs mapped\n");
 }
 
+uint8 idt_get_irq_vector(){
+  if(idt_free_vec == 255){
+    panic("idt_get_irq_vector out of space");
+  }
+  return idt_free_vec++;
+}
 void irq_register(uint8 vec, void* handler){
-  	create_interrupt_gate(&gates[vec + 32], handler);
-    load_idtr(&idtr);
-     serial_printf("IRQ %x.8  loaded\n",vec);
-
-   // ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
+   ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
+   serial_printf("IRQ %x.8  loaded\n",vec);
 }
 
 void irq_unregister(uint8 vec) {
