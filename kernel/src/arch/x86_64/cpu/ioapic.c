@@ -8,15 +8,15 @@
 #include <include/uart.h>
 
 void write_ioapic(uint32 ioapic, uint8 reg, uint32 value) {
-    uint32* base = (uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
-    mem_out((uint32*)base, reg);
-    mem_out((uint32*)base + 16, value);
+    volatile uint32* base = (volatile uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
+    mem_out((volatile uint64)base, reg);
+    mem_out((volatile uint64)base + 16, value);
 }
 
 uint32 read_ioapic(uint32 ioapic, uint8 reg) {
-    uint32* base = (uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
-    mem_out((uint32*)base, reg);
-    return (uint32)mem_in((uint32*)base + 16);
+    volatile uint32* base = (volatile uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
+    mem_out((volatile uint64)base, reg);
+    return (volatile uint64)mem_in((volatile uint64)base + 16);
 }
 
 uint64 ioapic_gsi_count(uint32 ioapic) {
