@@ -46,5 +46,6 @@ inline void load_idtr(struct idtr_desc *idtr) {
 void idt_init(void);
 void irq_register(uint8 vec, void* handler);
 void irq_unregister(uint8 vec);
+uint8 idt_get_vector();
 
 #endif //DIONYSOS_IDT_H

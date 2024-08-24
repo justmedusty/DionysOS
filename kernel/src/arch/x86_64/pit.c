@@ -35,7 +35,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 
 void pit_init() {
     outb(CMD, 0x36);
-    //I think this should set frew to 20hz but will verify that
+    //I think this should set freq to 20hz but will verify that
     pit_set_freq(20);
     irq_register(0,pit_interrupt);
 }
