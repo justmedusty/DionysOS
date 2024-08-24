@@ -14,7 +14,7 @@ void write_ioapic(uint32 ioapic, uint8 reg, uint32 value) {
 }
 
 uint32 read_ioapic(uint32 ioapic, uint8 reg) {
-    volatile uint32* base = (uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
+    uint32* base = (uint32*)P2V((uint32)madt_ioapic_list[ioapic]->apic_addr);
     mem_out((uint64)base, reg);
     return (uint64)mem_in((uint64)base + 16);
 }
@@ -81,20 +81,3 @@ void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
     ioapic_redirect_gsi(lapic_id, vector, irq, 0, mask);
 }
 
-
-uint64 ioapic_init() {
-    uint32 val = read_ioapic(0, IOAPIC_VERSION);
-    uint32 count = val >> 16 & 0xFF;
-
-    if (read_ioapic(0, 0) >> 24 != madt_ioapic_list[0]->apic_id) {
-        return 0;
-    }
-
-    for (uint8 i = 0; i <= count; ++i) {
-        write_ioapic(0, IOAPIC_REDTBL + 2 * i, 0x00010000 | 32 + i);
-        write_ioapic(0, IOAPIC_REDTBL + 2 * i + 1, 0); // redir cpu
-
-}
-    serial_printf("Ioapic Initialised\n");
-    return 1;
-}

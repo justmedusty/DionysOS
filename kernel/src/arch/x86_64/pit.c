@@ -10,11 +10,13 @@
 
 #include "include/uart.h"
 #include "include/arch/arch_smp.h"
-
+#include "include/arch/arch_local_interrupt_controller.h"
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
-  	panic("pit_interrupt");
+  	serial_printf("pit ticks: %x.64\n", pit_ticks);
+    lapic_eoi();
+
 }
 
 void pit_set_freq(uint64 freq) {
