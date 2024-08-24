@@ -13,7 +13,9 @@ void arch_panic(const char *str){
     write_string_serial(str);
     panicked = 1;
     asm("cli");
-    asm("hlt");
+    for(;;){
+      asm("hlt");
+      }
 }
 
 uint64 arch_mycpu(){
