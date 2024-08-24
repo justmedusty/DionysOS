@@ -7,12 +7,12 @@
 #include "include/types.h"
 // Routines to let C code use special x86 instructions.
 
-static inline uint64 mem_in(uint64 addr) {
-    uint64 ret = 0;
+static inline uint64 mem_in(volatile uint64 addr) {
+    volatile uint64 ret = 0;
     asm volatile(
           "mov (%[addr]), %[ret]"
           : [ret] "=r"(ret)
-          : [addr] "r"((uint64 *)addr)
+          : [addr] "r"((volatile uint64 *)addr)
           : "memory"
       );
     return ret;
