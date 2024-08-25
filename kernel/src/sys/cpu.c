@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 8/11/24.
 //
+#pragma once
 #include "include/arch/arch_cpu.h"
 #include "include/cpu.h"
 #include "include/types.h"

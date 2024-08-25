@@ -63,5 +63,4 @@ void lapic_send_others_int(uint32 id, uint32 vec) {
 }
 
 uint32 lapic_get_id() {
-    return lapic_read(LAPIC_ID_REG) >> LAPIC_ICDESTSHIFT;
 }

@@ -2,11 +2,10 @@
 // Created by dustyn on 6/16/24.
 //
 
-#ifndef DIONYSOS_X86_H
-#define DIONYSOS_X86_H
+#pragma once
 #include "include/types.h"
+#ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
-
 static inline uint64 mem_in(volatile uint64 addr) {
     volatile uint64 ret = 0;
     asm volatile(
@@ -101,24 +100,6 @@ static inline void stosq(void* addr, long long data, int cnt) {
 }
 
 
-// Loads the Global Descriptor Table (GDT) register.
-static inline void lgdt(struct segdesc* p, int size) {
-    volatile uint16 pd[3];
-    pd[0] = size - 1;
-    pd[1] = (uint32)p;
-    pd[2] = (uint32)p >> 16;
-    asm volatile("lgdt (%0)" : : "r" (pd));
-}
-
-// Loads the Interrupt Descriptor Table (IDT) register.
-static inline void lidt(struct gatedesc* p, int size) {
-    volatile uint16 pd[3];
-    pd[0] = size - 1;
-    pd[1] = (uint32)p;
-    pd[2] = (uint32)p >> 16;
-    asm volatile("lidt (%0)" : : "r" (pd));
-}
-
 // Loads the Task Register (TR).
 static inline void ltr(uint16 sel) {
     asm volatile("ltr %0" : : "r" (sel));
@@ -183,6 +164,15 @@ static inline void flush_tlb() {
         : "rax");
 }
 
+static inline uint64 interrupts_enabled() {
+  uint64 flags;
+  asm volatile("pushfq"
+               "pop f"
+               : "=rm" (flags));
+  return flags & (1 << 9);
+  }
+
+
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
@@ -220,4 +210,4 @@ struct trapframe {
     uint16 ss;
     uint16 padding6;
 };
-#endif //DIONYSOS_X86_H
+#endif

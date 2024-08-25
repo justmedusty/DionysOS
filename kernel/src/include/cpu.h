@@ -3,12 +3,13 @@
 //
 
 #pragma once
+#include "include/arch/arch_cpu.h"
 #include "include/cpu.h"
 #include "vmm.h"
 #include "include/types.h"
 
 typedef struct{
-    uint64 cpu_id;
+    struct local_cpu *cpu;
     struct virt_map page_map;
     //struct queue local_rq;
     //struct proc *curr_proc;

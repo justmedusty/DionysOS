@@ -7,6 +7,8 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 
 int8 panicked = 0;
+local_cpu local_cpu_info[16];
+#ifdef __x86_64__
 
 void arch_panic(const char *str){
     write_string_serial("\nPanic! ");
@@ -21,3 +23,4 @@ void arch_panic(const char *str){
 uint64 arch_mycpu(){
     return lapic_get_id();
 }
+#endif

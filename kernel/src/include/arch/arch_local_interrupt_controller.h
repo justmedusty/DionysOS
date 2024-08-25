@@ -7,7 +7,7 @@
 #include "include/madt.h"
 #include "include/acpi.h"
 #include "include/types.h"
-
+#ifdef __x86_64__
 #define LAPIC_ID_REG 0x0020
 #define LAPIC_PPR 0x00a0
 #define LAPIC_ICRLO 0x0300
@@ -44,4 +44,4 @@ void lapic_send_others_int(uint32 id, uint32 vec);
 void lapic_init_cpu(uint32 id);
 void lapic_start_cpu(uint32 id, uint32 vec);
 uint32 lapic_get_id();
-
+#endif

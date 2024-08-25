@@ -1,8 +1,9 @@
 //
 // Created by dustyn on 6/19/24.
 //
+#pragma once
 #include "include/types.h"
-#include "include/arch/arch_trapframe.h"
+#include "include/arch/arch_cpu.h"
 #include "include/uart.h"
 
 //Exception 0
