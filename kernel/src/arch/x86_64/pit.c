@@ -12,6 +12,8 @@
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
+    pit_ticks++;
+    //panic("PIT interrupt");
     lapic_eoi();
 }
 
@@ -32,10 +34,9 @@ void pit_set_reload_value(uint16 new_reload_value) {
 
 void pit_init() {
     outb(CMD, 0x36);
-    //I think this should set freq to 20hz but will verify that
-    pit_set_freq(50);
+    pit_set_freq(5);
     irq_register(0,pit_interrupt);
-    serial_printf("Timer inititialized\n");
+    serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 }
 
 void pit_sleep(uint64 ms) {
