@@ -13,7 +13,6 @@ uint64 pit_ticks = 0;
 
 void pit_interrupt() {
     pit_ticks++;
-    //panic("PIT interrupt");
     lapic_eoi();
 }
 

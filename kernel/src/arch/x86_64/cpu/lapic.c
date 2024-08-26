@@ -13,6 +13,7 @@ uint64 lapic_base = 0;
 
 void lapic_init() {
     lapic_write(LAPIC_SPURIOUS, 0x1ff);
+    lapic_calibrate_timer();
     serial_printf("LAPIC Initialised.\n");
 }
 
@@ -47,7 +48,7 @@ void lapic_write(volatile uint32 reg, uint32 val) {
       mem_out(lapic_base + reg, val);
 }
 
-uint32 lapic_read(uint32 reg) {
+uint32 lapic_read(volatile uint32 reg) {
     if(lapic_base == 0) {
         lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
     }

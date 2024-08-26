@@ -34,7 +34,7 @@
 void lapic_init();
 void lapic_timer_stop();
 void lapic_timer_oneshot(uint8 vec, uint64 ms);
-void lapic_timer_calibrate();
+void lapic_calibrate_timer();
 void lapic_write(uint32 reg, uint32 val);
 uint32 lapic_read(uint32 reg);
 void lapic_eoi();
