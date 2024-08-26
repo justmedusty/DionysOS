@@ -5,8 +5,11 @@
 #include "include/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
+#include <include/arch/x86_64/msr.h>
+#include <include/arch/arch_asm_functions.h>
 
 uint64 apic_ticks = 0;
+uint64 lapic_base = 0;
 
 void lapic_init() {
     lapic_write(LAPIC_SPURIOUS, 0x1ff);
@@ -38,15 +41,21 @@ void lapic_calibrate_timer() {
 }
 
 void lapic_write(volatile uint32 reg, uint32 val) {
-    *((volatile uint32*)(P2V(0xfee00000) + reg)) = val;
+    if(lapic_base == 0) {
+      lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+      }
+      mem_out(lapic_base + reg, val);
 }
 
 uint32 lapic_read(uint32 reg) {
-    return *((volatile uint32*)(P2V(0xfee00000) + reg));
+    if(lapic_base == 0) {
+        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+    }
+    return mem_in(lapic_base + reg);
 }
 
 void lapic_eoi() {
-    lapic_write((uint8)LAPIC_EOI, 0x0);
+    lapic_write(LAPIC_EOI, 0x0);
 }
 
 void lapic_ipi(uint32 id, uint8 dat) {

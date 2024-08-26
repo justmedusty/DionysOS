@@ -34,7 +34,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 
 void pit_init() {
     outb(CMD, 0x36);
-    pit_set_freq(5);
+    pit_set_freq(20);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 }

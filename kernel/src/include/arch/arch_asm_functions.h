@@ -17,7 +17,7 @@ static inline uint64 mem_in(volatile uint64 addr) {
     return ret;
 }
 
-static inline void mem_out(uint64 addr, uint64 value) {
+static inline void mem_out(volatile uint64 addr, uint64 value) {
     asm volatile(
         "mov %[val], %[mem]"
         : [mem] "+m"(*(volatile uint64*)addr)
