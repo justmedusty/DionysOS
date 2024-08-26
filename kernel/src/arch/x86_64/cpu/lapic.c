@@ -37,7 +37,7 @@ void lapic_calibrate_timer() {
     lapic_timer_stop();
 }
 
-void lapic_write(uint32 reg, uint32 val) {
+void lapic_write(volatile uint32 reg, uint32 val) {
     *((volatile uint32*)(P2V(0xfee00000) + reg)) = val;
 }
 
@@ -46,7 +46,7 @@ uint32 lapic_read(uint32 reg) {
 }
 
 void lapic_eoi() {
-    lapic_write((uint8)0xb0, 0x0);
+    lapic_write((uint8)LAPIC_EOI, 0x0);
 }
 
 void lapic_ipi(uint32 id, uint8 dat) {

@@ -60,6 +60,7 @@ override KCFLAGS += \
     -mno-red-zone \
    	-g \
     -I kernel/src/include \
+    -I kernel/src/arch/x86_64 \
 
 # Internal C preprocessor flags that should not be changed by the user.
 override KCPPFLAGS := \
