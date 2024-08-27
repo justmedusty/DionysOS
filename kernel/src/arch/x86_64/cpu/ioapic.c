@@ -55,13 +55,12 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     if (!mask) {
         redirect |= (1 << 16);
     }
-
-    redirect |= (uint64_t)lapic_id << 56;
+    redirect |= (uint64)lapic_id << 56;
 
     uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
-
+    serial_printf("Redirect IOAPIC %x.32 IOAPIC %x.8   redir table %x.32\n", redirect, ioapic, redir_table);
     write_ioapic(ioapic, redir_table, (uint32)redirect);
-    //GP fault happening at this line here
+
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
 
 
