@@ -42,7 +42,7 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     uint32 ioapic = ioapic_get_gsi(gsi);
 
 
-    uint64 redirect = vector;
+    uint64 redirect = (uint64) vector;
 
     if ((flags & (1 << 1)) != 0) {
         redirect |= (1 << 13);
@@ -63,7 +63,6 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     write_ioapic(ioapic, redir_table, (uint32)redirect);
     //GP fault happening at this line here
     write_ioapic(ioapic, redir_table + 1, redirect >> 32);
-     panic("fixed");
 
 
 }
