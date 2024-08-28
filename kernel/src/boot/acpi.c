@@ -76,8 +76,5 @@ void acpi_init() {
   }
 
 
-
-
-
   madt_init();
 }

@@ -4,7 +4,7 @@
 
 #include "spinlock.h"
 
-#include <include/arch//arch_asm_functions.h>
+#include "include/arch/x86_64/arch_asm_functions.h"
 #include "include/arch//arch_atomic_operations.h"
 #include "include/cpu.h"
 

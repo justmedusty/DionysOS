@@ -4,7 +4,7 @@
 
 
 #include "gdt.h"
-#include "include/arch//arch_asm_functions.h"
+#include "include/arch/x86_64/arch_asm_functions.h"
 #include "include/types.h"
 #include "idt.h"
 

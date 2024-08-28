@@ -11,12 +11,11 @@
 #include "include/arch//arch_paging.h"
 #include "include/pmm.h"
 #include "include/kalloc.h"
-#include "include/arch//arch_asm_functions.h"
 #include "include/mem_bounds.h"
 #include "include/uart.h"
 #include "include/cpu.h"
 #include "include/arch//arch_vmm.h"
-#include "include/arch/arch_asm_functions.h"
+#include "include/arch/x86_64/arch_asm_functions.h"
 
 
 p4d_t* global_pg_dir = 0;

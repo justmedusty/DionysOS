@@ -66,4 +66,5 @@ void madt_init() {
     offset += header->len;
   }
 
+
 }

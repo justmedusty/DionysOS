@@ -6,7 +6,7 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include <include/arch/x86_64/msr.h>
-#include <include/arch/arch_asm_functions.h>
+#include <include/arch/x86_64/arch_asm_functions.h>
 
 uint64 apic_ticks = 0;
 uint64 lapic_base = 0;
@@ -38,6 +38,7 @@ void lapic_calibrate_timer() {
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
     uint32 ticks = 0xFFFFFFFF - lapic_read(LAPIC_TIMER_CURCNT);
     apic_ticks = ticks;
+    serial_printf("LAPIC ticks %x.64\n",apic_ticks);
     lapic_timer_stop();
 }
 
@@ -45,10 +46,10 @@ void lapic_write(volatile uint32 reg, uint32 val) {
     if(lapic_base == 0) {
       lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
       }
-      mem_out(lapic_base + reg, val);
+      mem_out((uint64 *)lapic_base + reg, val);
 }
 
-uint32 lapic_read(volatile uint32 reg) {
+uint32 lapic_read(uint32 reg) {
     if(lapic_base == 0) {
         lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
     }

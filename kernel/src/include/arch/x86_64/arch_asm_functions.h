@@ -6,7 +6,7 @@
 #include "include/types.h"
 #ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
-static inline uint64 mem_in(volatile uint64 addr) {
+static inline uint64 mem_in(uint64 addr) {
     volatile uint64 ret = 0;
     asm volatile(
           "mov (%[addr]), %[ret]"
@@ -17,10 +17,10 @@ static inline uint64 mem_in(volatile uint64 addr) {
     return ret;
 }
 
-static inline void mem_out(volatile uint64 addr, uint64 value) {
+static inline void mem_out(uint64 *addr, uint64 value) {
     asm volatile(
         "mov %[val], %[mem]"
-        : [mem] "+m"(*(volatile uint64*)addr)
+        : [mem] "+m"(*(addr))
         : [val] "r"(value)
         : "memory"
     );

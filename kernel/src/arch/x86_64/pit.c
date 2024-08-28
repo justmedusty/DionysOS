@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "include/arch//arch_asm_functions.h"
+#include "include/arch/x86_64/arch_asm_functions.h"
 #include "idt.h"
 #include "pit.h"
 #include <include/cpu.h>
