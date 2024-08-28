@@ -2,6 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 #pragma once
+
 #include "include/arch//arch_asm_functions.h"
 #include "idt.h"
 #include "pit.h"
@@ -9,7 +10,7 @@
 #include "include/uart.h"
 #include "include/arch/arch_smp.h"
 #include "include/arch/arch_local_interrupt_controller.h"
-uint64 pit_ticks = 0;
+volatile uint64 pit_ticks = 0;
 
 void pit_interrupt() {
     pit_ticks++;
@@ -33,7 +34,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 
 void pit_init() {
     outb(CMD, 0x36);
-    pit_set_freq(20);
+    pit_set_freq(10);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 }

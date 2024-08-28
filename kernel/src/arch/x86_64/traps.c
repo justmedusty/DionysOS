@@ -2,19 +2,21 @@
 // Created by dustyn on 6/19/24.
 //
 #pragma once
+#include <include/cpu.h>
+#include <include/arch/arch_asm_functions.h>
+
 #include "include/types.h"
 #include "include/arch/arch_cpu.h"
 #include "include/uart.h"
 
 //Exception 0
-void divide_by_zero(){
-    write_string_serial("Divide By Zero Occurred\n");
-    asm("hlt");
+void divide_by_zero() {
+    arch_panic("Divide by Zero Occurred");
 }
+
 //Exception 1
-void debug_exception(){
-    write_string_serial("Debug Exception Occurred\n");
-    asm("hlt");
+void debug_exception() {
+    panic("Debug Exception Occurred");
 }
 
 // Exception 2: Non-Maskable Interrupt
@@ -77,14 +79,15 @@ void stack_exception() {
 
 // Exception 13: General Protection Fault
 void general_protection_fault() {
-    write_string_serial("General Protection Fault Occurred\n");
+    panic("General Protection Fault Occurred");
     asm("hlt");
 }
 
 // Exception 14: Page Fault
 void page_fault() {
-    write_string_serial("Page Fault Occurred\n");
-    asm("hlt");
+    uint64 faulting_address = rcr2();
+    serial_printf("Page Fault Occurred With Access %x.64\n", faulting_address);
+    panic("");
 }
 
 // Exception 16: Floating Point Error
