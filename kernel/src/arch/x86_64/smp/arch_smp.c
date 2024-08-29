@@ -4,7 +4,7 @@
 #include "include/types.h"
 #include "limine.h"
 #include "include/uart.h"
-#include "include/cpu.h"
+#include <include/arch/arch_cpu.h>
 
 uint64 bootstrap_lapic_id;
 uint64 cpu_count;

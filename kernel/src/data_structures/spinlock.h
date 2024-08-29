@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/types.h"
-#include "include/cpu.h"
+#include <include/arch/arch_cpu.h>
 // Mutual exclusion lock.
 
 struct spinlock{

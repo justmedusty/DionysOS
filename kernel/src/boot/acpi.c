@@ -7,14 +7,14 @@
 #include "include/arch//arch_paging.h"
 #include "include/mem.h"
 #include "include/uart.h"
-#include "include/cpu.h"
+#include <include/arch/arch_cpu.h>
 #include "include/madt.h"
 #include "limine.h"
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_rsdp_request rsdp_request = {
-    .id = LIMINE_RSDP_REQUEST,
-    .revision = 0,
+  .id = LIMINE_RSDP_REQUEST,
+  .revision = 0,
 };
 
 int8 acpi_extended = 0;
@@ -48,29 +48,38 @@ void* find_acpi_table(const int8* name) {
 }
 
 void acpi_init() {
+
   void* addr = (void*)rsdp_request.response->address;
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
-  if(!rsdp){
+
+  if (!rsdp) {
     panic("rsdp null");
   }
 
-  serial_printf("acpi revision %x.64 \n",rsdp->revision);
-
+  serial_printf("acpi revision %x.64 \n", rsdp->revision);
 
   if (rsdp->revision != 0) {
+
     // Use XSDT
     serial_printf("Using xsdt\n");
     acpi_extended = 1;
     acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->xsdt_addr);
-    serial_printf("xsdt addr %x.64 \n",rsdp->xsdt_addr);
-    if(rsdp->xsdt_addr == 0){
+    serial_printf("xsdt addr %x.64 \n", rsdp->xsdt_addr);
+
+    if (rsdp->xsdt_addr == 0) {
+
       panic("acpi init failed\n");
+
     }
 
-  }else{
+  }
+
+  else {
+
     acpi_root_sdt = (acpi_rsdt*)P2V((uint32)rsdp->rsdt_addr);
-    serial_printf("rsdt addr %x.32 \n",rsdp->rsdt_addr);
-    if(rsdp->rsdt_addr == 0){
+    serial_printf("rsdt addr %x.32 \n", rsdp->rsdt_addr);
+
+    if (rsdp->rsdt_addr == 0) {
       panic("acpi init failed\n");
     }
   }

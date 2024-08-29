@@ -3,11 +3,17 @@
 //
 
 #pragma once
+#include "include/arch/arch_cpu.h"
+#include <include/arch/arch_cpu.h>
+#include "include/vmm.h"
 #include "include/types.h"
 
-
-void arch_panic(const char *str);
-uint64 arch_mycpu();
+typedef struct{
+    struct local_cpu *cpu;
+    struct virt_map page_map;
+    //struct queue local_rq;
+    //struct proc *curr_proc;
+} cpu;
 
 typedef struct cpu_state {
   uint64 ds;
@@ -46,3 +52,10 @@ typedef struct local_cpu{
 
 
 extern local_cpu local_cpu_info[16];
+
+//static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
+extern cpu cpu_list[32];
+cpu *mycpu();
+void panic(const char *str);
+
+

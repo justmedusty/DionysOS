@@ -5,6 +5,7 @@
 /*
  * Taking inspo from xv6 to keep things as readable and simple as possible here.
  */
+#include <include/arch/arch_cpu.h>
 #include "include/vmm.h"
 #include "include/types.h"
 #include "include/mem.h"
@@ -13,7 +14,7 @@
 #include "include/kalloc.h"
 #include "include/mem_bounds.h"
 #include "include/uart.h"
-#include "include/cpu.h"
+
 #include "include/arch//arch_vmm.h"
 #include "include/arch/x86_64/arch_asm_functions.h"
 

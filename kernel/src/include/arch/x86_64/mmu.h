@@ -4,6 +4,7 @@
 
 #ifndef DIONYSOS_MMU_H
 #define DIONYSOS_MMU_H
+#include <include/types.h>
 // This file contains definitions for the
 // x86 memory management unit (MMU).
 // Eflags register

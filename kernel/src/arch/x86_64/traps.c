@@ -2,7 +2,7 @@
 // Created by dustyn on 6/19/24.
 //
 #pragma once
-#include <include/cpu.h>
+#include <include/arch/arch_cpu.h>
 #include "include/arch/x86_64/arch_asm_functions.h"
 
 #include "include/types.h"
@@ -11,7 +11,7 @@
 
 //Exception 0
 void divide_by_zero() {
-    arch_panic("Divide by Zero Occurred");
+    panic("Divide by Zero Occurred");
 }
 
 //Exception 1

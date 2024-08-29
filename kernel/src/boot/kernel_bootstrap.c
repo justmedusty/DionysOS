@@ -12,7 +12,7 @@
 #include "include/arch/arch_smp.h"
 #include "include/vmm.h"
 #include "include/slab.h"
-#include "include/cpu.h"
+#include <include/arch/arch_cpu.h>
 #include "include/acpi.h"
 #include "include/madt.h"
 #include "include/arch/arch_global_interrupt_controller.h"

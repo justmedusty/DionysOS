@@ -4,7 +4,7 @@
 #include "../../../limine.h"
 #include "include/types.h"
 #include "include/uart.h"
-#include "include/cpu.h"
+#include <include/arch/arch_cpu.h>
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_paging_mode_request arch_page_request = {

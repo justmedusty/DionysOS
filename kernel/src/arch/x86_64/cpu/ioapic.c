@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include <include/cpu.h>
+#include <include/arch/arch_cpu.h>
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include "include/arch/x86_64/arch_asm_functions.h"
@@ -9,7 +9,6 @@
 
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
     uint64* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
-
     mem_out(base, reg);
     mem_out(base + 16, value);
 }

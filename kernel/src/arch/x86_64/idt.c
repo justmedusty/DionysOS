@@ -8,7 +8,7 @@
 #include "include/types.h"
 #include "idt.h"
 
-#include <include/cpu.h>
+#include <include/arch/arch_cpu.h>
 
 #include "include/arch/arch_traps.h"
 #include "include/uart.h"
