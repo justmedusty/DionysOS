@@ -9,11 +9,12 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 
 int8 panicked = 0;
-local_cpu local_cpu_info[16];
+cpu cpu_list[32];
 
 #ifdef __x86_64__
 
 void panic(const char* str) {
+
     cli();
     write_string_serial("\nPanic! ");
     write_string_serial(str);

@@ -8,13 +8,6 @@
 #include "include/vmm.h"
 #include "include/types.h"
 
-typedef struct{
-    struct local_cpu *cpu;
-    struct virt_map page_map;
-    //struct queue local_rq;
-    //struct proc *curr_proc;
-} cpu;
-
 typedef struct cpu_state {
   uint64 ds;
   uint64 es;
@@ -42,20 +35,23 @@ typedef struct cpu_state {
 } cpu_state;
 
 
-typedef struct local_cpu{
+typedef struct {
   uint8 cpu_number;
-  struct cpu_state *cpu_state;
-  struct tss *tss;
+  uint64 *cpu_address;
+  cpu_state* cpu_state;
+  struct tss* tss;
   uint32 lapic_id;
   uint64 lapic_timer_frequency;
-} local_cpu;
+  struct virt_map page_map;
+  //struct queue local_rq;
+  //struct proc *curr_proc;
+} cpu;
 
 
-extern local_cpu local_cpu_info[16];
 
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
 extern cpu cpu_list[32];
-cpu *mycpu();
-void panic(const char *str);
+cpu* mycpu();
+void panic(const char* str);
 
 

@@ -130,10 +130,10 @@ _Static_assert(sizeof(struct tss) == 104, "sizeof tss");
  * correct anymore.
  */
 inline void gdt_read(struct gdt_desc *gdt_desc) {
-    __asm__ volatile("sgdt %0" : "=m"(*gdt_desc));
+    asm volatile("sgdt %0" : "=m"(*gdt_desc));
 }
 inline void gdt_write(const struct gdt_desc *const gdt_desc) {
-    __asm__ volatile("lgdt %0" : : "m"(*gdt_desc));
+    asm volatile("lgdt %0" : : "m"(*gdt_desc));
 }
 
 struct segment_selector {
