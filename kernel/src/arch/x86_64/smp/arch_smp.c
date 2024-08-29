@@ -35,12 +35,10 @@ void arch_smp_query(){
         if(i == 32) {
             break;
         }
-        limine_goto_address address = smp_info[i]->goto_address;
-        serial_printf("  CPU address located at %x.64\n",address);
 
         cpu_list[i].cpu_number = i;
         cpu_list[i].lapic_id= smp_info[i]->lapic_id;
-        cpu_list[i].cpu_address= (uint64 *)smp_info[i]->goto_address;
+        cpu_list[i].cpu_address= (uint64 *)&smp_info[i]->goto_address;
         i++;
 
         serial_printf("  CPU %x.8  initialized inside cpu_list\n",i);
