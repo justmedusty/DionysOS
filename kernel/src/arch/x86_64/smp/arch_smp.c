@@ -35,10 +35,10 @@ void arch_smp_query(){
         if(i == 32) {
             break;
         }
-        cpu_list[i].cpu_number = i;
+        cpu_list[i].cpu_number = smp_info[i]->processor_id;
         cpu_list[i].lapic_id= smp_info[i]->lapic_id;
+        serial_printf("  CPU %x.8  LAPIC %x.8  initialized inside cpu_list\n",smp_info[i]->processor_id, smp_info[i]->lapic_id);
         i++;
-        serial_printf("  CPU %x.8  initialized inside cpu_list\n",i);
         //puts rest of CPUs online, works so will leave this commented out for now since I need to create or refactor functions for this
         //smp_info[i]->goto_address = arch_initialise_cpu;
     }

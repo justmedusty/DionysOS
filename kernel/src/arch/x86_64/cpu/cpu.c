@@ -31,7 +31,6 @@ uint64 arch_mycpu() {
 }
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
-    panic("CPU Online");
     for(;;) {
         asm("hlt");
     }
