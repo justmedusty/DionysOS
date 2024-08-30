@@ -1,10 +1,10 @@
 //
 // Created by dustyn on 6/24/24.
 //
+#include <include/arch/arch_cpu.h>
 #include "include/types.h"
 #include "limine.h"
 #include "include/uart.h"
-#include <include/arch/arch_cpu.h>
 #include <include/arch/arch_paging.h>
 
 uint64 bootstrap_lapic_id;
@@ -35,13 +35,11 @@ void arch_smp_query(){
         if(i == 32) {
             break;
         }
-
         cpu_list[i].cpu_number = i;
         cpu_list[i].lapic_id= smp_info[i]->lapic_id;
-        cpu_list[i].cpu_address= (uint64 *)&smp_info[i]->goto_address;
         i++;
-
         serial_printf("  CPU %x.8  initialized inside cpu_list\n",i);
+        smp_info[i]->goto_address = arch_initialise_cpu;
 
 
 

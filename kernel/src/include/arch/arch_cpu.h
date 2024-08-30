@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#include "include/arch/arch_cpu.h"
-#include <include/arch/arch_cpu.h>
 #include "include/vmm.h"
 #include "include/types.h"
 
@@ -37,7 +35,6 @@ typedef struct cpu_state {
 
 typedef struct {
   uint8 cpu_number;
-  uint64 *cpu_address;
   cpu_state* cpu_state;
   struct tss* tss;
   uint32 lapic_id;
@@ -50,8 +47,8 @@ typedef struct {
 
 
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
-extern cpu cpu_list[32];
+extern cpu cpu_list[8];
 cpu* mycpu();
 void panic(const char* str);
-
+void arch_initialise_cpu(struct limine_smp_info *smp_info);
 
