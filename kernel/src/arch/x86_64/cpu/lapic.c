@@ -6,7 +6,7 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include <include/arch/x86_64/msr.h>
-#include <include/arch/x86_64/arch_asm_functions.h>
+#include <include/arch/x86_64/asm_functions.h>
 
 uint64 apic_ticks = 0;
 uint64 lapic_base = 0;

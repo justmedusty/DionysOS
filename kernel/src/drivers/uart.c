@@ -3,13 +3,18 @@
 //
 #include "include/types.h"
 #include "include/uart.h"
-#include "include/arch/x86_64/arch_asm_functions.h"
+
+#include <include/data_structures/spinlock.h>
+
+#include "include/arch/x86_64/asm_functions.h"
 #include "stdarg.h"
 
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define SERIAL_PORT 0x3F8   // COM1 base port
 
 char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+struct spinlock *serial_lock;
 
 void init_serial() {
     outb(SERIAL_PORT + 1, 0x00);    // Disable all interrupts
@@ -19,6 +24,7 @@ void init_serial() {
     outb(SERIAL_PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
     outb(SERIAL_PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
     outb(SERIAL_PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    //initlock(serial_lock,"serial");
     write_string_serial("Serial Initialized\n");
 }
 
@@ -82,7 +88,7 @@ char get_hex_char(uint8 nibble) {
 void serial_printf(char *str, ...) {
     va_list args;
     va_start(args, str);
-
+    //acquire_spinlock(serial_lock);
     while (*str) {
 
         if (*str == '\n') {
@@ -169,6 +175,7 @@ void serial_printf(char *str, ...) {
         }
         str++;
     }
+    //release_spinlock(serial_lock);
 
     va_end(args);
 }

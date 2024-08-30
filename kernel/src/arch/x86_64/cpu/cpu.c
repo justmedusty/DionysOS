@@ -4,7 +4,7 @@
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_interrupts.h>
 #include <include/arch/arch_memory_init.h>
-#include <include/arch/x86_64/arch_asm_functions.h>
+#include <include/arch/x86_64/asm_functions.h>
 #include "include/types.h"
 #include "include/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
@@ -31,6 +31,7 @@ uint64 arch_mycpu() {
 }
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
+    //serial_printf("CPU %x8  online\n",smp_info->processor_id);
     for(;;) {
         asm("hlt");
     }

@@ -16,7 +16,7 @@
 #include "include/uart.h"
 
 #include "include/arch//arch_vmm.h"
-#include "include/arch/x86_64/arch_asm_functions.h"
+#include "include/arch/x86_64/asm_functions.h"
 
 
 p4d_t* global_pg_dir = 0;

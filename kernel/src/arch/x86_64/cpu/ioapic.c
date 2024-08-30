@@ -4,7 +4,7 @@
 #include <include/arch/arch_cpu.h>
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
-#include "include/arch/x86_64/arch_asm_functions.h"
+#include "include/arch/x86_64/asm_functions.h"
 #include <include/uart.h>
 
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {

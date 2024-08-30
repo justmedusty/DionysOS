@@ -14,3 +14,7 @@ struct spinlock{
     uint64 program_counters[10];
 };
 
+
+void initlock(struct spinlock *spinlock,char *name);
+void acquire_spinlock(struct spinlock *spinlock);
+void release_spinlock(struct spinlock *spinlock);
