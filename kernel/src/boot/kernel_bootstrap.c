@@ -23,7 +23,6 @@ void kernel_bootstrap(){
     init_serial();
     arch_init_segments();
     arch_setup_interrupts();
-    arch_smp_query();
     arch_paging_init();
     phys_init();
     heap_init();
@@ -32,4 +31,5 @@ void kernel_bootstrap(){
     acpi_init();
     lapic_init();
     arch_timer_init();
+    arch_smp_query();
 }

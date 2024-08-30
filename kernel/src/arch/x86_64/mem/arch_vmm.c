@@ -20,8 +20,6 @@
 
 
 p4d_t* global_pg_dir = 0;
-
-
 void arch_switch_page_table(p4d_t* page_dir){
     lcr3((uint64)(page_dir));
 }

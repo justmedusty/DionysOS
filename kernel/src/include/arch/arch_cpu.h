@@ -5,6 +5,7 @@
 #pragma once
 #include "include/vmm.h"
 #include "include/types.h"
+#include "limine.h"
 
 typedef struct cpu_state {
   uint64 ds;
@@ -50,5 +51,5 @@ typedef struct {
 extern cpu cpu_list[8];
 cpu* mycpu();
 void panic(const char* str);
+uint64 arch_mycpu();
 void arch_initialise_cpu(struct limine_smp_info *smp_info);
-
