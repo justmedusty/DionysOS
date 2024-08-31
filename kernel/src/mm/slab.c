@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "include/slab.h"
+
+#include <include/arch/arch_paging.h>
+
 #include "include/pmm.h"
 #include "include/mem.h"
 #include "include/uart.h"
@@ -16,7 +19,7 @@ slab_t slabs[10];
  */
 void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages) {
 
-    slab->first_free = phys_alloc(pages) + hhdm_request.response->offset;
+    slab->first_free = P2V(phys_alloc(pages));
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE - 1)));

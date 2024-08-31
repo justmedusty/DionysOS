@@ -31,7 +31,7 @@ uint64 arch_mycpu() {
 }
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
-    //serial_printf("CPU %x8  online\n",smp_info->processor_id);
+    serial_printf("CPU %x.8  online\n",smp_info->processor_id);
     for(;;) {
         asm("hlt");
     }

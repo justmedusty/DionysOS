@@ -5,40 +5,40 @@
 #include "include/uart.h"
 
 #include <include/data_structures/spinlock.h>
-
+#include "include/definitions.h"
 #include "include/arch/x86_64/asm_functions.h"
 #include "stdarg.h"
 
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
-#define SERIAL_PORT 0x3F8   // COM1 base port
+#define COM1 0x3F8   // COM1 base port
 
 char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-struct spinlock *serial_lock;
+struct spinlock serial_lock;
 
 void init_serial() {
-    outb(SERIAL_PORT + 1, 0x00);    // Disable all interrupts
-    outb(SERIAL_PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    outb(SERIAL_PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    outb(SERIAL_PORT + 1, 0x00);    //                  (hi byte)
-    outb(SERIAL_PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
-    outb(SERIAL_PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    outb(SERIAL_PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
-    //initlock(serial_lock,"serial");
-    write_string_serial("Serial Initialized\n");
+    outb(COM1 + 1, 0x00);    // Disable all interrupts
+    outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    outb(COM1 + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    outb(COM1 + 1, 0x00);    //                  (hi byte)
+    outb(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
+    outb(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+    outb(COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    initlock(&serial_lock, SERIAL_ID);
+    serial_printf("Serial Initialized\n");
 }
 
 int is_transmit_empty() {
-    return inb(SERIAL_PORT + 5) & 0x20;
+    return inb(COM1 + 5) & 0x20;
 }
 
 void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
     if (a == '\n') {
-        outb(SERIAL_PORT, '\r');
+        outb(COM1, '\r');
     }
-    outb(SERIAL_PORT, a);
+    outb(COM1, a);
 }
 
 //size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes
@@ -88,7 +88,7 @@ char get_hex_char(uint8 nibble) {
 void serial_printf(char *str, ...) {
     va_list args;
     va_start(args, str);
-    //acquire_spinlock(serial_lock);
+    acquire_spinlock(&serial_lock);
     while (*str) {
 
         if (*str == '\n') {
@@ -175,7 +175,7 @@ void serial_printf(char *str, ...) {
         }
         str++;
     }
-    //release_spinlock(serial_lock);
+    release_spinlock(&serial_lock);
 
     va_end(args);
 }
