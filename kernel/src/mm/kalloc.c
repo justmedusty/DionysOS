@@ -23,7 +23,7 @@ int heap_init() {
     for (uint64 i = 0; i < 9 ; i++) {
 
         if(size >= PAGE_SIZE){
-            write_string_serial("Entry too large , skipping slab alloc.\n");
+            serial_printf("Entry too large , skipping slab alloc.\n");
             continue;
         }
         heap_create_slab(&slabs[i], size,1);
@@ -31,7 +31,7 @@ int heap_init() {
 
     }
 
-    write_string_serial("Kernel Heap Initialized\n");
+    serial_printf("Kernel Heap Initialized\n");
     return 0;
 }
 

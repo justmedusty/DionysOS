@@ -111,7 +111,7 @@ void gdt_init(void) {
 
     // Update CS register with a far jump.
     _gdt_init_jmp();
-    write_string_serial("GDT Loaded\n");
+    serial_printf("GDT Loaded\n");
 }
 
 void tss_set_kernel_stack(void *rsp0) { _tss.rsp0 = (uint64_t)rsp0; }

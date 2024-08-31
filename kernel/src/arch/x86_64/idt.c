@@ -138,7 +138,7 @@ void idt_init(void){
     load_idtr(&idtr);
     //enable interrupts (locally)
     asm volatile("sti");
-    write_string_serial("IDT Loaded, ISRs mapped\n");
+    serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
 uint8 idt_get_vector(){
@@ -147,17 +147,22 @@ uint8 idt_get_vector(){
   	}
       return idt_free_vec++;
 }
+
+
 uint8 idt_get_irq_vector(){
   if(idt_free_vec == 255){
     panic("idt_get_irq_vector out of space");
   }
   return idt_free_vec++;
 }
+
+
 void irq_register(uint8 vec, void* handler){
    irq_routines[vec + 32] = handler;
    ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
    serial_printf("IRQ %x.8  loaded\n",vec);
 }
+
 
 void irq_unregister(uint8 vec) {
     irq_routines[vec]  = NULL;

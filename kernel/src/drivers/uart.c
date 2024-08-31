@@ -9,6 +9,13 @@
 #include "include/arch/x86_64/asm_functions.h"
 #include "stdarg.h"
 
+
+static int is_transmit_empty();
+static void write_serial(char a);
+static void write_string_serial(const char *str);
+static void write_hex_serial(uint64 num,int8 size);
+static char get_hex_char(uint8 nibble);
+
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define COM1 0x3F8   // COM1 base port
 
@@ -28,11 +35,11 @@ void init_serial() {
     serial_printf("Serial Initialized\n");
 }
 
-int is_transmit_empty() {
+static int is_transmit_empty() {
     return inb(COM1 + 5) & 0x20;
 }
 
-void write_serial(char a) {
+static void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
     if (a == '\n') {
@@ -42,7 +49,7 @@ void write_serial(char a) {
 }
 
 //size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes
-void write_hex_serial(uint64 num, int8 size) {
+static void write_hex_serial(uint64 num, int8 size) {
     write_string_serial("0x");
     for (int8 i = (size - 4); i >= 0; i -= 4) {
         uint8 nibble = (num >> i) & 0xF;  // Extract 4 bits
@@ -51,7 +58,7 @@ void write_hex_serial(uint64 num, int8 size) {
 }
 
 
-void write_binary_serial(uint64 num, uint8 size) {
+static void write_binary_serial(uint64 num, uint8 size) {
     int separator = 0;
     for (uint8 i = size; i < 0; i--) {
         if (num >> i & 1) {
@@ -67,7 +74,7 @@ void write_binary_serial(uint64 num, uint8 size) {
     }
 }
 
-void write_string_serial(const char *str) {
+static void write_string_serial(const char *str) {
     while (*str) {
         write_serial(*str++);
     }
@@ -76,7 +83,7 @@ void write_string_serial(const char *str) {
 /*
     Index into the char array if the value is valid
  */
-char get_hex_char(uint8 nibble) {
+static char get_hex_char(uint8 nibble) {
     if(nibble <= 16) {
         return characters[nibble];
      } else {

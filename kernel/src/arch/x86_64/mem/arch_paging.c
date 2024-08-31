@@ -21,7 +21,7 @@ void arch_paging_init(){
      if(response->mode != LIMINE_PAGING_MODE_X86_64_4LVL){
          panic("Paging not 4 level!");
      }
-    write_string_serial("4 Level Paging Confirmed\n");
+    serial_printf("4 Level Paging Confirmed\n");
 }
 
 
