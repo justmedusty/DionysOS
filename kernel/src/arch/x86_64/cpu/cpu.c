@@ -17,8 +17,7 @@ cpu cpu_list[8];
 
 void panic(const char* str) {
     cli();
-    serial_printf("\nPanic! ");
-    serial_printf(str);
+    serial_printf("\nPanic! %s ",str);
     panicked = 1;
     for (;;) {
         asm("hlt");

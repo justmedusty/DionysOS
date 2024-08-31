@@ -14,7 +14,6 @@
  * This is just using slab allocation for now but will incorporate other mechanisms in the future
  */
 
-
 /*
  * Init Memory for Kernel Heap
  */

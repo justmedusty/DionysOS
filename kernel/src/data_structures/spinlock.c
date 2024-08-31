@@ -3,11 +3,6 @@
 //
 
 #include "include/data_structures/spinlock.h"
-
-#include <include/kalloc.h>
-#include <include/uart.h>
-
-
 #include "include/arch//arch_atomic_operations.h"
 #include <include/arch/arch_cpu.h>
 
