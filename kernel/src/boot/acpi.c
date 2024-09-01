@@ -48,7 +48,6 @@ void* find_acpi_table(const int8* name) {
 }
 
 void acpi_init() {
-
   void* addr = (void*)rsdp_request.response->address;
   acpi_rsdp* rsdp = (acpi_rsdp*)addr;
 
@@ -59,7 +58,6 @@ void acpi_init() {
   serial_printf("acpi revision %x.64 \n", rsdp->revision);
 
   if (rsdp->revision != 0) {
-
     // Use XSDT
     serial_printf("Using xsdt\n");
     acpi_extended = 1;
@@ -67,15 +65,11 @@ void acpi_init() {
     serial_printf("xsdt addr %x.64 \n", rsdp->xsdt_addr);
 
     if (rsdp->xsdt_addr == 0) {
-
       panic("acpi init failed\n");
-
     }
-
   }
 
   else {
-
     acpi_root_sdt = (acpi_rsdt*)P2V((uint32)rsdp->rsdt_addr);
     serial_printf("rsdt addr %x.32 \n", rsdp->rsdt_addr);
 

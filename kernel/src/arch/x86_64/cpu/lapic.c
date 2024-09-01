@@ -5,6 +5,7 @@
 #include "include/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
+#include <include/arch/arch_smp.h>
 #include <include/arch/x86_64/msr.h>
 #include <include/arch/x86_64/asm_functions.h>
 
@@ -12,27 +13,27 @@ uint64 apic_ticks = 0;
 uint64 lapic_base = 0;
 
 void lapic_init() {
-    lapic_write(LAPIC_SPURIOUS, 0x1ff);
+    lapic_write((LAPIC_SPURIOUS), 1 << 8);
     lapic_calibrate_timer();
     serial_printf("LAPIC Initialised.\n");
 }
 
 void lapic_write(volatile uint32 reg, uint32 val) {
-    if(lapic_base == 0) {
-        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+    if (lapic_base == 0) {
+        lapic_base = (uint64)P2V(rdmsr(0x1b) & 0xFFFFF000);
     }
-    mem_out((uint64 *)lapic_base + reg, val);
+    mem_out((uint64*)lapic_base + reg, val);
 }
 
 uint32 lapic_read(uint32 reg) {
-    if(lapic_base == 0) {
-        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+    if (lapic_base == 0) {
+        lapic_base = (uint64)P2V(rdmsr(0x1b) & 0xFFFFF000);
     }
     return mem_in(lapic_base + reg);
 }
 
 uint32 get_lapid_id() {
-    return lapic_read(LAPIC_ID_REG) >> 24;
+    return (lapic_read(0x20) >> 24) & 0xFF;
 }
 
 void lapic_timer_stop() {
@@ -56,7 +57,7 @@ void lapic_calibrate_timer() {
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
     uint32 ticks = 0xFFFFFFFF - lapic_read(LAPIC_TIMER_CURCNT);
     apic_ticks = ticks;
-    serial_printf("LAPIC ticks %x.64\n",apic_ticks);
+    serial_printf("LAPIC ticks %x.64\n", apic_ticks);
     lapic_timer_stop();
 }
 

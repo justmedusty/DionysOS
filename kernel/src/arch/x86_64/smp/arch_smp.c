@@ -22,11 +22,14 @@ static volatile struct limine_smp_request smp_request = {
 };
 
 void smp_init(){
+
     initlock(&bootstrap_lock,SMP_BOOSTRAP_LOCK);
     struct limine_smp_response *response = smp_request.response;
+
     if(!response){
         panic("SMP Response NULL");
     }
+
     bootstrap_lapic_id = response->bsp_lapic_id;
     cpu_count = response->cpu_count;
     smp_info = response->cpus;
