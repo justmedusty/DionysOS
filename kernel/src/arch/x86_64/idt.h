@@ -2,13 +2,11 @@
 // Created by dustyn on 6/18/24.
 //
 
-#ifndef DIONYSOS_IDT_H
-#define DIONYSOS_IDT_H
+
 #pragma once
 
 #include "gdt.h"
 #include "include/types.h"
-#include <stddef.h>
 #include <stdint.h>
 
 struct idtr_desc {
@@ -40,12 +38,9 @@ inline void load_idtr(struct idtr_desc *idtr) {
     __asm__ volatile("lidt %0" : "=m"(*idtr));
 }
 
-/**
- * Set up basic interrupt table.
- */
+
 void idt_init(void);
 void irq_register(uint8 vec, void* handler);
 void irq_unregister(uint8 vec);
 uint8 idt_get_vector();
-
-#endif //DIONYSOS_IDT_H
+void idt_reload();

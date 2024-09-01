@@ -36,3 +36,4 @@ int arch_map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint6
 uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address);
 void arch_dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size);
 void arch_map_kernel_address_space(p4d_t* pgdir);
+void arch_reload_vmm();

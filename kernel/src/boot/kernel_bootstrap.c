@@ -31,5 +31,5 @@ void kernel_bootstrap(){
     acpi_init();
     lapic_init();
     arch_timer_init();
-    arch_smp_query();
+    smp_init();
 }

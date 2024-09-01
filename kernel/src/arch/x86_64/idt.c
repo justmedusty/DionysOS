@@ -141,6 +141,10 @@ void idt_init(void){
     serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
+void idt_reload() {
+    idt_init();
+}
+
 uint8 idt_get_vector(){
   if(idt_free_vec == 255){
     panic("idt_get_vector() table full\n");

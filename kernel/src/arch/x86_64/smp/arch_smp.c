@@ -1,11 +1,13 @@
 //
 // Created by dustyn on 6/24/24.
 //
+#include <include/definitions.h>
 #include <include/arch/arch_cpu.h>
 #include "include/types.h"
 #include "limine.h"
 #include "include/uart.h"
 #include <include/arch/arch_paging.h>
+#include <include/data_structures/spinlock.h>
 
 uint64 bootstrap_lapic_id;
 uint64 cpu_count;
@@ -19,7 +21,8 @@ static volatile struct limine_smp_request smp_request = {
         .revision = 0,
 };
 
-void arch_smp_query(){
+void smp_init(){
+    initlock(&bootstrap_lock,SMP_BOOSTRAP_LOCK);
     struct limine_smp_response *response = smp_request.response;
     if(!response){
         panic("SMP Response NULL");

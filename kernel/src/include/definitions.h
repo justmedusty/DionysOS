@@ -6,4 +6,5 @@
 #define NULL (void *) 0
 
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
-#define SERIAL_ID 0
+#define SERIAL_LOCK 0
+#define SMP_BOOSTRAP_LOCK 1

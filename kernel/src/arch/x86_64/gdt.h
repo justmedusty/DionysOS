@@ -31,6 +31,7 @@ enum gdt_segments {
  * 4. Update segment registers to point at ring0 code/types segments.
  */
 void gdt_init(void);
+void gdt_reload();
 
 /**
  * The value stored in the GDT register (with `lgdt`/`sgdt`).
@@ -129,10 +130,10 @@ _Static_assert(sizeof(struct tss) == 104, "sizeof tss");
  * from the GDT on some instructions based on the visible part, which may not be
  * correct anymore.
  */
-inline void gdt_read(struct gdt_desc *gdt_desc) {
+static inline void gdt_read(struct gdt_desc *gdt_desc) {
     asm volatile("sgdt %0" : "=m"(*gdt_desc));
 }
-inline void gdt_write(const struct gdt_desc *const gdt_desc) {
+static inline void gdt_write(const struct gdt_desc *const gdt_desc) {
     asm volatile("lgdt %0" : : "m"(*gdt_desc));
 }
 

@@ -9,6 +9,7 @@ typedef struct {
     void **first_free;
     uint64 entry_size;
     void *start_address;
+    void *end_address;
 } slab_t;
 
 /*

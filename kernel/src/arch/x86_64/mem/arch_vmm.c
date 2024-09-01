@@ -20,6 +20,7 @@
 
 
 p4d_t* global_pg_dir = 0;
+
 void arch_switch_page_table(p4d_t* page_dir){
     lcr3((uint64)(page_dir));
 }
@@ -41,6 +42,9 @@ void arch_init_vmm(){
     serial_printf("VMM mapped and initialized\n");
 }
 
+void arch_reload_vmm() {
+    arch_switch_page_table(kernel_pg_map->top_level);
+}
 
 void arch_map_kernel_address_space(p4d_t* pgdir){
 

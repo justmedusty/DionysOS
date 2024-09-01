@@ -4,7 +4,7 @@
 
 #ifndef KERNEL_ARCH_SMP_H
 #define KERNEL_ARCH_SMP_H
-void arch_smp_query();
+void smp_init();
 extern uint32 bootstrap_lapic_id;
 extern uint64 cpu_count;
 #endif //KERNEL_ARCH_SMP_H

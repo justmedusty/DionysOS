@@ -46,7 +46,7 @@ typedef struct {
 } cpu;
 
 
-
+extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
 extern cpu cpu_list[8];
 cpu* mycpu();

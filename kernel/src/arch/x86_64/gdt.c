@@ -114,4 +114,8 @@ void gdt_init(void) {
     serial_printf("GDT Loaded\n");
 }
 
+void gdt_reload() {
+    gdt_init();
+}
+
 void tss_set_kernel_stack(void *rsp0) { _tss.rsp0 = (uint64_t)rsp0; }

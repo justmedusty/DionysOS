@@ -17,6 +17,21 @@ void lapic_init() {
     serial_printf("LAPIC Initialised.\n");
 }
 
+
+void lapic_write(volatile uint32 reg, uint32 val) {
+    if(lapic_base == 0) {
+        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+    }
+    mem_out((uint64 *)lapic_base + reg, val);
+}
+
+uint32 lapic_read(uint32 reg) {
+    if(lapic_base == 0) {
+        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
+    }
+    return mem_in(lapic_base + reg);
+}
+
 void lapic_timer_stop() {
     // We do this to avoid overlapping oneshots
     lapic_write(LAPIC_TIMER_INITCNT, 0);
@@ -40,20 +55,6 @@ void lapic_calibrate_timer() {
     apic_ticks = ticks;
     serial_printf("LAPIC ticks %x.64\n",apic_ticks);
     lapic_timer_stop();
-}
-
-void lapic_write(volatile uint32 reg, uint32 val) {
-    if(lapic_base == 0) {
-      lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
-      }
-      mem_out((uint64 *)lapic_base + reg, val);
-}
-
-uint32 lapic_read(uint32 reg) {
-    if(lapic_base == 0) {
-        lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
-    }
-    return mem_in(lapic_base + reg);
 }
 
 void lapic_eoi() {
