@@ -17,7 +17,6 @@ void lapic_init() {
     serial_printf("LAPIC Initialised.\n");
 }
 
-
 void lapic_write(volatile uint32 reg, uint32 val) {
     if(lapic_base == 0) {
         lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
@@ -30,6 +29,10 @@ uint32 lapic_read(uint32 reg) {
         lapic_base = (uint64) P2V(rdmsr(0x1b)  & 0xFFFFF000);
     }
     return mem_in(lapic_base + reg);
+}
+
+uint32 get_lapid_id() {
+    return lapic_read(LAPIC_ID_REG) >> 24;
 }
 
 void lapic_timer_stop() {

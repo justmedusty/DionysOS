@@ -45,5 +45,5 @@ void lapic_send_others_int(uint32 id, uint32 vec);
 void lapic_init_cpu(uint32 id);
 void lapic_start_cpu(uint32 id, uint32 vec);
 uint32 lapic_get_id();
-
+uint32 get_lapid_id();
 #endif

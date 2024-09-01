@@ -34,6 +34,8 @@ void smp_init(){
     serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n",bootstrap_lapic_id,cpu_count);
     uint8 i = 0;
 
+    //For output cleanliness
+    acquire_spinlock(&bootstrap_lock);
     while(i < cpu_count) {
         if(i == 32) {
             break;
@@ -46,6 +48,7 @@ void smp_init(){
         smp_info[i]->goto_address = arch_initialise_cpu;
         i++;
     }
+    release_spinlock(&bootstrap_lock);
 
 
 
