@@ -10,12 +10,12 @@
 #include <include/arch/x86_64/asm_functions.h>
 
 uint64 apic_ticks = 0;
-uint64 lapic_base = 0;
+uint64 volatile lapic_base = 0;
 
 void lapic_init() {
-    serial_printf("Lapic init bit is %x.8  \n",lapic_read(LAPIC_SPURIOUS) & 1 << 8);
-    lapic_write((LAPIC_SPURIOUS), 1 << 8);
-    serial_printf("Lapic init bit is %x.8 \n",lapic_read(LAPIC_SPURIOUS) & 1 << 8);
+    serial_printf("Lapic init bit is %x.32\n",lapic_read(LAPIC_SPURIOUS));
+    lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) | 1 << 8 /* APIC software enable/disable bit*/);
+    serial_printf("Lapic init bit is %x.32\n",lapic_read(LAPIC_SPURIOUS));
     lapic_calibrate_timer();
     serial_printf("LAPIC Initialised.\n");
 }
