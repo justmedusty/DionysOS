@@ -19,6 +19,9 @@
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 
+/*
+ *  BSP Processor boostrapping.
+ */
 void kernel_bootstrap(){
     init_serial();
     arch_init_segments();
