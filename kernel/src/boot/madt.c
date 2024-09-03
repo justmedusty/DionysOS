@@ -18,8 +18,6 @@ uint32 madt_iso_len = 0;
 uint32 madt_lapic_len = 0;
 uint32 madt_nmi_len = 0;
 
-uint64* lapic_addr = NULL;
-
 void madt_init() {
   acpi_madt* madt = (acpi_madt*)find_acpi_table("APIC");
   
@@ -32,7 +30,6 @@ void madt_init() {
   madt_ioapic_len = 0;
   madt_lapic_len = 0;
   madt_iso_len = 0;
-
 
 
   while (1) {
@@ -48,12 +45,10 @@ void madt_init() {
       case 1:
         serial_printf("Found IOAPIC\n");
         madt_ioapic_list[madt_ioapic_len++] = (madt_ioapic*)header;
-        serial_printf("gsi base %x.32\n",(madt_ioapic*)madt_ioapic_list[madt_ioapic_len - 1 ]->gsi_base);
         break;
       case 2:
         serial_printf("Found MADT ISO\n");
         madt_iso_list[madt_iso_len++] = (madt_iso*)header;
-      serial_printf("ISO gsi %x.32 ISO irq src  %x.8 \n",madt_iso_list[madt_iso_len - 1]->gsi,madt_iso_list[madt_iso_len - 1]->irq_src);
         break;
       case 4:
         serial_printf("Found NMI\n");

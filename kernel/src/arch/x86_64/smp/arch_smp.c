@@ -43,6 +43,9 @@ void smp_init(){
         if(i == 32) {
             break;
         }
+        /*
+         *  Index into the cpu array based on the LAPIC ID which should be easier to get in the case that they do not line up with processor id
+         */
         cpu_list[smp_info[i]->lapic_id].cpu_number = smp_info[i]->processor_id;
         cpu_list[smp_info[i]->lapic_id].lapic_id= smp_info[i]->lapic_id;
         serial_printf("  CPU %x.8  LAPIC %x.8  initialized inside cpu_list\n",smp_info[i]->processor_id, smp_info[i]->lapic_id);

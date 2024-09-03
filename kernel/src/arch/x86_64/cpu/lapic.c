@@ -1,6 +1,8 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#include <include/arch/arch_cpu.h>
+
 #include "include/types.h"
 #include "include/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
@@ -10,32 +12,36 @@
 #include <include/arch/x86_64/asm_functions.h>
 
 uint64 apic_ticks = 0;
-uint64 volatile lapic_base = 0;
+uint64 lapic_base = 0;
 
 void lapic_init() {
-    serial_printf("Lapic init bit is %x.32\n",lapic_read(LAPIC_SPURIOUS));
-    lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) | 1 << 8 /* APIC software enable/disable bit*/);
-    serial_printf("Lapic init bit is %x.32\n",lapic_read(LAPIC_SPURIOUS));
+    //Enable lapic by writing to the enable/disable bit to the left of the spurious vector
+    lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) |  1 << 8 /* APIC software enable/disable bit*/);
+    //enable LAPIC via the IA32 MSR enable bit
+    wrmsr(IA32_APIC_BASE_MSR,1 << 11);
     lapic_calibrate_timer();
+    serial_printf("LAPIC ENABLE BIT %x.32\n",lapic_read(LAPIC_SPURIOUS) & 0x100);
+    serial_printf("LAPIC ID %x.8 \n",get_lapid_id());
     serial_printf("LAPIC Initialised.\n");
 }
 
-void lapic_write(volatile uint32 reg, uint32 val) {
+
+void lapic_write(uint32 reg, uint32 val) {
     if (lapic_base == 0) {
-        lapic_base = (uint64)P2V(rdmsr(0x1b) & 0xFFFFF000);
+        lapic_base = (uint64)P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
     }
     mem_out((uint64*)lapic_base + reg, val);
 }
 
 uint32 lapic_read(uint32 reg) {
     if (lapic_base == 0) {
-        lapic_base = (uint64)P2V(rdmsr(0x1b) & 0xFFFFF000);
+        lapic_base = (uint64)P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
     }
     return mem_in(lapic_base + reg);
 }
 
 uint32 get_lapid_id() {
-    return (lapic_read(0x20) >> 24) & 0xFF;
+    return lapic_read(LAPIC_ID_REG) >> 24;
 }
 
 void lapic_timer_stop() {
@@ -78,7 +84,4 @@ void lapic_send_all_int(uint32 id, uint32 vec) {
 
 void lapic_send_others_int(uint32 id, uint32 vec) {
     lapic_ipi(id, vec | LAPIC_ICRAES);
-}
-
-uint32 lapic_get_id() {
 }

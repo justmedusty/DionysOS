@@ -14,7 +14,7 @@ static const struct gdt_desc _gdt_desc = {
         .off = (uint64_t)_gdt,
         .sz = sizeof(_gdt) - 1,
 };
-static struct tss _tss;
+struct tss tss;
 
 static void _gdt_init_long_mode_entry(struct gdt_segment_desc *seg, bool code,
                                       int dpl) {
@@ -41,8 +41,8 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
             (struct gdt_system_segment_desc *)seg;
 
     // Limit and base conversions.
-    uint64_t base = (uint64_t)&_tss;
-    uint32_t limit = sizeof _tss;
+    uint64_t base = (uint64_t)&tss;
+    uint32_t limit = sizeof tss;
     tss_desc->base_1 = base;
     tss_desc->base_2 = base >> 16;
     tss_desc->base_3 = base >> 24;
@@ -65,7 +65,7 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
 
     // Zero the TSS. There aren't really any fields we need to initialize; the
     // only field we use in the TSS is rsp0.
-    memset(&_tss, 0, sizeof _tss);
+    memset(&tss, 0, sizeof tss);
 }
 
 __attribute__((naked)) static void _gdt_init_ret() { __asm__ volatile("ret"); }
@@ -118,4 +118,4 @@ void gdt_reload() {
     gdt_init();
 }
 
-void tss_set_kernel_stack(void *rsp0) { _tss.rsp0 = (uint64_t)rsp0; }
+void tss_set_kernel_stack(void *rsp0) { tss.rsp0 = (uint64_t)rsp0; }

@@ -6,18 +6,18 @@
 #include "include/types.h"
 #ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
-static inline uint64 mem_in(uint64 addr) {
-    volatile uint64 ret = 0;
+static uint64 mem_in(uint64 addr) {
+    uint64 ret = 0;
     asm volatile(
-          "mov (%[addr]), %[ret]"
-          : [ret] "=r"(ret)
-          : [addr] "r"((volatile uint64 *)addr)
-          : "memory"
-      );
+        "mov (%[addr]), %[ret]"
+        : [ret] "=r"(ret)
+        : [addr] "r"((uint64*)addr)
+        : "memory"
+    );
     return ret;
 }
 
-static inline void mem_out(uint64 *addr, uint64 value) {
+static void mem_out(void *addr, uint64 value) {
     asm volatile(
         "mov %[val], %[mem]"
         : [mem] "+m"(*(addr))
@@ -34,7 +34,7 @@ static inline uint8 inb(uint16 port) {
 }
 
 // Reads a sequence of 32-bit values from the specified I/O port into memory.
-static inline void insl(int port, void* addr, int cnt) {
+static void insl(int port, void* addr, int cnt) {
     asm volatile("cld; rep insl" :
         "=D" (addr), "=c" (cnt) :
         "d" (port), "0" (addr), "1" (cnt) :
@@ -165,12 +165,12 @@ static inline void flush_tlb() {
 }
 
 static inline uint64 interrupts_enabled() {
-  uint64 flags;
-  asm volatile("pushfq"
-               "pop f"
-               : "=rm" (flags));
-  return flags & (1 << 9);
-  }
+    uint64 flags;
+    asm volatile("pushfq"
+        "pop f"
+        : "=rm" (flags));
+    return flags & (1 << 9);
+}
 
 
 //PAGEBREAK: 36
