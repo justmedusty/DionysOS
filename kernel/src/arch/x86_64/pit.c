@@ -10,10 +10,10 @@
 #include "include/uart.h"
 #include "include/arch/arch_smp.h"
 #include "include/arch/arch_local_interrupt_controller.h"
-volatile uint64 pit_ticks = 0;
+
+uint64 pit_ticks = 0;
 
 void pit_interrupt() {
-    panic("PIT interrupt");
     pit_ticks++;
     lapic_eoi();
 }

@@ -40,7 +40,7 @@ typedef struct {
   struct tss* tss;
   uint32 lapic_id;
   uint64 lapic_timer_frequency;
-  struct virt_map page_map;
+  struct virt_map *page_map;
   //struct queue local_rq;
   //struct proc *curr_proc;
 } cpu;
@@ -49,7 +49,6 @@ typedef struct {
 extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
 extern cpu cpu_list[8];
-cpu* mycpu();
 void panic(const char* str);
-uint64 arch_mycpu();
+cpu* arch_mycpu();
 void arch_initialise_cpu(struct limine_smp_info *smp_info);
