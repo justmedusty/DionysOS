@@ -11,7 +11,7 @@ static uint64 mem_in(uint64 addr) {
     asm volatile(
         "mov (%[addr]), %[ret]"
         : [ret] "=r"(ret)
-        : [addr] "r"((uint64*)addr)
+        : [addr] "r"((volatile uint64*)addr)
         : "memory"
     );
     return ret;
