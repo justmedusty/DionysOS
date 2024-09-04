@@ -14,16 +14,16 @@ void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
 }
 
 uint32 read_ioapic(uint32 ioapic, uint32 reg) {
-    uint64* base = (uint64 *)P2V(madt_ioapic_list[ioapic]->apic_addr);
+    uint64* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
     mem_out(base, reg);
-    return mem_in((uint64)base + 16);
+    return mem_in((uint64) base + 16);
 }
 
 uint64 ioapic_gsi_count(uint32 ioapic) {
     if (ioapic > madt_ioapic_len) {
         return 0;
     }
-    uint64 value = (read_ioapic(ioapic, 1) & 0xff0000) >> 16;
+    uint64 value = (read_ioapic(ioapic, 1) & 0xFF0000) >> 16;
     return value;
 }
 

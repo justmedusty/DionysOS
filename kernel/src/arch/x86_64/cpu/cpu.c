@@ -40,7 +40,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     idt_reload();
     arch_reload_vmm();
     lapic_init();
-    serial_printf("CPU %x.8  online, LAPIC ID %x.32\n",smp_info->processor_id,get_lapid_id());
+    serial_printf("CPU %x.8  online, LAPIC ID %x.8 \n",smp_info->processor_id,get_lapid_id());
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }

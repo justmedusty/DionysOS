@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#include <string.h>
 #include <include/arch/arch_cpu.h>
 
 #include "include/types.h"
@@ -17,8 +18,6 @@ uint64 lapic_base = 0;
 void lapic_init() {
     //Enable lapic by writing to the enable/disable bit to the left of the spurious vector
     lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) |  1 << 8 /* APIC software enable/disable bit*/);
-    //enable LAPIC via the IA32 MSR enable bit
-    wrmsr(IA32_APIC_BASE_MSR,1 << 11);
     lapic_calibrate_timer();
     serial_printf("LAPIC ENABLE BIT %x.32\n",lapic_read(LAPIC_SPURIOUS) & 0x100);
     serial_printf("LAPIC ID %x.8  \n",get_lapid_id());
