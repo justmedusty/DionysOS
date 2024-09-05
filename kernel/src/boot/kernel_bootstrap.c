@@ -1,6 +1,8 @@
 //
 // Created by dustyn on 6/17/24.
 //
+#include <arch/x86_64/idt.h>
+
 #include "include/types.h"
 #include "include/arch/arch_memory_init.h"
 #include "include/uart.h"
@@ -25,6 +27,7 @@
 void kernel_bootstrap(){
     init_serial();
     arch_init_segments();
+    irq_handler_init();
     arch_setup_interrupts();
     arch_paging_init();
     phys_init();

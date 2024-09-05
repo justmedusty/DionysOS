@@ -20,6 +20,7 @@ extern alignment_check
 extern machine_check
 extern simd_floating_point_error
 extern irq_handler
+extern panic
 
 %macro pushaq 0
     push rax      ;save current rax
