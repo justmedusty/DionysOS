@@ -32,7 +32,6 @@ void kernel_bootstrap(){
     mem_bounds_init();
     vmm_init();
     acpi_init();
-    ioapic_init();
     lapic_init();
     arch_timer_init();
     smp_init();

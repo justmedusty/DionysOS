@@ -31,7 +31,7 @@ void init_serial() {
     outb(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
     outb(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
     outb(COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
-    initlock(&serial_lock, SERIAL_LOCK);
+    initlock(&serial_lock,SERIAL_LOCK);
     serial_printf("Serial Initialized\n");
 }
 
@@ -182,7 +182,8 @@ void serial_printf(char *str, ...) {
         }
         str++;
     }
-    release_spinlock(&serial_lock);
 
+    release_spinlock(&serial_lock);
     va_end(args);
+
 }
