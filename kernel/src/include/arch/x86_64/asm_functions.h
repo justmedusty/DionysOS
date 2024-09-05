@@ -8,23 +8,6 @@
 #include "include/types.h"
 #ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
-static inline uint64 mem_in(volatile uint64 *addr) {
-    volatile uint64 ret = 0;
-    asm volatile(
-          "mov $1, %0"
-          : "=r"(ret)
-          : "r"(*addr)
-      );
-    return ret;
-}
-
-static inline void mem_out(uint64 *addr, uint64 value) {
-    asm volatile(
-        "mov %0, %1"
-        : "+m"(addr)
-        : "r"(value)
-    );
-}
 
 // Reads a byte from the specified I/O port.
 static inline uint8 inb(uint16 port) {
