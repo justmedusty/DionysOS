@@ -7,18 +7,32 @@
 #include "include/arch/x86_64/asm_functions.h"
 #include <include/uart.h>
 
+void ioapic_init() {
+
+    uint64 val = read_ioapic(0, IOAPIC_VERSION);
+    serial_printf("IOAPIC version: %x.32\n", val);
+    uint64 count = ((val >> 16) & 0xFF);
+
+    for (uint8 i = 0; i <= count; ++i) {
+        write_ioapic(0, IOAPIC_REDTBL+2*i, 0x00010000 | (32 + i));
+        write_ioapic(0, IOAPIC_REDTBL+2*i+1, 0);
+    }
+
+    serial_printf("IOAPIC Initialised.\n");
+
+}
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
-    uint64* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
-   // *((volatile uint64 *)base) = reg;
-   // *((volatile uint64 *)base + IOAPIC_IOWIN) = value;
+    uint32* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
+    *((volatile uint32 *)base) = reg;
+    *((volatile uint32 *)base + IOAPIC_IOWIN) = value;
     //mem_out(base, reg);
     //mem_out(base + 16, value);
 }
 
 uint32 read_ioapic(uint32 ioapic, uint32 reg) {
-    uint64 base = (uint64) P2V(madt_ioapic_list[ioapic]->apic_addr);
-    //*((volatile uint64 *)base) = reg;
-    //return *((volatile uint64 *)base + 16);
+    uint32 *base =  P2V(madt_ioapic_list[ioapic]->apic_addr);
+    *((volatile uint32 *)base) = reg;
+    return *((volatile uint32 *)base + 16);
     mem_out((uint64 *)base, reg);
     return mem_in((uint64 *) base + 16);
 }

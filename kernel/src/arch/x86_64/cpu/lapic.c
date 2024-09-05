@@ -1,7 +1,6 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include <string.h>
 #include <include/arch/arch_cpu.h>
 
 #include "include/types.h"
@@ -30,19 +29,17 @@ void lapic_init() {
 void lapic_write(uint32 reg, uint32 val) {
 
     if(lapic_base == 0) {
-        lapic_base = (uint64) P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
+        lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-    mem_out(( uint64 *) lapic_base + reg, val);
-    //*((volatile uint32 *)(P2V(lapic_base) + reg)) = val;
+    *((volatile uint32 *)(P2V(lapic_base) + reg)) = val;
 }
 
 uint32 lapic_read(uint32 reg) {
 
     if(lapic_base == 0) {
-        lapic_base = (uint64) P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
+        lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-   // return *((volatile uint32*)(P2V(lapic_base) + reg));
-    return mem_in((volatile uint64 *)(lapic_base) + reg);
+    return *((volatile uint32*)(P2V(lapic_base) + reg));
 }
 
 uint32 get_lapid_id() {

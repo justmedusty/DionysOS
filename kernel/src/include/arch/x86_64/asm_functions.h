@@ -20,7 +20,7 @@ static inline uint64 mem_in(volatile uint64 *addr) {
 
 static inline void mem_out(uint64 *addr, uint64 value) {
     asm volatile(
-        "mov $1, %0"
+        "mov %0, %1"
         : "+m"(addr)
         : "r"(value)
     );
@@ -128,8 +128,8 @@ static inline void sti(void) {
 }
 
 // Atomic exchange of a value.
-static inline uint64 xchg(volatile unsigned long long* addr, uint32 newval) {
-    uint32 result;
+static inline uint64 xchg(volatile unsigned long long* addr, uint64 newval) {
+    uint64 result;
     asm volatile("lock; xchg %0, %1" :
         "+m" (*addr), "=a" (result) :
         "1" (newval) :
