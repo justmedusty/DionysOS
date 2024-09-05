@@ -3,26 +3,26 @@
 //
 
 #pragma once
+#include <include/uart.h>
+
 #include "include/types.h"
 #ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
-static inline uint64 mem_in(uint64 addr) {
+static inline uint64 mem_in(volatile uint64 *addr) {
     volatile uint64 ret = 0;
     asm volatile(
-          "mov (%[addr]), %[ret]"
-          : [ret] "=r"(ret)
-          : [addr] "r"((volatile uint64 *)addr)
-          : "memory"
+          "mov $1, %0"
+          : "=r"(ret)
+          : "r"(*addr)
       );
     return ret;
 }
 
 static inline void mem_out(uint64 *addr, uint64 value) {
     asm volatile(
-        "mov %[val], %[mem]"
-        : [mem] "+m"(*(addr))
-        : [val] "r"(value)
-        : "memory"
+        "mov $1, %0"
+        : "+m"(addr)
+        : "r"(value)
     );
 }
 

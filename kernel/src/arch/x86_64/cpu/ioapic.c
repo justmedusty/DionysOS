@@ -9,14 +9,18 @@
 
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
     uint64* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
-    mem_out(base, reg);
-    mem_out(base + 16, value);
+   // *((volatile uint64 *)base) = reg;
+   // *((volatile uint64 *)base + IOAPIC_IOWIN) = value;
+    //mem_out(base, reg);
+    //mem_out(base + 16, value);
 }
 
 uint32 read_ioapic(uint32 ioapic, uint32 reg) {
-    uint64* base = P2V(madt_ioapic_list[ioapic]->apic_addr);
-    mem_out(base, reg);
-    return mem_in((uint64) base + 16);
+    uint64 base = (uint64) P2V(madt_ioapic_list[ioapic]->apic_addr);
+    //*((volatile uint64 *)base) = reg;
+    //return *((volatile uint64 *)base + 16);
+    mem_out((uint64 *)base, reg);
+    return mem_in((uint64 *) base + 16);
 }
 
 uint64 ioapic_gsi_count(uint32 ioapic) {

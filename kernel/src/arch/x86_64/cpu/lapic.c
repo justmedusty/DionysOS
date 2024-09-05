@@ -18,6 +18,8 @@ uint64 lapic_base = 0;
 void lapic_init() {
     //Enable lapic by writing to the enable/disable bit to the left of the spurious vector
     lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) |  1 << 8 /* APIC software enable/disable bit*/);
+    //enable LAPIC via the IA32 MSR enable bit
+    wrmsr(IA32_APIC_BASE_MSR,1 << 11);
     lapic_calibrate_timer();
     serial_printf("LAPIC ENABLE BIT %x.32\n",lapic_read(LAPIC_SPURIOUS) & 0x100);
     serial_printf("LAPIC ID %x.8  \n",get_lapid_id());
@@ -28,17 +30,19 @@ void lapic_init() {
 void lapic_write(uint32 reg, uint32 val) {
 
     if(lapic_base == 0) {
-        lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
+        lapic_base = (uint64) P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
     }
-    *((volatile uint32 *)(P2V(lapic_base) + reg)) = val;
+    mem_out(( uint64 *) lapic_base + reg, val);
+    //*((volatile uint32 *)(P2V(lapic_base) + reg)) = val;
 }
 
 uint32 lapic_read(uint32 reg) {
 
     if(lapic_base == 0) {
-        lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
+        lapic_base = (uint64) P2V(rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000);
     }
-    return *((volatile uint32*)(P2V(lapic_base) + reg));
+   // return *((volatile uint32*)(P2V(lapic_base) + reg));
+    return mem_in((volatile uint64 *)(lapic_base) + reg);
 }
 
 uint32 get_lapid_id() {
