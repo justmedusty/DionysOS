@@ -44,3 +44,4 @@ void irq_register(uint8 vec, void* handler);
 void irq_unregister(uint8 vec);
 uint8 idt_get_vector();
 void idt_reload();
+void irq_handler(uint8 vec);

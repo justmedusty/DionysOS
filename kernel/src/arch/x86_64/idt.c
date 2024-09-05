@@ -38,7 +38,7 @@ extern void isr_wrapper_19();
 
 void* irq_routines[256] = {};
 
-uint8 idt_free_vec = 32;
+uint8 idt_free_vec = 64;
 
 //Going to index this array when setting up the idt
 void (*isr_wrappers[32])() = {
@@ -127,12 +127,17 @@ void create_void_gate(struct gate_desc* gate_desc){
 
 void idt_init(void){
     //just exceptions
-    for (int i = 0; i < 31; i++){
-        if (exceptions[i] != T_NONE){
+    cli();
+    for (int i = 0; i < 256; i++){
+        if (i < 32 && exceptions[i] != T_NONE){
             create_interrupt_gate(&gates[i], isr_wrappers[i]);
         }
-        else{
+        else if(i < 32 && exceptions[i] == T_NONE){
             create_void_gate(&gates[i]);
+
+            //IRQs
+        }else {
+            create_interrupt_gate(&gates[i], irq_routines[i]);
         }
     }
     load_idtr(&idtr);
@@ -141,17 +146,13 @@ void idt_init(void){
     serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
+void irq_handler(uint8 vec) {
+
+}
+
 void idt_reload() {
     idt_init();
 }
-
-uint8 idt_get_vector(){
-  if(idt_free_vec == 255){
-    panic("idt_get_vector() table full\n");
-  	}
-      return idt_free_vec++;
-}
-
 
 uint8 idt_get_irq_vector(){
   if(idt_free_vec == 255){
@@ -162,7 +163,8 @@ uint8 idt_get_irq_vector(){
 
 
 void irq_register(uint8 vec, void* handler){
-   irq_routines[vec + 32] = handler;
+   irq_routines[vec] = handler;
+    idt_reload();
    ioapic_redirect_irq(bootstrap_lapic_id,vec + 32, vec,1);
    serial_printf("IRQ %x.8  loaded\n",vec);
 }

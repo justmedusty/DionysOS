@@ -19,6 +19,7 @@ extern floating_point_error
 extern alignment_check
 extern machine_check
 extern simd_floating_point_error
+extern irq_handler
 
 %macro pushaq 0
     push rax      ;save current rax
@@ -181,3 +182,2564 @@ isr_wrapper_19:
   call simd_floating_point_error
   popaq
   iretq
+
+global irq_wrapper_0
+irq_wrapper_0:
+  pushaq
+  mov rdi, 0
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_1
+irq_wrapper_1:
+  pushaq
+  mov rdi, 1
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_2
+irq_wrapper_2:
+  pushaq
+  mov rdi, 2
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_3
+irq_wrapper_3:
+  pushaq
+  mov rdi, 3
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_4
+irq_wrapper_4:
+  pushaq
+  mov rdi, 4
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_5
+irq_wrapper_5:
+  pushaq
+  mov rdi, 5
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_6
+irq_wrapper_6:
+  pushaq
+  mov rdi, 6
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_7
+irq_wrapper_7:
+  pushaq
+  mov rdi, 7
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_8
+irq_wrapper_8:
+  pushaq
+  mov rdi, 8
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_9
+irq_wrapper_9:
+  pushaq
+  mov rdi, 9
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_10
+irq_wrapper_10:
+  pushaq
+  mov rdi, 10
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_11
+irq_wrapper_11:
+  pushaq
+  mov rdi, 11
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_12
+irq_wrapper_12:
+  pushaq
+  mov rdi, 12
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_13
+irq_wrapper_13:
+  pushaq
+  mov rdi, 13
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_14
+irq_wrapper_14:
+  pushaq
+  mov rdi, 14
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_15
+irq_wrapper_15:
+  pushaq
+  mov rdi, 15
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_16
+irq_wrapper_16:
+  pushaq
+  mov rdi, 16
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_17
+irq_wrapper_17:
+  pushaq
+  mov rdi, 17
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_18
+irq_wrapper_18:
+  pushaq
+  mov rdi, 18
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_19
+irq_wrapper_19:
+  pushaq
+  mov rdi, 19
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_20
+irq_wrapper_20:
+  pushaq
+  mov rdi, 20
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_21
+irq_wrapper_21:
+  pushaq
+  mov rdi, 21
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_22
+irq_wrapper_22:
+  pushaq
+  mov rdi, 22
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_23
+irq_wrapper_23:
+  pushaq
+  mov rdi, 23
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_24
+irq_wrapper_24:
+  pushaq
+  mov rdi, 24
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_25
+irq_wrapper_25:
+  pushaq
+  mov rdi, 25
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_26
+irq_wrapper_26:
+  pushaq
+  mov rdi, 26
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_27
+irq_wrapper_27:
+  pushaq
+  mov rdi, 27
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_28
+irq_wrapper_28:
+  pushaq
+  mov rdi, 28
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_29
+irq_wrapper_29:
+  pushaq
+  mov rdi, 29
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_30
+irq_wrapper_30:
+  pushaq
+  mov rdi, 30
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_31
+irq_wrapper_31:
+  pushaq
+  mov rdi, 31
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_32
+irq_wrapper_32:
+  pushaq
+  mov rdi, 32
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_33
+irq_wrapper_33:
+  pushaq
+  mov rdi, 33
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_34
+irq_wrapper_34:
+  pushaq
+  mov rdi, 34
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_35
+irq_wrapper_35:
+  pushaq
+  mov rdi, 35
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_36
+irq_wrapper_36:
+  pushaq
+  mov rdi, 36
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_37
+irq_wrapper_37:
+  pushaq
+  mov rdi, 37
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_38
+irq_wrapper_38:
+  pushaq
+  mov rdi, 38
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_39
+irq_wrapper_39:
+  pushaq
+  mov rdi, 39
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_40
+irq_wrapper_40:
+  pushaq
+  mov rdi, 40
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_41
+irq_wrapper_41:
+  pushaq
+  mov rdi, 41
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_42
+irq_wrapper_42:
+  pushaq
+  mov rdi, 42
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_43
+irq_wrapper_43:
+  pushaq
+  mov rdi, 43
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_44
+irq_wrapper_44:
+  pushaq
+  mov rdi, 44
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_45
+irq_wrapper_45:
+  pushaq
+  mov rdi, 45
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_46
+irq_wrapper_46:
+  pushaq
+  mov rdi, 46
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_47
+irq_wrapper_47:
+  pushaq
+  mov rdi, 47
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_48
+irq_wrapper_48:
+  pushaq
+  mov rdi, 48
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_49
+irq_wrapper_49:
+  pushaq
+  mov rdi, 49
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_50
+irq_wrapper_50:
+  pushaq
+  mov rdi, 50
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_51
+irq_wrapper_51:
+  pushaq
+  mov rdi, 51
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_52
+irq_wrapper_52:
+  pushaq
+  mov rdi, 52
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_53
+irq_wrapper_53:
+  pushaq
+  mov rdi, 53
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_54
+irq_wrapper_54:
+  pushaq
+  mov rdi, 54
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_55
+irq_wrapper_55:
+  pushaq
+  mov rdi, 55
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_56
+irq_wrapper_56:
+  pushaq
+  mov rdi, 56
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_57
+irq_wrapper_57:
+  pushaq
+  mov rdi, 57
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_58
+irq_wrapper_58:
+  pushaq
+  mov rdi, 58
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_59
+irq_wrapper_59:
+  pushaq
+  mov rdi, 59
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_60
+irq_wrapper_60:
+  pushaq
+  mov rdi, 60
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_61
+irq_wrapper_61:
+  pushaq
+  mov rdi, 61
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_62
+irq_wrapper_62:
+  pushaq
+  mov rdi, 62
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_63
+irq_wrapper_63:
+  pushaq
+  mov rdi, 63
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_64
+irq_wrapper_64:
+  pushaq
+  mov rdi, 64
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_65
+irq_wrapper_65:
+  pushaq
+  mov rdi, 65
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_66
+irq_wrapper_66:
+  pushaq
+  mov rdi, 66
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_67
+irq_wrapper_67:
+  pushaq
+  mov rdi, 67
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_68
+irq_wrapper_68:
+  pushaq
+  mov rdi, 68
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_69
+irq_wrapper_69:
+  pushaq
+  mov rdi, 69
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_70
+irq_wrapper_70:
+  pushaq
+  mov rdi, 70
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_71
+irq_wrapper_71:
+  pushaq
+  mov rdi, 71
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_72
+irq_wrapper_72:
+  pushaq
+  mov rdi, 72
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_73
+irq_wrapper_73:
+  pushaq
+  mov rdi, 73
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_74
+irq_wrapper_74:
+  pushaq
+  mov rdi, 74
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_75
+irq_wrapper_75:
+  pushaq
+  mov rdi, 75
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_76
+irq_wrapper_76:
+  pushaq
+  mov rdi, 76
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_77
+irq_wrapper_77:
+  pushaq
+  mov rdi, 77
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_78
+irq_wrapper_78:
+  pushaq
+  mov rdi, 78
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_79
+irq_wrapper_79:
+  pushaq
+  mov rdi, 79
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_80
+irq_wrapper_80:
+  pushaq
+  mov rdi, 80
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_81
+irq_wrapper_81:
+  pushaq
+  mov rdi, 81
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_82
+irq_wrapper_82:
+  pushaq
+  mov rdi, 82
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_83
+irq_wrapper_83:
+  pushaq
+  mov rdi, 83
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_84
+irq_wrapper_84:
+  pushaq
+  mov rdi, 84
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_85
+irq_wrapper_85:
+  pushaq
+  mov rdi, 85
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_86
+irq_wrapper_86:
+  pushaq
+  mov rdi, 86
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_87
+irq_wrapper_87:
+  pushaq
+  mov rdi, 87
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_88
+irq_wrapper_88:
+  pushaq
+  mov rdi, 88
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_89
+irq_wrapper_89:
+  pushaq
+  mov rdi, 89
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_90
+irq_wrapper_90:
+  pushaq
+  mov rdi, 90
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_91
+irq_wrapper_91:
+  pushaq
+  mov rdi, 91
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_92
+irq_wrapper_92:
+  pushaq
+  mov rdi, 92
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_93
+irq_wrapper_93:
+  pushaq
+  mov rdi, 93
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_94
+irq_wrapper_94:
+  pushaq
+  mov rdi, 94
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_95
+irq_wrapper_95:
+  pushaq
+  mov rdi, 95
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_96
+irq_wrapper_96:
+  pushaq
+  mov rdi, 96
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_97
+irq_wrapper_97:
+  pushaq
+  mov rdi, 97
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_98
+irq_wrapper_98:
+  pushaq
+  mov rdi, 98
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_99
+irq_wrapper_99:
+  pushaq
+  mov rdi, 99
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_100
+irq_wrapper_100:
+  pushaq
+  mov rdi, 100
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_101
+irq_wrapper_101:
+  pushaq
+  mov rdi, 101
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_102
+irq_wrapper_102:
+  pushaq
+  mov rdi, 102
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_103
+irq_wrapper_103:
+  pushaq
+  mov rdi, 103
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_104
+irq_wrapper_104:
+  pushaq
+  mov rdi, 104
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_105
+irq_wrapper_105:
+  pushaq
+  mov rdi, 105
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_106
+irq_wrapper_106:
+  pushaq
+  mov rdi, 106
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_107
+irq_wrapper_107:
+  pushaq
+  mov rdi, 107
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_108
+irq_wrapper_108:
+  pushaq
+  mov rdi, 108
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_109
+irq_wrapper_109:
+  pushaq
+  mov rdi, 109
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_110
+irq_wrapper_110:
+  pushaq
+  mov rdi, 110
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_111
+irq_wrapper_111:
+  pushaq
+  mov rdi, 111
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_112
+irq_wrapper_112:
+  pushaq
+  mov rdi, 112
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_113
+irq_wrapper_113:
+  pushaq
+  mov rdi, 113
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_114
+irq_wrapper_114:
+  pushaq
+  mov rdi, 114
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_115
+irq_wrapper_115:
+  pushaq
+  mov rdi, 115
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_116
+irq_wrapper_116:
+  pushaq
+  mov rdi, 116
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_117
+irq_wrapper_117:
+  pushaq
+  mov rdi, 117
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_118
+irq_wrapper_118:
+  pushaq
+  mov rdi, 118
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_119
+irq_wrapper_119:
+  pushaq
+  mov rdi, 119
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_120
+irq_wrapper_120:
+  pushaq
+  mov rdi, 120
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_121
+irq_wrapper_121:
+  pushaq
+  mov rdi, 121
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_122
+irq_wrapper_122:
+  pushaq
+  mov rdi, 122
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_123
+irq_wrapper_123:
+  pushaq
+  mov rdi, 123
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_124
+irq_wrapper_124:
+  pushaq
+  mov rdi, 124
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_125
+irq_wrapper_125:
+  pushaq
+  mov rdi, 125
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_126
+irq_wrapper_126:
+  pushaq
+  mov rdi, 126
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_127
+irq_wrapper_127:
+  pushaq
+  mov rdi, 127
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_128
+irq_wrapper_128:
+  pushaq
+  mov rdi, 128
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_129
+irq_wrapper_129:
+  pushaq
+  mov rdi, 129
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_130
+irq_wrapper_130:
+  pushaq
+  mov rdi, 130
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_131
+irq_wrapper_131:
+  pushaq
+  mov rdi, 131
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_132
+irq_wrapper_132:
+  pushaq
+  mov rdi, 132
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_133
+irq_wrapper_133:
+  pushaq
+  mov rdi, 133
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_134
+irq_wrapper_134:
+  pushaq
+  mov rdi, 134
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_135
+irq_wrapper_135:
+  pushaq
+  mov rdi, 135
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_136
+irq_wrapper_136:
+  pushaq
+  mov rdi, 136
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_137
+irq_wrapper_137:
+  pushaq
+  mov rdi, 137
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_138
+irq_wrapper_138:
+  pushaq
+  mov rdi, 138
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_139
+irq_wrapper_139:
+  pushaq
+  mov rdi, 139
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_140
+irq_wrapper_140:
+  pushaq
+  mov rdi, 140
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_141
+irq_wrapper_141:
+  pushaq
+  mov rdi, 141
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_142
+irq_wrapper_142:
+  pushaq
+  mov rdi, 142
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_143
+irq_wrapper_143:
+  pushaq
+  mov rdi, 143
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_144
+irq_wrapper_144:
+  pushaq
+  mov rdi, 144
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_145
+irq_wrapper_145:
+  pushaq
+  mov rdi, 145
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_146
+irq_wrapper_146:
+  pushaq
+  mov rdi, 146
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_147
+irq_wrapper_147:
+  pushaq
+  mov rdi, 147
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_148
+irq_wrapper_148:
+  pushaq
+  mov rdi, 148
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_149
+irq_wrapper_149:
+  pushaq
+  mov rdi, 149
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_150
+irq_wrapper_150:
+  pushaq
+  mov rdi, 150
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_151
+irq_wrapper_151:
+  pushaq
+  mov rdi, 151
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_152
+irq_wrapper_152:
+  pushaq
+  mov rdi, 152
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_153
+irq_wrapper_153:
+  pushaq
+  mov rdi, 153
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_154
+irq_wrapper_154:
+  pushaq
+  mov rdi, 154
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_155
+irq_wrapper_155:
+  pushaq
+  mov rdi, 155
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_156
+irq_wrapper_156:
+  pushaq
+  mov rdi, 156
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_157
+irq_wrapper_157:
+  pushaq
+  mov rdi, 157
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_158
+irq_wrapper_158:
+  pushaq
+  mov rdi, 158
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_159
+irq_wrapper_159:
+  pushaq
+  mov rdi, 159
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_160
+irq_wrapper_160:
+  pushaq
+  mov rdi, 160
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_161
+irq_wrapper_161:
+  pushaq
+  mov rdi, 161
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_162
+irq_wrapper_162:
+  pushaq
+  mov rdi, 162
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_163
+irq_wrapper_163:
+  pushaq
+  mov rdi, 163
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_164
+irq_wrapper_164:
+  pushaq
+  mov rdi, 164
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_165
+irq_wrapper_165:
+  pushaq
+  mov rdi, 165
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_166
+irq_wrapper_166:
+  pushaq
+  mov rdi, 166
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_167
+irq_wrapper_167:
+  pushaq
+  mov rdi, 167
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_168
+irq_wrapper_168:
+  pushaq
+  mov rdi, 168
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_169
+irq_wrapper_169:
+  pushaq
+  mov rdi, 169
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_170
+irq_wrapper_170:
+  pushaq
+  mov rdi, 170
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_171
+irq_wrapper_171:
+  pushaq
+  mov rdi, 171
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_172
+irq_wrapper_172:
+  pushaq
+  mov rdi, 172
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_173
+irq_wrapper_173:
+  pushaq
+  mov rdi, 173
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_174
+irq_wrapper_174:
+  pushaq
+  mov rdi, 174
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_175
+irq_wrapper_175:
+  pushaq
+  mov rdi, 175
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_176
+irq_wrapper_176:
+  pushaq
+  mov rdi, 176
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_177
+irq_wrapper_177:
+  pushaq
+  mov rdi, 177
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_178
+irq_wrapper_178:
+  pushaq
+  mov rdi, 178
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_179
+irq_wrapper_179:
+  pushaq
+  mov rdi, 179
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_180
+irq_wrapper_180:
+  pushaq
+  mov rdi, 180
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_181
+irq_wrapper_181:
+  pushaq
+  mov rdi, 181
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_182
+irq_wrapper_182:
+  pushaq
+  mov rdi, 182
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_183
+irq_wrapper_183:
+  pushaq
+  mov rdi, 183
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_184
+irq_wrapper_184:
+  pushaq
+  mov rdi, 184
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_185
+irq_wrapper_185:
+  pushaq
+  mov rdi, 185
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_186
+irq_wrapper_186:
+  pushaq
+  mov rdi, 186
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_187
+irq_wrapper_187:
+  pushaq
+  mov rdi, 187
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_188
+irq_wrapper_188:
+  pushaq
+  mov rdi, 188
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_189
+irq_wrapper_189:
+  pushaq
+  mov rdi, 189
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_190
+irq_wrapper_190:
+  pushaq
+  mov rdi, 190
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_191
+irq_wrapper_191:
+  pushaq
+  mov rdi, 191
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_192
+irq_wrapper_192:
+  pushaq
+  mov rdi, 192
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_193
+irq_wrapper_193:
+  pushaq
+  mov rdi, 193
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_194
+irq_wrapper_194:
+  pushaq
+  mov rdi, 194
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_195
+irq_wrapper_195:
+  pushaq
+  mov rdi, 195
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_196
+irq_wrapper_196:
+  pushaq
+  mov rdi, 196
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_197
+irq_wrapper_197:
+  pushaq
+  mov rdi, 197
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_198
+irq_wrapper_198:
+  pushaq
+  mov rdi, 198
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_199
+irq_wrapper_199:
+  pushaq
+  mov rdi, 199
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_200
+irq_wrapper_200:
+  pushaq
+  mov rdi, 200
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_201
+irq_wrapper_201:
+  pushaq
+  mov rdi, 201
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_202
+irq_wrapper_202:
+  pushaq
+  mov rdi, 202
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_203
+irq_wrapper_203:
+  pushaq
+  mov rdi, 203
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_204
+irq_wrapper_204:
+  pushaq
+  mov rdi, 204
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_205
+irq_wrapper_205:
+  pushaq
+  mov rdi, 205
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_206
+irq_wrapper_206:
+  pushaq
+  mov rdi, 206
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_207
+irq_wrapper_207:
+  pushaq
+  mov rdi, 207
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_208
+irq_wrapper_208:
+  pushaq
+  mov rdi, 208
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_209
+irq_wrapper_209:
+  pushaq
+  mov rdi, 209
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_210
+irq_wrapper_210:
+  pushaq
+  mov rdi, 210
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_211
+irq_wrapper_211:
+  pushaq
+  mov rdi, 211
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_212
+irq_wrapper_212:
+  pushaq
+  mov rdi, 212
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_213
+irq_wrapper_213:
+  pushaq
+  mov rdi, 213
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_214
+irq_wrapper_214:
+  pushaq
+  mov rdi, 214
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_215
+irq_wrapper_215:
+  pushaq
+  mov rdi, 215
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_216
+irq_wrapper_216:
+  pushaq
+  mov rdi, 216
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_217
+irq_wrapper_217:
+  pushaq
+  mov rdi, 217
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_218
+irq_wrapper_218:
+  pushaq
+  mov rdi, 218
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_219
+irq_wrapper_219:
+  pushaq
+  mov rdi, 219
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_220
+irq_wrapper_220:
+  pushaq
+  mov rdi, 220
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_221
+irq_wrapper_221:
+  pushaq
+  mov rdi, 221
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_222
+irq_wrapper_222:
+  pushaq
+  mov rdi, 222
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_223
+irq_wrapper_223:
+  pushaq
+  mov rdi, 223
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_224
+irq_wrapper_224:
+  pushaq
+  mov rdi, 224
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_225
+irq_wrapper_225:
+  pushaq
+  mov rdi, 225
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_226
+irq_wrapper_226:
+  pushaq
+  mov rdi, 226
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_227
+irq_wrapper_227:
+  pushaq
+  mov rdi, 227
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_228
+irq_wrapper_228:
+  pushaq
+  mov rdi, 228
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_229
+irq_wrapper_229:
+  pushaq
+  mov rdi, 229
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_230
+irq_wrapper_230:
+  pushaq
+  mov rdi, 230
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_231
+irq_wrapper_231:
+  pushaq
+  mov rdi, 231
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_232
+irq_wrapper_232:
+  pushaq
+  mov rdi, 232
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_233
+irq_wrapper_233:
+  pushaq
+  mov rdi, 233
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_234
+irq_wrapper_234:
+  pushaq
+  mov rdi, 234
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_235
+irq_wrapper_235:
+  pushaq
+  mov rdi, 235
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_236
+irq_wrapper_236:
+  pushaq
+  mov rdi, 236
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_237
+irq_wrapper_237:
+  pushaq
+  mov rdi, 237
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_238
+irq_wrapper_238:
+  pushaq
+  mov rdi, 238
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_239
+irq_wrapper_239:
+  pushaq
+  mov rdi, 239
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_240
+irq_wrapper_240:
+  pushaq
+  mov rdi, 240
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_241
+irq_wrapper_241:
+  pushaq
+  mov rdi, 241
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_242
+irq_wrapper_242:
+  pushaq
+  mov rdi, 242
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_243
+irq_wrapper_243:
+  pushaq
+  mov rdi, 243
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_244
+irq_wrapper_244:
+  pushaq
+  mov rdi, 244
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_245
+irq_wrapper_245:
+  pushaq
+  mov rdi, 245
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_246
+irq_wrapper_246:
+  pushaq
+  mov rdi, 246
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_247
+irq_wrapper_247:
+  pushaq
+  mov rdi, 247
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_248
+irq_wrapper_248:
+  pushaq
+  mov rdi, 248
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_249
+irq_wrapper_249:
+  pushaq
+  mov rdi, 249
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_250
+irq_wrapper_250:
+  pushaq
+  mov rdi, 250
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_251
+irq_wrapper_251:
+  pushaq
+  mov rdi, 251
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_252
+irq_wrapper_252:
+  pushaq
+  mov rdi, 252
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_253
+irq_wrapper_253:
+  pushaq
+  mov rdi, 253
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_254
+irq_wrapper_254:
+  pushaq
+  mov rdi, 254
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
+global irq_wrapper_255
+irq_wrapper_255:
+  pushaq
+  mov rdi, 255
+  push rdi
+  call irq_handler
+  popaq
+  pop rdi
+  iretq
+
