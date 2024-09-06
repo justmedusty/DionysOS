@@ -14,6 +14,7 @@
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
+    panic("PIT interrupt");
     pit_ticks++;
     lapic_eoi();
 }
@@ -37,8 +38,8 @@ void pit_set_reload_value(uint16 new_reload_value) {
 }
 
 void pit_init() {
-    pit_set_freq(5);
-    serial_printf("ADDR OF PIT INTR %x.64\n",pit_interrupt);
+    outb(CMD,0x36);
+    pit_set_freq(20);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 

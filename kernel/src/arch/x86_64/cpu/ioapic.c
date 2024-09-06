@@ -57,8 +57,8 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
 
     uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
 
-    write_ioapic(ioapic, redir_table, redirect);
-    write_ioapic(ioapic, redir_table + 1, redirect >> 32);
+    write_ioapic(ioapic, redir_table, (uint32)redirect);
+    write_ioapic(ioapic, redir_table + 1, (uint32)redirect >> 32);
 }
 
 void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
