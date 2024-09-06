@@ -23,6 +23,12 @@ void pit_interrupt() {
         lapic_send_all_int(2,32);
         lapic_send_all_int(3,32);
     }
+    if(panicked) {
+        for(;;) {
+            cli();
+            asm volatile("hlt");
+        }
+    }
 
     serial_printf("PIT interrupt at CPU %x.8  \n",arch_mycpu()->lapic_id);
     //Do preemption stuff, only count ticks on processor 0
@@ -48,7 +54,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 }
 
 void pit_init() {
-    pit_set_freq(1);
+    pit_set_freq(50);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 

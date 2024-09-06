@@ -62,7 +62,7 @@ void smp_init(){
         asm volatile("nop");
     }
     smp_enabled = 1;
-    serial_printf("All CPUs online\n");
+    serial_printf("\n\nAll CPUs online......\n\n\n");
 
 
 

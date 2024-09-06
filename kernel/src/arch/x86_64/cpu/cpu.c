@@ -17,7 +17,7 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "limine.h"
 
-int8 panicked = 0;
+uint8 panicked = 0;
 cpu cpu_list[8];
 struct spinlock bootstrap_lock;
 #ifdef __x86_64__
@@ -38,6 +38,7 @@ cpu* arch_mycpu() {
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     acquire_spinlock(&bootstrap_lock);
+    serial_printf("\nInitialising CPU......... \n\n");
     gdt_reload();
     idt_reload();
     arch_reload_vmm();

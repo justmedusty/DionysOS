@@ -52,3 +52,5 @@ extern cpu cpu_list[8];
 void panic(const char* str);
 cpu* arch_mycpu();
 void arch_initialise_cpu(struct limine_smp_info *smp_info);
+// For other processors panicking the next PIT interrupt
+extern uint8 panicked;
