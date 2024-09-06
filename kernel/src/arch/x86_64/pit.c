@@ -18,13 +18,14 @@ void pit_interrupt() {
         asm volatile("nop");
     }
     if(arch_mycpu()->lapic_id == 0) {
+        pit_ticks++;
         lapic_send_all_int(1,32);
         lapic_send_all_int(2,32);
         lapic_send_all_int(3,32);
     }
 
     serial_printf("PIT interrupt at CPU %x.8  \n",arch_mycpu()->lapic_id);
-    pit_ticks++;
+    //Do preemption stuff, only count ticks on processor 0
     lapic_eoi();
 }
 
