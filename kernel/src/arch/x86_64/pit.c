@@ -54,6 +54,13 @@ void pit_init() {
 
 }
 
+uint16 pit_get_current_count() {
+    outb(CMD,0x34);
+    uint8 low = inb(CHANNEL0_DATA);
+    uint8 high = inb(CHANNEL0_DATA);
+    return (uint16) high << 8 | low;
+}
+
 void pit_sleep(uint64 ms) {
     uint64 start = pit_ticks;
     while (pit_ticks - start < ms) {

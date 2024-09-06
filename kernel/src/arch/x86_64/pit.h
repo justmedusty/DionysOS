@@ -17,4 +17,5 @@ void pit_sleep(uint64 ms);
 void pit_set_reload_value(uint16 new_reload_value);
 void pit_set_freq(uint64 freq);
 uint64 get_pit_ticks();
+uint16 pit_get_current_count();
 #endif //PIT_H

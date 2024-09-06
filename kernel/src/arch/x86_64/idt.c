@@ -9,6 +9,7 @@
 
 #include <include/arch/arch_cpu.h>
 
+#include "pit.h"
 #include "include/arch/arch_traps.h"
 #include "include/uart.h"
 #include "include/arch/arch_global_interrupt_controller.h"
