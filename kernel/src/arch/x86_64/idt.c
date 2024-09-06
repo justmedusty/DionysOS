@@ -595,7 +595,6 @@ void (*isr_wrappers[32])() = {
 };
 
 struct gate_desc gates[288] = {};
-
 struct idtr_desc idtr = {
     .off = (uint64_t)&gates,
     .sz = sizeof(gates) - 1,
@@ -655,7 +654,7 @@ void idt_init(void) {
         }
     }
     for (int i = 0; i < 256; i++) {
-        create_interrupt_gate(&gates[i + 32], irq_wrappers[i - 32]);
+        create_interrupt_gate(&gates[i + 32], irq_wrappers[i]);
     }
     load_idtr(&idtr);
     //enable interrupts (locally)
@@ -679,7 +678,9 @@ void irq_handler_init() {
 }
 
 void idt_reload() {
-    idt_init();
+    load_idtr(&idtr);
+    sti();
+    serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
 uint8 idt_get_irq_vector() {
