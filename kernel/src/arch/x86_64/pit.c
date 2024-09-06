@@ -14,7 +14,16 @@
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
-    panic("PIT interrupt");
+    while(smp_enabled != 1) {
+        asm volatile("nop");
+    }
+    if(arch_mycpu()->lapic_id == 0) {
+        lapic_send_all_int(1,32);
+        lapic_send_all_int(2,32);
+        lapic_send_all_int(3,32);
+    }
+
+    serial_printf("PIT interrupt at CPU %x.8  \n",arch_mycpu()->lapic_id);
     pit_ticks++;
     lapic_eoi();
 }
@@ -38,8 +47,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 }
 
 void pit_init() {
-    outb(CMD,0x36);
-    pit_set_freq(20);
+    pit_set_freq(1);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 

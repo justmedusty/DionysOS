@@ -6,6 +6,7 @@
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_interrupts.h>
 #include <include/arch/arch_memory_init.h>
+#include <include/arch/arch_smp.h>
 #include <include/arch/arch_timer.h>
 #include <include/arch/arch_vmm.h>
 #include <include/arch/x86_64/asm_functions.h>
@@ -47,7 +48,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     }
     arch_mycpu()->page_map = kernel_pg_map;
     release_spinlock(&bootstrap_lock);
-    serial_printf("PIT TICKS %x.64\n",arch_timer_get_ticks());
+    cpus_online++;
     for(;;) {
         asm("hlt");
     }

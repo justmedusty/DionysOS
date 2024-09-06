@@ -7,6 +7,7 @@
 #include "limine.h"
 #include "include/uart.h"
 #include <include/arch/arch_paging.h>
+#include <include/arch/arch_smp.h>
 #include <include/data_structures/spinlock.h>
 
 uint64 bootstrap_lapic_id;
@@ -20,7 +21,8 @@ static volatile struct limine_smp_request smp_request = {
         .id = LIMINE_SMP_REQUEST,
         .revision = 0,
 };
-
+uint8 smp_enabled = 0;
+uint8 cpus_online = 1;
 void smp_init(){
 
     initlock(&bootstrap_lock,SMP_BOOSTRAP_LOCK);
@@ -55,6 +57,12 @@ void smp_init(){
         i++;
     }
     release_spinlock(&bootstrap_lock);
+
+    while((volatile uint8) cpus_online != cpu_count) {
+        asm volatile("nop");
+    }
+    smp_enabled = 1;
+    serial_printf("All CPUs online\n");
 
 
 
