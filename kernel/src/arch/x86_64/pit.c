@@ -17,7 +17,7 @@ void pit_interrupt() {
 
     if(arch_mycpu()->lapic_id == 0) {
         pit_ticks++;
-        lapic_broadcast_interrupt(32);
+        lapic_broadcast_interrupt(32 + 0 /* Broadcast IPI to all other processes so they can do their own preemption checks or panic checks */);
     }
     if(panicked) {
         for(;;) {
@@ -50,7 +50,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 }
 
 void pit_init() {
-    pit_set_freq(50);
+    pit_set_freq(18);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
 

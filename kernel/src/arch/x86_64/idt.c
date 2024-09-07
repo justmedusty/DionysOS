@@ -700,9 +700,8 @@ void irq_register(uint8 vec, void* handler) {
     }
 
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
+    //ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
     serial_printf("IRQ %x.8  loaded\n", vec);
-    irq_routines[vec]();
 }
 
 
