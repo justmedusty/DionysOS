@@ -18,11 +18,11 @@ TODO:
 
 ✓Begin parsing ACPI tables, the most important one is the MADT since it contains information about the APIC.
 
-Start up the other CPUs. Limine provides a facility to make this less painful.
+✓Start up the other CPUs. Limine provides a facility to make this less painful.
 
-Set up an interrupt controller such as the APIC.
+✓Set up an interrupt controller such as the APIC.
 
-Configure a timer such as the Local APIC timer, the PIT, or the HPET.
+✓Configure a timer such as the Local APIC timer, the PIT, or the HPET.
 
 Implement a scheduler to schedule threads in order make multitasking possible.
 
