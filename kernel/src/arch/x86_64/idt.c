@@ -681,7 +681,7 @@ void irq_handler_init() {
 void idt_reload() {
     load_idtr(&idtr);
     sti();
-    serial_printf("IDT Loaded, ISRs mapped\n");
+    serial_printf("IDT Loaded\n");
 }
 
 uint8 idt_get_irq_vector() {
@@ -700,7 +700,7 @@ void irq_register(uint8 vec, void* handler) {
     }
 
     irq_routines[vec] = handler;
-    //ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
+    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 
