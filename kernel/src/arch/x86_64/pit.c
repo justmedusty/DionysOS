@@ -31,6 +31,13 @@ void pit_interrupt() {
     lapic_eoi();
 }
 
+uint16 pit_get_current_count() {
+    outb(CMD,0);
+    uint8 low = inb(CHANNEL0_DATA);
+    uint8 high = inb(CHANNEL0_DATA);
+    return (uint16) high << 8 | low;
+}
+
 uint64 get_pit_ticks() {
     return pit_ticks;
 }
@@ -52,16 +59,9 @@ void pit_set_reload_value(uint16 new_reload_value) {
 void pit_init() {
     pit_set_freq(18);
     irq_register(0,pit_interrupt);
-    serial_printf("Timer inititialized Ticks : %x.64\n",pit_ticks);
-
+    serial_printf("Timer inititialized\n");
 }
 
-uint16 pit_get_current_count() {
-    outb(CMD,0x34);
-    uint8 low = inb(CHANNEL0_DATA);
-    uint8 high = inb(CHANNEL0_DATA);
-    return (uint16) high << 8 | low;
-}
 
 void pit_sleep(uint64 ms) {
     uint64 start = pit_ticks;

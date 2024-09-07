@@ -38,4 +38,7 @@ void kernel_bootstrap(){
     lapic_init();
     smp_init();
     arch_timer_init();
+    for(;;) {
+        asm volatile("nop");
+    }
 }

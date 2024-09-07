@@ -51,7 +51,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     release_spinlock(&bootstrap_lock);
     cpus_online++;
     for(;;) {
-        asm("hlt");
+        asm volatile("nop");
     }
 
 }

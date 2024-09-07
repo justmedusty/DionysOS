@@ -14,7 +14,7 @@
 #define IOAPIC_REG_SELECT 0x0
 #define IOAPIC_IOWIN 0x10
 
-
+void pic_disable();
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value);
 uint32 read_ioapic(uint32 ioapic, uint32 reg);
 void ioapic_set_entry(uint32 ioapic, uint8 index, uint64 data);

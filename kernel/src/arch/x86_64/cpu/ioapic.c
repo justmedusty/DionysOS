@@ -7,6 +7,16 @@
 #include "include/arch/x86_64/asm_functions.h"
 #include <include/uart.h>
 
+#define PIC1 0x20
+#define PIC2 0xA0
+#define PIC1_DATA PIC1 + 1
+#define PIC2_DATA PIC2 + 1
+
+void pic_disable() {
+    outb(PIC1_DATA, 0xFF);
+    outb(PIC2_DATA, 0xFF);
+}
+
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
     uint64 base = (uint64)P2V(madt_ioapic_list[ioapic]->apic_addr);
     *((volatile uint32*)base) = reg;
