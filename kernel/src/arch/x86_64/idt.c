@@ -693,9 +693,16 @@ uint8 idt_get_irq_vector() {
 
 
 void irq_register(uint8 vec, void* handler) {
+
+    //The first IRQ we register fires off IPIs so we need to ensure that each CPU is online first
+    while(smp_enabled != 1) {
+        asm volatile("nop");
+    }
+
     irq_routines[vec] = handler;
     ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
     serial_printf("IRQ %x.8  loaded\n", vec);
+    irq_routines[vec]();
 }
 
 

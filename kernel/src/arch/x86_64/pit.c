@@ -14,14 +14,10 @@
 uint64 pit_ticks = 0;
 
 void pit_interrupt() {
-    while(smp_enabled != 1) {
-        asm volatile("nop");
-    }
+
     if(arch_mycpu()->lapic_id == 0) {
         pit_ticks++;
-        lapic_send_all_int(1,32);
-        lapic_send_all_int(2,32);
-        lapic_send_all_int(3,32);
+        lapic_broadcast_interrupt(32);
     }
     if(panicked) {
         for(;;) {
