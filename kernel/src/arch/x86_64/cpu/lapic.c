@@ -51,7 +51,7 @@ void lapic_timer_stop() {
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
 }
 
-void lapic_oneshot(uint8 vec, uint64 ms) {
+void lapic_timer_oneshot(uint8 vec, uint64 ms) {
     lapic_timer_stop();
     lapic_write(LAPIC_TIMER_DIV, 0);
     lapic_write(LAPIC_TIMER_LVT, vec);

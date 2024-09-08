@@ -644,6 +644,13 @@ void create_void_gate(struct gate_desc* gate_desc) {
     gate_desc->off_3 = 0xffff;
 }
 
+uint8 idt_get_irq_vector() {
+    if (idt_free_vec == 255) {
+        panic("idt_get_irq_vector out of space");
+    }
+    return idt_free_vec++;
+}
+
 void idt_init(void) {
     //just exceptions
     for (int i = 0; i < 32; i++) {
@@ -684,11 +691,8 @@ void idt_reload() {
     serial_printf("IDT Loaded\n");
 }
 
-uint8 idt_get_irq_vector() {
-    if (idt_free_vec == 255) {
-        panic("idt_get_irq_vector out of space");
-    }
-    return idt_free_vec++;
+void spurious_interrupt() {
+    lapic_eoi();
 }
 
 
@@ -698,7 +702,7 @@ void irq_register(uint8 vec, void* handler) {
         asm volatile("nop");
     }
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
+    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 0);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 

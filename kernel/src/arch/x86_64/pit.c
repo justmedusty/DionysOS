@@ -27,7 +27,6 @@ void pit_interrupt() {
         }
     }
 
-    serial_printf("PIT interrupt at CPU %x.8  \n",arch_mycpu()->lapic_id);
     //Do preemption stuff, only count ticks on processor 0
     lapic_eoi();
 }
@@ -62,8 +61,6 @@ void pit_init() {
     pit_set_freq(18);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized\n");
-    pit_sleep(10);
-    panic("PIT timer initialized\n");
 }
 
 

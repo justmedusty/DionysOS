@@ -24,7 +24,7 @@
 /*
  *  BSP Processor boostrapping.
  */
-void kernel_bootstrap(){
+void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
     irq_handler_init();
@@ -35,10 +35,14 @@ void kernel_bootstrap(){
     mem_bounds_init();
     vmm_init();
     acpi_init();
+    //ioapic_init();
     lapic_init();
     smp_init();
     arch_timer_init();
-    for(;;) {
+    irq_register(15,spurious_interrupt);
+    pit_sleep(1000);
+    panic("PIT");
+    for (;;) {
         asm volatile("nop");
     }
 }

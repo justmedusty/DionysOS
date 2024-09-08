@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#include <arch/x86_64/idt.h>
 #include <include/arch/arch_cpu.h>
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
@@ -12,20 +13,9 @@
 #define PIC1_DATA PIC1 + 1
 #define PIC2_DATA PIC2 + 1
 
-void ioapic_init() {
-    uint32 val = read_ioapic(0, IOAPIC_VERSION);
-    int32 count = ((val >> 16) & 0xFF);
-
-
-    for (uint8 i = 0; i <= count; ++i) {
-        write_ioapic(0, IOAPIC_REDTBL + 2 * i, 0x00010000 | (32 + i));
-        write_ioapic(0, IOAPIC_REDTBL + 2 * i + 1, 0); // redir cpu
-    }
-}
 
 void pic_disable() {
     //Mask all legacy PIC interrupts
-    ioapic_init();
     outb(PIC1_DATA, 0xFF);
     outb(PIC2_DATA, 0xFF);
 }
@@ -65,7 +55,7 @@ uint32 ioapic_get_gsi(uint32 gsi) {
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
     uint32 ioapic = ioapic_get_gsi(gsi);
     uint64 redirect = (uint64)vector;
-
+    serial_printf("");
     if ((flags & (1 << 1)) != 0) {
         redirect |= (1 << 13);
     }
@@ -73,16 +63,11 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     if ((flags & (1 << 3)) != 0) {
         redirect |= (1 << 15);
     }
-
-    if(mask == 0) {
-        redirect &= 0 << 16;
-    }else {
+    if(mask == 1) {
         redirect |= 1 << 16;
     }
     redirect |= (uint64)lapic_id << 56;
-
     uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
-
     write_ioapic(ioapic, redir_table, (uint32)redirect);
     write_ioapic(ioapic, redir_table + 1, (uint32)redirect >> 32);
 }

@@ -46,4 +46,4 @@ uint8 idt_get_vector();
 void idt_reload();
 void irq_handler(uint8 vec);
 void irq_handler_init();
-
+void spurious_interrupt();
