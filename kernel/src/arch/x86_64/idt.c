@@ -660,7 +660,6 @@ void idt_init(void) {
     load_idtr(&idtr);
     //enable interrupts (locally)
     sti();
-    //pic_disable();
     serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
@@ -682,7 +681,6 @@ void irq_handler_init() {
 void idt_reload() {
     load_idtr(&idtr);
     sti();
-    //pic_disable();
     serial_printf("IDT Loaded\n");
 }
 
@@ -700,7 +698,7 @@ void irq_register(uint8 vec, void* handler) {
         asm volatile("nop");
     }
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 0);
+    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 

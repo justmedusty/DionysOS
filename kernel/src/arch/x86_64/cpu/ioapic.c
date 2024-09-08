@@ -12,11 +12,24 @@
 #define PIC1_DATA PIC1 + 1
 #define PIC2_DATA PIC2 + 1
 
+void ioapic_init() {
+    uint32 val = read_ioapic(0, IOAPIC_VERSION);
+    int32 count = ((val >> 16) & 0xFF);
+
+
+    for (uint8 i = 0; i <= count; ++i) {
+        write_ioapic(0, IOAPIC_REDTBL + 2 * i, 0x00010000 | (32 + i));
+        write_ioapic(0, IOAPIC_REDTBL + 2 * i + 1, 0); // redir cpu
+    }
+}
+
 void pic_disable() {
     //Mask all legacy PIC interrupts
+    ioapic_init();
     outb(PIC1_DATA, 0xFF);
     outb(PIC2_DATA, 0xFF);
 }
+
 
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
     uint64 base = (uint64)P2V(madt_ioapic_list[ioapic]->apic_addr);
@@ -61,8 +74,10 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
         redirect |= (1 << 15);
     }
 
-    if (!mask) {
-        redirect |= (1 << 16);
+    if(mask == 0) {
+        redirect &= 0 << 16;
+    }else {
+        redirect |= 1 << 16;
     }
     redirect |= (uint64)lapic_id << 56;
 

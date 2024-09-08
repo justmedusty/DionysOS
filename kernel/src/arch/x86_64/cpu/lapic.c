@@ -24,7 +24,6 @@ void lapic_init() {
     serial_printf("LAPIC ENABLE BIT %x.32\n", lapic_read(LAPIC_SPURIOUS) & 0x100);
     serial_printf("LAPIC ID %x.8  \n", get_lapid_id());
     serial_printf("LAPIC Initialised.\n");
-
 }
 
 
@@ -87,7 +86,7 @@ void lapic_broadcast_interrupt(uint32 vec) {
         }
 
         if (cpu_list[i].lapic_id == i) {
-            lapic_ipi(i, vec | LAPIC_ICRAIS);
+            lapic_send_int(i,vec);
         }
     }
 }
