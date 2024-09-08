@@ -39,7 +39,7 @@ void kernel_bootstrap() {
     lapic_init();
     smp_init();
     arch_timer_init();
-    irq_register(15,spurious_interrupt);
+
     pit_sleep(1000);
     panic("PIT");
     for (;;) {

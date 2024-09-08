@@ -55,7 +55,7 @@ uint32 ioapic_get_gsi(uint32 gsi) {
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
     uint32 ioapic = ioapic_get_gsi(gsi);
     uint64 redirect = (uint64)vector;
-    serial_printf("");
+
     if ((flags & (1 << 1)) != 0) {
         redirect |= (1 << 13);
     }
@@ -67,9 +67,20 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
         redirect |= 1 << 16;
     }
     redirect |= (uint64)lapic_id << 56;
+
+    /*
+     * If I don't put this empty print statement here then the redirection table is NOT written at all. I have no idea why. Is this gcc doing something funny? Is my memory access in write_ioapic buggy? Is this some QEMU bug or quirk?
+     * I do not know. But I will leave this comment here until I figure out what in gods holy name is causing this. I thought maybe there was some weird lock contention with serial_printf but no I can remove the lock entirely and nothing changes..
+     * Very mysterious.
+     */
+
+    serial_printf("");
+
     uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
     write_ioapic(ioapic, redir_table, (uint32)redirect);
     write_ioapic(ioapic, redir_table + 1, (uint32)redirect >> 32);
+
+
 }
 
 void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
