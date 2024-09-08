@@ -38,6 +38,7 @@ extern panic
     push r13      ;save current r13
     push r14      ;save current r14
     push r15      ;save current r15
+    cli
 %endmacro
 
 %macro popaq 0
@@ -56,6 +57,7 @@ extern panic
     pop rcx      ;save current rcx
     pop rbx      ;save current rbx
     pop rax      ;save current rax
+    sti
 
 %endmacro
 

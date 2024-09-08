@@ -595,7 +595,7 @@ void (*isr_wrappers[32])() = {
 
 };
 
-struct gate_desc gates[288] = {};
+struct gate_desc gates[287] = {};
 struct idtr_desc idtr = {
     .off = (uint64_t)&gates,
     .sz = sizeof(gates) - 1,
@@ -660,14 +660,12 @@ void idt_init(void) {
     load_idtr(&idtr);
     //enable interrupts (locally)
     sti();
-    pic_disable();
+    //pic_disable();
     serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
 void irq_handler(uint8 vec) {
-    cli();
     irq_routines[vec]();
-    sti();
 }
 
 void no_irq_handler(uint8 vec) {
@@ -684,7 +682,7 @@ void irq_handler_init() {
 void idt_reload() {
     load_idtr(&idtr);
     sti();
-    pic_disable();
+    //pic_disable();
     serial_printf("IDT Loaded\n");
 }
 
@@ -697,14 +695,12 @@ uint8 idt_get_irq_vector() {
 
 
 void irq_register(uint8 vec, void* handler) {
-
     //The first IRQ we register fires off IPIs so we need to ensure that each CPU is online first
     while(smp_enabled != 1) {
         asm volatile("nop");
     }
-    sti();
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 0);
+    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 

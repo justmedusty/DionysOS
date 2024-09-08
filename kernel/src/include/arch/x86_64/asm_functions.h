@@ -148,13 +148,16 @@ static inline void flush_tlb() {
 }
 
 static inline uint64 interrupts_enabled() {
-  uint64 flags;
-  asm volatile("pushfq"
-               "pop f"
-               : "=rm" (flags));
-  return flags & (1 << 9);
-  }
-
+    uint64 flags;
+    asm volatile(
+          "pushfq\n\t"       // Push RFLAGS onto the stack
+          "popq %0\n\t"      // Pop the value from the stack into the variable
+          : "=r" (flags)     // Output operand (RFLAGS value stored in 'flags')
+          :                  // No input operands
+          : "memory"         // Memory is modified
+      );
+    return flags;
+}
 
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the

@@ -13,6 +13,7 @@
 #define PIC2_DATA PIC2 + 1
 
 void pic_disable() {
+    //Mask all legacy PIC interrupts
     outb(PIC1_DATA, 0xFF);
     outb(PIC2_DATA, 0xFF);
 }

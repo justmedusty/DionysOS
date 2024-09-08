@@ -2,6 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 #include <include/arch/arch_cpu.h>
+#include <include/arch/arch_global_interrupt_controller.h>
 
 #include "include/types.h"
 #include "include/uart.h"
@@ -15,6 +16,7 @@ uint64 apic_ticks = 0;
 uint64 lapic_base = 0;
 
 void lapic_init() {
+    pic_disable();
     //Enable lapic by writing to the enable/disable bit to the left of the spurious vector
     lapic_write((LAPIC_SPURIOUS), lapic_read(LAPIC_SPURIOUS) | 1 << 8 /* APIC software enable/disable bit*/);
     //enable LAPIC via the IA32 MSR enable bit
@@ -22,6 +24,7 @@ void lapic_init() {
     serial_printf("LAPIC ENABLE BIT %x.32\n", lapic_read(LAPIC_SPURIOUS) & 0x100);
     serial_printf("LAPIC ID %x.8  \n", get_lapid_id());
     serial_printf("LAPIC Initialised.\n");
+
 }
 
 
