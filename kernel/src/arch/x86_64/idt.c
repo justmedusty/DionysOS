@@ -297,7 +297,7 @@ extern void irq_wrapper_255();
 void (*irq_routines[256])() = {
 };
 
-uint8 idt_free_vec = 64;
+uint8 idt_free_vec = 32;
 
 void (*irq_wrappers[256])() = {
     irq_wrapper_0,
@@ -700,7 +700,7 @@ void irq_register(uint8 vec, void* handler) {
         asm volatile("nop");
     }
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 1);
+    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 0);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 

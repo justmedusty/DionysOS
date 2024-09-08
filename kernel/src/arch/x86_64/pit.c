@@ -62,7 +62,6 @@ void pit_init() {
     pit_set_freq(18);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized\n");
-    asm volatile("int $0x20");
 }
 
 
