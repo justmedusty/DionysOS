@@ -24,6 +24,7 @@
 /*
  *  BSP Processor boostrapping.
  */
+uint64 test = 0;
 void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
@@ -38,11 +39,7 @@ void kernel_bootstrap() {
     lapic_init();
     smp_init();
     arch_timer_init();
-
-    serial_printf("\n\nSLEEP START\n\n");
-    serial_printf("Pit ticks BEFORE %x.64\n",get_pit_ticks());
-    pit_sleep(0x100000);
-    serial_printf("Pit ticks AFTER %x.64\n",get_pit_ticks());
+    pit_sleep(0x1000);
     panic("PIT");
     for (;;) {
         asm volatile("nop");

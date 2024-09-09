@@ -53,8 +53,6 @@ uint32 ioapic_get_gsi(uint32 gsi) {
     panic("Cannot determine IOAPIC from GSI\n");
 }
 
-void dummy_function() {asm volatile("nop\t\n");}
-
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
     uint32 ioapic = ioapic_get_gsi(gsi);
     uint64 redirect = (uint64)vector;
@@ -76,12 +74,15 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
      * I do not know. But I will leave this comment here until I figure out what in gods holy name is causing this. I thought maybe there was some weird lock contention with serial_printf but no I can remove the lock entirely and nothing changes..
      * Very mysterious.
      *
-     * Update : It appears to be the outb / port writing that causes this to suddenly work. Writing to serial port makes it work, writing to legacy pic makes it work, seems writing to any IO port makes this work.
+     * Update 1 : It appears to be the outb / port writing that causes this to suddenly work. Writing to serial port makes it work, writing to legacy pic makes it work, seems writing to any IO port makes this work.
+     * This leads me to believe it has to be a QEMU quirk or bug. I will try it on real hardware later.
+     *
+     * Update 2 : Marking the redirection table volatile fixes the issue. This part makes sense, writing I/O ports fixing it doesn't make sense. I am going to leave this here as a little piece of history of this code base lol.
      */
 
-    serial_printf("");
+    //serial_printf("");
 
-    uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
+    volatile uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
     write_ioapic(ioapic, redir_table, (uint32)redirect);
     write_ioapic(ioapic, redir_table + 1, (uint32)redirect >> 32);
 

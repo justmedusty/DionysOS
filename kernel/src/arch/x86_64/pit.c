@@ -18,8 +18,7 @@ uint64 pit_ticks = 0;
 void pit_interrupt() {
     if(arch_mycpu()->lapic_id == 0) {
         pit_ticks++;
-        serial_printf("pit ticks: %x.64\n", pit_ticks);
-        lapic_broadcast_interrupt(32 + 0 /* Broadcast IPI to all other processes so they can do their own preemption checks or panic checks */);
+        //lapic_broadcast_interrupt(32 + 0 /* Broadcast IPI to all other processes so they can do their own preemption checks or panic checks */);
     }
 
     if(panicked) {
@@ -28,6 +27,7 @@ void pit_interrupt() {
             asm volatile("hlt");
         }
     }
+    lock_free_serial_printf("\npit\n");
     //Do preemption stuff, only count ticks on processor 0
     lapic_eoi();
 }
@@ -59,7 +59,7 @@ void pit_set_reload_value(uint16 new_reload_value) {
 }
 
 void pit_init() {
-    pit_set_freq(1);
+    pit_set_freq(15);
     irq_register(0,pit_interrupt);
     serial_printf("Timer inititialized\n");
 }
@@ -67,11 +67,9 @@ void pit_init() {
 
 void pit_sleep(uint64 ms) {
     uint64 start = pit_ticks;
-    serial_printf("start : %x.64 ticks %x.64\n",start,pit_ticks);
-    if(pit_ticks == 0) {
-        pit_sleep(ms);
-    }
+      asm volatile("cli\t\nhlt");
     while ((pit_ticks - start) < ms) {
-        asm("nop");
+        asm volatile("nop");
+
     }
 }
