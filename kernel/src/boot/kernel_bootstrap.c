@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 6/17/24.
 //
+#include <stdio.h>
 #include <arch/x86_64/idt.h>
 
 #include "include/types.h"
@@ -39,8 +40,11 @@ void kernel_bootstrap() {
     lapic_init();
     smp_init();
     arch_timer_init();
-    pit_sleep(0x1000);
-    panic("PIT");
+    for(int i = 0; i < 0xF; i++) {
+        asm volatile("hlt");
+    }
+    pit_sleep(0x10000);
+    panic("DONE");
     for (;;) {
         asm volatile("nop");
     }

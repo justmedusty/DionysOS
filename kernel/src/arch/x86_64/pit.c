@@ -27,7 +27,7 @@ void pit_interrupt() {
             asm volatile("hlt");
         }
     }
-    lock_free_serial_printf("\npit\n");
+
     //Do preemption stuff, only count ticks on processor 0
     lapic_eoi();
 }
@@ -67,9 +67,7 @@ void pit_init() {
 
 void pit_sleep(uint64 ms) {
     uint64 start = pit_ticks;
-      asm volatile("cli\t\nhlt");
-    while ((pit_ticks - start) < ms) {
+    while (((volatile uint64)pit_ticks - start) < ms) {
         asm volatile("nop");
-
     }
 }
