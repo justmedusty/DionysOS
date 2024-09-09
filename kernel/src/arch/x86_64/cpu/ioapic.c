@@ -2,6 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 #include <arch/x86_64/idt.h>
+#include <arch/x86_64/pit.h>
 #include <include/arch/arch_cpu.h>
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
@@ -52,6 +53,8 @@ uint32 ioapic_get_gsi(uint32 gsi) {
     panic("Cannot determine IOAPIC from GSI\n");
 }
 
+void dummy_function() {asm volatile("nop\t\n");}
+
 void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
     uint32 ioapic = ioapic_get_gsi(gsi);
     uint64 redirect = (uint64)vector;
@@ -72,6 +75,8 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
      * If I don't put this empty print statement here then the redirection table is NOT written at all. I have no idea why. Is this gcc doing something funny? Is my memory access in write_ioapic buggy? Is this some QEMU bug or quirk?
      * I do not know. But I will leave this comment here until I figure out what in gods holy name is causing this. I thought maybe there was some weird lock contention with serial_printf but no I can remove the lock entirely and nothing changes..
      * Very mysterious.
+     *
+     * Update : It appears to be the outb / port writing that causes this to suddenly work. Writing to serial port makes it work, writing to legacy pic makes it work, seems writing to any IO port makes this work.
      */
 
     serial_printf("");

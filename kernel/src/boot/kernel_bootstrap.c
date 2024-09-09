@@ -35,12 +35,14 @@ void kernel_bootstrap() {
     mem_bounds_init();
     vmm_init();
     acpi_init();
-    //ioapic_init();
     lapic_init();
     smp_init();
     arch_timer_init();
 
-    pit_sleep(1000);
+    serial_printf("\n\nSLEEP START\n\n");
+    serial_printf("Pit ticks BEFORE %x.64\n",get_pit_ticks());
+    pit_sleep(0x100000);
+    serial_printf("Pit ticks AFTER %x.64\n",get_pit_ticks());
     panic("PIT");
     for (;;) {
         asm volatile("nop");
