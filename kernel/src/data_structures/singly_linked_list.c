@@ -37,7 +37,7 @@ struct singly_linked_list_node* singly_linked_list_insert_head(struct singly_lin
 }
 
 
-void singled_linked_list_remove_tail(struct singly_linked_list_node* head) {
+void singly_linked_list_remove_tail(struct singly_linked_list_node* head) {
     struct singly_linked_list_node* node = head;
     struct singly_linked_list_node* new_tail = NULL;
 
