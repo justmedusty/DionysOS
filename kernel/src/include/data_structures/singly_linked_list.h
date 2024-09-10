@@ -11,4 +11,4 @@ struct singly_linked_list_node{
 
 void singly_linked_list_init(struct singly_linked_list_node *head);
 void singly_linked_list_insert_tail(struct singly_linked_list_node *head, void *data);
-void singly_linked_list_insert_head(struct singly_linked_list_node *old_head, void *data);
+struct singly_linked_list_node*  singly_linked_list_insert_head(struct singly_linked_list_node *old_head, void *data);

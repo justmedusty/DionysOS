@@ -29,10 +29,11 @@ void singly_linked_list_insert_tail(struct singly_linked_list_node* head, void* 
     node->next->data = data;
 }
 
-void singly_linked_list_insert_head(struct singly_linked_list_node* old_head, void* data) {
+struct singly_linked_list_node* singly_linked_list_insert_head(struct singly_linked_list_node* old_head, void* data) {
     struct singly_linked_list_node* new_head = kalloc(sizeof(struct singly_linked_list_node));
     new_head->data = data;
     new_head->next = old_head;
+    return new_head;
 }
 
 
@@ -48,9 +49,15 @@ void singled_linked_list_remove_tail(struct singly_linked_list_node* head) {
     }
     new_tail->next = NULL;
     kfree(node);
-
-
 }
 
-void singled_linked_list_remove_head(struct singly_linked_list_node* head) {
+struct singly_linked_list_node* singled_linked_list_remove_head(struct singly_linked_list_node* head) {
+    if (head->next == NULL) {
+        kfree(head);
+        return NULL;
+    }
+
+    struct singly_linked_list_node* new_head = head->next;
+    kfree(head);
+    return new_head;
 }
