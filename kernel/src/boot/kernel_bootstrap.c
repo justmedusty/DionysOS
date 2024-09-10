@@ -40,11 +40,7 @@ void kernel_bootstrap() {
     lapic_init();
     smp_init();
     arch_timer_init();
-    for(int i = 0; i < 0xF; i++) {
-        asm volatile("hlt");
-    }
-    pit_sleep(0x10000);
-    panic("DONE");
+
     for (;;) {
         asm volatile("nop");
     }
