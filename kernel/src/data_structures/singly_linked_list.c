@@ -41,10 +41,17 @@ void singly_linked_list_remove_tail(struct singly_linked_list_node* head) {
     struct singly_linked_list_node* node = head;
     struct singly_linked_list_node* new_tail = NULL;
 
+    if(node->next == NULL) {
+        kfree(node);
+        return;
+    }
+
     while (node->next != NULL) {
         node = node->next;
         if (node->next->next == NULL) {
             new_tail = node->next;
+            node = node->next;
+            break;
         }
     }
     new_tail->next = NULL;
@@ -60,4 +67,26 @@ struct singly_linked_list_node* singled_linked_list_remove_head(struct singly_li
     struct singly_linked_list_node* new_head = head->next;
     kfree(head);
     return new_head;
+}
+
+/*
+ *  I will set up tests to test my generic data structure interaction functions and just panic the result. Will only be run once manually and then won't be called until a modification is made during the development process.
+ */
+
+void linked_list_test() {
+    struct singly_linked_list_node* head = kalloc(sizeof(struct singly_linked_list_node));
+    struct singly_linked_list_node** nodes;
+
+    for (int i = 0; i < 10; i++) {
+        singly_linked_list_insert_tail(head,nodes[i]);
+    }
+
+    for (int i = 0; i < 10; i++) {
+        //if(head->next)
+    }
+
+
+
+
+
 }
