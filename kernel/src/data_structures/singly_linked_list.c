@@ -58,7 +58,7 @@ void singly_linked_list_remove_tail(struct singly_linked_list_node* head) {
     kfree(node);
 }
 
-struct singly_linked_list_node* singled_linked_list_remove_head(struct singly_linked_list_node* head) {
+struct singly_linked_list_node* singly_linked_list_remove_head(struct singly_linked_list_node* head) {
     if (head->next == NULL) {
         kfree(head);
         return NULL;
