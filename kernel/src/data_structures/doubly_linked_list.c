@@ -2,7 +2,7 @@
 // Created by dustyn on 9/11/24.
 //
 
-#include "doubly_linked_list.h"
+#include "include/data_structures/doubly_linked_list.h"
 #include "include/types.h"
 #include <include/kalloc.h>
 #include "include/definitions.h"
@@ -36,7 +36,6 @@ struct doubly_linked_list_node* doubly_linked_list_insert_head(struct doubly_lin
     old_head->prev = new_head;
     return new_head;
 }
-
 
 void doubly_linked_list_remove_tail(struct doubly_linked_list_node* head) {
     struct doubly_linked_list_node* node = head;
