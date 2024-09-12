@@ -32,13 +32,19 @@ void queue_init(struct queue_node* queue_head, uint8 queue_mode,void *data,uint8
 
 void enqueue(struct queue_node* queue_head,void *data_to_enqueue,uint8 priority) {
 
+    uint8 queue_head_empty = 0;
     if(queue_head == NULL) {
         //So i can investigate when it happens, should have null data field not the entire head structure null
         panic("Null head");
     }
 
-    struct queue_node *new_node = kalloc(sizeof(struct queue_node));
-    queue_init(new_node,queue_head->queue_mode,data_to_enqueue,priority);
+    if(queue_head->data != NULL) {
+        struct queue_node *new_node = kalloc(sizeof(struct queue_node));
+        queue_init(new_node,queue_head->queue_mode,data_to_enqueue,priority);
+    }else {
+        queue_head->data = data_to_enqueue;
+    }
+
 
     switch (queue_head->queue_mode) {
 
@@ -145,5 +151,13 @@ void __enqueue_lifo(struct queue_node* queue_head, struct queue_node *new_node) 
     new_node->next = queue_head;
     queue_head->prev = new_node;
     new_node->tail = queue_head->tail;
+    queue_head=new_node;
 
+}
+
+void __enqueue_priority(struct queue_node* queue_head, struct queue_node *new_node) {
+
+    if(queue_head->data == NULL) {
+
+    }
 }
