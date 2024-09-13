@@ -2,10 +2,17 @@
 // Created by dustyn on 6/21/24.
 //
 #pragma once
+#include <include/types.h>
 
 struct singly_linked_list_node{
   void* data;
   struct singly_linked_list_node* next;
+};
+
+struct singly_linked_list {
+  struct singly_linked_list_node* head;
+  struct singly_linked_list_node* tail;
+  uint64 node_count;
 };
 
 void singly_linked_list_init(struct singly_linked_list_node *head);

@@ -243,6 +243,7 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
             break;
         }
 
+        //This may causes issues so gonna stick a proverbial pin here till I test it
         if (pointer->priority < new_node->priority) {
             new_node->next = pointer;
             new_node->prev = pointer->prev;

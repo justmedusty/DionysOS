@@ -11,30 +11,56 @@
  * I will add head and tail fields into the lists should there be a possibility of massive lists but for now will just do a linear traversal approach.
  */
 
-void doubly_linked_list_init(struct doubly_linked_list_node *list) {
-    list->next = NULL;
-    list->prev = NULL;
-    list->data = NULL;
+void doubly_linked_list_init(struct doubly_linked_list *list) {
+    list->head = NULL;
+    list->tail = NULL;
+    list->node_count = 0;
 }
 
-void doubly_linked_list_insert_tail(struct doubly_linked_list_node* head, void* data) {
-    struct doubly_linked_list_node* node = head;
+void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data) {
 
-    while (node->next != NULL) {
-        node = node->next;
+    struct doubly_linked_list_node* new_node = kalloc(sizeof(struct doubly_linked_list_node));;
+    new_node->data = data;
+
+    if(list->head == NULL && list->tail == NULL) {
+      list->head = new_node;
+      list->tail = new_node;
+      list->node_count++;
+      return;
     }
 
-    node->next = kalloc(sizeof(struct doubly_linked_list_node));
-    node->next->data = data;
-    node->next->prev = node;
+     if(list->tail == list->head) {
+       list->tail = new_node;
+       list->head->next = new_node;
+       list->tail->prev = list->head;
+       list->node_count++;
+       return;
+     }
+
+     list->tail->next = new_node;
+     new_node->prev = list->tail;
+     list->tail = new_node;
+     list->node_count++;
+     return;
+
 }
 
-struct doubly_linked_list_node* doubly_linked_list_insert_head(struct doubly_linked_list_node* old_head, void* data) {
+void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data) {
     struct doubly_linked_list_node* new_head = kalloc(sizeof(struct doubly_linked_list_node));
     new_head->data = data;
-    new_head->next = old_head;
-    old_head->prev = new_head;
-    return new_head;
+
+    if(list->head == NULL && list->tail == NULL) {
+      list->head = new_head;
+      list->tail = new_head;
+      list->node_count++;
+      return;
+    }
+
+    new_head->next = list->head;
+    list->head->prev = new_head;
+    list->head = new_head;
+    list->node_count++;
+    return;
 }
 
 void doubly_linked_list_remove_tail(struct doubly_linked_list_node* head) {
@@ -58,14 +84,6 @@ void doubly_linked_list_remove_tail(struct doubly_linked_list_node* head) {
     kfree(node);
 }
 
-struct doubly_linked_list_node* doubly_linked_list_remove_head(struct doubly_linked_list_node* head) {
-    if (head->next == NULL) {
-        kfree(head);
-        return NULL;
-    }
+void doubly_linked_list_remove_head(struct doubly_linked_list_node* head) {
 
-    struct doubly_linked_list_node* new_head = head->next;
-    new_head->prev = NULL;
-    kfree(head);
-    return new_head;
 }
