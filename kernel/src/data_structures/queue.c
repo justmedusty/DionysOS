@@ -215,13 +215,13 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
          */
 
         switch (queue_head->head->priority > new_node->priority) {
-        case 0:
+        case 1:
             queue_head->head->prev = new_node;
             new_node->next = queue_head->head;
             queue_head->head = new_node;
             break;
 
-        default:
+        case 0:
             queue_head->head->next = new_node;
             new_node->prev = queue_head->head;
             queue_head->tail = new_node;
