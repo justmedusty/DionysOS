@@ -20,7 +20,7 @@ struct doubly_linked_list {
 void doubly_linked_list_init(struct doubly_linked_list *list);
 void doubly_linked_list_insert_tail(struct doubly_linked_list *list, void* data);
 void doubly_linked_list_insert_head(struct doubly_linked_list *list, void* data);
-void doubly_linked_list_remove_tail(struct doubly_linked_list_node* head);
-void doubly_linked_list_remove_head(struct doubly_linked_list_node* head);
+void doubly_linked_list_remove_tail(struct doubly_linked_list* list);
+void doubly_linked_list_remove_head(struct doubly_linked_list* list);
 
 
