@@ -147,14 +147,14 @@ void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
         return;
     }
 
-    if (queue_head->head == NULL) {
+    if (queue_head->node_count == 0) {
         queue_head->head = new_node;
         queue_head->tail = new_node;
         queue_head->node_count++;
         return;
     }
 
-    if (queue_head->tail == queue_head->head) {
+    if (queue_head->node_count == 1) {
         queue_head->head->next = new_node;
         new_node->prev = queue_head->head;
         queue_head->tail = new_node;
@@ -181,7 +181,7 @@ void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) {
         return;
     }
 
-    if (queue_head->head == NULL) {
+    if (queue_head->node_count == 0) {
         queue_head->head = new_node;
         queue_head->tail = new_node;
         queue_head->node_count++;
@@ -200,26 +200,40 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
         kfree(queue_head);
         return;
     }
-    struct queue_node* pointer = queue_head->head;
 
-    if (queue_head->head == NULL) {
+
+    if (queue_head->node_count == 0) {
         queue_head->head = new_node;
         queue_head->tail = new_node;
         queue_head->node_count++;
         return;
     }
 
-    // A base case where only 1 other item is in this queue we won't bother doing the priority check since in this case it's not a big deal just insert it FIFO style
-    if(queue_head->tail == queue_head->head) {
-        queue_head->head->next = new_node;
-        new_node->prev = queue_head->head;
-        queue_head->tail = new_node;
+    if (queue_head->node_count == 1) {
+        /*
+         *  Switch mayh seem a little weird but I feel icky about any nested if statements and I prefer this
+         */
+
+        switch (queue_head->head->priority > new_node->priority) {
+        case 0:
+            queue_head->head->prev = new_node;
+            new_node->next = queue_head->head;
+            queue_head->head = new_node;
+            break;
+
+        default:
+            queue_head->head->next = new_node;
+            new_node->prev = queue_head->head;
+            queue_head->tail = new_node;
+            break;
+        }
+
         queue_head->node_count++;
         return;
     }
 
-    //This base case might save a full traversal which can be meaningful in the case of a large queue
-    if(queue_head->tail->priority >= new_node->priority) {
+    //This case might save a full traversal which can be meaningful in the case of a large queue
+    if (queue_head->tail->priority >= new_node->priority) {
         queue_head->tail->next = new_node;
         new_node->prev = queue_head->tail;
         queue_head->tail = new_node;
@@ -228,7 +242,7 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     }
 
     //Base case where it can be inserted right in front
-    if(queue_head->head->priority <= new_node->priority) {
+    if (queue_head->head->priority <= new_node->priority) {
         new_node->next = queue_head->head->next;
         queue_head->head->next = new_node;
         new_node->prev = queue_head->head;
@@ -236,14 +250,15 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
         return;
     }
 
+    struct queue_node* pointer = queue_head->head;
+
     //Otherwise walk the queue and find an appropriate place to insert
     for (;;) {
-
         if (pointer == NULL) {
             break;
         }
-
-        //This may causes issues so gonna stick a proverbial pin here till I test it
+        //Since we did a check above checking if the tail or head can be swapped, we shouldn't need to worry about updating head or tail here since this surely
+        //must be somewhere in between
         if (pointer->priority < new_node->priority) {
             new_node->next = pointer;
             new_node->prev = pointer->prev;
@@ -268,12 +283,11 @@ void __dequeue_fifo(struct queue* queue_head) {
     queue_head->head->prev = NULL;
     queue_head->node_count--;
 
-    if(queue_head->tail == pointer) {
+    if (queue_head->tail == pointer) {
         queue_head->tail = queue_head->head;
     }
 
     kfree(pointer);
-
 }
 
 void __dequeue_lifo(struct queue* queue_head) {
@@ -283,7 +297,7 @@ void __dequeue_lifo(struct queue* queue_head) {
         return;
     }
 
-    if(queue_head->head == queue_head->tail) {
+    if (queue_head->head == queue_head->tail) {
         kfree(pointer);
         queue_head->head = NULL;
         queue_head->tail = NULL;
@@ -293,7 +307,7 @@ void __dequeue_lifo(struct queue* queue_head) {
     pointer->next->prev = NULL;
     queue_head->head = pointer->next;
 
-    if(pointer->next->next == NULL) {
+    if (pointer->next->next == NULL) {
         queue_head->tail = pointer->next;
     }
 
@@ -311,10 +325,9 @@ void __dequeue_priority(struct queue* queue_head) {
     queue_head->head->prev = NULL;
     queue_head->node_count--;
 
-    if(queue_head->tail == pointer) {
+    if (queue_head->tail == pointer) {
         queue_head->tail = queue_head->head;
     }
 
     kfree(pointer);
-
 }
