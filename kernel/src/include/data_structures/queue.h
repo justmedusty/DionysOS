@@ -28,5 +28,6 @@ struct queue {
     //for ID , debugging
     char *name; /* Should be short */
     uint8 queue_mode; /* Determines the behaviour of enqueue, dequeue, init behaviours to provide maximum flexibility for use elsewhere in the kernel */
+    uint32 node_count;
 
 };

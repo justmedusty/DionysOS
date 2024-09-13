@@ -17,8 +17,8 @@
  *  FIFO (classical queue) mode
  *  LIFO (stack) mode
  *  Priority (scheduling) mode
- *  Circular (maybe packet buffering , not sure yet)
- *  Double ended (not sure yet)
+ *  Circular (maybe packet buffering , not sure yet) - Will leave unimplemented for now
+ *  Double ended (not sure yet) - Will leave unimplemented for now
  *
  *  Note for clarity : the direction of next and prev amongst nodes in a queue
  *
@@ -135,6 +135,8 @@ void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
 
     if (queue_head->head == NULL) {
         queue_head->head = new_node;
+        queue_head->tail = new_node;
+        queue_head->node_count++;
         return;
     }
 
@@ -142,12 +144,14 @@ void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
         queue_head->head->next = new_node;
         new_node->prev = queue_head->head;
         queue_head->tail = new_node;
+        queue_head->node_count++;
         return;
     }
 
     queue_head->tail->next = new_node;
     new_node->prev = queue_head->tail;
     queue_head->tail = new_node;
+    queue_head->node_count++;
 }
 
 /* Push */
@@ -165,12 +169,15 @@ void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) {
 
     if (queue_head->head == NULL) {
         queue_head->head = new_node;
+        queue_head->tail = new_node;
+        queue_head->node_count++;
         return;
     }
 
 
     queue_head->head->prev = new_node;
     queue_head->head = new_node;
+    queue_head->node_count++;
 }
 
 void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
@@ -181,18 +188,58 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     }
     struct queue_node* pointer = queue_head->head;
 
+    if (queue_head->head == NULL) {
+        queue_head->head = new_node;
+        queue_head->tail = new_node;
+        queue_head->node_count++;
+        return;
+    }
+
+    // A base case where only 1 other item is in this queue we won't bother doing the priority check since in this case it's not a big deal just insert it FIFO style
+    if(queue_head->tail == queue_head->head) {
+        queue_head->head->next = new_node;
+        new_node->prev = queue_head->head;
+        queue_head->tail = new_node;
+        queue_head->node_count++;
+        return;
+    }
+
+    //This base case might save a full traversal which can be meaningful in the case of a large queue
+    if(queue_head->tail->priority >= new_node->priority) {
+        queue_head->tail->next = new_node;
+        new_node->prev = queue_head->tail;
+        queue_head->tail = new_node;
+        queue_head->node_count++;
+        return;
+    }
+
+    //Base case where it can be inserted right in front
+    if(queue_head->head->priority <= new_node->priority) {
+        new_node->next = queue_head->head->next;
+        queue_head->head->next = new_node;
+        new_node->prev = queue_head->head;
+        queue_head->node_count++;
+        return;
+    }
+
+    //Otherwise walk the queue and find an appropriate place to insert
     for (;;) {
+
         if (pointer == NULL) {
             break;
         }
 
-        if (pointer->next == NULL && pointer->priority < new_node->priority) {
+        if (pointer->priority < new_node->priority) {
             new_node->next = pointer;
+            new_node->prev = pointer->prev;
             pointer->prev = new_node;
+            queue_head->node_count++;
+            return;
         }
-    }
 
-    if (pointer->priority < new_node->priority) {
+
+        pointer = pointer->next;
     }
 }
+
 
