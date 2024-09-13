@@ -3,8 +3,6 @@
 //
 
 #include "include/data_structures/queue.h"
-
-#include <stdlib.h>
 #include <include/definitions.h>
 #include <include/kalloc.h>
 #include <include/types.h>
@@ -26,7 +24,17 @@
  *  TAIL->prev->prev->prev->HEAD
  */
 
+/*
+ *  Internal function prototypes
+ */
 
+void __dequeue_priority(struct queue* queue_head);
+void __dequeue_fifo(struct queue* queue_head);
+void __dequeue_lifo(struct queue* queue_head);
+
+void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node);
+void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node);
+void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node);
 /*
  * Init a queue
  */
@@ -69,12 +77,15 @@ void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority) {
 
     switch (queue_head->queue_mode) {
     case QUEUE_MODE_FIFO:
+        __enqueue_fifo(queue_head, new_node);
         break;
 
     case QUEUE_MODE_LIFO:
+        __enqueue_lifo(queue_head, new_node);
         break;
 
     case QUEUE_MODE_PRIORITY:
+        __enqueue_priority(queue_head, new_node);
         break;
 
     case QUEUE_MODE_CIRCULAR:
@@ -99,12 +110,15 @@ void dequeue(struct queue* queue_head) {
 
     switch (queue_head->queue_mode) {
     case QUEUE_MODE_FIFO:
+        __dequeue_fifo(queue_head);
         break;
 
     case QUEUE_MODE_LIFO:
+        __dequeue_lifo(queue_head);
         break;
 
     case QUEUE_MODE_PRIORITY:
+        __dequeue_priority(queue_head);
         break;
 
     case QUEUE_MODE_CIRCULAR:
@@ -242,4 +256,64 @@ void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     }
 }
 
+void __dequeue_fifo(struct queue* queue_head) {
+    struct queue_node* pointer = queue_head->head;
 
+    if (pointer == NULL) {
+        return;
+    }
+
+    queue_head->head = pointer->next;
+    queue_head->head->prev = NULL;
+    queue_head->node_count--;
+
+    if(queue_head->tail == pointer) {
+        queue_head->tail = queue_head->head;
+    }
+
+    kfree(pointer);
+
+}
+
+void __dequeue_lifo(struct queue* queue_head) {
+    struct queue_node* pointer = queue_head->head;
+
+    if (pointer == NULL) {
+        return;
+    }
+
+    if(queue_head->head == queue_head->tail) {
+        kfree(pointer);
+        queue_head->head = NULL;
+        queue_head->tail = NULL;
+        return;
+    }
+
+    pointer->next->prev = NULL;
+    queue_head->head = pointer->next;
+
+    if(pointer->next->next == NULL) {
+        queue_head->tail = pointer->next;
+    }
+
+    kfree(pointer);
+}
+
+void __dequeue_priority(struct queue* queue_head) {
+    struct queue_node* pointer = queue_head->head;
+
+    if (pointer == NULL) {
+        return;
+    }
+
+    queue_head->head = pointer->next;
+    queue_head->head->prev = NULL;
+    queue_head->node_count--;
+
+    if(queue_head->tail == pointer) {
+        queue_head->tail = queue_head->head;
+    }
+
+    kfree(pointer);
+
+}
