@@ -2,9 +2,13 @@
 # The OS of Wine & Insanity 
 This is my project to get intimate with kernel development concepts and implementations.
 
+TODO (Changes, refactoring)
 
+I will need to rewrite my kernel heap allocator to make it more flexible and suited to what I want it to do. Part of this problem can be made easier by just properly aligning things I know will be dynamically allocated and deallocated (see data structures folder in source tree).
 
-TODO:
+I will also likely use a buddy allocator at some point and not just a simple bitmap allocator.
+
+TODO (Big picture):
 
 ✓Serial
 
