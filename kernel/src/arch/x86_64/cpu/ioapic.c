@@ -7,7 +7,7 @@
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include "include/arch/x86_64/asm_functions.h"
-#include <include/uart.h>
+#include <include/drivers/uart.h>
 
 #define PIC1 0x20
 #define PIC2 0xA0

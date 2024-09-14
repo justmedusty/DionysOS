@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <include/uart.h>
+#include <include/drivers/uart.h>
 
 #include "include/types.h"
 #ifdef __x86_64__

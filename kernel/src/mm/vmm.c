@@ -2,7 +2,7 @@
 // Created by dustyn on 6/21/24.
 //
 
-#include "include/vmm.h"
+#include "include/mem/vmm.h"
 #include "include/arch/arch_vmm.h"
 
 struct virt_map* kernel_pg_map;

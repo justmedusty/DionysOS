@@ -5,8 +5,8 @@
 #include "include/types.h"
 #include "gdt.h"
 #include "include/arch/x86_64/asm_functions.h"
-#include "include/uart.h"
-#include "include/mem.h"
+#include "include/drivers/uart.h"
+#include "include/mem/mem.h"
 #include "stdbool.h"
 
 static struct gdt_segment_desc _gdt[7];

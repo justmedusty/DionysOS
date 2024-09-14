@@ -6,14 +6,14 @@
  * Taking inspo from xv6 to keep things as readable and simple as possible here.
  */
 #include <include/arch/arch_cpu.h>
-#include "include/vmm.h"
+#include "include/mem/vmm.h"
 #include "include/types.h"
-#include "include/mem.h"
+#include "include/mem/mem.h"
 #include "include/arch//arch_paging.h"
-#include "include/pmm.h"
-#include "include/kalloc.h"
-#include "include/mem_bounds.h"
-#include "include/uart.h"
+#include "include/mem/pmm.h"
+#include "include/mem/kalloc.h"
+#include "include/mem/mem_bounds.h"
+#include "include/drivers/uart.h"
 
 #include "include/arch//arch_vmm.h"
 #include "include/arch/x86_64/asm_functions.h"

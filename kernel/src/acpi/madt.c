@@ -5,7 +5,7 @@
 
 #include "include/acpi.h"
 #include "include/madt.h"
-#include "include/uart.h"
+#include "include/drivers/uart.h"
 #include <include/arch/arch_cpu.h>
 
 madt_ioapic* madt_ioapic_list[32] = {0};

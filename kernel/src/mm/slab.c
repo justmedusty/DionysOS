@@ -3,13 +3,13 @@
 //
 #include <stdint.h>
 #include <stddef.h>
-#include "include/slab.h"
+#include "include/mem/slab.h"
 
 #include <include/arch/arch_paging.h>
 
-#include "include/pmm.h"
-#include "include/mem.h"
-#include "include/uart.h"
+#include "include/mem/pmm.h"
+#include "include/mem/mem.h"
+#include "include/drivers/uart.h"
 
 //Kernel heap
 slab_t slabs[10];

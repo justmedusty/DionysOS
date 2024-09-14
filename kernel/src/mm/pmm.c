@@ -2,12 +2,12 @@
 // Created by dustyn on 6/21/24.
 //
 #include "include/types.h"
-#include "include/pmm.h"
+#include "include/mem/pmm.h"
 #include "limine.h"
 #include "stddef.h"
-#include "include/mem.h"
+#include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
-#include "include/uart.h"
+#include "include/drivers/uart.h"
 
 static inline bool bitmap_get(void* bitmap, uint64 bit);
 

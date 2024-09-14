@@ -7,7 +7,7 @@
 
 #include "include/types.h"
 #include "include/arch/arch_cpu.h"
-#include "include/uart.h"
+#include "include/drivers/uart.h"
 
 //Exception 0
 void divide_by_zero() {

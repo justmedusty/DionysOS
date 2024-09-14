@@ -4,7 +4,7 @@
 
 #include "include/data_structures/singly_linked_list.h"
 #include "include/types.h"
-#include <include/kalloc.h>
+#include <include/mem/kalloc.h>
 
 #include "include/definitions.h"
 

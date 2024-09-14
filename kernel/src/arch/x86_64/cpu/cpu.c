@@ -13,7 +13,7 @@
 #include <include/data_structures/spinlock.h>
 
 #include "include/types.h"
-#include "include/uart.h"
+#include "include/drivers/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "limine.h"
 

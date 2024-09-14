@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/pmm.h"
+#include "include/mem/pmm.h"
 #define P2V(addr) (void *)(((uint64)addr) + (uint64)hhdm_offset)
 #define V2P(addr) (void *)(((uint64)addr) - (uint64)hhdm_offset)
 

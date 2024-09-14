@@ -4,7 +4,7 @@
 
 #include "include/data_structures/queue.h"
 #include <include/definitions.h>
-#include <include/kalloc.h>
+#include <include/mem/kalloc.h>
 #include <include/types.h>
 #include <include/arch/arch_cpu.h>
 

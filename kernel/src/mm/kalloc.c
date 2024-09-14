@@ -2,11 +2,11 @@
 // Created by dustyn on 7/6/24.
 //
 #include "include/types.h"
-#include "include/pmm.h"
-#include "include/kalloc.h"
-#include "include/slab.h"
-#include "include/uart.h"
-#include "include/mem.h"
+#include "include/mem/pmm.h"
+#include "include/mem/kalloc.h"
+#include "include/mem/slab.h"
+#include "include/drivers/uart.h"
+#include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
 
 

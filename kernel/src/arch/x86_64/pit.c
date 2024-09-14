@@ -9,7 +9,7 @@
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_global_interrupt_controller.h>
 
-#include "include/uart.h"
+#include "include/drivers/uart.h"
 #include "include/arch/arch_smp.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 

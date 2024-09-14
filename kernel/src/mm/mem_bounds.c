@@ -6,8 +6,8 @@
 #include "include/types.h"
 #include "include/arch/arch_paging.h"
 #include "limine.h"
-#include "include/uart.h"
-#include "include/pmm.h"
+#include "include/drivers/uart.h"
+#include "include/mem/pmm.h"
 
 
 uint64 kernel_min, kernel_max, kernel_size;

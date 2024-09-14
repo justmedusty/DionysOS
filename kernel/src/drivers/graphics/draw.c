@@ -3,8 +3,8 @@
 //
 
 #include "include/types.h"
-#include "include/font.h"
-#include "include/draw.h"
+#include "include/screen/font.h"
+#include "include/screen/draw.h"
 
 
 void draw_char(uint32 *framebuffer, int32 fb_width, int32 fb_height, int32 fb_pitch,int8 c, int32 x, int32 y, uint32 color) {
