@@ -31,3 +31,7 @@ struct queue {
     uint32 node_count;
 
 };
+
+void queue_init(struct queue* queue_head, uint8 queue_mode, char* name);
+void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority);
+void dequeue(struct queue* queue_head);

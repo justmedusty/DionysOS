@@ -21,11 +21,11 @@
 #include "include/arch/arch_global_interrupt_controller.h"
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
+#include "include/scheduling/dfs.h"
 
 /*
- *  BSP Processor boostrapping.
+ *  BSP boostrapping.
  */
-uint64 test = 0;
 void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
@@ -40,6 +40,7 @@ void kernel_bootstrap() {
     lapic_init();
     smp_init();
     arch_timer_init();
+    dfs_init();
 
     for (;;) {
         asm volatile("nop");
