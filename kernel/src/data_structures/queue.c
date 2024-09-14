@@ -23,7 +23,7 @@
  *  HEAD->next->next->next->TAIL
  *  TAIL->prev->prev->prev->HEAD
  *
- *  For thos unfamiliar, the __ prefeix signifies that a function is internal and is not exposed outside of this function.
+ *  For those unfamiliar, the __ prefix signifies that a function is internal and is not exposed outside of this file.
  */
 
 /*
