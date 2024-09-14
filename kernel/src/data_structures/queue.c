@@ -23,7 +23,7 @@
  *  HEAD->next->next->next->TAIL
  *  TAIL->prev->prev->prev->HEAD
  *
- *  For those unfamiliar, the __ prefix signifies that a function is internal and is not exposed outside of this file.
+ *  For those unfamiliar, the __ prefix symbolically signifies that a function is internal and is not exposed outside of this file.
  */
 
 /*
@@ -285,7 +285,7 @@ static void __dequeue_fifo(struct queue* queue_head) {
     queue_head->head->prev = NULL;
     queue_head->node_count--;
 
-    if (queue_head->tail == pointer) {
+    if (queue_head->node_count == 1) {
         queue_head->tail = queue_head->head;
     }
 
@@ -299,19 +299,17 @@ static void __dequeue_lifo(struct queue* queue_head) {
         return;
     }
 
-    if (queue_head->head == queue_head->tail) {
+    if (queue_head->node_count == 1) {
         kfree(pointer);
         queue_head->head = NULL;
         queue_head->tail = NULL;
+        queue_head->node_count--;
         return;
     }
 
     pointer->next->prev = NULL;
     queue_head->head = pointer->next;
-
-    if (pointer->next->next == NULL) {
-        queue_head->tail = pointer->next;
-    }
+    queue_head->node_count--;
 
     kfree(pointer);
 }
