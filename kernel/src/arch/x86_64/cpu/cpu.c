@@ -19,6 +19,8 @@
 
 uint8 panicked = 0;
 cpu cpu_list[8];
+struct queue local_run_queues[8];
+
 struct spinlock bootstrap_lock;
 #ifdef __x86_64__
 

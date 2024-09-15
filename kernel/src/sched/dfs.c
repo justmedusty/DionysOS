@@ -1,17 +1,28 @@
 //
 // Created by dustyn on 9/14/24.
 //
+
 /*
 	Dustyn's fair scheduler
  */
+
 #include "include/scheduling/dfs.h"
 #include "include/data_structures/queue.h"
 #include "include/drivers/uart.h"
-
+#include "include/arch/arch_smp.h"
+#include "include/arch/arch_cpu.h"
 
 struct queue dfs_queue;
 
 void dfs_init() {
+
+  for(int i = 0; i < cpu_count; i++) {
+    queue_init(&local_run_queues[i],QUEUE_MODE_FIFO,"dfs");
+    cpu_list[i].local_run_queue = &local_run_queues[i];
+  }
+  serial_printf("DFS: Local CPU RQs Initialized \n");
+
+
   queue_init(&dfs_queue,QUEUE_MODE_FIFO,"dfs");
   enqueue(&dfs_queue,(void *)5,0);
   enqueue(&dfs_queue,(void *)&dfs_queue,0);
