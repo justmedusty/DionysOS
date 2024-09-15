@@ -43,19 +43,17 @@ typedef struct cpu_state {
 
 typedef struct {
   uint8 cpu_number;
-  cpu_state* cpu_state;
-  struct tss* tss;
   uint32 lapic_id;
   uint64 lapic_timer_frequency;
-  struct virt_map *page_map;
-  struct process *running_process;
-  struct queue *local_run_queue;
-  //struct queue local_rq;
+  cpu_state* cpu_state;
+  struct tss* tss;
+  struct virt_map* page_map;
+  struct process* running_process;
+  struct queue* local_run_queue;
 } cpu;
 
 
 #endif
-
 
 
 /*
@@ -69,6 +67,6 @@ extern struct queue local_run_queues[8];
 
 void panic(const char* str);
 cpu* arch_mycpu();
-void arch_initialise_cpu(struct limine_smp_info *smp_info);
+void arch_initialise_cpu(struct limine_smp_info* smp_info);
 // For other processors panicking the next PIT interrupt
 extern uint8 panicked;
