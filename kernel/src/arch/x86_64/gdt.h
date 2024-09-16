@@ -2,11 +2,10 @@
 // Created by dustyn on 6/17/24.
 //
 
-#ifndef GDT_H
-#define GDT_H
-
+#pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <include/arch/arch_cpu.h>
 /**
  * Symbolic constants which match the above GDT layout.
  */
@@ -155,6 +154,5 @@ inline void tss_write(uint16_t tss_segment_index) {
 /**
  * Write the kernel stack pointer (rsp0) to return to after an interrupt.
  */
-void tss_set_kernel_stack(void *rsp0);
+void tss_set_kernel_stack(void *rsp0,cpu *cpu);
 
-#endif //DIONYSOS_GDT_H

@@ -42,8 +42,7 @@ static void _gdt_init_long_mode_entry(struct gdt_segment_desc *seg, bool code,
 }
 
 static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
-    struct gdt_system_segment_desc *tss_desc =
-            (struct gdt_system_segment_desc *)seg;
+    struct gdt_system_segment_desc *tss_desc = (struct gdt_system_segment_desc *)seg;
 
     // Limit and base conversions.
     uint64_t base = (uint64_t)&tss[tss_idx];
@@ -129,4 +128,4 @@ void gdt_reload() {
     gdt_init();
 }
 
-void tss_set_kernel_stack(void *rsp0) { tss->rsp0 = (uint64_t)rsp0; }
+void tss_set_kernel_stack(void *rsp0,cpu *cpu) { cpu_list->tss->rsp0 = (uint64_t)rsp0; }
