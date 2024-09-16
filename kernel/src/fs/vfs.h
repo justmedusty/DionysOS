@@ -2,7 +2,29 @@
 // Created by dustyn on 9/14/24.
 //
 
-#ifndef VFS_H
-#define VFS_H
+#pragma once
 
-#endif //VFS_H
+#include "include/types.h"
+
+#define VFS_MAX_NAME 255
+
+struct vnode {
+  struct vnode *parent;
+  struct vnode **children;
+  struct vnode_operations *vnode_ops;
+  char name[VFS_MAX_NAME];
+  uint64 vnode_type;
+  uint64 vnode_inode_number;
+  uint64 vnode_xattrs;
+  uint64 vnode_refcount;
+  uint64 vnode_flags;
+
+ };
+
+
+
+struct vnode_operations {
+   uint64 (*lookup)(struct vnode *vnode, char *name);
+   uint64 (*create)(struct vnode *vnode, struct vnode **new_vnode);
+   uint64 (*remove)(struct vnode *vnode);
+};

@@ -26,6 +26,8 @@ struct process {
     uint16 process_id;
     uint16 parent_process_id;
     uint16 signal; /* This will probably end up being some sort of queue but I will put this here for now */
+    uint64 signal_mask;
+    void *sleep_channel;
     void* kernel_stack;
     struct page_map* page_map;
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
