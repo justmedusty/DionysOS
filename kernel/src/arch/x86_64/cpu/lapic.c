@@ -23,6 +23,7 @@ void lapic_init() {
     lapic_calibrate_timer();
     serial_printf("LAPIC Initialised.\n");
 
+    //Assign the TSS of the bootstrap processor since we can't do it in the same spot we do the others.
     if(arch_mycpu()->lapic_id == 0) {
         arch_mycpu()->tss = &tss[0];
     }
