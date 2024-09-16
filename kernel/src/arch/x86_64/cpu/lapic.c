@@ -1,9 +1,9 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#include <arch/x86_64/gdt.h>
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_global_interrupt_controller.h>
-
 #include "include/types.h"
 #include "include/drivers/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
@@ -22,6 +22,10 @@ void lapic_init() {
     //enable LAPIC via the IA32 MSR enable bit
     lapic_calibrate_timer();
     serial_printf("LAPIC Initialised.\n");
+
+    if(arch_mycpu()->lapic_id == 0) {
+        arch_mycpu()->tss = &tss[0];
+    }
 }
 
 

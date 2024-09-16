@@ -4,6 +4,9 @@
 
 #include "include/types.h"
 #include "gdt.h"
+
+#include <include/arch/arch_cpu.h>
+
 #include "include/arch/x86_64/asm_functions.h"
 #include "include/drivers/uart.h"
 #include "include/mem/mem.h"
@@ -14,8 +17,10 @@ static const struct gdt_desc _gdt_desc = {
         .off = (uint64_t)_gdt,
         .sz = sizeof(_gdt) - 1,
 };
-struct tss tss;
 
+//Just make many so we don't up with different cpus using the same TSS cause that would be bad for obvious reasons
+struct tss tss[8];
+uint8 tss_idx = 0;
 static void _gdt_init_long_mode_entry(struct gdt_segment_desc *seg, bool code,
                                       int dpl) {
     // Limit, base ignored in long mode descriptor.
@@ -41,7 +46,7 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
             (struct gdt_system_segment_desc *)seg;
 
     // Limit and base conversions.
-    uint64_t base = (uint64_t)&tss;
+    uint64_t base = (uint64_t)&tss[tss_idx];
     uint32_t limit = sizeof tss;
     tss_desc->base_1 = base;
     tss_desc->base_2 = base >> 16;
@@ -65,7 +70,13 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
 
     // Zero the TSS. There aren't really any fields we need to initialize; the
     // only field we use in the TSS is rsp0.
-    memset(&tss, 0, sizeof tss);
+    memset(&tss[tss_idx], 0, sizeof tss[tss_idx]);
+
+    //For other boostrap CPUs assign their tss as they come online so we can access it easily later
+    if(tss_idx > 0) {
+        arch_mycpu()->tss = &tss[tss_idx];
+    }
+    tss_idx++;
 }
 
 __attribute__((naked)) static void _gdt_init_ret() { __asm__ volatile("ret"); }
@@ -118,4 +129,4 @@ void gdt_reload() {
     gdt_init();
 }
 
-void tss_set_kernel_stack(void *rsp0) { tss.rsp0 = (uint64_t)rsp0; }
+void tss_set_kernel_stack(void *rsp0) { tss->rsp0 = (uint64_t)rsp0; }
