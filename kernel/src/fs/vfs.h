@@ -3,7 +3,6 @@
 //
 
 #pragma once
-
 #include "include/types.h"
 
 #define VFS_MAX_NAME 255

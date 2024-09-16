@@ -40,7 +40,18 @@ Get a userland going by loading executables from your VFS and running them in ri
 
 Write a PCI driver.
 
-Add support for a storage medium, the easiest and most common ones are AHCI and NVMe.
+Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
+
+
+
+Ideas for arcane syscall names:
+
+conjure (spawn)
+bifurcate(fork)
+obliterate(kill)
+unbind,vanish,ascend(exit)
+transmute(anything involving changing , such as changing file name or xattrs)
+shroud (anything involving masking something)
 
 ### Makefile targets
 
