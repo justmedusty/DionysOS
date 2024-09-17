@@ -6,7 +6,7 @@
 
 #include <include/data_structures/spinlock.h>
 #include "include/definitions.h"
-#include "include/arch/x86_64/asm_functions.h"
+#include "include/arch/generic_asm_functions.h"
 #include "stdarg.h"
 
 
@@ -24,28 +24,28 @@ char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B',
 struct spinlock serial_lock;
 
 void init_serial() {
-    outb(COM1 + 1, 0x00);    // Disable all interrupts
-    outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    outb(COM1 + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    outb(COM1 + 1, 0x00);    //                  (hi byte)
-    outb(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
-    outb(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    outb(COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    write_port(COM1 + 1, 0x00);    // Disable all interrupts
+    write_port(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    write_port(COM1 + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    write_port(COM1 + 1, 0x00);    //                  (hi byte)
+    write_port(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
+    write_port(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+    write_port(COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
     initlock(&serial_lock,SERIAL_LOCK);
     serial_printf("Serial Initialized\n");
 }
 
 static int is_transmit_empty() {
-    return inb(COM1 + 5) & 0x20;
+    return read_port(COM1 + 5) & 0x20;
 }
 
 static void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
     if (a == '\n') {
-        outb(COM1, '\r');
+        write_port(COM1, '\r');
     }
-    outb(COM1, a);
+    write_port(COM1, a);
 }
 
 //size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes

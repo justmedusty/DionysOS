@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <include/arch/arch_cpu.h>
-#include "include/arch/x86_64/asm_functions.h"
+#include "include/arch/generic_asm_functions.h"
 #include "idt.h"
 #include "pit.h"
 #include <include/arch/arch_cpu.h>
@@ -33,9 +33,9 @@ void pit_interrupt() {
 }
 
 uint16 pit_get_current_count() {
-    outb(CMD,0);
-    uint8 low = inb(CHANNEL0_DATA);
-    uint8 high = inb(CHANNEL0_DATA);
+    write_port(CMD,0);
+    uint8 low = read_port(CHANNEL0_DATA);
+    uint8 high = read_port(CHANNEL0_DATA);
     return (uint16) high << 8 | low;
 }
 
@@ -53,9 +53,9 @@ void pit_set_freq(uint64 freq) {
 }
 
 void pit_set_reload_value(uint16 new_reload_value) {
- 	outb(CMD,0x34);
- 	outb(CHANNEL0_DATA,(uint8)new_reload_value & 0xFF);
- 	outb(CHANNEL0_DATA,(uint8)new_reload_value >> 8);
+ 	write_port(CMD,0x34);
+ 	write_port(CHANNEL0_DATA,(uint8)new_reload_value & 0xFF);
+ 	write_port(CHANNEL0_DATA,(uint8)new_reload_value >> 8);
 }
 
 void pit_init() {
