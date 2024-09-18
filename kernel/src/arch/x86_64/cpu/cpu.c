@@ -34,8 +34,12 @@ void panic(const char* str) {
     }
 }
 
-cpu* arch_mycpu() {
+cpu* mycpu() {
     return &cpu_list[get_lapid_id()];
+}
+
+struct process* current_process() {
+    return cpu_list[get_lapid_id()].running_process;
 }
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
@@ -49,7 +53,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }
-    arch_mycpu()->page_map = kernel_pg_map;
+    mycpu()->page_map = kernel_pg_map;
     release_spinlock(&bootstrap_lock);
     cpus_online++;
     for(;;) {

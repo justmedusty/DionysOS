@@ -25,22 +25,15 @@ struct process {
     uint16 parent_process_id;
 
     uint64 signal; /* This will probably end up being some sort of queue but I will put this here for now */
-
     uint64 signal_mask;
-
     uint64 time_quantum;
-
     uint64 ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
-
     void *sleep_channel;
-
     void* kernel_stack;
-
     struct page_map* page_map;
-
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
-
     struct gpr_state* current_gpr_state;
+    struct vnode* current_working_dir;
 
 };
 

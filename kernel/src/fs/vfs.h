@@ -12,7 +12,7 @@
 struct vnode *vfs_root;
 
 /* Device Types */
-#define VNODE_DEV_VIRTUAL 0
+#define VNODE_DEV_TEMP 0
 #define VNODE_DEV_IDE 1
 #define VNODE_DEV_NVME 2
 #define VNODE_DEV_SATA 3
@@ -49,7 +49,7 @@ struct vnode_operations {
     uint64 (*lookup)(struct vnode* vnode, char* name);
     uint64 (*create)(struct vnode* vnode, struct vnode** new_vnode);
     uint64 (*remove)(struct vnode* vnode);
-    uint64 (*rename)(struct vnode* vnode, char* name);
+    uint64 (*rename)(struct vnode* vnode, char* new_name);
     uint64 (*update)(struct vnode* vnode);
     uint64 (*mount)(struct vnode* mount_point, struct vnode* target);
     uint64 (*unmount)(struct vnode* mount_point);

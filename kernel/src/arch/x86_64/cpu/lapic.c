@@ -24,8 +24,8 @@ void lapic_init() {
     serial_printf("LAPIC Initialised.\n");
 
     //Assign the TSS of the bootstrap processor since we can't do it in the same spot we do the others.
-    if(arch_mycpu()->lapic_id == 0) {
-        arch_mycpu()->tss = &tss[0];
+    if(mycpu()->lapic_id == 0) {
+        mycpu()->tss = &tss[0];
     }
 }
 
@@ -85,7 +85,7 @@ void lapic_ipi(uint32 id, uint8 dat) {
 void lapic_broadcast_interrupt(uint32 vec) {
 
     for (int i = 0; i < cpu_count; i++) {
-        if (i == arch_mycpu()->lapic_id) {
+        if (i == mycpu()->lapic_id) {
             continue;
         }
 

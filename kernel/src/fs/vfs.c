@@ -3,7 +3,7 @@
 //
 
 #include "vfs.h"
-
+#include "include/arch/arch_cpu.h"
 
 struct vnode *vnode_lookup(struct vnode *vnode ,const char *path) {
 
@@ -31,10 +31,16 @@ struct vnode *vnode_mkfifo(const char *path) {}
 
 
 
-/* I will wait until a ramdisk driver is written up here */
-char *path_to_name_token(char *path) {
+struct vnode *parse_path(char *path) {
+
+    struct vnode *base = vfs_root;
+
+    if(path[0] != '/') {
+        base = current_process()->current_working_dir;
+    }
     char *token = path;
-    while(*token != '\0') {
+    while(*token != '/') {
+        path++;
 
     }
 
