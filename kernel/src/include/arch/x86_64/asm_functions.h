@@ -6,7 +6,6 @@
 #include <include/drivers/uart.h>
 
 #include "include/types.h"
-#ifdef __x86_64__
 // Routines to let C code use special x86 instructions.
 
 // Reads a byte from the specified I/O port.
@@ -196,4 +195,3 @@ struct trapframe {
     uint16 ss;
     uint16 padding6;
 };
-#endif
