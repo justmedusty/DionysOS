@@ -4,6 +4,7 @@
 #pragma once
 
 #include "include/types.h"
+#include "include/definitions.h"
 
 typedef struct {
     void **first_free;
