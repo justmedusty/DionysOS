@@ -7,3 +7,6 @@
 
 
 uint64 strlen(char *src);
+void strcat(char *str1, char *str2);
+void strcpy(char *dest, char *src);
+char *strtok(char *str, char delimiter);

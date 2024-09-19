@@ -6,11 +6,14 @@
 	Dustyn's fair scheduler
  */
 
+
 #include "include/scheduling/dfs.h"
 #include "include/data_structures/queue.h"
 #include "include/drivers/uart.h"
 #include "include/arch/arch_smp.h"
 #include "include/arch/arch_cpu.h"
+#include "include/definitions/string.h"
+#include <include/mem/kalloc.h>
 
 struct queue dfs_queue;
 
@@ -33,4 +36,10 @@ void dfs_init() {
   dequeue(&dfs_queue);
   struct queue *node = dfs_queue.head->data;
   serial_printf("dfs head %x.8   dfs tail %x.64\n",(struct queue *)node->node_count,dfs_queue.tail);
+
+  char *string = kalloc(64);
+  strcpy(string,"hello");
+  char *string2 = "Hello World!\n";
+  strcat(string,string2);
+  serial_printf("%s %x.16\n",string,strlen(string));
 }
