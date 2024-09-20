@@ -37,7 +37,15 @@ struct vnode* vnode_mknod(const char* path) {
 struct vnode* vnode_mkfifo(const char* path) {
 }
 
-struct vnode* find_vnode_child(struct vnode* vnode, const char* token) {
+struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
+
+    if(vnode->vnode_type != VNODE_DIRECTORY) {
+        return NULL;
+    }
+
+    struct vnode* child = vnode->vnode_ops->lookup(vnode, token);
+
+    return child;
 }
 
 

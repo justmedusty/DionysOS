@@ -46,13 +46,13 @@ struct vnode {
 
 
 struct vnode_operations {
-    uint64 (*lookup)(struct vnode* vnode, char* name);
-    uint64 (*create)(struct vnode* vnode, struct vnode** new_vnode);
-    uint64 (*remove)(struct vnode* vnode);
-    uint64 (*rename)(struct vnode* vnode, char* new_name);
-    uint64 (*update)(struct vnode* vnode);
-    uint64 (*mount)(struct vnode* mount_point, struct vnode* target);
-    uint64 (*unmount)(struct vnode* mount_point);
+    struct vnode* (*lookup)(struct vnode* vnode, char* name);
+    struct vnode* (*create)(struct vnode* vnode, struct vnode** new_vnode);
+    void (*remove)(struct vnode* vnode);
+    void (*rename)(struct vnode* vnode, char* new_name);
+    struct vnode* (*update)(struct vnode* vnode);
+    void (*mount)(struct vnode* mount_point, struct vnode* target);
+    void (*unmount)(struct vnode* mount_point);
     uint64 (*link)(struct vnode* vnode, struct vnode* new_vnode);
     uint64 (*unlink)(struct vnode* vnode);
 };
