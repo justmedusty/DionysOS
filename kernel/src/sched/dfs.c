@@ -37,9 +37,5 @@ void dfs_init() {
   struct queue *node = dfs_queue.head->data;
   serial_printf("dfs head %x.8   dfs tail %x.64\n",(struct queue *)node->node_count,dfs_queue.tail);
 
-  char *string = kalloc(64);
-  strcpy(string,"hello");
-  char *string2 = "Hello World!\n";
-  strcat(string,string2);
-  serial_printf("%s %x.16\n",string,strlen(string));
+
 }
