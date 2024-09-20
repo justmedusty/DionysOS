@@ -7,7 +7,7 @@
 #include "include/data_structures/spinlock.h"
 #include "include/definitions.h"
 
-#define VFS_MAX_NAME 256
+#define VFS_MAX_PATH 255
 
 struct vnode *vfs_root;
 
@@ -34,7 +34,7 @@ struct vnode {
     struct vnode** vnode_children;
     struct vnode_operations* vnode_ops;
     struct vnode* mounted_vnode;
-    char vnode_name[VFS_MAX_NAME];
+    char vnode_name[VFS_MAX_PATH];
     uint64 vnode_inode_number;
     uint32 vnode_xattrs;
     uint32 vnode_flags;

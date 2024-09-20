@@ -34,12 +34,17 @@ uint64 strlen(char *src) {
 /*
  *    Tokenizing the string using a single character as a delimiter
  */
-char *strtok(char *str, char delimiter){
-    char *next_token;
-    while(str && *str != delimiter && *str != '\0'){
-        next_token = str;
-        next_token++;
+uint64 strtok(char *str, char delimiter, char *token) {
+
+    while(*str != delimiter && *str != '\0'){
+        *token = *str;
+        token++;
         str++;
     }
-    return next_token;
+    if(*str == '\0'){
+      return LAST_TOKEN;
+      }
+      else{
+        return NEXT_TOKEN;
+        }
 }
