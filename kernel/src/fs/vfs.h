@@ -53,6 +53,6 @@ struct vnode_operations {
     struct vnode* (*update)(struct vnode* vnode);
     void (*mount)(struct vnode* mount_point, struct vnode* target);
     void (*unmount)(struct vnode* mount_point);
-    uint64 (*link)(struct vnode* vnode, struct vnode* new_vnode);
-    uint64 (*unlink)(struct vnode* vnode);
+    struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
+    void (*unlink)(struct vnode* vnode);
 };
