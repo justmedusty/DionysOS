@@ -42,6 +42,7 @@ struct vnode {
     uint8 vnode_refcount;
     uint8 vnode_device_id;
     uint8  is_mount;
+    uint8  is_cached;
 };
 
 

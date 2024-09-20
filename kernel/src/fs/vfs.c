@@ -4,7 +4,6 @@
 #include <include/definitions/string.h>
 #include "vfs.h"
 #include <include/mem/kalloc.h>
-
 #include "include/arch/arch_cpu.h"
 
 struct vnode* vnode_lookup(struct vnode* vnode, const char* path) {
@@ -43,9 +42,24 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
         return NULL;
     }
 
-    struct vnode* child = vnode->vnode_ops->lookup(vnode, token);
+    if(!vnode->is_cached) {
+        struct vnode* child = vnode->vnode_ops->lookup(vnode, token);
+        /* Handle cache stuff when I get there */
+        return child;
+    }
 
+    uint32 index = 0;
+
+    struct vnode* child = vnode->vnode_children[index];
+
+    /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
+    while(child && !strcmp(child->vnode_name, token)) {
+        child = vnode->vnode_children[index++];
+    }
+
+    /* Pending the validity of my concern in the comment above being taken care of, this should automatically return NULL should the end be reached so no explicit NULL return needed */
     return child;
+
 }
 
 

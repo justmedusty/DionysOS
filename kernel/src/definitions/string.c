@@ -23,6 +23,15 @@ void strcat(char *str1, char *str2) {
       }
 }
 
+uint64 strcmp(char *str1, char *str2) {
+  while (*str1 != '\0' && *str2 != '\0') {
+    if (*str1 != *str2) {
+         return 0;
+    }
+  }
+  return 1;
+}
+
 uint64 strlen(char *src) {
     uint64 length = 0;
     while (src[length] != '\0') {
