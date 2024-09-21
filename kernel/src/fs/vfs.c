@@ -80,7 +80,7 @@ struct vnode* parse_path(char* path) {
     uint64 last_token = 1;
 
     while (last_token != LAST_TOKEN) {
-        last_token = strtok(path, '/', current_token);
+        //last_token = strtok(path, '/', current_token);
 
         current_vnode = find_vnode_child(current_vnode, current_token);
         //skip over the

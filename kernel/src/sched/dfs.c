@@ -40,7 +40,7 @@ void dfs_init() {
 
   char *string = "this/that/these";
   char *string2 = kalloc(32);
-
+/*
   strtok(string,'/',string2);
   serial_printf("string %s\n",string2);
   memset(string2,0,32);
@@ -50,4 +50,5 @@ void dfs_init() {
   strtok(string,'/',string2);
   serial_printf("string %s\n",string2);
   memset(string2,0,32);
+  */
 }

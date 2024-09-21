@@ -45,7 +45,7 @@ uint64 strlen(char *src) {
 /*
  *    Tokenizing the string using a single character as a delimiter
  */
-uint64 strtok(char *str, char delimiter, char *token) {
+uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
 
     while(*str != delimiter && *str != '\0'){
         *token = *str;
