@@ -45,6 +45,9 @@ uint64 strlen(char *src) {
 
 /*
  *    Tokenizing the string using a single character as a delimiter
+*
+ *  This is quite different from the regular impl of strtok, this one is threadsafe since it contains no internal references.
+*   This is designed around the main use being path parsing.
  */
 uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
 
