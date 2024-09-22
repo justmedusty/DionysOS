@@ -46,8 +46,7 @@ void dfs_init() {
 
   while (last_token != LAST_TOKEN) {
     uint16 index = 1;
-    last_token = strtok(string, '/', string2,index);
-    index++;
+    last_token = strtok(string, '/', string2,3);
     serial_printf("%s current token\n",string2);
     memset(string2,0,32);
   }

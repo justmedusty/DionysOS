@@ -53,6 +53,11 @@ uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
     uint64 current_token = 1;
     int index =0;
     while(*str != '\0' ){
+
+      if(current_token == token_number && *str == delimiter){
+        break;
+
+
         if((*str) == delimiter &&  token_number != current_token){
             str++;
             current_token++;
