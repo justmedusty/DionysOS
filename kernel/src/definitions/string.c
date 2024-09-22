@@ -47,26 +47,32 @@ uint64 strlen(char *src) {
  *    Tokenizing the string using a single character as a delimiter
  */
 uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
+  if(*str == delimiter){
+    str++;
+  }
     uint64 current_token = 1;
-
+    int index =0;
     while(*str != '\0' ){
+        if((*str) == delimiter &&  token_number != current_token){
+            str++;
+            current_token++;
+            serial_printf("CURRENT TOKEN NUMBER IS %x.8  \n",current_token);
+        }
 
       if(token_number == current_token){
           *token = *str;
           token++;
       }
-
-        if((*str) == delimiter &&  token_number != current_token){
-          str++;
-        }
+      str++;
     }
 
-
-    //serial_printf("STRTOK : %s\n", token);
+    *token = '\0';
+    serial_printf("STRTOK : %s\n", token);
     if(*str == '\0'){
       return LAST_TOKEN;
       }
       else{
+
         return NEXT_TOKEN;
         }
 }
