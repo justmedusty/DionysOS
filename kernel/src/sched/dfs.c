@@ -40,14 +40,14 @@ void dfs_init() {
 
   char *string = "/this/that/these";
   char *string2 = kalloc(32);
-  serial_printf("string2: %s \n",string);
+  serial_printf("string: %s \n",string);
 
   uint64 last_token = NEXT_TOKEN;
-
+  uint16 index = 1;
   while (last_token != LAST_TOKEN) {
-    uint16 index = 1;
-    last_token = strtok(string, '/', string2,3);
-    serial_printf("%s current token\n",string2);
+    last_token = strtok(string, '/', string2,index);
+    serial_printf("%s current token %s\n",string2);
+    index++;
     memset(string2,0,32);
   }
 }
