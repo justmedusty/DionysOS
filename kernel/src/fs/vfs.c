@@ -3,6 +3,8 @@
 //
 #include <include/definitions/string.h>
 #include "vfs.h"
+
+#include <include/drivers/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
 
@@ -80,8 +82,10 @@ struct vnode* parse_path(char* path) {
     uint64 last_token = 1;
 
     while (last_token != LAST_TOKEN) {
-        //last_token = strtok(path, '/', current_token);
-
+        uint16 index = 1;
+        last_token = strtok(path, '/', current_token,index);
+        index++;
+        serial_printf("%s current token\n",current_token);
         current_vnode = find_vnode_child(current_vnode, current_token);
         //skip over the
     }

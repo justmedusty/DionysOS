@@ -5,6 +5,7 @@
 #include "include/definitions/string.h"
 #include "include/definitions.h"
 #include "include/arch/arch_cpu.h"
+#include "include/drivers/uart.h"
 
 /*
     Need to ensure there is enough memory in your string
@@ -46,12 +47,22 @@ uint64 strlen(char *src) {
  *    Tokenizing the string using a single character as a delimiter
  */
 uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
+    uint64 current_token = 1;
 
-    while(*str != delimiter && *str != '\0'){
-        *token = *str;
-        token++;
-        str++;
+    while(*str != '\0' ){
+
+      if(token_number == current_token){
+          *token = *str;
+          token++;
+      }
+
+        if((*str) == delimiter &&  token_number != current_token){
+          str++;
+        }
     }
+
+
+    //serial_printf("STRTOK : %s\n", token);
     if(*str == '\0'){
       return LAST_TOKEN;
       }
