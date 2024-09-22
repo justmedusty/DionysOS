@@ -58,13 +58,13 @@ uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
 
     if(current_token == token_number && *str == delimiter){
         break;
-        }
+    }
 
 
     if((*str) == delimiter &&  token_number != current_token){
          str++;
          current_token++;
-       }
+    }
 
     if(token_number == current_token){
        *token = *str;
@@ -77,8 +77,8 @@ uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
 
     if(*str == '\0'){
       return LAST_TOKEN;
-      }
+    }
     else{
       return NEXT_TOKEN;
-      }
+    }
 }
