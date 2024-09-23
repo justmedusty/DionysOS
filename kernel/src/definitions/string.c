@@ -85,3 +85,17 @@ uint64 strtok(char *str, char delimiter, char *token,uint64 token_number) {
       return NEXT_TOKEN;
     }
 }
+
+uint64 strtok_count(char* str, char delimiter) {
+  uint64 count = 0;
+  uint64 last_token = NEXT_TOKEN;
+  while(last_token != LAST_TOKEN){
+    //probably should bt smaller but this is fine for now
+    char temp_string[4096];
+    last_token = strtok(str, delimiter, temp_string, UINT64_MAX);
+    count++;
+  }
+  return count;
+
+  }
+

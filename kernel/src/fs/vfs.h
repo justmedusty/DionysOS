@@ -41,14 +41,14 @@ struct vnode {
     uint8 vnode_type;
     uint8 vnode_refcount;
     uint8 vnode_device_id;
-    uint8  is_mount;
-    uint8  is_cached;
+    uint8 is_mount;
+    uint8 is_cached;
 };
 
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
-    struct vnode* (*create)(struct vnode* vnode, struct vnode** new_vnode);
+    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode);
     void (*remove)(struct vnode* vnode);
     void (*rename)(struct vnode* vnode, char* new_name);
     struct vnode* (*update)(struct vnode* vnode);

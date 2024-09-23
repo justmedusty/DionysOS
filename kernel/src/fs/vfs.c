@@ -10,7 +10,7 @@
 
 static struct vnode* __parse_path(char* path);
 
-struct vnode* vnode_lookup(struct vnode* vnode, char* path) {
+struct vnode* vnode_lookup(char* path) {
 
    struct vnode *target = __parse_path(path);
 
@@ -19,19 +19,31 @@ struct vnode* vnode_lookup(struct vnode* vnode, char* path) {
     }
 
     return target;
-
-
-
 }
 
-struct vnode* vnode_create(const char* path, uint8 vnode_type) {
+struct vnode* vnode_create(char* path, uint8 vnode_type) {
+
+    //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
+    //might need to change this later
+    struct vnode *parent_directory = vnode_lookup(path);
+    if(parent_directory == NULL) {
+        //handle null response
+        return NULL;
+    }
+    struct vnode* new_vnode = kalloc(sizeof(struct vnode));
+
+    parent_directory->vnode_ops->create(parent_directory, new_vnode);
+
+
 }
 
 
 void vnode_destroy(struct vnode* vnode) {
 }
 
-
+/*
+ *  Open and close won't be implemented until more process and FD stuff is written
+ */
 struct vnode* vnode_open(const char* path) {
 }
 
@@ -94,6 +106,7 @@ static struct vnode* __parse_path(char* path) {
     //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the lasty. It is part of the altered design choice I chose
     uint64 last_token = 1;
     uint64 index = 1;
+
     while (last_token != LAST_TOKEN) {
 
         last_token = strtok(path, '/', current_token,index);
