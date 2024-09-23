@@ -38,16 +38,4 @@ void dfs_init() {
   struct queue *node = dfs_queue.head->data;
   serial_printf("dfs head %x.8   dfs tail %x.64\n",(struct queue *)node->node_count,dfs_queue.tail);
 
-  char *string = "/this/that/these";
-  char *string2 = kalloc(32);
-  serial_printf("string: %s \n",string);
-
-  uint64 last_token = NEXT_TOKEN;
-  uint16 index = 1;
-  while (last_token != LAST_TOKEN) {
-    last_token = strtok(string, '/', string2,index);
-    serial_printf("%s current token %s\n",string2);
-    index++;
-    memset(string2,0,32);
-  }
 }

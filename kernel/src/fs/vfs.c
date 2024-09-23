@@ -3,12 +3,25 @@
 //
 #include <include/definitions/string.h>
 #include "vfs.h"
-
 #include <include/drivers/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
+#include "include/mem/mem.h"
 
-struct vnode* vnode_lookup(struct vnode* vnode, const char* path) {
+static struct vnode* __parse_path(char* path);
+
+struct vnode* vnode_lookup(struct vnode* vnode, char* path) {
+
+   struct vnode *target = __parse_path(path);
+
+    if(target == NULL) {
+        return NULL;
+    }
+
+    return target;
+
+
+
 }
 
 struct vnode* vnode_create(const char* path, uint8 vnode_type) {
@@ -65,7 +78,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 }
 
 
-struct vnode* parse_path(char* path) {
+static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = vfs_root;
 
@@ -78,16 +91,22 @@ struct vnode* parse_path(char* path) {
     else {
         path++;
     }
-
+    //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the lasty. It is part of the altered design choice I chose
     uint64 last_token = 1;
-
+    uint64 index = 1;
     while (last_token != LAST_TOKEN) {
-        uint16 index = 1;
+
         last_token = strtok(path, '/', current_token,index);
         index++;
-        serial_printf("%s current token\n",current_token);
         current_vnode = find_vnode_child(current_vnode, current_token);
-        //skip over the
+
+        //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
+        if(current_vnode == NULL) {
+            return NULL;
+        }
+
+        //Clear the token to be filled again next go round, this is important
+        memset(current_token, 0, VFS_MAX_PATH);
     }
     return current_vnode;
 }

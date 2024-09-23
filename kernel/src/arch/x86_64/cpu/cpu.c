@@ -18,8 +18,8 @@
 #include "limine.h"
 
 uint8 panicked = 0;
-cpu cpu_list[8];
-struct queue local_run_queues[8];
+cpu cpu_list[16];
+struct queue local_run_queues[16];
 
 struct spinlock bootstrap_lock;
 #ifdef __x86_64__
@@ -34,7 +34,7 @@ void panic(const char* str) {
     }
 }
 
-cpu* mycpu() {
+cpu* my_cpu() {
     return &cpu_list[get_lapid_id()];
 }
 
@@ -44,7 +44,7 @@ struct process* current_process() {
 
 void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     acquire_spinlock(&bootstrap_lock);
-    serial_printf("\nInitialising CPU......... \n\n");
+    serial_printf("\nInitialising CPU... \n\n");
     gdt_reload();
     idt_reload();
     arch_reload_vmm();
@@ -53,7 +53,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }
-    mycpu()->page_map = kernel_pg_map;
+    my_cpu()->page_map = kernel_pg_map;
     release_spinlock(&bootstrap_lock);
     cpus_online++;
     for(;;) {

@@ -63,11 +63,11 @@ typedef struct {
 
 extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
-extern cpu cpu_list[8];
-extern struct queue local_run_queues[8];
+extern cpu cpu_list[16];
+extern struct queue local_run_queues[16];
 
 void panic(const char* str);
-cpu* mycpu();
+cpu* my_cpu();
 struct process* current_process();
 void arch_initialise_cpu(struct limine_smp_info* smp_info);
 // For other processors panicking the next PIT interrupt

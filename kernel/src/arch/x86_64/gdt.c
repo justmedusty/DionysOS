@@ -73,7 +73,7 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
 
     //For other boostrap CPUs assign their tss as they come online so we can access it easily later
     if(tss_idx > 0) {
-        mycpu()->tss = &tss[tss_idx];
+        my_cpu()->tss = &tss[tss_idx];
     }
     tss_idx++;
 }

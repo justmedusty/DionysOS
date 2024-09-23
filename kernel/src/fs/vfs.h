@@ -57,3 +57,6 @@ struct vnode_operations {
     struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
     void (*unlink)(struct vnode* vnode);
 };
+
+
+struct vnode* find_vnode_child(struct vnode* vnode, char* token);
