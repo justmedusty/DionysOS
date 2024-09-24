@@ -44,6 +44,12 @@ I may add a posix compliant layer at some point but for the time being I think I
 
 🔴Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
 
+🔴Add support for a usage of the framebuffer in userspace
+
+🔴Write a shell program
+
+🔴Set up a userspace terminal with pre-compiled shell programs that can be executed
+
 
 
 Ideas for arcane syscall names:
