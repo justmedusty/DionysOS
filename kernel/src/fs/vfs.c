@@ -16,6 +16,7 @@ struct vnode* vnode_lookup(char* path) {
     struct vnode* target = __parse_path(path);
 
     if (target == NULL) {
+        //sort of redundant isn't it, I will probably change this later
         return NULL;
     }
 
