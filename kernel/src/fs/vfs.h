@@ -13,11 +13,12 @@ struct vnode *vfs_root;
 
 
 /* Error responses */
-#define WRONG_TYPE 0
-#define ALREADY_MOUNTED 1
-#define ALREADY_OPENED 2
-#define NO_ACCESS 3
-#define NOT_MOUNTED 4
+#define SUCCESS 0
+#define WRONG_TYPE 1
+#define ALREADY_MOUNTED 2
+#define ALREADY_OPENED 3
+#define NO_ACCESS 4
+#define NOT_MOUNTED 5
 
 /* Device Types */
 #define VNODE_DEV_TEMP 0
@@ -42,6 +43,7 @@ struct vnode {
     struct vnode** vnode_children;
     struct vnode_operations* vnode_ops;
     struct vnode* mounted_vnode;
+
     char vnode_name[VFS_MAX_PATH];
     uint64 vnode_inode_number;
     uint32 vnode_xattrs;
@@ -58,7 +60,8 @@ struct vnode_operations {
     struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode);
     void (*remove)(struct vnode* vnode);
     void (*rename)(struct vnode* vnode, char* new_name);
-    struct vnode* (*update)(struct vnode* vnode);
+    uint64 (*write)(struct vnode* vnode,uint64 offset,uint64 bytes);
+    uint64 (*read)(struct vnode* vnode,uint64 offset,uint64 bytes);
     void (*mount)(struct vnode* mount_point, struct vnode* target);
     void (*unmount)(struct vnode* mount_point);
     struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
