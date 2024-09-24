@@ -55,7 +55,7 @@ unbind,vanish,ascend(exit)
 transmute(anything involving changing , such as changing file name or xattrs)
 shroud (anything involving masking something)
 
-### Makefile targets
+# Makefile targets
 
 Running `make all` will compile the kernel (from the `kernel/` directory) and then generate a bootable ISO image.
 
