@@ -10,12 +10,6 @@
 This is my take on my own operating system to further my understanding and improve my programming and system design skills. Also,  just to have some fun because let's face it, programming is like magic seeing how you can create almost anything by simply thinking it into existence. I will be combining some existing ideas and implementations and also mixing in some of my own thoughts and designs in as well.
 I may add a posix compliant layer at some point but for the time being I think I will end up rolling my own userspace. I will probably use this project as an opportunity to learn about everything from rolling my own cryptographic functions to better acquaint myself with the mathematics behind algorithms such as RSA, AES, SHA, maybe even some simpler ciphers for fun. I will also be rolling my own data structures and accompanying algorithms to improve my understanding and actually implement these concepts in C.
 
-# TODO (Changes, refactoring)
-
-I will need to rewrite my kernel heap allocator to make it more flexible and suited to what I want it to do. Part of this problem can be made easier by just properly aligning things I know will be dynamically allocated and deallocated (see data structures folder in source tree).
-
-I will also likely use a buddy allocator at some point and not just a simple bitmap allocator.
-
 # Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started)
 
 🟢Serial
