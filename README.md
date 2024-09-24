@@ -4,6 +4,7 @@
 # The Birth of Dionysus
 ![the-rise-of-the-god-dionysus-280226335](https://github.com/user-attachments/assets/41cbf10d-5ae5-446a-8672-13c407152561)
 
+[History](https://www.worldhistory.org/Dionysos/)
 
 # The OS of Wine & Insanity 
 This is my project to get intimate with kernel development concepts and implementations.
