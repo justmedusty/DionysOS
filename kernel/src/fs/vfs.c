@@ -8,7 +8,10 @@
 #include "include/arch/arch_cpu.h"
 #include "include/mem/mem.h"
 
+//static prototype
 static struct vnode* __parse_path(char* path);
+
+
 
 struct vnode* vnode_lookup(char* path) {
 
@@ -27,9 +30,10 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
     //might need to change this later
     struct vnode *parent_directory = vnode_lookup(path);
     if(parent_directory == NULL) {
-        //handle null response
+        //handle null response, maybe want to return something descriptive later
         return NULL;
     }
+
     struct vnode* new_vnode = kalloc(sizeof(struct vnode));
 
     parent_directory->vnode_ops->create(parent_directory, new_vnode);
@@ -38,7 +42,10 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
 }
 
 
-void vnode_destroy(struct vnode* vnode) {
+void vnode_remove(struct vnode* vnode) {
+    if(vnode->is_mount_point) {
+
+    }
 }
 
 /*
@@ -52,21 +59,14 @@ void vnode_close(struct vnode* vnode) {
 }
 
 
-struct vnode* vnode_mkdir(const char* path) {
-}
-
-
-struct vnode* vnode_mknod(const char* path) {
-}
-
-
-struct vnode* vnode_mkfifo(const char* path) {
-}
-
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 
     if(vnode->vnode_type != VNODE_DIRECTORY) {
         return NULL;
+    }
+
+    if(vnode->is_mount_point) {
+        struct vnode *child = vnode->mounted_vnode;
     }
 
     if(!vnode->is_cached) {
@@ -88,7 +88,33 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     return child;
 
 }
+/*
+ *  May want to pass a path here but will just keep a vnode for now
+ */
+uint8 vnode_mount(struct vnode* mount_point,struct vnode* mounted_vnode) {
 
+    //handle already mounted case
+    if(mount_point->is_mount_point) {
+        return ALREADY_MOUNTED;
+    }
+
+    if(mount_point->vnode_type != VNODE_DIRECTORY) {
+        //may want to return an integer to indicate what went wrong but this is ok for now
+        return WRONG_TYPE;
+    }
+
+    //can you mount a mount point? I will say no for now that seems silly
+    if(mounted_vnode->is_mount_point) {
+        return ALREADY_MOUNTED;
+    }
+
+    mount_point->is_mount_point = TRUE;
+    mount_point->mounted_vnode = mounted_vnode;
+}
+
+void vnode_unmount(struct vnode* vnode) {
+
+}
 
 static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default

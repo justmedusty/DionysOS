@@ -11,6 +11,13 @@
 
 struct vnode *vfs_root;
 
+
+/* Error responses */
+#define WRONG_TYPE 0
+#define ALREADY_MOUNTED 1
+#define ALREADY_OPENED 2
+#define NO_ACCESS 3
+
 /* Device Types */
 #define VNODE_DEV_TEMP 0
 #define VNODE_DEV_IDE 1
@@ -41,10 +48,9 @@ struct vnode {
     uint8 vnode_type;
     uint8 vnode_refcount;
     uint8 vnode_device_id;
-    uint8 is_mount;
+    uint8 is_mount_point;
     uint8 is_cached;
 };
-
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
