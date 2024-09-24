@@ -1,4 +1,6 @@
 # DionysOS. 
+![360_F_559263530_RS0cHCkD13iVZOnKILaPnJuYe4mZJBOQ-2027576610](https://github.com/user-attachments/assets/c7af6a1d-bdf4-410f-a3ba-5f04eb4d40c3)
+
 # The OS of Wine & Insanity 
 This is my project to get intimate with kernel development concepts and implementations.
 
