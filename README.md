@@ -16,39 +16,39 @@ I will need to rewrite my kernel heap allocator to make it more flexible and sui
 
 I will also likely use a buddy allocator at some point and not just a simple bitmap allocator.
 
-# TODO (Big picture):
+# Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started)
 
-✓Serial
+🟢Serial
 
-✓Load a new GDT
+🟢Load a new GDT
 
-✓Load an IDT so that exceptions and interrupts can be handled.
+🟢Load an IDT so that exceptions and interrupts can be handled.
 
-✓Write a physical memory allocator, a good starting point is a bitmap allocator.
+🟢Write a physical memory allocator, a good starting point is a bitmap allocator.
 
-✓Write a virtual memory manager that can map, remap and unmap pages.
+🟢Write a virtual memory manager that can map, remap and unmap pages.
 
-✓Begin parsing ACPI tables, the most important one is the MADT since it contains information about the APIC.
+🟢Begin parsing ACPI tables, the most important one is the MADT since it contains information about the APIC.
 
-✓Start up the other CPUs. Limine provides a facility to make this less painful.
+🟢Start up the other CPUs. Limine provides a facility to make this less painful.
 
-✓Set up an interrupt controller such as the APIC.
+🟢Set up an interrupt controller such as the APIC.
 
-✓Configure a timer such as the Local APIC timer, the PIT, or the HPET.
+🟢Configure a timer such as the Local APIC timer, the PIT, or the HPET.
 
-Implement a scheduler to schedule threads in order make multitasking possible.
+🟡Implement a scheduler to schedule threads in order make multitasking possible.
 
-Design a virtual file system (VFS) and implement it. The traditional UNIX VFS works and saves headaches when porting software, but you can make your own thing too.
+🟡Design a virtual file system (VFS) and implement it. The traditional UNIX VFS works and saves headaches when porting software, but you can make your own thing too.
 
-Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
+🔴Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
 
-Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
+🔴Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
-Get a userland going by loading executables from your VFS and running them in ring 3. Set up a way to perform system calls.
+🔴Get a userland going by loading executables from your VFS and running them in ring 3. Set up a way to perform system calls.
 
-Write a PCI driver.
+🔴Write a PCI driver.
 
-Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
+🔴Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
 
 
 
