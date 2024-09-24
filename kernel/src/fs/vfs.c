@@ -44,8 +44,12 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
 
 void vnode_remove(struct vnode* vnode) {
     if(vnode->is_mount_point) {
-
+        //should I make it a requirement to unmount before removing ?
     }
+    //Probably want to be expressive with return codes so I will stick a proverbial pin in it
+    vnode->vnode_ops->remove(vnode);
+
+
 }
 
 /*
@@ -91,7 +95,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 /*
  *  May want to pass a path here but will just keep a vnode for now
  */
-uint8 vnode_mount(struct vnode* mount_point,struct vnode* mounted_vnode) {
+uint64 vnode_mount(struct vnode* mount_point,struct vnode* mounted_vnode) {
 
     //handle already mounted case
     if(mount_point->is_mount_point) {
@@ -112,7 +116,15 @@ uint8 vnode_mount(struct vnode* mount_point,struct vnode* mounted_vnode) {
     mount_point->mounted_vnode = mounted_vnode;
 }
 
-void vnode_unmount(struct vnode* vnode) {
+uint64 vnode_unmount(struct vnode* vnode) {
+
+    if(!vnode->is_mount_point) {
+        return NOT_MOUNTED;
+    }
+
+    vnode->is_mount_point = FALSE;
+    // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
+    vnode->mounted_vnode = NULL;
 
 }
 

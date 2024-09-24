@@ -17,6 +17,7 @@ struct vnode *vfs_root;
 #define ALREADY_MOUNTED 1
 #define ALREADY_OPENED 2
 #define NO_ACCESS 3
+#define NOT_MOUNTED 4
 
 /* Device Types */
 #define VNODE_DEV_TEMP 0
