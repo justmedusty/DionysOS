@@ -57,7 +57,7 @@ struct vnode {
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
-    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode);
+    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode,uint8 vnode_type);
     void (*remove)(struct vnode* vnode);
     void (*rename)(struct vnode* vnode, char* new_name);
     uint64 (*write)(struct vnode* vnode,uint64 offset,uint64 bytes);
@@ -70,3 +70,10 @@ struct vnode_operations {
 
 
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
+uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);
+uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);
+uint64 vnode_unmount(struct vnode* vnode);
+uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
+struct vnode* find_vnode_child(struct vnode* vnode, char* token);
+void vnode_remove(struct vnode* vnode);
+struct vnode* vnode_lookup(char* path);

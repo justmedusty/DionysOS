@@ -23,6 +23,9 @@ struct vnode* vnode_lookup(char* path) {
     return target;
 }
 
+/*
+ *  This is going to need to take more information
+ */
 struct vnode* vnode_create(char* path, uint8 vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
@@ -34,7 +37,8 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
 
     struct vnode* new_vnode = kalloc(sizeof(struct vnode));
 
-    parent_directory->vnode_ops->create(parent_directory, new_vnode);
+    new_vnode = parent_directory->vnode_ops->create(parent_directory, new_vnode,vnode_type);
+    return new_vnode;
 }
 
 
@@ -43,6 +47,7 @@ void vnode_remove(struct vnode* vnode) {
         //should I make it a requirement to unmount before removing ?
     }
     //Probably want to be expressive with return codes so I will stick a proverbial pin in it
+    //Should I free the memory here or in the specific function? Not sure yet
     vnode->vnode_ops->remove(vnode);
 }
 
@@ -120,7 +125,7 @@ uint64 vnode_unmount(struct vnode* vnode) {
     return SUCCESS;
 }
 
-uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes) {
+uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset, bytes);
     }
@@ -129,7 +134,7 @@ uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes) {
 }
 
 
-uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes) {
+uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
     }
