@@ -17,17 +17,28 @@
 #define SLEEPING_STATE 2
 #define DEBUG_STATE 3
 
+/*
+ *  Process types
+ */
+
+#define KERNEL_THREAD 0
+#define USER_THREAD 1
+#define USER_PROCESS 2
+
+//4 pages
+#define DEFAULT_STACK_SIZE 0x15000
+
 struct process {
 
     uint8 current_state;
     uint8 priority;
     uint16 process_id;
     uint16 parent_process_id;
-
     uint64 signal; /* This will probably end up being some sort of queue but I will put this here for now */
     uint64 signal_mask;
     uint64 time_quantum;
     uint64 ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
+    uint64 process_type;
     void *sleep_channel;
     void* kernel_stack;
     struct page_map* page_map;
@@ -36,7 +47,6 @@ struct process {
     struct vnode* current_working_dir;
 
 };
-
 
 #ifdef __x86_64__
 
