@@ -49,7 +49,8 @@ struct vnode {
     uint64 vnode_xattrs;
     uint64 vnode_flags;
     uint64 vnode_type;
-    uint64 vnode_refcount;
+    uint64 vnode_refcount; // Pulled from actual inode or equivalent structure
+    uint64 vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
     uint64 vnode_device_id;
     uint64 is_mount_point;
     uint64 is_cached;

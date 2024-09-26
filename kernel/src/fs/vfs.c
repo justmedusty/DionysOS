@@ -9,8 +9,9 @@
 #include "include/arch/arch_cpu.h"
 #include "include/mem/mem.h"
 
-
+//Used to hold the free nodes in the static pool
 struct singly_linked_list vnode_static_pool = {};
+//unused so far but may use this in case loose nodes not being freed becomes a problem
 struct singly_linked_list vnode_used_pool = {};
 
 //static pool
@@ -29,7 +30,7 @@ static struct vnode* __parse_path(char* path);
 
 
 
-
+/* To make use of the static pool */
 struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
     if(vnode_static_pool.head == NULL) {
@@ -48,9 +49,11 @@ struct vnode* vnode_alloc() {
 
 
 
-
+ /* To make use of the static pool */
 void vnode_free(struct vnode* vnode) {
+
     acquire_spinlock(&vfs_lock);
+
     if(vnode == NULL) {
         release_spinlock(&vfs_lock);
         return;
@@ -61,13 +64,15 @@ void vnode_free(struct vnode* vnode) {
         release_spinlock(&vfs_lock);
         return;
     }
-    /* If it is part of the static pool, put it back, otherwise free it */
+
+    /* If it is part of the static pool, put it back, otherwise free it  */
     if(vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
         release_spinlock(&vfs_lock);
         return;
     }
-    //dont try to free the root
+
+    //don't try to free the root
     if(vnode == &vfs_root) {
         release_spinlock(&vfs_lock);
         return;
@@ -273,8 +278,6 @@ uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer
     }
     return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
 }
-
-
 
 
 
