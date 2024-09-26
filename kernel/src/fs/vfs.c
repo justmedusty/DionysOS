@@ -54,6 +54,12 @@ void vnode_free(struct vnode* vnode) {
     if(vnode == NULL) {
         return;
     }
+
+    if(vnode->is_mount_point) {
+        //No freeing mount points
+        release_spinlock(&vfs_lock);
+        return;
+    }
     /* If it is part of the static pool, put it back, otherwise free it */
     if(vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
