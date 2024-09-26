@@ -29,10 +29,26 @@ static struct vnode* __parse_path(char* path);
 
 
 
+void vfs_init() {
+
+    singly_linked_list_init(&vnode_static_pool);
+    singly_linked_list_init(&vnode_used_pool);
+
+    for(int i = 0; i < 50; i++) {
+        singly_linked_list_insert_head(&vnode_used_pool, &static_vnode_pool[i]);
+        //Mark each one as being part of the static pool
+        static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
+    }
+    initlock(&vfs_lock,VFS_LOCK);
+    serial_printf("VFS initialized\n");
+}
+
+
 
 /* To make use of the static pool */
 struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
+
     if(vnode_static_pool.head == NULL) {
         struct vnode *new_node = kalloc(sizeof(struct vnode));
         release_spinlock(&vfs_lock);
@@ -59,6 +75,13 @@ void vnode_free(struct vnode* vnode) {
         return;
     }
 
+    //Do not free if any processes either have this open or it is their CWD
+    if(vnode->vnode_active_references != 0) {
+        release_spinlock(&vfs_lock);
+        return;
+    }
+
+
     if(vnode->is_mount_point) {
         //No freeing mount points
         release_spinlock(&vfs_lock);
@@ -80,25 +103,6 @@ void vnode_free(struct vnode* vnode) {
 
     kfree(vnode);
     release_spinlock(&vfs_lock);
-}
-
-
-
-
-
-
-void vfs_init() {
-
-    singly_linked_list_init(&vnode_static_pool);
-    singly_linked_list_init(&vnode_used_pool);
-
-    for(int i = 0; i < 50; i++) {
-        singly_linked_list_insert_head(&vnode_used_pool, &static_vnode_pool[i]);
-        //Mark each one as being part of the static pool
-        static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
-    }
-    initlock(&vfs_lock,VFS_LOCK);
-    serial_printf("VFS initialized\n");
 }
 
 
