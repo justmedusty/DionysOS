@@ -26,6 +26,10 @@ struct spinlock vfs_lock;
 //static prototype
 static struct vnode* __parse_path(char* path);
 
+
+
+
+
 struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
     if(vnode_static_pool.head == NULL) {
@@ -93,6 +97,7 @@ struct vnode* vnode_lookup(char* path) {
     struct vnode* target = __parse_path(path);
 
     if (target == NULL) {
+        vnode_free(target);
         //sort of redundant isn't it, I will probably change this later
         return NULL;
     }
@@ -116,7 +121,7 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
         return NULL;
     }
 
-    struct vnode* new_vnode = kalloc(sizeof(struct vnode));
+    struct vnode* new_vnode = vnode_alloc();
 
     new_vnode = parent_directory->vnode_ops->create(parent_directory, new_vnode,vnode_type);
     return new_vnode;
@@ -134,6 +139,7 @@ void vnode_remove(struct vnode* vnode) {
     //Probably want to be expressive with return codes so I will stick a proverbial pin in it
     //Should I free the memory here or in the specific function? Not sure yet
     vnode->vnode_ops->remove(vnode);
+    vnode_free(vnode);
 }
 
 
@@ -141,18 +147,17 @@ void vnode_remove(struct vnode* vnode) {
 
 
 struct vnode* vnode_open(char* path) {
-    struct vnode* vnode = kalloc(sizeof(struct vnode));
+    struct vnode* vnode = vnode_alloc();
     vnode = vnode_lookup(path);
 
     if(vnode == NULL) {
-        kfree(vnode);
         return NULL;
     }
 
     if(vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
-
+    //should probably return an FD but sticking a pin in it for now
     return vnode;
 }
 
@@ -166,16 +171,14 @@ void vnode_close(struct vnode* vnode) {
 
 
 
-
-
-
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     if (vnode->vnode_type != VNODE_DIRECTORY) {
+        vnode_free(vnode);
         return NULL;
     }
 
     if (vnode->is_mount_point) {
-        struct vnode* child = vnode->mounted_vnode;
+        vnode = vnode->mounted_vnode;
     }
 
     if (!vnode->is_cached) {
@@ -270,7 +273,7 @@ uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer
 
 static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
-    struct vnode* current_vnode = kalloc(sizeof(struct vnode));
+    struct vnode* current_vnode = vnode_alloc();
     current_vnode = &vfs_root;
 
     char* current_token = kalloc(VFS_MAX_PATH);
@@ -293,7 +296,6 @@ static struct vnode* __parse_path(char* path) {
 
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
-            kfree(current_token);
             kfree(current_token);
             return NULL;
         }
