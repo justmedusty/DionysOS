@@ -1,15 +1,92 @@
 //
 // Created by dustyn on 9/14/24.
 //
+#include "include/filesystem/vfs.h"
 #include <include/definitions/string.h>
-#include "vfs.h"
+#include <include/data_structures/singly_linked_list.h>
 #include <include/drivers/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
 #include "include/mem/mem.h"
 
+
+struct singly_linked_list vnode_static_pool = {};
+struct singly_linked_list vnode_used_pool = {};
+
+//static pool
+struct vnode static_vnode_pool[50];
+
+//Root
+struct vnode vfs_root;
+
+//VFS lock
+struct spinlock vfs_lock;
+
+
 //static prototype
 static struct vnode* __parse_path(char* path);
+
+struct vnode* vnode_alloc() {
+    acquire_spinlock(&vfs_lock);
+    if(vnode_static_pool.head == NULL) {
+        struct vnode *new_node = kalloc(sizeof(struct vnode));
+        release_spinlock(&vfs_lock);
+        return new_node;
+    }
+    
+    struct vnode* vnode = vnode_static_pool.head->data;
+    singly_linked_list_remove_head(&vnode_static_pool);
+    release_spinlock(&vfs_lock);
+    return vnode;
+}
+
+
+
+
+
+
+void vnode_free(struct vnode* vnode) {
+    acquire_spinlock(&vfs_lock);
+    if(vnode == NULL) {
+        return;
+    }
+    /* If it is part of the static pool, put it back, otherwise free it */
+    if(vnode->vnode_flags & VNODE_STATIC_POOL) {
+        singly_linked_list_insert_tail(&vnode_static_pool, vnode);
+        release_spinlock(&vfs_lock);
+        return;
+    }
+    //dont try to free the root
+    if(vnode == &vfs_root) {
+        release_spinlock(&vfs_lock);
+        return;
+    }
+
+    kfree(vnode);
+    release_spinlock(&vfs_lock);
+}
+
+
+
+
+
+
+void vfs_init() {
+
+    singly_linked_list_init(&vnode_static_pool);
+    singly_linked_list_init(&vnode_used_pool);
+
+    for(int i = 0; i < 50; i++) {
+        singly_linked_list_insert_head(&vnode_used_pool, &static_vnode_pool[i]);
+        //Mark each one as being part of the static pool
+        static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
+    }
+    initlock(&vfs_lock,VFS_LOCK);
+    serial_printf("VFS initialized\n");
+}
+
+
+
 
 
 struct vnode* vnode_lookup(char* path) {
@@ -22,6 +99,10 @@ struct vnode* vnode_lookup(char* path) {
 
     return target;
 }
+
+
+
+
 
 /*
  *  This is going to need to take more information
@@ -42,6 +123,10 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
 }
 
 
+
+
+
+
 void vnode_remove(struct vnode* vnode) {
     if (vnode->is_mount_point) {
         //should I make it a requirement to unmount before removing ?
@@ -51,15 +136,37 @@ void vnode_remove(struct vnode* vnode) {
     vnode->vnode_ops->remove(vnode);
 }
 
-/*
- *  Open and close won't be implemented until more process and FD stuff is written
- */
-struct vnode* vnode_open(const char* path) {
+
+
+
+
+struct vnode* vnode_open(char* path) {
+    struct vnode* vnode = kalloc(sizeof(struct vnode));
+    vnode = vnode_lookup(path);
+
+    if(vnode == NULL) {
+        kfree(vnode);
+        return NULL;
+    }
+
+    if(vnode->is_mount_point) {
+        vnode = vnode->mounted_vnode;
+    }
+
+    return vnode;
 }
+
+
+
+
 
 
 void vnode_close(struct vnode* vnode) {
 }
+
+
+
+
 
 
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
@@ -90,6 +197,10 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     return child;
 }
 
+
+
+
+
 /*
  *  May want to pass a path here but will just keep a vnode for now
  */
@@ -114,6 +225,10 @@ uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
     return SUCCESS;
 }
 
+
+
+
+
 uint64 vnode_unmount(struct vnode* vnode) {
     if (!vnode->is_mount_point) {
         return NOT_MOUNTED;
@@ -125,6 +240,10 @@ uint64 vnode_unmount(struct vnode* vnode) {
     return SUCCESS;
 }
 
+
+
+
+
 uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset, bytes);
@@ -134,6 +253,10 @@ uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer)
 }
 
 
+
+
+
+
 uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
@@ -141,9 +264,14 @@ uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer
     return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
 }
 
+
+
+
+
 static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
-    struct vnode* current_vnode = vfs_root;
+    struct vnode* current_vnode = kalloc(sizeof(struct vnode));
+    current_vnode = &vfs_root;
 
     char* current_token = kalloc(VFS_MAX_PATH);
 
@@ -165,12 +293,15 @@ static struct vnode* __parse_path(char* path) {
 
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
+            kfree(current_token);
+            kfree(current_token);
             return NULL;
         }
 
         //Clear the token to be filled again next go round, this is important
         memset(current_token, 0, VFS_MAX_PATH);
     }
+    kfree(current_token);
     return current_vnode;
 }
 

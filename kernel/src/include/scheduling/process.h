@@ -39,6 +39,7 @@ struct process {
     uint64 time_quantum;
     uint64 ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
     uint64 process_type;
+    uint16 file_descriptors[16];
     void *sleep_channel;
     void* kernel_stack;
     struct page_map* page_map;

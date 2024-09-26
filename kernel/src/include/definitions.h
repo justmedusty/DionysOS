@@ -14,3 +14,4 @@
 #define SERIAL_LOCK 0
 #define SMP_BOOSTRAP_LOCK 1
 #define DFS_LOCK 2
+#define VFS_LOCK 3

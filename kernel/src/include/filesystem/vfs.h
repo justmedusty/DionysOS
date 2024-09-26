@@ -9,7 +9,7 @@
 
 #define VFS_MAX_PATH 255
 
-struct vnode *vfs_root;
+extern struct vnode vfs_root;
 
 
 /* Error responses */
@@ -36,23 +36,23 @@ struct vnode *vfs_root;
 #define VNODE_SPECIAL 6
 #define VNODE_SPECIAL_FILE 7
 
-struct spinlock vfs_lock;
+/* Vnode flags */
+#define VNODE_STATIC_POOL 1<<63
 
 struct vnode {
     struct vnode* vnode_parent;
     struct vnode** vnode_children;
-    struct vnode_operations* vnode_ops;
+    struct vnode_operations *vnode_ops;
     struct vnode* mounted_vnode;
-
     char vnode_name[VFS_MAX_PATH];
     uint64 vnode_inode_number;
-    uint32 vnode_xattrs;
-    uint32 vnode_flags;
-    uint8 vnode_type;
-    uint8 vnode_refcount;
-    uint8 vnode_device_id;
-    uint8 is_mount_point;
-    uint8 is_cached;
+    uint64 vnode_xattrs;
+    uint64 vnode_flags;
+    uint64 vnode_type;
+    uint64 vnode_refcount;
+    uint64 vnode_device_id;
+    uint64 is_mount_point;
+    uint64 is_cached;
 };
 
 struct vnode_operations {
@@ -66,6 +66,8 @@ struct vnode_operations {
     void (*unmount)(struct vnode* mount_point);
     struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
     void (*unlink)(struct vnode* vnode);
+    uint64 (*open)(struct vnode* vnode);
+    void (*close)(struct vnode* vnode);
 };
 
 
@@ -77,3 +79,4 @@ uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 void vnode_remove(struct vnode* vnode);
 struct vnode* vnode_lookup(char* path);
+void vfs_init();
