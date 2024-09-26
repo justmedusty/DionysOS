@@ -52,6 +52,7 @@ struct vnode* vnode_alloc() {
 void vnode_free(struct vnode* vnode) {
     acquire_spinlock(&vfs_lock);
     if(vnode == NULL) {
+        release_spinlock(&vfs_lock);
         return;
     }
 
