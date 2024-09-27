@@ -2,7 +2,7 @@
 // Created by dustyn on 9/11/24.
 //
 
-#ifndef HASH_TABLE_H
-#define HASH_TABLE_H
+#pragma once
+#include "include/types.h"
 
-#endif //HASH_TABLE_H
+uint64 hash(uint64 key,uint64 modulus);
