@@ -4,5 +4,16 @@
 
 #pragma once
 #include "include/types.h"
+#include "include/data_structures/singly_linked_list.h"
+
 
 uint64 hash(uint64 key,uint64 modulus);
+void hash_table_init(struct hash_table *table,uint64 size);
+void hash_table_destroy(struct hash_table *table);
+void hash_table_insert(struct hash_table* table, uint64 key,void *data);
+
+struct hash_table {
+    struct singly_linked_list **table;
+    uint64 size;
+};
+
