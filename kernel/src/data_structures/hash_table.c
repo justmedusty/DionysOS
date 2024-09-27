@@ -8,6 +8,8 @@
 
 /*
  *  The modulus should be the number of buckets you have, obviously
+ *
+ *  I will probably change this as time goes on and I get an idea how many collisions this causes
  */
 uint64 hash(uint64 key, uint64 modulus) {
     uint64 hash = ((key << 8 ^ key) ^ (key << 15 ^ key)) % modulus;
@@ -27,6 +29,7 @@ void hash_table_init(struct hash_table* table, uint64 size) {
 
 void hash_table_destroy(struct hash_table* table) {
     kfree(table->table);
+    kfree(table);
 }
 
 void hash_table_insert(struct hash_table* table, uint64 key,void *data) {
