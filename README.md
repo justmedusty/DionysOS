@@ -32,7 +32,7 @@ I may add a posix compliant layer at some point but for the time being I think I
 
 🟡Implement a scheduler to schedule threads in order make multitasking possible.
 
-🟡Design a virtual file system (VFS) and implement it. The traditional UNIX VFS works and saves headaches when porting software, but you can make your own thing too.
+🟢Design a virtual file system (VFS) and implement it. The traditional UNIX VFS works and saves headaches when porting software, but you can make your own thing too.
 
 🔴Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
 
