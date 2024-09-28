@@ -33,10 +33,10 @@ void hash_table_destroy(struct hash_table* table) {
 
 void hash_table_insert(struct hash_table* table, uint64 key,void *data) {
     uint64 hash_key = hash(key, table->size);
-    singly_linked_list_insert_tail(table->table[hash_key * sizeof(struct singly_linked_list**)], data);
+    singly_linked_list_insert_tail(table->table[hash_key], data);
 }
 
 struct singly_linked_list *hash_table_retrieve(struct hash_table* table, uint64 hash_key) {
-    struct singly_linked_list *hash_bucket = table->table[hash_key * sizeof(struct singly_linked_list**)];
+    struct singly_linked_list *hash_bucket = table->table[hash_key];
     return hash_bucket;
 }
