@@ -2,7 +2,21 @@
 // Created by dustyn on 8/31/24.
 //
 
-#ifndef RED_BLACK_TREE_H
-#define RED_BLACK_TREE_H
+#pragma once
+#include "include/types.h"
 
-#endif //RED_BLACK_TREE_H
+#define BLACK 1
+#define RED 0
+
+struct red_black_tree {
+    struct red_black_tree_node* root;
+    uint64 node_count;
+};
+
+struct red_black_tree_node {
+    struct red_black_tree_node *parent;
+    struct red_black_tree_node* left;
+    struct red_black_tree_node* right;
+    void *data;
+    uint64 color;
+};

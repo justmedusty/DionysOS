@@ -161,6 +161,7 @@ void vnode_close(struct vnode* vnode) {
 
 
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
+
     if (vnode->vnode_type != VNODE_DIRECTORY) {
         vnode_free(vnode);
         return NULL;
