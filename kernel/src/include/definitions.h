@@ -15,3 +15,4 @@
 #define SMP_BOOSTRAP_LOCK 1
 #define DFS_LOCK 2
 #define VFS_LOCK 3
+#define TEMPFS_LOCK 4 // may need to make multiple but this is fine for now
