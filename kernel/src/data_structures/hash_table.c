@@ -7,12 +7,23 @@
 #include <include/mem/kalloc.h>
 
 /*
+ * I may add support for growing the size of a hash table but for now I think I will just leave it
+ */
+
+
+
+/*
  *  The modulus should be the number of buckets you have, obviously
  *
  *  I will probably change this as time goes on and I get an idea how many collisions this causes
  */
 uint64 hash(uint64 key, uint64 modulus) {
-    uint64 hash = ((key << 8 ^ key) ^ (key << 15 ^ key)) % modulus;
+    uint64 hash = ((key << 8 ^ key) ^ (key << 15 ^ key));
+
+    if(hash > modulus) {
+        hash %= modulus;
+    }
+
     return hash;
 }
 
