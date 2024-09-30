@@ -10,7 +10,7 @@
 #define TEMPFS_MAGIC 0x7777777777777777
 #define TEMPFS_VERSION 1
 #define MAX_LEVEL_INDIRECTIONS 5
-#define MAX_FILENAME_LENGTH 256
+#define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 //marks this block as an indirection block , an array of 64bit block pointers
 #define INDRECTION_HEADER 0x123456789ABCEFEC
 
@@ -28,7 +28,7 @@ struct tempfs_superblock {
   uint64 block_bitmap[12]; /* Can hold 196k blocks assuming the 2048 size doesn't change */
 };
 
-//
+//2 inodes per block
 struct tempfs_inode {
   uint32 uid;
   uint32 gid;
