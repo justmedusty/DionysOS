@@ -230,18 +230,18 @@ uint64 vnode_unmount(struct vnode* vnode) {
 
 uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->read(vnode->mounted_vnode, offset, bytes);
+        return vnode->vnode_ops->read(vnode->mounted_vnode, offset,buffer, bytes);
     }
     //Let the specific impl handle this
-    return vnode->vnode_ops->read(vnode, offset, bytes);
+    return vnode->vnode_ops->read(vnode, offset,buffer, bytes);
 }
 
 
 uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
+        return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
     }
-    return vnode->vnode_ops->write(vnode->mounted_vnode, offset, bytes);
+    return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
 }
 
 
