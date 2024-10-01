@@ -242,10 +242,6 @@ void lock_free_serial_printf(char *str, ...) {
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
                          *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
