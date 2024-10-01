@@ -39,7 +39,7 @@ static inline void bitmap_set(void* bitmap, uint64 bit) {
 
 static inline void bitmap_clear(void* bitmap, uint64 bit) {
     uint8* bitmap_byte = bitmap;
-    bitmap_byte[bit / 8] &= ~(1 << (bit % 8));
+    bitmap_byte[bit / 8] &= (0 << (bit % 8));
 }
 
 
@@ -114,8 +114,8 @@ int phys_init() {
             bitmap_clear(mem_map, (entry->base + j) / PAGE_SIZE);
         }
     }
-    uint16 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-    serial_printf("Physical memory mapped\n");
+    uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+    serial_printf("Physical memory mapped %x.32 mb found\n",pages_mib);
     return 0;
 }
 

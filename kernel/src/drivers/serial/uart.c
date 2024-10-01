@@ -132,7 +132,6 @@ void serial_printf(char *str, ...) {
                             case '8':
                                 uint64 value8 = va_arg(args, uint32);
                                 write_hex_serial(value8, 8);
-                                str++;
                                 break;
                             case '1':
                                 uint64 value16 = va_arg(args, uint32);
@@ -172,6 +171,28 @@ void serial_printf(char *str, ...) {
                     char*);
                     write_string_serial(value);
                     break;
+                }
+
+                case 'i': {
+                    uint64 value = va_arg(args, uint64);
+                    if(value == 0) {
+                        write_serial('0');
+                        break;
+                    }
+                    char buffer[20]; // Enough to hold the maximum 64 bit value
+                    int index = 0;
+
+                        while (value > 0) {
+                            buffer[index++] = characters[value % 10];
+                            value /= 10;
+                        }
+
+                        // Write digits in reverse order
+                        while (index > 0) {
+                            write_serial(buffer[--index]);
+                        }
+                    break;
+
                 }
 
                 default:

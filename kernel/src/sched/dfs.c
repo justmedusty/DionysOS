@@ -33,6 +33,8 @@ void dfs_init() {
   }
   serial_printf("DFS: Local CPU RQs Initialized \n");
 
+  serial_printf(" 10430503 %i\n",10430503);
+
 }
 
 
