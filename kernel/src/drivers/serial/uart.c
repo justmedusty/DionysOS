@@ -175,10 +175,12 @@ void serial_printf(char *str, ...) {
 
                 case 'i': {
                     uint64 value = va_arg(args, uint64);
+
                     if(value == 0) {
                         write_serial('0');
                         break;
                     }
+
                     char buffer[20]; // Enough to hold the maximum 64 bit value
                     int index = 0;
 

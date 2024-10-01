@@ -32,9 +32,6 @@ void dfs_init() {
     cpu_list[i].local_run_queue = &local_run_queues[i];
   }
   serial_printf("DFS: Local CPU RQs Initialized \n");
-
-  serial_printf(" 10430503 %i\n",10430503);
-
 }
 
 
