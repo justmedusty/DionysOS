@@ -1,0 +1,48 @@
+//
+// Created by dustyn on 10/2/24.
+//
+
+#include "include/filesystem/fs.h"
+#include "stdlib.h"
+#include "stdio.h"
+
+#include "string.h"
+
+#define TYPE_RANGE_MIN 0
+#define TYPE_RANGE_MAX 1
+
+
+#define TEMPFS_IMG '0'
+#define EXT2_IMG '1'
+
+void tempfs_mkfs(int size);
+
+
+/* Will take filesystem type (int), size in blocks (int) */
+int main(int argc,char *argv[]){
+
+  if(argc > 2){
+    printf("Too many arguments. Arguments are filesytem type (int) , size in blocks (int) \n");
+    return 1;
+  }
+
+  if(argc < 2){
+    printf("Too few arguments. Arguments are filesytem type (int) , size in blocks (int) \n");
+    return 1;
+  }
+
+  switch(argv[1][0]){
+
+    case TEMPFS_IMG:
+      tempfs_mkfs(atoi(argv[0]));
+      break;
+
+     case EXT2_IMG:
+      break;
+  }
+
+}
+
+void tempfs_mkfs(int size){
+
+}
