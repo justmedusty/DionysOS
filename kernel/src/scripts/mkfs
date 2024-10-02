@@ -1,12 +1,11 @@
 //
 // Created by dustyn on 10/2/24.
 //
-
-#include "include/filesystem/fs.h"
 #include "stdlib.h"
 #include "stdio.h"
-
 #include "string.h"
+#include "include/filesystem/fs.h"
+
 
 #define TYPE_RANGE_MIN 0
 #define TYPE_RANGE_MAX 1
