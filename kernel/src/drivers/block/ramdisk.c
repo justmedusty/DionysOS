@@ -15,12 +15,14 @@ static uint64 ramdisk_size;
 
 //This probably needs to be made virtually contiguous
 void ramdisk_init(uint64 pages) {
+
         if (pages == 0) {
                 pages = DEFAULT_RAMDISK_SIZE;
         }
         ramdisk_start_address = (uint64) kalloc(pages);
         ramdisk_size = pages;
         ramdisk_end_address = ramdisk_start_address + (pages * 0x1000);
+
 }
 
 void ramdisk_mkfs(char *initramfs_img) {

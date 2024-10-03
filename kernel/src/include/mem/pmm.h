@@ -12,3 +12,10 @@ extern uint64 hhdm_offset;
 int phys_init();
 void *phys_alloc(uint64 pages);
 void phys_dealloc(void *address, uint64 pages);
+
+
+struct contiguous_page_range {
+      uint64 start_address;
+      uint64 end_address;
+      uint64 pages;
+  };

@@ -50,9 +50,12 @@ uint64 usable_pages = 0;
 uint64 used_pages = 0;
 uint64 reserved_pages = 0;
 uint64 hhdm_offset = 0;
+int page_range_index = 0;
+struct contiguous_page_range contiguous_pages[15] = {};
 
 
 int phys_init() {
+
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_hhdm_response* hhdm = hhdm_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
@@ -64,6 +67,10 @@ int phys_init() {
 
         switch (entry->type) {
         case LIMINE_MEMMAP_USABLE:
+            contiguous_pages[page_range_index++].start_address = entry->base;
+            contiguous_pages[page_range_index].end_address = entry->base + entry->length;
+            contiguous_pages[page_range_index].pages = entry->length / PAGE_SIZE;
+            serial_printf("Range found of length %i pages\n",contiguous_pages[page_range_index].pages);
             usable_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
             highest_address = highest_address > (entry->base + entry->length)
                                   ? highest_address
