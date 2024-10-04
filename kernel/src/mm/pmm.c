@@ -51,6 +51,7 @@ uint64 used_pages = 0;
 uint64 reserved_pages = 0;
 uint64 hhdm_offset = 0;
 int page_range_index = 0;
+
 struct contiguous_page_range contiguous_pages[15] = {};
 
 
@@ -86,7 +87,27 @@ int phys_init() {
 
 
         }
-    }
+        }
+
+        int changes = 1;
+        while(changes) {
+           for(int i = 0; i < page_range_index - 1; i++) {
+             int local_changes = 0;
+          	if(contiguous_pages[i].pages < contiguous_pages[i + 1].end_address) {
+                  struct contiguous_page_range placeholder = contiguous_pages[i];
+                  memcpy(&contiguous_pages[i + 1], &contiguous_pages[i],sizeof(struct contiguous_page_range));
+                  memcpy(&contiguous_pages[i + 1], &placeholder,sizeof(struct contiguous_page_range));
+                  local_changes++;
+        }
+
+        if (local_changes == 0) {
+          changes = 0;
+          for(int i = 0; i < page_range_index; i++) {
+            serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n",contiguous_pages[i].start_address,contiguous_pages[i].end_address,contiguous_pages[i].pages);
+          }
+        }
+        }
+}
 
     highest_page_index = highest_address / PAGE_SIZE;
     uint64 bitmap_size = ((highest_page_index / 8) + (PAGE_SIZE - 1)) / PAGE_SIZE * PAGE_SIZE;
