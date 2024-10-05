@@ -212,6 +212,8 @@ void serial_printf(char *str, ...) {
 }
 /*
  * For use in interrupt handlers to avoid any lock contention
+*
+ * This seems to just cause more problems whenever used so it may be wise to axe it
  */
 void lock_free_serial_printf(char *str, ...) {
     va_list args;
