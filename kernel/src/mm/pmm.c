@@ -92,25 +92,28 @@ int phys_init() {
     /*
      *  Quick bubble sort for the small list
      */
+
     int changes = 1;
+
     while (changes) {
+        int local_changes = 0;
         for (int i = 0; i < page_range_index - 1; i++) {
-            int local_changes = 0;
             if (contiguous_pages[i].pages < contiguous_pages[i + 1].pages) {
                 struct contiguous_page_range placeholder = contiguous_pages[i];
                 memcpy(&contiguous_pages[i], &contiguous_pages[i + 1], sizeof(struct contiguous_page_range));
                 memcpy(&contiguous_pages[i + 1], &placeholder, sizeof(struct contiguous_page_range));
                 local_changes++;
             }
+        }
             if (local_changes == 0) {
                 changes = 0;
-                for (i = 0; i < page_range_index; i++) {
+                for (int i = 0; i < page_range_index; i++) {
                     serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,
                                   contiguous_pages[i].start_address, contiguous_pages[i].end_address,
                                   contiguous_pages[i].pages);
                 }
-                break;
-            }
+
+
         }
     }
 
