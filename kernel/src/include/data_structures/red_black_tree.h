@@ -8,6 +8,9 @@
 #define BLACK 1
 #define RED 0
 
+#define REGULAR_TREE 0
+#define RED_BLACK 1
+
 struct red_black_tree {
     struct red_black_tree_node* root;
     uint64 node_count;

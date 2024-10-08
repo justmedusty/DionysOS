@@ -8,6 +8,7 @@
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
 #include "include/drivers/uart.h"
+#include "include/data_structures/red_black_tree.h"
 
 static inline bool bitmap_get(void* bitmap, uint64 bit);
 
@@ -42,6 +43,7 @@ static inline void bitmap_clear(void* bitmap, uint64 bit) {
     bitmap_byte[bit / 8] &= (0 << (bit % 8));
 }
 
+struct red_black_tree buddy_free_list = {};
 
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
