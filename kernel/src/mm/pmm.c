@@ -52,8 +52,10 @@ uint64 reserved_pages = 0;
 uint64 hhdm_offset = 0;
 int page_range_index = 0;
 
-struct contiguous_page_range contiguous_pages[15] = {};
+int allocation_model;
 
+//Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 15 page runs for this
+struct contiguous_page_range contiguous_pages[15] = {};
 
 int phys_init() {
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -70,7 +72,6 @@ int phys_init() {
             contiguous_pages[page_range_index].start_address = entry->base;
             contiguous_pages[page_range_index].end_address = entry->base + entry->length;
             contiguous_pages[page_range_index].pages = entry->length / PAGE_SIZE;
-            serial_printf("Range found of length %i pages\n", contiguous_pages[page_range_index].pages);
             page_range_index++;
             usable_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
             highest_address = highest_address > (entry->base + entry->length)
@@ -84,6 +85,7 @@ int phys_init() {
             break;
 
         default:
+            break;
 
 
 
@@ -105,15 +107,13 @@ int phys_init() {
                 local_changes++;
             }
         }
-            if (local_changes == 0) {
-                changes = 0;
-                for (int i = 0; i < page_range_index; i++) {
-                    serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,
-                                  contiguous_pages[i].start_address, contiguous_pages[i].end_address,
-                                  contiguous_pages[i].pages);
-                }
-
-
+        if (local_changes == 0) {
+            changes = 0;
+            for (int i = 0; i < page_range_index; i++) {
+                serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,
+                              contiguous_pages[i].start_address, contiguous_pages[i].end_address,
+                              contiguous_pages[i].pages);
+            }
         }
     }
 

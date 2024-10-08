@@ -5,7 +5,7 @@
 #include "include/data_structures/spinlock.h"
 #include "include/arch//arch_atomic_operations.h"
 #include <include/arch/arch_cpu.h>
-
+#include "include/arch/arch_asm_functions.h"
 
 void initlock(struct spinlock* spinlock, uint64 id) {
     spinlock->id = id;
@@ -19,6 +19,18 @@ void acquire_spinlock(struct spinlock* spinlock) {
 }
 
 void release_spinlock(struct spinlock* spinlock) {
+    spinlock->cpu = 0;
+    spinlock->locked = 0;
+}
+
+void acquire_interrupt_safe_spinlock(struct spinlock* spinlock) {
+    arch_atomic_swap(&spinlock->locked, 1);
+    sti();
+    spinlock->cpu = 0;
+}
+
+void release_interrupt_safe_spinlock(struct spinlock* spinlock) {
+    cli();
     spinlock->cpu = 0;
     spinlock->locked = 0;
 }
