@@ -13,7 +13,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define BITMAP 0
 #define BUDDY 1
 /* For buddy */
-#define MAX_ORDER 17
+#define MAX_ORDER 11 /* Going with the number Linux uses*/
 
 
 extern uint64 hhdm_offset;

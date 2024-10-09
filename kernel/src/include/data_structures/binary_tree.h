@@ -5,23 +5,33 @@
 #pragma once
 #include "include/types.h"
 
-#define BLACK 1
-#define RED 0
+#define BLACK 0xF
+#define RED 0xE
 
-#define REGULAR_TREE 0
-#define RED_BLACK_TREE 1
+#define REGULAR_TREE 1
+#define RED_BLACK_TREE 2
+
+#define BAD_TREE_MODE 0xF1F
+#define SUCCESS 0
 
 struct binary_tree {
     struct binary_tree_node* root;
     uint64 node_count;
+    uint64 mode;
+    uint64 flags; /* Unused for now */
 };
 
 struct binary_tree_node {
-    struct binary_tree_node *parent;
+    struct binary_tree_node* parent;
     struct binary_tree_node* left;
     struct binary_tree_node* right;
-    void *data;
-    uint64 color;
+    uint64 key; /* This is a duplicate value but I have to put it here t allow void pointers otherwise I would be limited by type */
+    void* data;
+    uint64 color; /* Only for RB tree */
 };
 
-void init_tree(struct binary_tree *tree,uint64 mode,uint64 flags);
+uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags, void* data, uint64 key);
+uint64 insert_tree(struct binary_tree* tree, void* data, uint64 key);
+uint64 remove_tree(struct binary_tree *tree, uint64 key);
+uint64 destroy_tree(struct binary_tree* tree);
+
