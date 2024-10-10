@@ -34,7 +34,7 @@ I may add a posix compliant layer at some point but for the time being I think I
 
 🟡Implement a scheduler to schedule threads in order make multitasking possible.
 
-🔴Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
+🟡Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
 
 🔴Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
