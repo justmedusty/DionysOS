@@ -4,6 +4,7 @@
 #include "include/definitions.h"
 #include "include/data_structures/binary_tree.h"
 
+#include <bits/siginfo-consts.h>
 #include <include/mem/kalloc.h>
 
 /* Local Definitions */
@@ -57,15 +58,34 @@ uint64 remove_tree_node(struct binary_tree* tree, uint64 key, void* address) {
     }
 }
 
+/* Gonna need to trace this out to ensure it works properly*/
 uint64 destroy_tree(struct binary_tree* tree) {
+    struct binary_tree_node* current = tree->root;
     struct binary_tree_node* parent = tree->root;
 
-    if (parent == NULL) {
+    if (current == NULL) {
         kfree(tree);
         return SUCCESS;
     }
-    while (1) {
-        if (parent->left == NULL) {
+    while (tree->node_count != 0) {
+
+        /* Leaf node ? */
+        if (current->left == NULL && current->right == NULL) {
+            parent = current->parent;
+            //need to ensure that the null pointer is set in the parent
+            kfree(current);
+            tree->node_count--;
+        }
+        if(current->left != NULL) {
+            current = current->left;
+            parent = current->parent;
+            continue;
+
+        }
+        if(current->right != NULL) {
+            current = current->right;
+            parent = current->parent;
+            continue;
         }
     }
 }
@@ -152,9 +172,12 @@ void* lookup_binary_tree(struct binary_tree* tree, uint64 key) {
 uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
 }
 
-uint64 remove_binary_tree(struct binary_tree* tree, uint64 key,
-                          void* address
-                          /* This is required because there may be many of the same value so address needed to be passed as well */) {
+uint64 remove_binary_tree(struct binary_tree* tree, uint64 key,void* address/* This is required because there may be many of the same value so address needed to be passed as well */) {
+    struct binary_tree_node* current = tree->root;
+    if (current == NULL) {
+        return VALUE_NOT_FOUND;
+    }
+
 }
 
 uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key) {
