@@ -12,9 +12,14 @@
 #define RED_BLACK_TREE 2
 
 #define MAX_DATA_PER_NODE 20 /* Arbitrary but should be enough*/
+
+/* Other responses */
 #define BAD_TREE_MODE 0xF1F
 #define INSERTION_ERROR 0x1234
 #define SUCCESS 0
+#define EMPTY_TREE 1
+#define VALUE_NOT_FOUND 2
+
 
 struct binary_tree {
     struct binary_tree_node* root;
