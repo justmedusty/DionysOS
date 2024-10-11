@@ -12,7 +12,7 @@ void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key);
 void init_binary_tree(struct binary_tree* tree, void* root, uint64 key);
 uint64 insert_binary_tree(struct binary_tree *tree, void* data, uint64 key);
 uint64 insert_red_black_tree(struct binary_tree *tree, void* data, uint64 key);
-uint64 remove_binary_tree(struct binary_tree *tree, uint64 key);
+uint64 remove_binary_tree(struct binary_tree *tree, uint64 key,void *address);
 uint64 remove_red_black_tree(struct binary_tree *tree, uint64 key);
 
 
@@ -50,10 +50,10 @@ uint64 insert_tree_node(struct binary_tree *tree, void* data, uint64 key){
 }
 
 
-uint64 remove_tree_node(struct binary_tree *tree, uint64 key) {
+uint64 remove_tree_node(struct binary_tree *tree, uint64 key,void *address) {
     switch (tree->mode) {
     case REGULAR_TREE:
-        return remove_binary_tree(tree,key);
+        return remove_binary_tree(tree,key,address);
     case RED_BLACK_TREE:
         return remove_red_black_tree(tree,key);
     default:
@@ -68,8 +68,8 @@ uint64 destroy_tree(struct binary_tree *tree){
 uint64 insert_binary_tree(struct binary_tree *tree, void* data, uint64 key) {
 
     struct binary_tree_node* new_node = kalloc(sizeof(struct binary_tree_node));
-    new_node->count = 0;
-    new_node->data[new_node->count++]= data;
+    new_node->count = 1;
+    new_node->data[new_node->count++ - 1]= data;
     new_node->key = key;
 
 
@@ -82,18 +82,17 @@ uint64 insert_binary_tree(struct binary_tree *tree, void* data, uint64 key) {
 
 
     while(1) {
-
-        if(current != NULL && key == current->key) {
-            if(current->count == MAX_DATA) {
+    // Sanity checks below mean that there shouldn't be any null nodes showuping up here
+        if(key == current->key) {
+            if(current->count == MAX_DATA_PER_NODE) {
                 return INSERTION_ERROR;
             }
-            current->data[current->count++] = data;
+            current->data[current->count++ - 1] = data;
+            kfree(new_node);
             return SUCCESS;
         }
 
-
-
-        if(key <= current->key) {
+        if(key < current->key) {
             if(current->left == NULL) {
                 current->left = new_node;
                 new_node->parent = current;
@@ -103,7 +102,6 @@ uint64 insert_binary_tree(struct binary_tree *tree, void* data, uint64 key) {
 
             current = current->left;
         }else {
-
             if(current->right == NULL) {
                 current->right = new_node;
                 new_node->parent = current;
@@ -119,11 +117,15 @@ uint64 insert_binary_tree(struct binary_tree *tree, void* data, uint64 key) {
 
 }
 
+void lookup_binary_tree(struct binary_tree *tree, uint64 key) {
+
+}
+
 uint64 insert_red_black_tree(struct binary_tree *tree, void* data, uint64 key) {
 
 }
 
-uint64 remove_binary_tree(struct binary_tree *tree, uint64 key) {
+uint64 remove_binary_tree(struct binary_tree *tree, uint64 key,void *address /* This is required because there may be many of the same value so address needed to be passed as well */) {
 
 }
 
