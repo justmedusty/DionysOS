@@ -179,12 +179,52 @@ uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
 }
 
 uint64 remove_binary_tree(struct binary_tree* tree, uint64 key,void* address/* This is required because there may be many of the same value so address needed to be passed as well */) {
+
     struct binary_tree_node* current = tree->root;
+    struct binary_tree_node* parent = tree->root;
+
     if (current == NULL) {
         return VALUE_NOT_FOUND;
     }
 
-}
+    while (1) {
+        // Sanity checks below mean that there shouldn't be any null nodes showing up here
+        if (key == current->key) {
+            if(current->left == NULL && current->right == NULL) {
+
+                parent = current->parent;
+
+                if(parent->left == current) {
+                    parent->left = NULL;
+                }else {
+                    parent->right = NULL;
+                }
+
+                kfree(current);
+                return SUCCESS;
+            }
+        }
+
+        //Handle what happens when it is not a leaf
+
+
+            if (key < current->key) {
+                if (current->left == NULL) {
+                    return VALUE_NOT_FOUND;
+                }
+
+                current = current->left;
+            }
+            else {
+                if (current->right == NULL) {
+                    return VALUE_NOT_FOUND;
+                }
+                current = current->right;
+            }
+        }
+    }
+
+
 
 uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key) {
 }
