@@ -66,14 +66,14 @@ uint64 destroy_tree(struct binary_tree* tree) {
         return SUCCESS;
     }
     while (tree->node_count != 0) {
-
         /* Leaf node ? */
         if (current->left == NULL && current->right == NULL) {
             parent = current->parent;
 
-            if(current->parent->left == current) {
+            if (current->parent->left == current) {
                 current->parent->left = NULL;
-            }else {
+            }
+            else {
                 current->parent->right = NULL;
             }
 
@@ -81,12 +81,12 @@ uint64 destroy_tree(struct binary_tree* tree) {
             current = parent;
             tree->node_count--;
         }
-        if(current->left != NULL) {
+        if (current->left != NULL) {
             current = current->left;
             parent = current->parent;
             continue;
         }
-        if(current->right != NULL) {
+        if (current->right != NULL) {
             current = current->right;
             parent = current->parent;
             continue;
@@ -178,8 +178,7 @@ void* lookup_tree(struct binary_tree* tree, uint64 key) {
 uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
 }
 
-uint64 remove_binary_tree(struct binary_tree* tree, uint64 key,void* address/* This is required because there may be many of the same value so address needed to be passed as well */) {
-
+uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* This is required because there may be many of the same value so address needed to be passed as well */) {
     struct binary_tree_node* current = tree->root;
     struct binary_tree_node* parent = tree->root;
 
@@ -187,43 +186,77 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key,void* address/* T
         return VALUE_NOT_FOUND;
     }
 
+    if (key == tree->root->key) {
+        //handle root
+    }
+
+
+    uint8 depth = 0;
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            if(current->left == NULL && current->right == NULL) {
-
+            /*
+             *  Handle Leaf case
+             */
+            if (current->left == NULL && current->right == NULL) {
                 parent = current->parent;
 
-                if(parent->left == current) {
-                    parent->left = NULL;
-                }else {
-                    parent->right = NULL;
+                if (current->count < 1) {
+                    for (int i = 0; i < current->count; i++) {
+                        if (current->data[i] == address) {
+                            current->count--;
+                            current->data[i] = NULL;
+                            return SUCCESS;
+                        }
+                    }
                 }
 
+                if (parent->left == current) {
+                    parent->left = NULL;
+                }
+                else {
+                    parent->right = NULL;
+                }
                 kfree(current);
                 return SUCCESS;
             }
+
+
+            /*
+             * Handle right child is non-null while left child is
+             */
+            if (current->left == NULL) {
+            }
+            /*
+             *  Handle left child is non-null while right child is
+             */
+            if (current->right == NULL) {
+            }
+
+            /*
+             *
+             *  Handle neither child is non-null
+             *
+             */
         }
 
-        //Handle what happens when it is not a leaf
-
-
-            if (key < current->key) {
-                if (current->left == NULL) {
-                    return VALUE_NOT_FOUND;
-                }
-
-                current = current->left;
+        if (key < current->key) {
+            if (current->left == NULL) {
+                return VALUE_NOT_FOUND;
             }
-            else {
-                if (current->right == NULL) {
-                    return VALUE_NOT_FOUND;
-                }
-                current = current->right;
+
+            current = current->left;
+            depth++;
+        }
+        else {
+            if (current->right == NULL) {
+                return VALUE_NOT_FOUND;
             }
+            current = current->right;
+            depth++;
         }
     }
-
+}
 
 
 uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key) {
