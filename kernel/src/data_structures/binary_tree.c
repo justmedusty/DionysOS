@@ -3,8 +3,6 @@
 //
 #include "include/definitions.h"
 #include "include/data_structures/binary_tree.h"
-
-#include <bits/siginfo-consts.h>
 #include <include/mem/kalloc.h>
 
 /* Local Definitions */
@@ -72,15 +70,21 @@ uint64 destroy_tree(struct binary_tree* tree) {
         /* Leaf node ? */
         if (current->left == NULL && current->right == NULL) {
             parent = current->parent;
-            //need to ensure that the null pointer is set in the parent
+
+            if(current->parent->left == current) {
+                current->parent->left = NULL;
+            }else {
+                current->parent->right = NULL;
+            }
+
             kfree(current);
+            current = parent;
             tree->node_count--;
         }
         if(current->left != NULL) {
             current = current->left;
             parent = current->parent;
             continue;
-
         }
         if(current->right != NULL) {
             current = current->right;
@@ -88,6 +92,8 @@ uint64 destroy_tree(struct binary_tree* tree) {
             continue;
         }
     }
+
+    kfree(tree);
 }
 
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
@@ -107,7 +113,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
 
     while (1) {
-        // Sanity checks below mean that there shouldn't be any null nodes showing up here
+        // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
             if (current->count == MAX_DATA_PER_NODE) {
                 return INSERTION_ERROR;
@@ -139,7 +145,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     }
 }
 
-void* lookup_binary_tree(struct binary_tree* tree, uint64 key) {
+void* lookup_tree(struct binary_tree* tree, uint64 key) {
     struct binary_tree_node* current = tree->root;
 
     if (current == NULL) {
