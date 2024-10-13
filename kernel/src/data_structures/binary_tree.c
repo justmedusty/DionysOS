@@ -191,25 +191,26 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
     }
 
 
-    uint8 depth = 0;
+    uint8 depth = 0; /* Not sure if I am going to use this yet */
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
             /*
              *  Handle Leaf case
              */
-            if (current->left == NULL && current->right == NULL) {
-                parent = current->parent;
 
-                if (current->count < 1) {
-                    for (int i = 0; i < current->count; i++) {
-                        if (current->data[i] == address) {
-                            current->count--;
-                            current->data[i] = NULL;
-                            return SUCCESS;
-                        }
+            if (current->count < 1) {
+                for (int i = 0; i < current->count; i++) {
+                    if (current->data[i] == address) {
+                        current->count--;
+                        current->data[i] = NULL;
+                        return SUCCESS;
                     }
                 }
+            }
+
+            if (current->left == NULL && current->right == NULL) {
+                parent = current->parent;
 
                 if (parent->left == current) {
                     parent->left = NULL;
@@ -226,18 +227,33 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
              * Handle right child is non-null while left child is
              */
             if (current->left == NULL) {
+
+                current->parent->right = current->right;
+                kfree(current);
+                return SUCCESS;
             }
             /*
              *  Handle left child is non-null while right child is
              */
             if (current->right == NULL) {
+                current->parent->left = current->left;
+                kfree(current);
+                return SUCCESS;
             }
 
             /*
              *
              *  Handle neither child is non-null
-             *
+             *  Bring the right sub-tree min value up
              */
+            parent = current->parent;
+            struct binary_tree_node* right_min;
+            right_min = current->right;
+
+            while(right_min->left != NULL && right_min->left->right != NULL) {
+                right_min = right_min->left;
+            }
+            parent->left = right_min;
         }
 
         if (key < current->key) {
