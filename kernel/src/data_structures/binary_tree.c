@@ -244,16 +244,18 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
             /*
              *
              *  Handle neither child is non-null
-             *  Bring the right sub-tree min value up
+             *  Bring the right sub-tree min value up (ie all lefts until a final right)p
              */
             parent = current->parent;
-            struct binary_tree_node* right_min;
-            right_min = current->right;
+            struct binary_tree_node* right_min = current->right;
 
             while(right_min->left != NULL && right_min->left->right != NULL) {
                 right_min = right_min->left;
             }
             parent->left = right_min;
+            right_min->right = current->right;
+            right_min->left = current->left;
+
         }
 
         if (key < current->key) {
