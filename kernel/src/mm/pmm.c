@@ -43,7 +43,16 @@ static inline void bitmap_clear(void* bitmap, uint64 bit) {
     bitmap_byte[bit / 8] &= (0 << (bit % 8));
 }
 
-struct binary_tree buddy_free_list = {};
+struct binary_tree buddy_free_list_zone1;
+struct binary_tree buddy_free_list_zone2;
+struct binary_tree buddy_free_list_zone3;
+struct binary_tree buddy_free_list_zone4;
+struct binary_tree buddy_free_list_zone5;
+struct binary_tree buddy_free_list_zone6;
+struct binary_tree buddy_free_list_zone7;
+struct binary_tree buddy_free_list_zone8;
+struct binary_tree buddy_free_list_zone9;
+struct binary_tree buddy_free_list_zone10;
 
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
@@ -56,8 +65,8 @@ int page_range_index = 0;
 
 int allocation_model;
 
-//Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 15 page runs for this
-struct contiguous_page_range contiguous_pages[15] = {};
+//Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
+struct contiguous_page_range contiguous_pages[10] = {};
 
 int phys_init() {
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -119,6 +128,15 @@ int phys_init() {
         }
     }
 
+    for(int i = 0; i < page_range_index; i++) {
+
+        for (int j = 0; j < contiguous_pages[i].pages; j+= 1 << MAX_ORDER) {
+
+
+        }
+
+    }
+
     highest_page_index = highest_address / PAGE_SIZE;
     uint64 bitmap_size = ((highest_page_index / 8) + (PAGE_SIZE - 1)) / PAGE_SIZE * PAGE_SIZE;
 
@@ -153,7 +171,7 @@ int phys_init() {
         }
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-    serial_printf("Physical memory mapped %x.32 mb found\n", pages_mib);
+    serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
 

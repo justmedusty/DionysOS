@@ -199,6 +199,9 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
              *  Handle Leaf case
              */
 
+            /*
+             *  Handle case where it is in a non-empty bucket
+             */
             if (current->count < 1) {
                 for (int i = 0; i < current->count; i++) {
                     if (current->data[i] == address) {
@@ -247,15 +250,23 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
              *  Bring the right sub-tree min value up (ie all lefts until a final right)p
              */
             parent = current->parent;
-            struct binary_tree_node* right_min = current->right;
+            struct binary_tree_node* right_min = current;
 
             while(right_min->left != NULL && right_min->left->right != NULL) {
                 right_min = right_min->left;
             }
+
+            /* I dont think this should happen but I am putting it here just in case there is a right chain, I may remove this later, just me being paranoid  */
+            while(right_min->right != NULL) {
+                right_min = right_min->right;
+            }
+
             parent->left = right_min;
             right_min->right = current->right;
             right_min->left = current->left;
 
+            kfree(current);
+            return SUCCESS;
         }
 
         if (key < current->key) {
