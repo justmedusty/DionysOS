@@ -51,6 +51,8 @@ struct binary_tree buddy_free_list_zone[15];
 
 struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE]; // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
 
+struct singly_linked_list unused_buddy_blocks_list;
+
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
 uint64 last_used_index = 0;
@@ -157,6 +159,20 @@ int phys_init() {
 
     }
 
+    singly_linked_list_init(&unused_buddy_blocks_list);
+
+    for(int i = index; i < STATIC_POOL_SIZE; i++) {
+        buddy_block_static_pool[i].is_free = FREE;
+        buddy_block_static_pool[i].zone = 0;
+        buddy_block_static_pool[i].next = NULL;
+        buddy_block_static_pool[i].zone = 0xFFFFFFFF;
+        buddy_block_static_pool[i].start_address = 0;
+
+        singly_linked_list_insert_head(&unused_buddy_blocks_list, &buddy_block_static_pool[i]);
+    }
+
+    serial_printf("%i free block objects\n",unused_buddy_blocks_list.node_count);
+
     highest_page_index = highest_address / PAGE_SIZE;
     uint64 bitmap_size = ((highest_page_index / 8) + (PAGE_SIZE - 1)) / PAGE_SIZE * PAGE_SIZE;
 
@@ -206,6 +222,7 @@ int phys_init() {
 
         }
     }
+
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
@@ -269,6 +286,6 @@ static void buddy_free(void* address, uint64 pages) {
 
 }
 
-static struct buddy_block* buddy_split(uint64 order,struct binary_tree *free_list) {
+static struct buddy_block* buddy_split(struct buddy_block block,struct binary_tree *free_list) {
 
 }
