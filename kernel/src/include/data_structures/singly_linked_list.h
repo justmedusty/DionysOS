@@ -4,6 +4,9 @@
 #pragma once
 #include <include/types.h>
 
+#define SUCCESS 0
+#define NODE_NOT_FOUND 1
+
 struct singly_linked_list_node{
   void* data;
   struct singly_linked_list_node* next;
@@ -22,3 +25,4 @@ void singly_linked_list_insert_tail(struct singly_linked_list *list, void *data)
 void singly_linked_list_insert_head(struct singly_linked_list *list, void *data);
 void singly_linked_list_remove_tail(struct singly_linked_list *list);
 void singly_linked_list_remove_head(struct singly_linked_list *list);
+uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data);

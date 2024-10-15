@@ -84,3 +84,27 @@ void singly_linked_list_remove_head(struct singly_linked_list* list) {
     list->head = new_head;
     list->node_count--;
 }
+
+uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {
+    struct singly_linked_list_node* prev = list->head;
+    struct singly_linked_list_node* node = list->head;
+
+    if(node->data == data) {
+        singly_linked_list_remove_head(list);
+        return SUCCESS;
+    }
+
+    node = node->next; // Handle head and increment node pointer so that we can track prev properly
+
+    while (node != NULL) {
+        if(node->data == data) {
+            prev->next = node->next;
+            kfree(node);
+            return SUCCESS;
+        }
+
+        node = node->next;
+        prev = prev->next;
+    }
+    return NODE_NOT_FOUND;
+}

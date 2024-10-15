@@ -54,6 +54,8 @@ struct binary_tree buddy_free_list_zone8;
 struct binary_tree buddy_free_list_zone9;
 struct binary_tree buddy_free_list_zone10;
 
+struct buddy_block buddy_block_static_pool[500]; // should be able to handle 4 GB of memory and the rest can be taken from a slab
+
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
 uint64 last_used_index = 0;
@@ -131,7 +133,6 @@ int phys_init() {
     for(int i = 0; i < page_range_index; i++) {
 
         for (int j = 0; j < contiguous_pages[i].pages; j+= 1 << MAX_ORDER) {
-
 
         }
 

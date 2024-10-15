@@ -98,8 +98,8 @@ uint64 destroy_tree(struct binary_tree* tree) {
 
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     struct binary_tree_node* new_node = kalloc(sizeof(struct binary_tree_node));
-    new_node->count = 1;
-    new_node->data[new_node->count++ - 1] = data;
+    singly_linked_list_init(&new_node->data);
+    singly_linked_list_insert_head(&new_node->data, data);
     new_node->key = key;
 
 
@@ -115,10 +115,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            if (current->count == MAX_DATA_PER_NODE) {
-                return INSERTION_ERROR;
-            }
-            current->data[current->count++ - 1] = data;
+            singly_linked_list_insert_tail(&current->data, data);
             kfree(new_node);
             return SUCCESS;
         }
@@ -130,7 +127,6 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
                 tree->node_count++;
                 return SUCCESS;
             }
-
             current = current->left;
         }
         else {
@@ -144,6 +140,8 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         }
     }
 }
+\
+\
 
 void* lookup_tree(struct binary_tree* tree, uint64 key) {
     struct binary_tree_node* current = tree->root;
@@ -155,7 +153,7 @@ void* lookup_tree(struct binary_tree* tree, uint64 key) {
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            return current->data[current->count - 1];
+            return current->data.head->data;
         }
 
         if (key < current->key) {
@@ -202,14 +200,12 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
             /*
              *  Handle case where it is in a non-empty bucket
              */
-            if (current->count < 1) {
-                for (int i = 0; i < current->count; i++) {
-                    if (current->data[i] == address) {
-                        current->count--;
-                        current->data[i] = NULL;
-                        return SUCCESS;
-                    }
+            if (current->data.node_count < 1) {
+
+                if(singly_linked_list_remove_node_by_address(&current->data,address) == SUCCESS) {
+                    return SUCCESS;
                 }
+                return VALUE_NOT_FOUND;
             }
 
             if (current->left == NULL && current->right == NULL) {
@@ -296,8 +292,8 @@ void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key) {
     tree->mode = RED_BLACK_TREE;
     tree->root->color = BLACK;
     tree->root->key = key;
-    tree->root->count = 0;
-    tree->root->data[tree->root->count++] = root;
+    singly_linked_list_init(&tree->root->data);
+    singly_linked_list_insert_head(&tree->root->data, root);
     tree->root->parent = NULL;
     tree->node_count = 1;
 }
@@ -305,9 +301,10 @@ void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key) {
 
 void init_binary_tree(struct binary_tree* tree, void* root, uint64 key) {
     tree->mode = REGULAR_TREE;
+    tree->root->color = BLACK;
     tree->root->key = key;
-    tree->root->count = 0;
-    tree->root->data[tree->root->count++] = root;
+    singly_linked_list_init(&tree->root->data);
+    singly_linked_list_insert_head(&tree->root->data, root);
     tree->root->parent = NULL;
     tree->node_count = 1;
 }

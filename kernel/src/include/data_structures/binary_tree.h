@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "singly_linked_list.h"
 #include "include/types.h"
 
 #define BLACK 0xF
@@ -33,9 +34,7 @@ struct binary_tree_node {
     struct binary_tree_node* left;
     struct binary_tree_node* right;
     uint64 key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
-    void* data[4]; /* I may want to reign this in with a flag explicitly allowing this behavior , sticking a pin in it*/
-    /* Since for things like buddy, there may be many blocks with the same order I will allow nodes to store many values just in case. 4 is arbitrary for now I may make it dynamic later*/
-    uint64 count;
+    struct singly_linked_list data;
     uint64 color; /* Only for RB tree */
 };
 
