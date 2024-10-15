@@ -3,6 +3,9 @@
 //
 
 #include "include/data_structures/singly_linked_list.h"
+
+#include <include/arch/arch_cpu.h>
+
 #include "include/types.h"
 #include <include/mem/kalloc.h>
 
@@ -23,9 +26,19 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 
     struct singly_linked_list_node *new_node = kalloc(sizeof(struct singly_linked_list_node));
     new_node->data = data;
+
+    if(list->tail == NULL) {
+        list->head = new_node;
+        list->tail = new_node;
+        list->node_count++;
+        return;
+    }
+
     list->tail->next = new_node;
     list->tail = new_node;
     list->node_count++;
+
+
 }
 
 void singly_linked_list_insert_head(struct singly_linked_list* list, void* data) {

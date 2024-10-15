@@ -4,8 +4,9 @@
 #include "include/types.h"
 #include "include/mem/pmm.h"
 
+#include <include/definitions.h>
 #include <include/arch/arch_cpu.h>
-
+#include <include/data_structures/spinlock.h>
 #include "limine.h"
 #include "stddef.h"
 #include "include/mem/mem.h"
@@ -14,9 +15,7 @@
 #include "include/data_structures/binary_tree.h"
 
 static inline bool bitmap_get(void* bitmap, uint64 bit);
-
 static inline void bitmap_set(void* bitmap, uint64 bit);
-
 static inline void bitmap_clear(void* bitmap, uint64 bit);
 
 
@@ -46,16 +45,9 @@ static inline void bitmap_clear(void* bitmap, uint64 bit) {
     bitmap_byte[bit / 8] &= (0 << (bit % 8));
 }
 
-struct binary_tree buddy_free_list_zone1;
-struct binary_tree buddy_free_list_zone2;
-struct binary_tree buddy_free_list_zone3;
-struct binary_tree buddy_free_list_zone4;
-struct binary_tree buddy_free_list_zone5;
-struct binary_tree buddy_free_list_zone6;
-struct binary_tree buddy_free_list_zone7;
-struct binary_tree buddy_free_list_zone8;
-struct binary_tree buddy_free_list_zone9;
-struct binary_tree buddy_free_list_zone10;
+struct spinlock pmm_lock;
+
+struct binary_tree buddy_free_list_zone[15];
 
 struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE]; // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
 
@@ -74,6 +66,8 @@ int allocation_model;
 struct contiguous_page_range contiguous_pages[10] = {};
 
 int phys_init() {
+
+    initlock(&pmm_lock, PMM_LOCK);
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_hhdm_response* hhdm = hhdm_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
@@ -126,9 +120,7 @@ int phys_init() {
         if (local_changes == 0) {
             changes = 0;
             for (int i = 0; i < page_range_index; i++) {
-                serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,
-                              contiguous_pages[i].start_address, contiguous_pages[i].end_address,
-                              contiguous_pages[i].pages);
+                serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,contiguous_pages[i].start_address, contiguous_pages[i].end_address,contiguous_pages[i].pages);
             }
         }
     }
@@ -139,7 +131,8 @@ int phys_init() {
      *
      */
 
-    int index = 0;
+    int index = 0; /* Index into the static buddy block pool */
+
     for(int i = 0; i < page_range_index; i++) {
 
         for (int j = 0; j < contiguous_pages[i].pages; j+= 1 << MAX_ORDER) {
@@ -156,10 +149,11 @@ int phys_init() {
             }
             index++;
             if(index == STATIC_POOL_SIZE) {
-                panic("1000 hit");
+                panic("1000 hit"); /* A panic is excessive but it's fine for now*/
             }
 
         }
+        buddy_block_static_pool[index - 1].next = &buddy_block_static_pool[index]; /* Since the logic above will not apply for the last entry putting this here */
 
     }
 
@@ -197,6 +191,22 @@ int phys_init() {
         }
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+
+
+    /*
+     *  Set up buddy blocks and insert them into proper trees
+     */
+    index = 0;
+    for (int i = 0; i < page_range_index; i++) {
+
+        init_tree(&buddy_free_list_zone[i],REGULAR_TREE,0);
+        while (buddy_block_static_pool[index].zone == i) {
+            insert_tree_node(&buddy_free_list_zone[i],&buddy_block_static_pool[index],buddy_block_static_pool[index].order);
+            index++;
+
+        }
+    }
+
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
@@ -224,8 +234,8 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
 
     return NULL;
 }
- //TODO PLACE LOCKS IN ALL ALLOC PLACES
 void* phys_alloc(uint64 pages) {
+    acquire_interrupt_safe_spinlock(&pmm_lock);
     uint64 last = last_used_index;
     void* return_value = __phys_alloc(pages, highest_page_index);
     if (return_value == NULL) {
@@ -236,6 +246,7 @@ void* phys_alloc(uint64 pages) {
     if (return_value != NULL) {
         memset(P2V(return_value), 0,PAGE_SIZE * pages);
     }
+    release_interrupt_safe_spinlock(&pmm_lock);
     return return_value;
 }
 

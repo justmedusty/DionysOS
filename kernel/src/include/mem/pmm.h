@@ -16,11 +16,12 @@ extern volatile struct limine_memmap_request memmap_request;
 #define MAX_ORDER 11 /* Going with the number Linux uses*/
 #define STATIC_POOL_FLAG 0xA /* So we know to return to the pool not try to call kfree on it */
 #define STATIC_POOL_SIZE 1024
-
+#define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
 
 extern uint64 hhdm_offset;
+
 int phys_init();
 void *phys_alloc(uint64 pages);
 void phys_dealloc(void *address, uint64 pages);

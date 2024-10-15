@@ -7,6 +7,7 @@
 #include <include/arch/arch_cpu.h>
 #include "include/arch/arch_asm_functions.h"
 
+//TODO replace cli/sti with architecture agnostic wrapper function
 void initlock(struct spinlock* spinlock, uint64 id) {
     spinlock->id = id;
     spinlock->locked = 0;
@@ -30,7 +31,6 @@ void acquire_interrupt_safe_spinlock(struct spinlock* spinlock) {
 }
 
 void release_interrupt_safe_spinlock(struct spinlock* spinlock) {
-    cli();
     spinlock->cpu = 0;
     spinlock->locked = 0;
 }

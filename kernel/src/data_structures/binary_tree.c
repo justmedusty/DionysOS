@@ -3,26 +3,29 @@
 //
 #include "include/definitions.h"
 #include "include/data_structures/binary_tree.h"
+
+#include <include/arch/arch_cpu.h>
+#include <include/drivers/uart.h>
 #include <include/mem/kalloc.h>
 
 /* Local Definitions */
 
-void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key);
-void init_binary_tree(struct binary_tree* tree, void* root, uint64 key);
+void init_red_black_tree(struct binary_tree* tree);
+void init_binary_tree(struct binary_tree* tree);
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key);
 uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key);
 uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address);
 uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key);
 
 
-uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags, void* root, uint64 key) {
+uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
     switch (mode) {
     case REGULAR_TREE:
-        init_binary_tree(tree, root, key);
+        init_binary_tree(tree);
         return SUCCESS;
 
     case RED_BLACK_TREE:
-        init_red_black_tree(tree, root, key);
+        init_red_black_tree(tree);
         return SUCCESS;
 
     default:
@@ -94,9 +97,11 @@ uint64 destroy_tree(struct binary_tree* tree) {
     }
 
     kfree(tree);
+    return SUCCESS;
 }
 
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
+
     struct binary_tree_node* new_node = kalloc(sizeof(struct binary_tree_node));
     singly_linked_list_init(&new_node->data);
     singly_linked_list_insert_head(&new_node->data, data);
@@ -107,14 +112,15 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
     if (current == NULL) {
         tree->root = new_node;
+        tree->root->parent = NULL;
         tree->node_count++;
         return SUCCESS;
     }
 
-
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
+
             singly_linked_list_insert_tail(&current->data, data);
             kfree(new_node);
             return SUCCESS;
@@ -140,6 +146,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         }
     }
 }
+
 
 void* lookup_tree(struct binary_tree* tree, uint64 key) {
     struct binary_tree_node* current = tree->root;
@@ -286,23 +293,16 @@ uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key) {
 }
 
 
-void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key) {
+void init_red_black_tree(struct binary_tree* tree) {
     tree->mode = RED_BLACK_TREE;
     tree->root->color = BLACK;
-    tree->root->key = key;
-    singly_linked_list_init(&tree->root->data);
-    singly_linked_list_insert_head(&tree->root->data, root);
-    tree->root->parent = NULL;
     tree->node_count = 1;
 }
 
 
-void init_binary_tree(struct binary_tree* tree, void* root, uint64 key) {
+void init_binary_tree(struct binary_tree* tree) {
     tree->mode = REGULAR_TREE;
-    tree->root->key = key;
-    singly_linked_list_init(&tree->root->data);
-    singly_linked_list_insert_head(&tree->root->data, root);
-    tree->root->parent = NULL;
-    tree->node_count = 1;
+    tree->node_count = 0;
+    tree->root = NULL;
 }
 

@@ -38,7 +38,7 @@ struct binary_tree_node {
     uint64 color; /* Only for RB tree */
 };
 
-uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags, void* data, uint64 key);
+uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags);
 uint64 insert_tree_node(struct binary_tree* tree, void* data, uint64 key);
 uint64 remove_tree_node(struct binary_tree *tree, uint64 key,void *address);
 uint64 destroy_tree(struct binary_tree* tree);
