@@ -257,3 +257,18 @@ void phys_dealloc(void* address, uint64 pages) {
     }
     used_pages -= pages;
 }
+
+
+static uint64 buddy_alloc(uint64 pages) {
+
+    if(pages < (1 << MAX_ORDER)){
+    }
+}
+
+static void buddy_free(void* address, uint64 pages) {
+
+}
+
+static struct buddy_block* buddy_split(uint64 order,struct binary_tree *free_list) {
+
+}
