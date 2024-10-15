@@ -140,8 +140,6 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         }
     }
 }
-\
-\
 
 void* lookup_tree(struct binary_tree* tree, uint64 key) {
     struct binary_tree_node* current = tree->root;
@@ -301,7 +299,6 @@ void init_red_black_tree(struct binary_tree* tree, void* root, uint64 key) {
 
 void init_binary_tree(struct binary_tree* tree, void* root, uint64 key) {
     tree->mode = REGULAR_TREE;
-    tree->root->color = BLACK;
     tree->root->key = key;
     singly_linked_list_init(&tree->root->data);
     singly_linked_list_insert_head(&tree->root->data, root);

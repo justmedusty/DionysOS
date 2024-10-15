@@ -3,6 +3,9 @@
 //
 #include "include/types.h"
 #include "include/mem/pmm.h"
+
+#include <include/arch/arch_cpu.h>
+
 #include "limine.h"
 #include "stddef.h"
 #include "include/mem/mem.h"
@@ -54,7 +57,7 @@ struct binary_tree buddy_free_list_zone8;
 struct binary_tree buddy_free_list_zone9;
 struct binary_tree buddy_free_list_zone10;
 
-struct buddy_block buddy_block_static_pool[500]; // should be able to handle 4 GB of memory and the rest can be taken from a slab
+struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE]; // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
 
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
@@ -130,9 +133,31 @@ int phys_init() {
         }
     }
 
+    /*
+     *  Set up the buddy blocks which we will use later to replace our bitmap allocation scheme, reason being buddy
+     *  makes for easier contiguous allocation whereas bitmap or freelist can get pretty out-of-order pretty quickly
+     *
+     */
+
+    int index = 0;
     for(int i = 0; i < page_range_index; i++) {
 
         for (int j = 0; j < contiguous_pages[i].pages; j+= 1 << MAX_ORDER) {
+
+            buddy_block_static_pool[index].start_address = contiguous_pages[i].start_address + (j * (PAGE_SIZE - 1));
+            buddy_block_static_pool[index].flags |= STATIC_POOL_FLAG;
+            buddy_block_static_pool[index].order = MAX_ORDER;
+            buddy_block_static_pool[index].zone = i;
+            buddy_block_static_pool[index].is_free = FREE;
+
+
+            if(index != 0 && buddy_block_static_pool[index - 1].zone == buddy_block_static_pool[index].zone) {
+                buddy_block_static_pool[index - 1].next =  &buddy_block_static_pool[index];
+            }
+            index++;
+            if(index == STATIC_POOL_SIZE) {
+                panic("1000 hit");
+            }
 
         }
 
@@ -199,7 +224,7 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
 
     return NULL;
 }
-
+ //TODO PLACE LOCKS IN ALL ALLOC PLACES
 void* phys_alloc(uint64 pages) {
     uint64 last = last_used_index;
     void* return_value = __phys_alloc(pages, highest_page_index);
