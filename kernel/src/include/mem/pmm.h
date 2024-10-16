@@ -42,4 +42,5 @@ struct buddy_block {
     uint64 flags;
     uint64 order;
     uint64 is_free;
+    uint16 reserved;
 };

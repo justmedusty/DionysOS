@@ -5,6 +5,7 @@
 #include "include/data_structures/singly_linked_list.h"
 
 #include <include/arch/arch_cpu.h>
+#include <include/drivers/uart.h>
 
 #include "include/types.h"
 #include <include/mem/kalloc.h>
@@ -50,18 +51,25 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
 }
 
 
-void singly_linked_list_remove_tail(struct singly_linked_list* list) {
+void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
 
     if(list->node_count == 0) {
-        return;
+        return NULL;
+    }
+
+    void *return_value;
+
+    if(list->tail != NULL) {
+        return_value = list->tail->data;
     }
 
     if(list->node_count == 1) {
+        return_value = list->head->data;
         kfree(list->head);
         list->head = NULL;
         list->tail = NULL;
         list->node_count--;
-        return;
+        return return_value;
     }
 
     struct singly_linked_list_node* node = list->head;
@@ -71,31 +79,34 @@ void singly_linked_list_remove_tail(struct singly_linked_list* list) {
     while (node != NULL) {
         if(node->next == NULL) {
             list->tail = node;
-
         }
         node = node->next;
     }
 
     list->node_count--;
+    return return_value;
+
 }
 
-void singly_linked_list_remove_head(struct singly_linked_list* list) {
+void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     if (list->node_count == 0) {
-        return;
+        return NULL;
     }
+    void *return_value = list->head->data;
 
     if(list->node_count == 1) {
         kfree(list->head);
         list->head = NULL;
         list->tail = NULL;
         list->node_count--;
-        return;
+        return return_value;
     }
 
     struct singly_linked_list_node* new_head = list->head->next;
     kfree(list->head);
     list->head = new_head;
     list->node_count--;
+    return return_value;
 }
 
 uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {

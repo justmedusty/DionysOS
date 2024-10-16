@@ -23,6 +23,6 @@ struct singly_linked_list {
 void singly_linked_list_init(struct singly_linked_list *list);
 void singly_linked_list_insert_tail(struct singly_linked_list *list, void *data);
 void singly_linked_list_insert_head(struct singly_linked_list *list, void *data);
-void singly_linked_list_remove_tail(struct singly_linked_list *list);
-void singly_linked_list_remove_head(struct singly_linked_list *list);
+void *singly_linked_list_remove_tail(struct singly_linked_list *list);
+void *singly_linked_list_remove_head(struct singly_linked_list *list);
 uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data);

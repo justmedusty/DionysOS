@@ -23,7 +23,7 @@ static inline void bitmap_clear(void* bitmap, uint64 bit);
 static void buddy_coalesce(struct buddy_block* block);
 static uint64 buddy_alloc(uint64 pages);
 static void buddy_free(void* address, uint64 pages);
-static struct buddy_block* buddy_split(struct buddy_block block,struct binary_tree *free_list);
+static struct buddy_block* buddy_split(struct buddy_block block);
 static void buddy_block_free(struct buddy_block* block);
 
 
@@ -302,8 +302,31 @@ static void buddy_free(void* address, uint64 pages) {
 
 }
 
-static struct buddy_block* buddy_split(struct buddy_block block,struct binary_tree *free_list) {
+static struct buddy_block* buddy_split(struct buddy_block block) {
+    if(block.order == 0) {
+        return NULL; /* Can't split a zero order */
+    }
 
+    if(block.is_free != FREE) {
+        return NULL; /* Obviously */
+    }
+
+
+
+
+
+
+
+}
+
+static struct buddy_block* buddy_block_get() {
+
+    struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
+   if (block == NULL) {
+       return kalloc(sizeof(struct buddy_block));
+   }
+
+    return block;
 }
 
 static void buddy_block_free(struct buddy_block* block) {
@@ -313,6 +336,7 @@ static void buddy_block_free(struct buddy_block* block) {
         block->zone = UNUSED;
         block->start_address = 0;
         block->next = NULL;
+        singly_linked_list_insert_head(&unused_buddy_blocks_list, block);
         return;
     }
     kfree(block);
@@ -322,6 +346,7 @@ static void buddy_block_free(struct buddy_block* block) {
  *  This assumes the block passed to the function is not currently in a free-tree, if it is then it will cause issues commenting this now
  *  in case it becomes an issue later
  */
+
 static void buddy_coalesce(struct buddy_block* block) {
 
     if(block->next == NULL) {
