@@ -7,6 +7,8 @@
 #include <include/definitions.h>
 #include <include/arch/arch_cpu.h>
 #include <include/data_structures/spinlock.h>
+#include <include/mem/kalloc.h>
+
 #include "limine.h"
 #include "stddef.h"
 #include "include/mem/mem.h"
@@ -17,6 +19,12 @@
 static inline bool bitmap_get(void* bitmap, uint64 bit);
 static inline void bitmap_set(void* bitmap, uint64 bit);
 static inline void bitmap_clear(void* bitmap, uint64 bit);
+
+static void buddy_coalesce(struct buddy_block* block);
+static uint64 buddy_alloc(uint64 pages);
+static void buddy_free(void* address, uint64 pages);
+static struct buddy_block* buddy_split(struct buddy_block block,struct binary_tree *free_list);
+static void buddy_block_free(struct buddy_block* block);
 
 
 __attribute__((used, section(".requests")))
@@ -46,6 +54,7 @@ static inline void bitmap_clear(void* bitmap, uint64 bit) {
 }
 
 struct spinlock pmm_lock;
+struct spinlock buddy_lock;
 
 struct binary_tree buddy_free_list_zone[15];
 
@@ -68,7 +77,7 @@ int allocation_model;
 struct contiguous_page_range contiguous_pages[10] = {};
 
 int phys_init() {
-
+    initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_hhdm_response* hhdm = hhdm_request.response;
@@ -252,17 +261,24 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
     return NULL;
 }
 void* phys_alloc(uint64 pages) {
+
     acquire_interrupt_safe_spinlock(&pmm_lock);
+
     uint64 last = last_used_index;
+
     void* return_value = __phys_alloc(pages, highest_page_index);
+
     if (return_value == NULL) {
         last_used_index = 0;
         return_value = __phys_alloc(pages, last);
     }
+
     used_pages += pages;
+
     if (return_value != NULL) {
         memset(P2V(return_value), 0,PAGE_SIZE * pages);
     }
+
     release_interrupt_safe_spinlock(&pmm_lock);
     return return_value;
 }
@@ -288,4 +304,49 @@ static void buddy_free(void* address, uint64 pages) {
 
 static struct buddy_block* buddy_split(struct buddy_block block,struct binary_tree *free_list) {
 
+}
+
+static void buddy_block_free(struct buddy_block* block) {
+    if(block->flags & STATIC_POOL_FLAG) {
+        block->is_free = UNUSED;
+        block->order = UNUSED;
+        block->zone = UNUSED;
+        block->start_address = 0;
+        block->next = NULL;
+        return;
+    }
+    kfree(block);
+}
+
+/*
+ *  This assumes the block passed to the function is not currently in a free-tree, if it is then it will cause issues commenting this now
+ *  in case it becomes an issue later
+ */
+static void buddy_coalesce(struct buddy_block* block) {
+
+    if(block->next == NULL) {
+        /*
+         *  Can't coalesce until the predecessor is free
+         */
+        return;
+    }
+
+    if(block->order == MAX_ORDER) {
+        return;
+    }
+
+    if((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone == block->next->zone)) {
+        acquire_spinlock(&buddy_lock);
+        struct buddy_block* next = block->next;
+        /*
+         * Reflect new order and new next block
+         */
+        block->next = next->next;
+        block->order++;
+
+        buddy_block_free(next);
+
+        insert_tree_node(&buddy_free_list_zone[block->zone],block,block->order);
+
+    }
 }

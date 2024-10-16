@@ -14,11 +14,12 @@ extern volatile struct limine_memmap_request memmap_request;
 #define BUDDY 1
 /* For buddy */
 #define MAX_ORDER 11 /* Going with the number Linux uses*/
-#define STATIC_POOL_FLAG 0xA /* So we know to return to the pool not try to call kfree on it */
+#define STATIC_POOL_FLAG 1 << 5 /* So we know to return to the pool not try to call kfree on it */
 #define STATIC_POOL_SIZE 1024
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
+#define UNUSED 0xFFFFFFFF
 
 extern uint64 hhdm_offset;
 
