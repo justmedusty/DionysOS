@@ -18,10 +18,15 @@
 /* Other responses */
 #define BAD_TREE_MODE 0xF1F
 #define INSERTION_ERROR 0x1234
+
 #define SUCCESS 0
 #define EMPTY_TREE 1
 #define VALUE_NOT_FOUND 2
 
+#define REMOVE_FROM_TREE 1
+#define DO_NOT_REMOVE_FROM_TREE 2
+
+#define EMPTY_TREE_CAST (void *) 1
 
 struct binary_tree {
     struct spinlock lock; /* Optional */
