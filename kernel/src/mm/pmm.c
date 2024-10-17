@@ -3,12 +3,11 @@
 //
 #include "include/types.h"
 #include "include/mem/pmm.h"
-
 #include <include/definitions.h>
 #include <include/arch/arch_cpu.h>
+#include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
 #include <include/mem/kalloc.h>
-
 #include "limine.h"
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
@@ -24,7 +23,7 @@ static struct buddy_block* buddy_alloc(uint64 pages);
 static void buddy_free(void* address, uint64 pages);
 static void buddy_block_free(struct buddy_block* block);
 static struct buddy_block* buddy_block_get();
-static struct buddy_block* buddy_split(struct buddy_block *block);
+static struct buddy_block* buddy_split(struct buddy_block* block);
 
 __attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
@@ -58,9 +57,12 @@ struct spinlock buddy_lock;
 uint64 zone_pointer; /* will just use one zone until it's all allocated then increment the zone pointer */
 struct binary_tree buddy_free_list_zone[PHYS_ZONE_COUNT];
 
-struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE]; // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
+struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
+// should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
 
 struct singly_linked_list unused_buddy_blocks_list;
+
+struct hash_table used_buddy_hash_table;
 
 uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
@@ -79,6 +81,7 @@ struct contiguous_page_range contiguous_pages[10] = {};
 int phys_init() {
     initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
+
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_hhdm_response* hhdm = hhdm_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
@@ -227,6 +230,8 @@ int phys_init() {
         }
     }
 
+    hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
+
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
@@ -292,26 +297,24 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
         //Handle tall orders
     }
 
-    for(uint64 i = 0; i < MAX_ORDER; i++) {
-        if(pages == (1 << i)) {
-
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer],1 << i,REMOVE_FROM_TREE);
-            if(block == NULL) {
+    for (uint64 i = 0; i < MAX_ORDER; i++) {
+        if (pages == (1 << i)) {
+            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
+            if (block == NULL) {
                 return NULL; /* Redundant? sticking a pin here*/
             }
 
             return block;
-
         }
 
-        if(pages < (1 << i)) {
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer],1 << i,REMOVE_FROM_TREE);
+        if (pages < (1 << i)) {
+            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
 
-            if(block == NULL) {
+            if (block == NULL) {
                 return NULL;
             }
 
-            if(buddy_split(block) != NULL) {
+            if (buddy_split(block) != NULL) {
                 return block;
             }
 
@@ -323,11 +326,32 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 /* It may be ideal to store pointers in the process object and pass the process object to easily find the block*/
 /* Pages is also sort of redundant here but will keep it for now */
 static void buddy_dealloc(void* address, uint64 pages) {
+    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
+                                                            hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
 
+    if (bucket == NULL) {
+        panic("Buddy Dealloc: Buddy hash table not found");
+    }
+
+    struct singly_linked_list_node* node = bucket->head;
+
+    while (1) {
+        if (node == NULL) {
+            panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
+        }
+        struct buddy_block* block = node->data;
+
+        if (block->start_address == (uint64)address) {
+            singly_linked_list_remove_node_by_address(bucket, address);
+            block->is_free = FREE;
+            buddy_coalesce(block);
+        }
+
+        node = node->next;
+    }
 }
 
-static struct buddy_block* buddy_split(struct buddy_block *block) {
-
+static struct buddy_block* buddy_split(struct buddy_block* block) {
     if (block->order == 0) {
         return NULL; /* Can't split a zero order */
     }
@@ -338,7 +362,7 @@ static struct buddy_block* buddy_split(struct buddy_block *block) {
 
     struct buddy_block* new_block = buddy_block_get();
 
-    if(new_block == NULL) {
+    if (new_block == NULL) {
         return NULL;
     }
 
@@ -351,13 +375,11 @@ static struct buddy_block* buddy_split(struct buddy_block *block) {
 
     const uint64 ret = insert_tree_node(&buddy_free_list_zone[new_block->zone], new_block, new_block->order);
 
-    if(ret == SUCCESS) {
+    if (ret == SUCCESS) {
         return block;
     }
 
     return NULL;
-
-
 }
 
 static struct buddy_block* buddy_block_get() {
@@ -388,8 +410,8 @@ static void buddy_block_free(struct buddy_block* block) {
  */
 
 static void buddy_coalesce(struct buddy_block* block) {
-
     if (block->next == NULL) {
+        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         /*
          *  Can't coalesce until the predecessor is free
          */
@@ -397,11 +419,16 @@ static void buddy_coalesce(struct buddy_block* block) {
     }
 
     if (block->order == MAX_ORDER) {
+        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         return;
     }
-    acquire_spinlock(&buddy_lock); /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone== block->next->zone)) {
 
+    /* This may be unneeded with high level locking but will keep it in mind still for the time being */
+
+    acquire_spinlock(&buddy_lock);
+    /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
+        == block->next->zone)) {
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block

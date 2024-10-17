@@ -21,6 +21,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define USED 0x2
 #define UNUSED 0xFFFFFFFF
 
+#define BUDDY_HASH_TABLE_SIZE 300
 
 extern uint64 hhdm_offset;
 
