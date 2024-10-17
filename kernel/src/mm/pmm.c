@@ -306,6 +306,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 
         if(pages < (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer],1 << i,REMOVE_FROM_TREE);
+
             if(block == NULL) {
                 return NULL;
             }
@@ -387,6 +388,7 @@ static void buddy_block_free(struct buddy_block* block) {
  */
 
 static void buddy_coalesce(struct buddy_block* block) {
+
     if (block->next == NULL) {
         /*
          *  Can't coalesce until the predecessor is free
@@ -397,10 +399,9 @@ static void buddy_coalesce(struct buddy_block* block) {
     if (block->order == MAX_ORDER) {
         return;
     }
+    acquire_spinlock(&buddy_lock); /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone== block->next->zone)) {
 
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
-        == block->next->zone)) {
-        acquire_spinlock(&buddy_lock);
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block
@@ -412,5 +413,6 @@ static void buddy_coalesce(struct buddy_block* block) {
 
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
     }
+    release_spinlock(&buddy_lock);
 }
 
