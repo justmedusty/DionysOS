@@ -10,7 +10,6 @@
 #include <include/mem/kalloc.h>
 
 #include "limine.h"
-#include "stddef.h"
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
 #include "include/drivers/uart.h"
@@ -23,9 +22,9 @@ static inline void bitmap_clear(void* bitmap, uint64 bit);
 static void buddy_coalesce(struct buddy_block* block);
 static struct buddy_block* buddy_alloc(uint64 pages);
 static void buddy_free(void* address, uint64 pages);
-static struct buddy_block* buddy_split(struct buddy_block block);
 static void buddy_block_free(struct buddy_block* block);
 static struct buddy_block* buddy_block_get();
+static struct buddy_block* buddy_split(struct buddy_block *block);
 
 __attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
@@ -59,8 +58,7 @@ struct spinlock buddy_lock;
 uint64 zone_pointer; /* will just use one zone until it's all allocated then increment the zone pointer */
 struct binary_tree buddy_free_list_zone[PHYS_ZONE_COUNT];
 
-struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
-// should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
+struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE]; // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
 
 struct singly_linked_list unused_buddy_blocks_list;
 
@@ -298,25 +296,67 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
         if(pages == (1 << i)) {
 
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer],1 << i,REMOVE_FROM_TREE);
+            if(block == NULL) {
+                return NULL; /* Redundant? sticking a pin here*/
+            }
 
-        }else if(pages < (1 << i)) {
+            return block;
 
         }
 
+        if(pages < (1 << i)) {
+            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer],1 << i,REMOVE_FROM_TREE);
+            if(block == NULL) {
+                return NULL;
+            }
+
+            if(buddy_split(block) != NULL) {
+                return block;
+            }
+
+            return NULL;
+        }
     }
 }
 
+/* It may be ideal to store pointers in the process object and pass the process object to easily find the block*/
+/* Pages is also sort of redundant here but will keep it for now */
 static void buddy_dealloc(void* address, uint64 pages) {
+
 }
 
-static struct buddy_block* buddy_split(struct buddy_block block) {
-    if (block.order == 0) {
+static struct buddy_block* buddy_split(struct buddy_block *block) {
+
+    if (block->order == 0) {
         return NULL; /* Can't split a zero order */
     }
 
-    if (block.is_free != FREE) {
+    if (block->is_free != FREE) {
         return NULL; /* Obviously */
     }
+
+    struct buddy_block* new_block = buddy_block_get();
+
+    if(new_block == NULL) {
+        return NULL;
+    }
+
+    new_block->next = block->next;
+    block->next = new_block;
+    block->order--;
+    new_block->start_address = block->start_address + (1 << new_block->order);
+    new_block->zone = block->zone;
+    new_block->is_free = FREE;
+
+    const uint64 ret = insert_tree_node(&buddy_free_list_zone[new_block->zone], new_block, new_block->order);
+
+    if(ret == SUCCESS) {
+        return block;
+    }
+
+    return NULL;
+
+
 }
 
 static struct buddy_block* buddy_block_get() {
