@@ -18,6 +18,9 @@
  *
  *  I will probably change this as time goes on and I get an idea how many collisions this causes
  */
+
+struct singly_linked_list hash_bucket_static_pool[500];
+
 uint64 hash(uint64 key, uint64 modulus) {
     uint64 hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
 

@@ -31,6 +31,9 @@ void singly_linked_list_init(struct singly_linked_list* list) {
         for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE | STATIC_POOL_FREE_NODE;
         }
+        for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
+
+        }
         static_pool_setup = 1;
     }
 
@@ -86,7 +89,6 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
         list->head = new_node;
         list->tail = new_node;
         list->node_count++;
-        serial_printf("%i list count\n",list->node_count);
         return;
     }
 

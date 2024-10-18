@@ -165,7 +165,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            singly_linked_list_insert_head(&current->data, data);
+            singly_linked_list_insert_tail(&current->data, data);
             node_free(new_node);
             return SUCCESS;
         }
@@ -243,7 +243,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* 
 
     if (key == tree->root->key) {
 
-        singly_linked_list_remove_head(&tree->root->data);
+        singly_linked_list_remove_node_by_address(&current->data, address);
         release_spinlock(&tree->lock);
         return SUCCESS;
     }

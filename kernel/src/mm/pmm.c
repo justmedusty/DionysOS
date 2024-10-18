@@ -187,11 +187,8 @@ int phys_init() {
     for (int i = 0; i < page_range_index; i++) {
         init_tree(&buddy_free_list_zone[i],REGULAR_TREE, 0);
         while (buddy_block_static_pool[index].zone == i) {
-            uint64 ret = insert_tree_node(&buddy_free_list_zone[i], &buddy_block_static_pool[index],
+            insert_tree_node(&buddy_free_list_zone[i], &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);
-            if(ret != SUCCESS) {
-                asm("nop");
-            }
             index++;
         }
         serial_printf("Page Range Index %i \n",buddy_free_list_zone[i].root->data.node_count);
