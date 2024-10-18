@@ -187,7 +187,7 @@ uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address){
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0){
-        panic("");
+        panic("vmm");
         return 0;
     }
     if (*entry & PTE_P){

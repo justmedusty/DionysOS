@@ -19,7 +19,7 @@
  *  I will probably change this as time goes on and I get an idea how many collisions this causes
  */
 
-struct singly_linked_list hash_bucket_static_pool[250];
+struct singly_linked_list hash_bucket_static_pool[300];
 
 uint64 hash(uint64 key, uint64 modulus) {
     uint64 hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
@@ -36,7 +36,7 @@ void hash_table_init(struct hash_table* table, uint64 size) {
     table->size = size;
     table->table = kalloc(size * sizeof(struct singly_linked_list*));
     for (uint64 i = 0; i < size; i++) {
-        table->table[i] = kalloc(sizeof(struct singly_linked_list));
+        table->table[i] = &hash_bucket_static_pool[i];
         singly_linked_list_init(table->table[i]);
     }
 }

@@ -87,7 +87,7 @@ void general_protection_fault() {
 void page_fault() {
     uint64 faulting_address = rcr2();
     serial_printf("Page Fault Occurred With Access %x.64\n", faulting_address);
-    panic("");
+    panic("Page Fault!");
 }
 
 // Exception 16: Floating Point Error

@@ -21,7 +21,6 @@ slab_t slabs[10];
 void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages) {
 
     slab->first_free = P2V(phys_alloc(pages));
-    panic(" ");
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE - 1)));

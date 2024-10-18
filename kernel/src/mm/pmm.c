@@ -329,7 +329,6 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 
                         while(block->order != i) {
                             block = buddy_split(block);
-                            serial_printf("ORDER %i \n",block->order);
                         }
 
                         return block;
