@@ -26,6 +26,7 @@ static uint8 static_pool_init = 0;
 
 static struct binary_tree_node *node_alloc() {
     if(pool_full) {
+       panic("Binary tree pool is full");
         return kalloc(sizeof(struct binary_tree_node));
     }
 
@@ -34,7 +35,7 @@ static struct binary_tree_node *node_alloc() {
         return &tree_node_static_pool[last_freed];
     }
 
-    for(int32 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+    for(uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
         if(tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
             return &tree_node_static_pool[i];
         }
@@ -145,33 +146,33 @@ uint64 destroy_tree(struct binary_tree* tree) {
 
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
-    struct binary_tree_node* new_node = node_alloc();
-    singly_linked_list_init(&new_node->data);
-    singly_linked_list_insert_head(&new_node->data, data);
-    new_node->key = key;
-
 
     struct binary_tree_node* current = tree->root;
 
     if (current == NULL) {
+      struct binary_tree_node* new_node = node_alloc();
+    singly_linked_list_init(&new_node->data);
+    singly_linked_list_insert_head(&new_node->data, data);
+    new_node->key = key;
         tree->root = new_node;
         tree->root->parent = NULL;
         tree->node_count++;
         return SUCCESS;
     }
 
-
-
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
-        if (key == current->key) {
+        if (key == key) {
             singly_linked_list_insert_tail(&current->data, data);
-            node_free(new_node);
             return SUCCESS;
         }
 
-        if (key < current->key) {
+        if (key < key) {
             if (current->left == NULL) {
+               struct binary_tree_node* new_node = node_alloc();
+    			singly_linked_list_init(&new_node->data);
+    			singly_linked_list_insert_head(&new_node->data, data);
+    			new_node->key = key;
                 current->left = new_node;
                 new_node->parent = current;
                 tree->node_count++;
@@ -181,6 +182,10 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         }
         else {
             if (current->right == NULL) {
+              struct binary_tree_node* new_node = node_alloc();
+    			singly_linked_list_init(&new_node->data);
+    			singly_linked_list_insert_head(&new_node->data, data);
+    			new_node->key = key;
                 current->right = new_node;
                 new_node->parent = current;
                 tree->node_count++;
