@@ -13,7 +13,9 @@
 #define REGULAR_TREE 1
 #define RED_BLACK_TREE 2
 
-#define MAX_DATA_PER_NODE 20 /* Arbitrary but should be enough*/
+#define BINARY_TREE_NODE_STATIC_POOL_SIZE 150
+#define BINARY_TREE_NODE_STATIC_POOL 1
+#define BINARY_TREE_NODE_FREE 2
 
 /* Other responses */
 #define BAD_TREE_MODE 0xF1F
@@ -42,7 +44,8 @@ struct binary_tree_node {
     struct binary_tree_node* right;
     uint64 key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
     struct singly_linked_list data;
-    uint64 color; /* Only for RB tree */
+    uint16 color; /* Only for RB tree */
+    uint16 flags;
 };
 
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags);

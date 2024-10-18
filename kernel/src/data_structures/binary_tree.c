@@ -11,7 +11,9 @@
 /* Local Definitions */
 
 
-struct binary_tree_node tree_node_static_pool[100];
+static struct binary_tree_node tree_node_static_pool[BINARY_TREE_NODE_STATIC_POOL_SIZE];
+static uint8 pool_full = 0;
+static int32 last_freed = -1; /* These two fields are just simple safeguards to prevent linear lookups when possible */
 
 void init_red_black_tree(struct binary_tree* tree);
 void init_binary_tree(struct binary_tree* tree);
@@ -20,8 +22,43 @@ uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key);
 uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address);
 uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key);
 
+static uint8 static_pool_init = 0;
+
+static struct binary_tree_node *node_alloc() {
+    if(pool_full) {
+        return kalloc(sizeof(struct binary_tree_node));
+    }
+
+    if(last_freed >= 0) {
+        last_freed = -1;
+        return &tree_node_static_pool[last_freed];
+    }
+
+    for(int32 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+        if(tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
+            return &tree_node_static_pool[i];
+        }
+    }
+    pool_full = 1;
+}
+
+static void node_free(struct binary_tree_node *node) {
+    if(node->flags & BINARY_TREE_NODE_STATIC_POOL) {
+        node->flags |= BINARY_TREE_NODE_FREE;
+        last_freed = ((uint64)&tree_node_static_pool + (((uint64) node - (uint64)&tree_node_static_pool) / sizeof(struct binary_tree_node)));
+        return;
+    }
+    kfree(node);
+
+}
 
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
+    if(static_pool_init == 0) {
+        for(uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+            tree_node_static_pool[i].flags |= BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
+        }
+
+    }
     switch (mode) {
     case REGULAR_TREE:
         init_binary_tree(tree);
