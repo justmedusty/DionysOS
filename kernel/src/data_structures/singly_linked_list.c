@@ -5,6 +5,7 @@
 #include "include/data_structures/singly_linked_list.h"
 
 #include <include/arch/arch_cpu.h>
+#include <include/drivers/uart.h>
 
 #include "include/types.h"
 #include <include/mem/kalloc.h>
@@ -17,7 +18,7 @@
 
 uint8 static_pool_setup = 0;
 
-struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated, yet we need static pools*/
+struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
 
 void singly_linked_list_init(struct singly_linked_list* list) {
 
@@ -25,8 +26,9 @@ void singly_linked_list_init(struct singly_linked_list* list) {
         panic("singly linked list memory allocation failed");
     }
 
+
     if(static_pool_setup == 0) {
-        for(uint8 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
+        for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE | STATIC_POOL_FREE_NODE;
         }
         static_pool_setup = 1;
@@ -35,6 +37,8 @@ void singly_linked_list_init(struct singly_linked_list* list) {
     list->head = NULL;
     list->tail = NULL;
     list->node_count = 0;
+
+
 }
 
 static struct singly_linked_list_node *singly_linked_list_node_alloc() {
@@ -53,10 +57,10 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
         index++;
         new_node = &singly_linked_list_node_static_pool[index];
     }
-
     if(new_node == NULL) {
         new_node = kalloc(sizeof(struct  singly_linked_list_node));
     }
+    new_node->flags &= ~STATIC_POOL_FREE_NODE;
     return new_node;
 }
 
@@ -72,6 +76,7 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
 
     struct singly_linked_list_node *new_node = singly_linked_list_node_alloc();
+
     if(new_node == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
@@ -81,13 +86,13 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
         list->head = new_node;
         list->tail = new_node;
         list->node_count++;
+        serial_printf("%i list count\n",list->node_count);
         return;
     }
 
     list->tail->next = new_node;
     list->tail = new_node;
     list->node_count++;
-
 
 }
 
@@ -96,10 +101,23 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     if(new_head == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
+    list->node_count++;
     new_head->data = data;
     new_head->next = list->head;
     list->head = new_head;
-    list->node_count++;
+
+    struct singly_linked_list_node* pointer = list->head;
+    if(list->tail == NULL && (list->node_count > 1)) {
+        while(pointer != NULL) {
+            if(pointer->next == NULL) {
+                list->tail = pointer;
+                return;
+            }
+            pointer = pointer->next;
+        }
+
+    }
+
 }
 
 
@@ -136,6 +154,7 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     }
 
     list->node_count--;
+    serial_printf("%i node count \n",list->node_count);
     return return_value;
 
 }
@@ -159,6 +178,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     list->head = new_head;
     list->node_count--;
     return return_value;
+    serial_printf("%i node count \n",list->node_count);
 }
 
 uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {

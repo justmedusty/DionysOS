@@ -20,7 +20,7 @@ static inline void bitmap_clear(void* bitmap, uint64 bit);
 
 static void buddy_coalesce(struct buddy_block* block);
 static struct buddy_block* buddy_alloc(uint64 pages);
-static void buddy_free(void* address, uint64 pages);
+static void buddy_free(void* address);
 static void buddy_block_free(struct buddy_block* block);
 static struct buddy_block* buddy_block_get();
 static struct buddy_block* buddy_split(struct buddy_block* block);
@@ -148,7 +148,7 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = contiguous_pages[i].start_address + (j * (PAGE_SIZE - 1));
+            buddy_block_static_pool[index].start_address = contiguous_pages[i].start_address + (j * (PAGE_SIZE));
             buddy_block_static_pool[index].flags |= STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -178,6 +178,26 @@ int phys_init() {
 
         singly_linked_list_insert_head(&unused_buddy_blocks_list, &buddy_block_static_pool[i]);
     }
+
+    /*
+     *  Set up buddy blocks and insert them into proper trees
+     */
+    index = 0;
+
+    for (int i = 0; i < page_range_index; i++) {
+        init_tree(&buddy_free_list_zone[i],REGULAR_TREE, 0);
+        while (buddy_block_static_pool[index].zone == i) {
+            uint64 ret = insert_tree_node(&buddy_free_list_zone[i], &buddy_block_static_pool[index],
+                             buddy_block_static_pool[index].order);
+            if(ret != SUCCESS) {
+                asm("nop");
+            }
+            index++;
+        }
+        serial_printf("Page Range Index %i \n",buddy_free_list_zone[i].root->data.node_count);
+    }
+
+    hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
 
@@ -217,20 +237,6 @@ int phys_init() {
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
 
-    /*
-     *  Set up buddy blocks and insert them into proper trees
-     */
-    index = 0;
-    for (int i = 0; i < page_range_index; i++) {
-        init_tree(&buddy_free_list_zone[i],REGULAR_TREE, 0);
-        while (buddy_block_static_pool[index].zone == i) {
-            insert_tree_node(&buddy_free_list_zone[i], &buddy_block_static_pool[index],
-                             buddy_block_static_pool[index].order);
-            index++;
-        }
-    }
-
-    hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
@@ -262,7 +268,7 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
 
 void* phys_alloc(uint64 pages) {
     acquire_interrupt_safe_spinlock(&pmm_lock);
-
+/*
     uint64 last = last_used_index;
 
     void* return_value = __phys_alloc(pages, highest_page_index);
@@ -274,35 +280,67 @@ void* phys_alloc(uint64 pages) {
 
     used_pages += pages;
 
+    // This is unnecessarily heavy just pinning that for later
     if (return_value != NULL) {
         memset(P2V(return_value), 0,PAGE_SIZE * pages);
     }
+*/
+    serial_printf("%i pages\n",pages);
+    struct buddy_block *block = buddy_alloc(pages);
 
+    void* return_value;
+
+    if(block == NULL) {
+        block = buddy_alloc(pages);
+        panic("phys_alloc cannot allocate");
+    }
+
+    return_value = (void*)block->start_address;
     release_interrupt_safe_spinlock(&pmm_lock);
+
     return return_value;
 }
 
 void phys_dealloc(void* address, uint64 pages) {
+    /*
     uint64 page = (uint64)address / PAGE_SIZE;
     for (uint64 i = page; i < page + pages; i++) {
         bitmap_clear(mem_map, i);
     }
     used_pages -= pages;
+    */
+
+    buddy_free(address);
+
 }
 
 
 static struct buddy_block* buddy_alloc(uint64 pages) {
-    if (pages < (1 << MAX_ORDER)) {
-        //Handle tall orders
+    if (pages > (1 << MAX_ORDER)) {
+        serial_printf("pages %i \n",pages);
+        //TODO Handle tall orders
     }
-
     for (uint64 i = 0; i < MAX_ORDER; i++) {
         if (pages == (1 << i)) {
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
+            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
             if (block == NULL) {
-                return NULL; /* Redundant? sticking a pin here*/
-            }
+                uint64 index = i;
+                index++;
+                while(index <= MAX_ORDER) {
+                    block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
+                    if(block != NULL) {
 
+                        while(block->order != i) {
+                            block = buddy_split(block);
+                            serial_printf("ORDER %i \n",block->order);
+                        }
+
+                        return block;
+
+                    }
+                    index++;
+                }
+            }
             return block;
         }
 
@@ -312,7 +350,6 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
             if (block == NULL) {
                 return NULL;
             }
-
             if (buddy_split(block) != NULL) {
                 return block;
             }
@@ -320,13 +357,14 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
             return NULL;
         }
     }
+
+    return NULL;
 }
 
 /* It may be ideal to store pointers in the process object and pass the process object to easily find the block*/
 /* Pages is also sort of redundant here but will keep it for now */
-static void buddy_dealloc(void* address, uint64 pages) {
-    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
-                                                            hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
+static void buddy_free(void* address) {
+    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
         panic("Buddy Dealloc: Buddy hash table not found"); /* Shouldn't ever happen so panicking for visibility if it does happen */
