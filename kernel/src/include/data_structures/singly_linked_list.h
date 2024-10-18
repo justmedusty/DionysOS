@@ -7,9 +7,15 @@
 #define SUCCESS 0
 #define NODE_NOT_FOUND 1
 
+#define SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE 250
+#define STATIC_POOL_NODE 4
+#define STATIC_POOL_FREE_NODE 8
+
 struct singly_linked_list_node{
   void* data;
   struct singly_linked_list_node* next;
+  uint64 flags;
+  uint64 reserved;
 };
 
 struct singly_linked_list {

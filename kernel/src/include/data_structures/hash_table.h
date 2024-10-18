@@ -12,6 +12,7 @@ struct hash_table {
 };
 
 
+
 uint64 hash(uint64 key,uint64 modulus);
 void hash_table_init(struct hash_table* table, uint64 size);
 void hash_table_destroy(struct hash_table *table);

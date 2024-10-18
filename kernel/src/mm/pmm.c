@@ -232,7 +232,6 @@ int phys_init() {
 
     hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 
-
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
@@ -330,7 +329,7 @@ static void buddy_dealloc(void* address, uint64 pages) {
                                                             hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
-        panic("Buddy Dealloc: Buddy hash table not found");
+        panic("Buddy Dealloc: Buddy hash table not found"); /* Shouldn't ever happen so panicking for visibility if it does happen */
     }
 
     struct singly_linked_list_node* node = bucket->head;
@@ -410,6 +409,11 @@ static void buddy_block_free(struct buddy_block* block) {
  */
 
 static void buddy_coalesce(struct buddy_block* block) {
+
+    if(block == NULL) {
+        return;
+    }
+
     if (block->next == NULL) {
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         /*

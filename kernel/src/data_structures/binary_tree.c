@@ -10,6 +10,9 @@
 
 /* Local Definitions */
 
+
+struct binary_tree_node tree_node_static_pool[100];
+
 void init_red_black_tree(struct binary_tree* tree);
 void init_binary_tree(struct binary_tree* tree);
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key);

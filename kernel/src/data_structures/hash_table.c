@@ -4,6 +4,7 @@
 
 #include "include/data_structures/hash_table.h"
 #include <include/types.h>
+#include <include/arch/arch_cpu.h>
 #include <include/mem/kalloc.h>
 
 /*
@@ -31,8 +32,8 @@ uint64 hash(uint64 key, uint64 modulus) {
 void hash_table_init(struct hash_table* table, uint64 size) {
     table->size = size;
     table->table = kalloc(size * sizeof(struct singly_linked_list*));
-
     for (uint64 i = 0; i < size; i++) {
+        table->table[i] = kalloc(sizeof(struct singly_linked_list));
         singly_linked_list_init(table->table[i]);
     }
 }
