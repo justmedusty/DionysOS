@@ -160,7 +160,7 @@ int phys_init() {
             }
             index++;
             if (index == STATIC_POOL_SIZE) {
-                panic("1000 hit"); /* A panic is excessive but it's fine for now*/
+                panic("Phys_init : Static pool size hit"); /* A panic is excessive but it's fine for now*/
             }
         }
         buddy_block_static_pool[index - 1].next = &buddy_block_static_pool[index];
@@ -169,9 +169,9 @@ int phys_init() {
 
     singly_linked_list_init(&unused_buddy_blocks_list);
 
-    for (int i = index; i < STATIC_POOL_SIZE; i++) {
+    for (uint64 i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
-        buddy_block_static_pool[i].zone = 0;
+        buddy_block_static_pool[i].zone = 0xFFFF;
         buddy_block_static_pool[i].next = NULL;
         buddy_block_static_pool[i].zone = 0xFFFFFFFF;
         buddy_block_static_pool[i].start_address = 0;
@@ -183,15 +183,13 @@ int phys_init() {
      *  Set up buddy blocks and insert them into proper trees
      */
     index = 0;
-
+    init_tree(&buddy_free_list_zone[0],REGULAR_TREE, 0);
     for (int i = 0; i < page_range_index; i++) {
-        init_tree(&buddy_free_list_zone[i],REGULAR_TREE, 0);
-        while (buddy_block_static_pool[index].zone == i) {
-            insert_tree_node(&buddy_free_list_zone[i], &buddy_block_static_pool[index],
+        while (buddy_block_static_pool[index].zone == i ) {
+            insert_tree_node(&buddy_free_list_zone[0], &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);
             index++;
         }
-        serial_printf("Page Range Index %i \n",buddy_free_list_zone[i].root->data.node_count);
     }
 
     hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
@@ -402,11 +400,12 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     new_block->next = block->next;
     block->next = new_block;
     block->order--;
+    new_block->order = block->order;
     new_block->start_address = block->start_address + (1 << new_block->order);
     new_block->zone = block->zone;
     new_block->is_free = FREE;
 
-    const uint64 ret = insert_tree_node(&buddy_free_list_zone[new_block->zone], new_block, new_block->order);
+    const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
     if (ret == SUCCESS) {
         return block;

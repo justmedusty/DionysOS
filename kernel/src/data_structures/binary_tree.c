@@ -37,6 +37,7 @@ static struct binary_tree_node *node_alloc() {
 
     for(uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
         if(tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
+          	tree_node_static_pool[i].flags &= ~BINARY_TREE_NODE_FREE;
             return &tree_node_static_pool[i];
         }
     }
@@ -146,11 +147,10 @@ uint64 destroy_tree(struct binary_tree* tree) {
 
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
-
     struct binary_tree_node* current = tree->root;
 
     if (current == NULL) {
-      struct binary_tree_node* new_node = node_alloc();
+     struct binary_tree_node* new_node = node_alloc();
     singly_linked_list_init(&new_node->data);
     singly_linked_list_insert_head(&new_node->data, data);
     new_node->key = key;
@@ -162,12 +162,12 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
-        if (key == key) {
+        if (key == current->key) {
             singly_linked_list_insert_tail(&current->data, data);
             return SUCCESS;
         }
 
-        if (key < key) {
+        if (key < current->key) {
             if (current->left == NULL) {
                struct binary_tree_node* new_node = node_alloc();
     			singly_linked_list_init(&new_node->data);
