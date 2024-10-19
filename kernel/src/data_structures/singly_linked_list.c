@@ -29,7 +29,8 @@ void singly_linked_list_init(struct singly_linked_list* list) {
 
     if(static_pool_setup == 0) {
         for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
-            singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE | STATIC_POOL_FREE_NODE;
+            singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE;
+            singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_FREE_NODE;
         }
 
         static_pool_setup = 1;
@@ -67,7 +68,7 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
 
 static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
 
-    if(node->flags & STATIC_POOL_FREE_NODE) {
+    if(node->flags & STATIC_POOL_NODE) {
         node->flags &= ~STATIC_POOL_FREE_NODE;
         return;
     }

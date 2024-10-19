@@ -7,7 +7,7 @@
 #include "include/data_structures/singly_linked_list.h"
 
 struct hash_table {
-    struct singly_linked_list **table;
+    struct singly_linked_list table[300];
     uint64 size;
 };
 

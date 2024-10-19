@@ -358,6 +358,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 
 /* It may be ideal to store pointers in the process object and pass the process object to easily find the block*/
 /* Pages is also sort of redundant here but will keep it for now */
+
 static void buddy_free(void* address) {
     struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
 
