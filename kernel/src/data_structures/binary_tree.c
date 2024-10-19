@@ -46,21 +46,30 @@ static struct binary_tree_node* node_alloc() {
 }
 
 static void node_free(struct binary_tree_node* node) {
-    if (node->flags & BINARY_TREE_NODE_STATIC_POOL) {
-        node->flags |= BINARY_TREE_NODE_FREE;
-        node->parent = NULL;
-        node->left = NULL;
-        node->right = NULL;
-        node->key = 0xFFFFF;
-        memset(&node->data, 0, sizeof(struct singly_linked_list));
-        last_freed = ((uint64)&tree_node_static_pool + (((uint64)node - (uint64)&tree_node_static_pool) / sizeof(struct
-            binary_tree_node)));
-        if (pool_full) {
-            pool_full = 0;
-        }
+    if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
+        kfree(node);
         return;
     }
-    kfree(node);
+
+
+    if (node->parent != NULL) {
+        if (node->parent->right == node) {
+            node->parent->right = NULL;
+        }
+        else {
+            node->parent->left = NULL;
+        }
+    }
+    node->flags |= BINARY_TREE_NODE_FREE;
+    node->parent = NULL;
+    node->left = NULL;
+    node->right = NULL;
+    node->key = 0xFF;
+    last_freed = ((uint64)&tree_node_static_pool + (((uint64)node - (uint64)&tree_node_static_pool) / sizeof(struct
+        binary_tree_node)));
+    if (pool_full) {
+        pool_full = 0;
+    }
 }
 
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
@@ -186,7 +195,6 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
             current = current->left;
         }
         else {
-
             if (current->right == NULL) {
                 struct binary_tree_node* new_node = node_alloc();
                 singly_linked_list_init(&new_node->data);
@@ -199,8 +207,6 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
             }
             current = current->right;
         }
-
-
     }
 }
 
@@ -249,7 +255,6 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                           /* This is required because there may be many of the same value so address needed to be passed as well */) {
     acquire_spinlock(&tree->lock);
 
-
     struct binary_tree_node* current = tree->root;
     struct binary_tree_node* parent = tree->root;
 
@@ -292,11 +297,11 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
             if (current->left == NULL && current->right == NULL) {
                 parent = current->parent;
 
-                if (parent->left == current) {
-                    parent->left = NULL;
+                if (current->parent->left == current) {
+                    current->parent->left = NULL;
                 }
                 else {
-                    parent->right = NULL;
+                    current->parent->right = NULL;
                 }
                 node_free(current);
                 release_spinlock(&tree->lock);
@@ -309,6 +314,13 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
              */
             if (current->left == NULL) {
                 current->parent->right = current->right;
+
+                if (current == current->parent->right) {
+                    current->parent->right = NULL;
+                }
+                else {
+                    current->parent->left = NULL;
+                }
                 node_free(current);
                 release_spinlock(&tree->lock);
                 return SUCCESS;
@@ -317,6 +329,12 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
              *  Handle left child is non-null while right child is
              */
             if (current->right == NULL) {
+                if (current == current->parent->left) {
+                    current->parent->left = NULL;
+                }
+                else {
+                    current->parent->right = NULL;
+                }
                 current->parent->left = current->left;
                 node_free(current);
                 release_spinlock(&tree->lock);
@@ -328,6 +346,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
              *  Handle neither child is non-null
              *  Bring the right sub-tree min value up (ie all lefts until a final right)p
              */
+
             parent = current->parent;
             struct binary_tree_node* right_min = current;
 

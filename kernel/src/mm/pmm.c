@@ -403,7 +403,11 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     block->next = new_block;
     block->order--;
     new_block->order = block->order;
-    new_block->start_address = block->start_address + (1 << new_block->order);
+    new_block->start_address = block->start_address + (1 << block->order);
+    if((new_block->start_address % PAGE_SIZE )!= 0) {
+        serial_printf("page %x.64 \n",new_block->start_address);
+        panic("Not divisible by page size");
+    }
     new_block->zone = block->zone;
     new_block->is_free = FREE;
 
