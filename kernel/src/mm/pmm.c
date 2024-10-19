@@ -328,7 +328,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                         while(block->order != i) {
                             block = buddy_split(block);
                         }
-
+                        hash_table_insert(&used_buddy_hash_table,block->start_address,block);
                         return block;
 
                     }
@@ -345,6 +345,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 return NULL;
             }
             if (buddy_split(block) != NULL) {
+                hash_table_insert(&used_buddy_hash_table,block->start_address,block);
                 return block;
             }
 

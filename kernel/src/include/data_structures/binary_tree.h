@@ -50,6 +50,6 @@ struct binary_tree_node {
 
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags);
 uint64 insert_tree_node(struct binary_tree* tree, void* data, uint64 key);
-uint64 remove_tree_node(struct binary_tree *tree, uint64 key,void *address);
+uint64 remove_tree_node(struct binary_tree *tree, uint64 key,void *address,struct binary_tree_node *node /* Optional */);
 uint64 destroy_tree(struct binary_tree* tree);
 void* lookup_tree(struct binary_tree* tree, uint64 key,uint8 remove);
