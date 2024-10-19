@@ -36,9 +36,12 @@ int heap_init() {
 
 
 void *kalloc(uint64 size) {
-    slab_t *slab = heap_slab_for(size);
-    if (slab != NULL) {
-        return heap_allocate_from_slab(slab);
+
+    if(size > PAGE_SIZE) {
+        slab_t *slab = heap_slab_for(size);
+        if (slab != NULL) {
+            return heap_allocate_from_slab(slab);
+        }
     }
 
     uint64 page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;

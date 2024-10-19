@@ -235,9 +235,13 @@ void* lookup_tree(struct binary_tree* tree, uint64 key,uint8 remove /* Flag to r
 uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
 }
 
-uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address/* This is required because there may be many of the same value so address needed to be passed as well */) {
+uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,struct binary_tree_node* node /* Optional */ *//* This is required because there may be many of the same value so address needed to be passed as well */) {
 
     acquire_spinlock(&tree->lock);
+
+    if(node != NULL) {
+
+    }
     struct binary_tree_node* current = tree->root;
     struct binary_tree_node* parent = tree->root;
 

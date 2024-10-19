@@ -289,7 +289,7 @@ void* phys_alloc(uint64 pages) {
         block = buddy_alloc(pages);
         panic("phys_alloc cannot allocate");
     }
-
+    block->is_free = FALSE;
     return_value = (void*)block->start_address;
     release_interrupt_safe_spinlock(&pmm_lock);
 
