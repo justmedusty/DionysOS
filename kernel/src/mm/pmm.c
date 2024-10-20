@@ -301,12 +301,12 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 uint64 index = i;
                 index++;
                 while (index <= MAX_ORDER) {
-                    if(counter == 10) {
-                        serial_printf("pages %i \n", pages);
-                    }
+
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
 
-                    if (block != NULL) {
+
+                    if (block != NULL && block->order >= index) {
+                        block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
                             block = buddy_split(block);
                             if (block == NULL) {
@@ -316,6 +316,10 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 
                         hash_table_insert(&used_buddy_hash_table, block->start_address, block);
                         return block;
+                    }
+
+                    if(block != NULL && block->order < index) {
+                        insert_tree_node(&buddy_free_list_zone[0], block, block->order);
                     }
                     index++;
                 }
@@ -356,6 +360,7 @@ static void buddy_free(void* address) {
     struct singly_linked_list_node* node = bucket->head;
 
     while (1) {
+
         if (node == NULL) {
             panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
         }
@@ -374,6 +379,7 @@ static void buddy_free(void* address) {
 }
 
 static struct buddy_block* buddy_split(struct buddy_block* block) {
+
     if(block->flags & IN_TREE_FLAG) {
         panic("block in tree! split");
     }
@@ -400,10 +406,8 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     new_block->zone = block->zone;
     new_block->is_free = FREE;
 
-    if(block->start_address == 4303355904) {
-        serial_printf("HERE\n");
-    }
 
+    new_block->flags |= IN_TREE_FLAG;
     const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
     if (ret == SUCCESS) {
@@ -450,6 +454,7 @@ static void buddy_coalesce(struct buddy_block* block) {
     }
 
     if (block->next == NULL) {
+        block->flags |= IN_TREE_FLAG;
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         /*
          *  Can't coalesce until the predecessor is free
@@ -458,6 +463,7 @@ static void buddy_coalesce(struct buddy_block* block) {
     }
 
     if (block->order == MAX_ORDER) {
+        block->flags |= IN_TREE_FLAG;
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         return;
     }
@@ -475,6 +481,7 @@ static void buddy_coalesce(struct buddy_block* block) {
         block->next = next->next;
         block->order++;
         buddy_block_free(next);
+        block->flags |= IN_TREE_FLAG;
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
     }
     release_spinlock(&buddy_lock);
