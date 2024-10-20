@@ -63,13 +63,19 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
         new_node = kalloc(sizeof(struct  singly_linked_list_node));
     }
     new_node->flags &= ~STATIC_POOL_FREE_NODE;
+    new_node->data = NULL;
     return new_node;
 }
 
 static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
 
+    if(node->data == (void *) 0x1) {
+        panic("");
+    }
     if(node->flags & STATIC_POOL_NODE) {
         node->flags &= ~STATIC_POOL_FREE_NODE;
+        node->data = NULL;
+        node->next = NULL;
         return;
     }
 
@@ -81,6 +87,9 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 
     if(new_node == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
+    }
+    if(data == (void *) 0x1) {
+        panic("singly_linked_list_insert_tail : Data passed is NULL");
     }
     new_node->data = data;
 
@@ -101,6 +110,9 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     struct singly_linked_list_node* new_head = singly_linked_list_node_alloc();
     if(new_head == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
+    }
+    if(data == (void *)0x1) {
+        serial_printf("here");
     }
     list->node_count++;
     new_head->data = data;

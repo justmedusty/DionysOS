@@ -163,6 +163,7 @@ uint64 destroy_tree(struct binary_tree* tree) {
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     struct binary_tree_node* current = tree->root;
 
+
     if (current == NULL) {
         struct binary_tree_node* new_node = node_alloc();
         singly_linked_list_init(&new_node->data);
@@ -214,7 +215,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to remove it from the tree*/) {
     struct binary_tree_node* current = tree->root;
     if (tree->node_count == 0 || current == NULL) {
-        return EMPTY_TREE_CAST; /* Indication of empty tree */
+        return NULL; /* Indication of empty tree */
     }
 
     while (1) {
@@ -223,6 +224,7 @@ void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to 
             void* return_value = 0;
             if (remove) {
                 //TODO investigate possible race condition here.
+
                 return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head, current);
             }
@@ -304,6 +306,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                     current->parent->right = NULL;
                 }
                 node_free(current);
+                tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
             }
@@ -322,6 +325,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                     current->parent->left = NULL;
                 }
                 node_free(current);
+                tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
             }
@@ -337,6 +341,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                 }
                 current->parent->left = current->left;
                 node_free(current);
+                tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
             }
@@ -365,6 +370,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
             right_min->left = current->left;
 
             node_free(current);
+            tree->node_count--;
             release_spinlock(&tree->lock);
             return SUCCESS;
         }

@@ -149,7 +149,6 @@ int phys_init() {
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
             buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE )) & ~0xFFF);
-            serial_printf("%x.64 address\n",contiguous_pages[i].start_address + (j * (PAGE_SIZE )));
             buddy_block_static_pool[index].flags |= STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -260,7 +259,7 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
 
     return NULL;
 }
-
+uint64 counter = 0;
 void* phys_alloc(uint64 pages) {
     acquire_interrupt_safe_spinlock(&pmm_lock);
 /*
@@ -280,7 +279,10 @@ void* phys_alloc(uint64 pages) {
         memset(P2V(return_value), 0,PAGE_SIZE * pages);
     }
 */
-    serial_printf("%i pages\n",pages);
+    serial_printf("counter %i\n", counter++);
+    if(counter == 1116) {
+        serial_printf("counter %i\n", counter);
+    }
     struct buddy_block *block = buddy_alloc(pages);
 
     void* return_value;
@@ -323,10 +325,12 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 index++;
                 while(index <= MAX_ORDER) {
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
-                    if(block != NULL) {
-
+                    if(block > (void *) PAGE_SIZE && block != NULL) {
                         while(block->order != i) {
                             block = buddy_split(block);
+                            if(block == NULL) {
+                                panic("buddy_alloc cannot split block");
+                            }
                         }
                         hash_table_insert(&used_buddy_hash_table,block->start_address,block);
                         return block;
@@ -389,7 +393,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
         return NULL; /* Can't split a zero order */
     }
 
-    if (block->is_free != FREE) {
+    if (block->is_free == USED) {
         return NULL; /* Obviously */
     }
 
@@ -404,12 +408,12 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     block->order--;
     new_block->order = block->order;
     new_block->start_address = block->start_address + (((1 << block->order) * PAGE_SIZE));
-    if((new_block->start_address % PAGE_SIZE )!= 0) {
-        serial_printf("page %x.64 \n",new_block->start_address);
-        //panic("Not divisible by page size");
-    }
     new_block->zone = block->zone;
     new_block->is_free = FREE;
+
+    if(new_block == (void *)0x1) {
+        serial_printf("HERE");
+    }
 
     const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
@@ -422,6 +426,9 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
+    if(block == (void *) 0x1) {
+        serial_printf("here");
+    }
     if (block == NULL) {
         return kalloc(sizeof(struct buddy_block));
     }

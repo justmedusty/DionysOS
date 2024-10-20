@@ -160,6 +160,9 @@ int arch_map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint
     uint64 last = PGROUNDUP(((uint64) va) + size - 1);
 
     for (;;){
+        if(physaddr == 0 && address == 0xFFFF800000200000) {
+            serial_printf("h");
+        }
         if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
             return -1;
         }
