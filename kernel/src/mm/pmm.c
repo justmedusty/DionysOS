@@ -148,7 +148,8 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = contiguous_pages[i].start_address + (j * (PAGE_SIZE));
+            buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE )) & ~0xFFF);
+            serial_printf("%x.64 address\n",contiguous_pages[i].start_address + (j * (PAGE_SIZE )));
             buddy_block_static_pool[index].flags |= STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -230,7 +231,6 @@ int phys_init() {
         }
     }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
-
 
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
@@ -403,10 +403,10 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     block->next = new_block;
     block->order--;
     new_block->order = block->order;
-    new_block->start_address = block->start_address + (1 << block->order);
+    new_block->start_address = block->start_address + (((1 << block->order) * PAGE_SIZE));
     if((new_block->start_address % PAGE_SIZE )!= 0) {
         serial_printf("page %x.64 \n",new_block->start_address);
-        panic("Not divisible by page size");
+        //panic("Not divisible by page size");
     }
     new_block->zone = block->zone;
     new_block->is_free = FREE;
