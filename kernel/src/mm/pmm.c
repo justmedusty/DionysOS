@@ -148,15 +148,17 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE )) & ~0xFFF);
+            buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~
+                0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
             buddy_block_static_pool[index].is_free = FREE;
 
 
-            if (index != 0 && buddy_block_static_pool[index - 1].zone == buddy_block_static_pool[index].zone) {
+            if (index != 0 && (buddy_block_static_pool[index - 1].zone == buddy_block_static_pool[index].zone)) {
                 buddy_block_static_pool[index - 1].next = &buddy_block_static_pool[index];
+                buddy_block_static_pool[index - 1].flags |= FIRST_BLOCK_FLAG;
             }
             index++;
             if (index == STATIC_POOL_SIZE) {
@@ -186,7 +188,7 @@ int phys_init() {
     index = 0;
     init_tree(&buddy_free_list_zone[0],REGULAR_TREE, 0);
     for (int i = 0; i < page_range_index; i++) {
-        while (buddy_block_static_pool[index].zone == i ) {
+        while (buddy_block_static_pool[index].zone == i) {
             insert_tree_node(&buddy_free_list_zone[0], &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);
             index++;
@@ -200,9 +202,9 @@ int phys_init() {
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
-    char *str = kalloc(PAGE_SIZE);
+    char* str = kalloc(PAGE_SIZE);
     memset(str, 0, PAGE_SIZE);
-    for(int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++) {
         str[i] = 'A';
     }
     serial_printf("%s\n", str);
@@ -233,37 +235,36 @@ static void* __phys_alloc(uint64 pages, uint64 limit) {
 
     return NULL;
 }
+
 uint64 counter = 0;
+
 void* phys_alloc(uint64 pages) {
     acquire_interrupt_safe_spinlock(&pmm_lock);
-/*
-    uint64 last = last_used_index;
+    /*
+        uint64 last = last_used_index;
 
-    void* return_value = __phys_alloc(pages, highest_page_index);
+        void* return_value = __phys_alloc(pages, highest_page_index);
 
-    if (return_value == NULL) {
-        last_used_index = 0;
-        return_value = __phys_alloc(pages, last);
-    }
+        if (return_value == NULL) {
+            last_used_index = 0;
+            return_value = __phys_alloc(pages, last);
+        }
 
-    used_pages += pages;
+        used_pages += pages;
 
-    // This is unnecessarily heavy just pinning that for later
-    if (return_value != NULL) {
-        memset(P2V(return_value), 0,PAGE_SIZE * pages);
-    }
-*/
+        // This is unnecessarily heavy just pinning that for later
+        if (return_value != NULL) {
+            memset(P2V(return_value), 0,PAGE_SIZE * pages);
+        }
+    */
     serial_printf("counter %i\n", counter++);
 
-    if(counter == 1533) {
-        serial_printf("\n");
-    }
 
-    struct buddy_block *block = buddy_alloc(pages);
+    struct buddy_block* block = buddy_alloc(pages);
 
     void* return_value;
 
-    if(block == NULL) {
+    if (block == NULL) {
         block = buddy_alloc(pages);
         panic("phys_alloc cannot allocate");
     }
@@ -284,33 +285,37 @@ void phys_dealloc(void* address, uint64 pages) {
     */
 
     buddy_free(address);
-
 }
 
 
 static struct buddy_block* buddy_alloc(uint64 pages) {
     if (pages > (1 << MAX_ORDER)) {
-        serial_printf("pages %i \n",pages);
+        serial_printf("pages %i \n", pages);
         //TODO Handle tall orders
     }
+
     for (uint64 i = 0; i < MAX_ORDER; i++) {
         if (pages == (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
             if (block == NULL) {
                 uint64 index = i;
                 index++;
-                while(index <= MAX_ORDER) {
+                while (index <= MAX_ORDER) {
+                    if(counter == 10) {
+                        serial_printf("pages %i \n", pages);
+                    }
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
-                    if(block > (void *) PAGE_SIZE && block != NULL) {
-                        while(block->order != i) {
+
+                    if (block != NULL) {
+                        while (block->order != i) {
                             block = buddy_split(block);
-                            if(block == NULL) {
+                            if (block == NULL) {
                                 panic("buddy_alloc cannot split block");
                             }
                         }
-                        hash_table_insert(&used_buddy_hash_table,block->start_address,block);
-                        return block;
 
+                        hash_table_insert(&used_buddy_hash_table, block->start_address, block);
+                        return block;
                     }
                     index++;
                 }
@@ -325,7 +330,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 return NULL;
             }
             if (buddy_split(block) != NULL) {
-                hash_table_insert(&used_buddy_hash_table,block->start_address,block);
+                hash_table_insert(&used_buddy_hash_table, block->start_address, block);
                 return block;
             }
 
@@ -340,10 +345,12 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
 /* Pages is also sort of redundant here but will keep it for now */
 
 static void buddy_free(void* address) {
-    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
+    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
+                                                            hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
-        panic("Buddy Dealloc: Buddy hash table not found"); /* Shouldn't ever happen so panicking for visibility if it does happen */
+        panic("Buddy Dealloc: Buddy hash table not found");
+        /* Shouldn't ever happen so panicking for visibility if it does happen */
     }
 
     struct singly_linked_list_node* node = bucket->head;
@@ -357,6 +364,7 @@ static void buddy_free(void* address) {
         if (block->start_address == (uint64)address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
+            block->flags &= ~IN_TREE_FLAG;
             buddy_coalesce(block);
             return;
         }
@@ -366,7 +374,11 @@ static void buddy_free(void* address) {
 }
 
 static struct buddy_block* buddy_split(struct buddy_block* block) {
+    if(block->flags & IN_TREE_FLAG) {
+        panic("block in tree! split");
+    }
     if (block->order == 0) {
+        panic("Buddy Split: Trying to split 0");
         return NULL; /* Can't split a zero order */
     }
 
@@ -388,6 +400,10 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     new_block->zone = block->zone;
     new_block->is_free = FREE;
 
+    if(block->start_address == 4303355904) {
+        serial_printf("HERE\n");
+    }
+
     const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
     if (ret == SUCCESS) {
@@ -399,9 +415,6 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
-    if(block == (void *) 0x1) {
-        serial_printf("here");
-    }
     if (block == NULL) {
         return kalloc(sizeof(struct buddy_block));
     }
@@ -410,12 +423,16 @@ static struct buddy_block* buddy_block_get() {
 
 
 static void buddy_block_free(struct buddy_block* block) {
+    if(block->flags & IN_TREE_FLAG) {
+        remove_tree_node(&buddy_free_list_zone[0],block->order,block,NULL);
+    }
     if (block->flags & STATIC_POOL_FLAG) {
         block->is_free = UNUSED;
         block->order = UNUSED;
         block->zone = UNUSED;
         block->start_address = 0;
         block->next = NULL;
+        block->flags = STATIC_POOL_FLAG;
         singly_linked_list_insert_head(&unused_buddy_blocks_list, block);
         return;
     }
@@ -428,8 +445,7 @@ static void buddy_block_free(struct buddy_block* block) {
  */
 
 static void buddy_coalesce(struct buddy_block* block) {
-
-    if(block == NULL) {
+    if (block == NULL) {
         return;
     }
 
@@ -450,7 +466,8 @@ static void buddy_coalesce(struct buddy_block* block) {
 
     acquire_spinlock(&buddy_lock);
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone == block->next->zone)) {
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
+        == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block
@@ -458,7 +475,6 @@ static void buddy_coalesce(struct buddy_block* block) {
         block->next = next->next;
         block->order++;
         buddy_block_free(next);
-
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
     }
     release_spinlock(&buddy_lock);

@@ -163,7 +163,6 @@ uint64 destroy_tree(struct binary_tree* tree) {
 uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
     struct binary_tree_node* current = tree->root;
 
-
     if (current == NULL) {
         struct binary_tree_node* new_node = node_alloc();
         singly_linked_list_init(&new_node->data);
