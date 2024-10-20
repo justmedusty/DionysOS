@@ -15,7 +15,7 @@ extern volatile struct limine_memmap_request memmap_request;
 /* For buddy */
 #define MAX_ORDER 11 /* Going with the number Linux uses*/
 #define STATIC_POOL_FLAG 1 << 5 /* So we know to return to the pool not try to call kfree on it */
-#define STATIC_POOL_SIZE 2000
+#define STATIC_POOL_SIZE 2048 /* Changine this complete changes everything for some reason.. Things break like crazy */
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2

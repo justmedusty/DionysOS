@@ -214,7 +214,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
 void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to remove it from the tree*/) {
     struct binary_tree_node* current = tree->root;
-    if (tree->node_count == 0 || current == NULL) {
+    if ( current == NULL) {
         return NULL; /* Indication of empty tree */
     }
 

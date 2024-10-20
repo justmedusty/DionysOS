@@ -149,7 +149,7 @@ int phys_init() {
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
             buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE )) & ~0xFFF);
-            buddy_block_static_pool[index].flags |= STATIC_POOL_FLAG;
+            buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
             buddy_block_static_pool[index].is_free = FREE;
@@ -175,6 +175,7 @@ int phys_init() {
         buddy_block_static_pool[i].next = NULL;
         buddy_block_static_pool[i].zone = 0xFFFFFFFF;
         buddy_block_static_pool[i].start_address = 0;
+        buddy_block_static_pool[i].flags = STATIC_POOL_FLAG;
 
         singly_linked_list_insert_head(&unused_buddy_blocks_list, &buddy_block_static_pool[i]);
     }
@@ -195,44 +196,17 @@ int phys_init() {
     hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
-
     highest_page_index = highest_address / PAGE_SIZE;
-    uint64 bitmap_size = ((highest_page_index / 8) + (PAGE_SIZE - 1)) / PAGE_SIZE * PAGE_SIZE;
-
-    for (uint64 i = 0; i < memmap->entry_count; i++) {
-        struct limine_memmap_entry* entry = entries[i];
-
-        if (entry->type != LIMINE_MEMMAP_USABLE) {
-            continue;
-        }
-
-        if (entry->length >= bitmap_size) {
-            mem_map = (uint8*)(entry->base + hhdm->offset);
-
-            memset(mem_map, 0xFF, bitmap_size);
-
-            entry->length -= bitmap_size;
-            entry->base += bitmap_size;
-
-            break;
-        }
-    }
-
-    for (uint64 i = 0; i < memmap->entry_count; i++) {
-        struct limine_memmap_entry* entry = entries[i];
-
-        if (entry->type != LIMINE_MEMMAP_USABLE) {
-            continue;
-        }
-
-        for (uint64 j = 0; j < entry->length; j += PAGE_SIZE) {
-            bitmap_clear(mem_map, (entry->base + j) / PAGE_SIZE);
-        }
-    }
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
-
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
+    char *str = kalloc(PAGE_SIZE);
+    memset(str, 0, PAGE_SIZE);
+    for(int i = 0; i < 100; i++) {
+        str[i] = 'A';
+    }
+    serial_printf("%s\n", str);
+    kfree(str);
     return 0;
 }
 
@@ -280,9 +254,11 @@ void* phys_alloc(uint64 pages) {
     }
 */
     serial_printf("counter %i\n", counter++);
-    if(counter == 1116) {
-        serial_printf("counter %i\n", counter);
+
+    if(counter == 1533) {
+        serial_printf("\n");
     }
+
     struct buddy_block *block = buddy_alloc(pages);
 
     void* return_value;
@@ -382,6 +358,7 @@ static void buddy_free(void* address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
             buddy_coalesce(block);
+            return;
         }
 
         node = node->next;
@@ -410,10 +387,6 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
     new_block->start_address = block->start_address + (((1 << block->order) * PAGE_SIZE));
     new_block->zone = block->zone;
     new_block->is_free = FREE;
-
-    if(new_block == (void *)0x1) {
-        serial_printf("HERE");
-    }
 
     const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
@@ -477,15 +450,13 @@ static void buddy_coalesce(struct buddy_block* block) {
 
     acquire_spinlock(&buddy_lock);
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
-        == block->next->zone)) {
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone == block->next->zone)) {
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block
          */
         block->next = next->next;
         block->order++;
-
         buddy_block_free(next);
 
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);

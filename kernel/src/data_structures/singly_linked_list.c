@@ -17,7 +17,7 @@
  */
 
 uint8 static_pool_setup = 0;
-
+uint8 pool_full = 0;
 struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
 
 void singly_linked_list_init(struct singly_linked_list* list) {
@@ -64,6 +64,7 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
     }
     new_node->flags &= ~STATIC_POOL_FREE_NODE;
     new_node->data = NULL;
+
     return new_node;
 }
 
@@ -88,9 +89,7 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
     if(new_node == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
-    if(data == (void *) 0x1) {
-        panic("singly_linked_list_insert_tail : Data passed is NULL");
-    }
+
     new_node->data = data;
 
     if(list->tail == NULL) {
