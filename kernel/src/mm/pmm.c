@@ -14,9 +14,6 @@
 #include "include/drivers/uart.h"
 #include "include/data_structures/binary_tree.h"
 
-static inline bool bitmap_get(void* bitmap, uint64 bit);
-static inline void bitmap_set(void* bitmap, uint64 bit);
-static inline void bitmap_clear(void* bitmap, uint64 bit);
 
 static void buddy_coalesce(struct buddy_block* block);
 static struct buddy_block* buddy_alloc(uint64 pages);
@@ -35,21 +32,6 @@ volatile struct limine_hhdm_request hhdm_request = {
     .id = LIMINE_HHDM_REQUEST,
     .revision = 0
 };
-
-static inline bool bitmap_get(void* bitmap, uint64 bit) {
-    uint8* bitmap_byte = bitmap;
-    return bitmap_byte[bit / 8] & (1 << (bit % 8));
-}
-
-static inline void bitmap_set(void* bitmap, uint64 bit) {
-    uint8* bitmap_byte = bitmap;
-    bitmap_byte[bit / 8] |= (1 << (bit % 8));
-}
-
-static inline void bitmap_clear(void* bitmap, uint64 bit) {
-    uint8* bitmap_byte = bitmap;
-    bitmap_byte[bit / 8] &= (0 << (bit % 8));
-}
 
 struct spinlock pmm_lock;
 struct spinlock buddy_lock;
@@ -212,54 +194,14 @@ int phys_init() {
     return 0;
 }
 
-/*
- * Internal allocation function
- */
-static void* __phys_alloc(uint64 pages, uint64 limit) {
-    uint64 p = 0;
-
-    while (last_used_index < limit) {
-        if (!bitmap_get(mem_map, last_used_index++)) {
-            if (++p == pages) {
-                uint64 page = last_used_index - pages;
-                for (uint64 i = page; i < last_used_index; i++) {
-                    bitmap_set(mem_map, i);
-                }
-                return (void*)(page * PAGE_SIZE);
-            }
-        }
-        else {
-            p = 0;
-        }
-    }
-
-    return NULL;
-}
 
 uint64 counter = 0;
 
 void* phys_alloc(uint64 pages) {
-    acquire_interrupt_safe_spinlock(&pmm_lock);
-    /*
-        uint64 last = last_used_index;
-
-        void* return_value = __phys_alloc(pages, highest_page_index);
-
-        if (return_value == NULL) {
-            last_used_index = 0;
-            return_value = __phys_alloc(pages, last);
-        }
-
-        used_pages += pages;
-
-        // This is unnecessarily heavy just pinning that for later
-        if (return_value != NULL) {
-            memset(P2V(return_value), 0,PAGE_SIZE * pages);
-        }
-    */
     serial_printf("counter %i\n", counter++);
-
-
+    if(counter == 1547) {
+        serial_printf("");
+    }
     struct buddy_block* block = buddy_alloc(pages);
 
     void* return_value;
@@ -270,20 +212,11 @@ void* phys_alloc(uint64 pages) {
     }
     block->is_free = FALSE;
     return_value = (void*)block->start_address;
-    release_interrupt_safe_spinlock(&pmm_lock);
 
     return return_value;
 }
 
 void phys_dealloc(void* address, uint64 pages) {
-    /*
-    uint64 page = (uint64)address / PAGE_SIZE;
-    for (uint64 i = page; i < page + pages; i++) {
-        bitmap_clear(mem_map, i);
-    }
-    used_pages -= pages;
-    */
-
     buddy_free(address);
 }
 
@@ -317,19 +250,21 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                         hash_table_insert(&used_buddy_hash_table, block->start_address, block);
                         return block;
                     }
-
+                    //TODO find out where pointers are being manipulated so I can take this out
                     if(block != NULL && block->order < index) {
+                        block->flags |= IN_TREE_FLAG;
                         insert_tree_node(&buddy_free_list_zone[0], block, block->order);
                     }
                     index++;
                 }
             }
+            block->flags &= ~IN_TREE_FLAG;
             return block;
         }
 
         if (pages < (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
-
+            block->flags &= ~IN_TREE_FLAG;
             if (block == NULL) {
                 return NULL;
             }
@@ -381,7 +316,8 @@ static void buddy_free(void* address) {
 static struct buddy_block* buddy_split(struct buddy_block* block) {
 
     if(block->flags & IN_TREE_FLAG) {
-        panic("block in tree! split");
+        remove_tree_node(&buddy_free_list_zone[zone_pointer],block->order,block,NULL);
+        block->flags &= ~IN_TREE_FLAG;
     }
     if (block->order == 0) {
         panic("Buddy Split: Trying to split 0");
@@ -420,7 +356,8 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
     if (block == NULL) {
-        return kalloc(sizeof(struct buddy_block));
+        struct buddy_block *ret = kalloc(sizeof(struct buddy_block));
+        return ret;
     }
     return block;
 }
@@ -470,7 +407,6 @@ static void buddy_coalesce(struct buddy_block* block) {
 
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
 
-    acquire_spinlock(&buddy_lock);
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
     if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
         == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
@@ -484,6 +420,5 @@ static void buddy_coalesce(struct buddy_block* block) {
         block->flags |= IN_TREE_FLAG;
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
     }
-    release_spinlock(&buddy_lock);
 }
 

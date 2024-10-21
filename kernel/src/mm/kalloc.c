@@ -25,8 +25,17 @@ int heap_init() {
             serial_printf("Entry too large , skipping slab alloc.\n");
             continue;
         }
-        heap_create_slab(&slabs[i], size,1);
+        if(size == 32) {
+            heap_create_slab(&slabs[i],size,64);
+        }else {
+            heap_create_slab(&slabs[i],size,1);
+        }
+
         size = (size << 1);
+
+    }
+
+    for(int i = 0; i < 9; i++) {
 
     }
 

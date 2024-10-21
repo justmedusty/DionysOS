@@ -75,7 +75,7 @@ static void node_free(struct binary_tree_node* node) {
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
     if (static_pool_init == 0) {
         for (uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
-            tree_node_static_pool[i].flags |= BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
+            tree_node_static_pool[i].flags = BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
         }
     }
     switch (mode) {
@@ -223,15 +223,18 @@ void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to 
             void* return_value = 0;
             if (remove) {
                 //TODO investigate possible race condition here.
-
                 return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head, current);
+
             }
 
             return return_value;
         }
 
         if (key < current->key) {
+            if(current->left == current) {
+                current->left = NULL;
+            }
             if (current->left == NULL) {
                 return NULL;
             }
@@ -239,6 +242,9 @@ void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to 
             current = current->left;
         }
         else {
+            if(current->right == current) {
+                current->right = NULL;
+            }
             if (current->right == NULL) {
                 return NULL;
             }
@@ -323,6 +329,9 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                 else {
                     current->parent->left = NULL;
                 }
+                if(current->parent == current->left || current->parent == current->right) {
+                    panic("Circular Reference");
+                }
                 node_free(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
@@ -331,6 +340,15 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
             /*
              *  Handle left child is non-null while right child is
              */
+
+            if(current->right == current) {
+                current->right = NULL;
+            }
+
+            if(current->left == current) {
+                current->left = NULL;
+            }
+
             if (current->right == NULL) {
                 if (current == current->parent->left) {
                     current->parent->left = NULL;
@@ -344,7 +362,6 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                 release_spinlock(&tree->lock);
                 return SUCCESS;
             }
-
             /*
              *
              *  Handle neither child is non-null
