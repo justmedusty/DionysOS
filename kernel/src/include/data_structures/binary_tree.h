@@ -13,7 +13,7 @@
 #define REGULAR_TREE 1
 #define RED_BLACK_TREE 2
 
-#define BINARY_TREE_NODE_STATIC_POOL_SIZE 256
+#define BINARY_TREE_NODE_STATIC_POOL_SIZE 128
 #define BINARY_TREE_NODE_STATIC_POOL 1
 #define BINARY_TREE_NODE_FREE 2
 
@@ -46,6 +46,7 @@ struct binary_tree_node {
     struct singly_linked_list data;
     uint16 color; /* Only for RB tree */
     uint16 flags;
+    uint8 index;
 };
 
 uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags);

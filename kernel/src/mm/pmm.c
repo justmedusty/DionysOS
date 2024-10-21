@@ -199,7 +199,8 @@ uint64 counter = 0;
 
 void* phys_alloc(uint64 pages) {
     serial_printf("counter %i\n", counter++);
-    if(counter == 1547) {
+
+    if(counter == 1543) {
         serial_printf("");
     }
     struct buddy_block* block = buddy_alloc(pages);
