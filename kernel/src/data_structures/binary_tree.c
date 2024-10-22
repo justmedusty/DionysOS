@@ -31,6 +31,8 @@ static struct binary_tree_node* node_alloc() {
         return kalloc(sizeof(struct binary_tree_node));
     }
 
+
+
     for (uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
         if (tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
             tree_node_static_pool[i].flags &= ~BINARY_TREE_NODE_FREE;
@@ -207,22 +209,31 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
             }
             current = current->right;
         }
+
     }
 }
 
 
 void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to remove it from the tree*/) {
+
+    if((tree_node_static_pool[2].parent != NULL && tree_node_static_pool[3].parent != NULL) && tree_node_static_pool[2].parent == tree_node_static_pool[3].parent) {
+        panic("[ERROR] Fucked up tree\n");
+    }
     struct binary_tree_node* current = tree->root;
     if (current == NULL) {
         return NULL; /* Indication of empty tree */
     }
 
     while (1) {
+
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
             void* return_value = 0;
             if (remove) {
                 //TODO investigate possible race condition here.
+                if(current->parent && current->parent->key == 0xFF ) {
+                    panic("[ERROR] Binary tree node doesn't exists\n");
+                }
                 return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head, current);
             }
@@ -281,6 +292,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
     }
     uint8 depth = 0; /* Not sure if I am going to use this yet */
     while (1) {
+
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
             /*
@@ -312,8 +324,8 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
              * Handle right child is non-null while left child is
              */
             if (current->left == NULL) {
-                if(current->key == 256) {
-                    panic("[ERROR] Binary tree node doesn't exists\n");
+                if(current->parent->key == 256) {
+                    panic("[ERROR] LEFT NULL KEY 256\n");
                 }
                 current->parent->right = current->right;
                 node_free(current);
@@ -327,8 +339,8 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
 
             if (current->right == NULL) {
 
-                if(current->key == 256) {
-                    panic("[ERROR] Binary tree node doesn't exists\n");
+                if(current->parent->key == 256) {
+                    panic("[ERROR] RIGHT NULL KEY 256\n");
                 }
                 if (current == current->parent->left) {
                     current->parent->left = NULL;
@@ -349,6 +361,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
              */
             parent = current->parent;
             struct binary_tree_node* right_min = current;
+
             if (right_min->left == right_min || right_min->parent == right_min) {
                 panic("Circular Reference");
             }
@@ -366,6 +379,9 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
             right_min->right = current->right;
             right_min->left = current->left;
 
+            if (right_min->left == right_min || right_min->parent == right_min) {
+                panic("Circular Reference NUMBA 2");
+            }
             node_free(current);
             tree->node_count--;
             release_spinlock(&tree->lock);
