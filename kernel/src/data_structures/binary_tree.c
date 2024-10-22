@@ -31,8 +31,6 @@ static struct binary_tree_node* node_alloc() {
         return kalloc(sizeof(struct binary_tree_node));
     }
 
-
-
     for (uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
         if (tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
             tree_node_static_pool[i].flags &= ~BINARY_TREE_NODE_FREE;
@@ -41,6 +39,7 @@ static struct binary_tree_node* node_alloc() {
         }
     }
     pool_full = 1;
+    return NULL;
 }
 
 static void node_free(struct binary_tree_node* node) {
@@ -49,6 +48,9 @@ static void node_free(struct binary_tree_node* node) {
         return;
     }
 
+    if(node->right != NULL || node->left != NULL) {
+      panic("Binary tree node freed");
+    }
     if (node->parent != NULL) {
         if (node->parent->right == node) {
             node->parent->right = NULL;
@@ -205,6 +207,13 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
                 current->right = new_node;
                 new_node->parent = current;
                 tree->node_count++;
+                if (current == new_node) {
+                    serial_printf("[ERROR] Binary tree newly allocated node is same address as current node in tree!\n");
+                }
+                if (new_node->parent == new_node) {
+                    serial_printf("[ERROR] Binary tree node already exists\n");
+                }
+
                 return SUCCESS;
             }
             current = current->right;
