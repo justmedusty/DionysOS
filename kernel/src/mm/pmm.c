@@ -130,7 +130,7 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = (contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~
+            buddy_block_static_pool[index].start_address = (void *)(contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~
                 0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
@@ -248,7 +248,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                             }
                         }
 
-                        hash_table_insert(&used_buddy_hash_table, block->start_address, block);
+                        hash_table_insert(&used_buddy_hash_table, (uint64) block->start_address, block);
                         return block;
                     }
                     //TODO find out where pointers are being manipulated so I can take this out
@@ -271,7 +271,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 return NULL;
             }
             if (buddy_split(block) != NULL) {
-                hash_table_insert(&used_buddy_hash_table, block->start_address, block);
+                hash_table_insert(&used_buddy_hash_table, (uint64) block->start_address, block);
                 return block;
             }
 
@@ -303,7 +303,7 @@ static void buddy_free(void* address) {
         }
         struct buddy_block* block = node->data;
 
-        if (block->start_address == (uint64)address) {
+        if ((uint64) block->start_address == (uint64)address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;

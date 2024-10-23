@@ -44,7 +44,7 @@ struct contiguous_page_range {
 struct buddy_block {
     struct buddy_block *next;
     uint8 zone;
-    uint64 start_address;
+    void* start_address;
     uint8 flags;
     uint8 order;
     uint8 is_free;
