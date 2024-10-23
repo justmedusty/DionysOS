@@ -42,7 +42,7 @@ void hash_table_init(struct hash_table* table, uint64 size) {
     table->size = size;
     for (uint64 i = 0; i < size; i++) {
         table->table[i] = hash_bucket_static_pool[i];
-        singly_linked_list_init(&table->table[i]);
+        singly_linked_list_init(&table->table[i],0);
     }
 }
 

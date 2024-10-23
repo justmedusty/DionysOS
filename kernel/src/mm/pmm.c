@@ -151,8 +151,7 @@ int phys_init() {
         /* Since the logic above will not apply for the last entry putting this here */
     }
 
-    singly_linked_list_init(&unused_buddy_blocks_list);
-
+    singly_linked_list_init(&unused_buddy_blocks_list,0);
     for (uint64 i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
         buddy_block_static_pool[i].zone = 0xFFFF;
@@ -200,10 +199,10 @@ uint64 counter = 0;
 void* phys_alloc(uint64 pages) {
     serial_printf("counter %i\n", counter++);
 
-    if(counter == 2070) {
+    if(counter == 8726) {
         serial_printf("");
     }
-    if(counter == 596) {
+    if(counter == 1224) {
         serial_printf("");
     }
     struct buddy_block* block = buddy_alloc(pages);
@@ -256,9 +255,10 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                     }
                     //TODO find out where pointers are being manipulated so I can take this out
                     if(block != NULL && block->order < index) {
-                        block->flags |= IN_TREE_FLAG;
-                        serial_printf("index %i block order %i counter %i\n",index,block->order,counter2++);
-                        insert_tree_node(&buddy_free_list_zone[0], block, block->order);
+                        //block->flags |= IN_TREE_FLAG;
+                        serial_printf("index %i block order %i counter %i start addr %x.64\n",index,block->order,counter2++,block->start_address);
+                        remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
+                        continue;
                     }
                     index++;
 
@@ -325,6 +325,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
         remove_tree_node(&buddy_free_list_zone[zone_pointer],block->order,block,NULL);
         block->flags &= ~IN_TREE_FLAG;
     }
+
     if (block->order == 0) {
         panic("Buddy Split: Trying to split 0");
         return NULL; /* Can't split a zero order */

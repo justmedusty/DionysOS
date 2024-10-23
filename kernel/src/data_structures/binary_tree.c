@@ -159,7 +159,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
     if (current == NULL) {
         struct binary_tree_node* new_node = node_alloc();
-        singly_linked_list_init(&new_node->data);
+        singly_linked_list_init(&new_node->data,0);
         singly_linked_list_insert_head(&new_node->data, data);
         new_node->key = key;
         tree->root = new_node;
@@ -178,7 +178,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         if (key < current->key) {
             if (current->left == NULL) {
                 struct binary_tree_node* new_node = node_alloc();
-                singly_linked_list_init(&new_node->data);
+                singly_linked_list_init(&new_node->data,0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;
                 current->left = new_node;
@@ -199,7 +199,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
         else {
             if (current->right == NULL) {
                 struct binary_tree_node* new_node = node_alloc();
-                singly_linked_list_init(&new_node->data);
+                singly_linked_list_init(&new_node->data,0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;
                 current->right = new_node;

@@ -4,6 +4,7 @@
 
 #include "include/data_structures/singly_linked_list.h"
 
+#include <stdlib.h>
 #include <include/arch/arch_cpu.h>
 #include <include/drivers/uart.h>
 
@@ -18,24 +19,28 @@
 
 uint8 static_pool_setup = 0;
 uint8 pool_full = 0;
+struct singly_linked_list free_nodes;
 struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
 
-void singly_linked_list_init(struct singly_linked_list* list) {
+void singly_linked_list_init(struct singly_linked_list* list,uint64 flags) {
 
     if(list == NULL) {
         panic("singly linked list memory allocation failed");
     }
 
-
     if(static_pool_setup == 0) {
+        static_pool_setup = 1;
+        free_nodes.flags = LIST_FLAG_FREE_NODES;
+        free_nodes.node_count = 0;
+        free_nodes.head = NULL;
+        free_nodes.tail = NULL;
         for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE;
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_FREE_NODE;
+            singly_linked_list_insert_head(&free_nodes, &singly_linked_list_node_static_pool[i]);
         }
-
-        static_pool_setup = 1;
     }
-
+    list->flags = flags;
     list->head = NULL;
     list->tail = NULL;
     list->node_count = 0;
@@ -45,20 +50,8 @@ void singly_linked_list_init(struct singly_linked_list* list) {
 
 static struct singly_linked_list_node *singly_linked_list_node_alloc() {
 
-    uint32 index = 0;
-    struct singly_linked_list_node* new_node = &singly_linked_list_node_static_pool[index];
+    struct singly_linked_list_node* new_node = singly_linked_list_remove_head(&free_nodes);
 
-    /* Might make this quicker later but this is fine for now */
-    while(!(new_node->flags & STATIC_POOL_FREE_NODE)) {
-
-        if(index > SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE) {
-            new_node = NULL;
-            break;
-        }
-
-        index++;
-        new_node = &singly_linked_list_node_static_pool[index];
-    }
     if(new_node == NULL) {
         new_node = kalloc(sizeof(struct  singly_linked_list_node));
     }
@@ -70,13 +63,11 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
 
 static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
 
-    if(node->data == (void *) 0x1) {
-        panic("");
-    }
     if(node->flags & STATIC_POOL_NODE) {
         node->flags &= ~STATIC_POOL_FREE_NODE;
         node->data = NULL;
         node->next = NULL;
+        singly_linked_list_insert_tail(&free_nodes, node);
         return;
     }
 
@@ -84,7 +75,12 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
 }
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
 
-    struct singly_linked_list_node *new_node = singly_linked_list_node_alloc();
+    struct singly_linked_list_node *new_node;
+    if(list->flags & LIST_FLAG_FREE_NODES) {
+        new_node = data;
+    }else {
+        new_node = singly_linked_list_node_alloc();
+    }
 
     if(new_node == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
@@ -106,7 +102,13 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 }
 
 void singly_linked_list_insert_head(struct singly_linked_list* list, void* data) {
-    struct singly_linked_list_node* new_head = singly_linked_list_node_alloc();
+
+    struct singly_linked_list_node *new_head;
+    if(list->flags & LIST_FLAG_FREE_NODES) {
+        new_head = data;
+    }else {
+        new_head = singly_linked_list_node_alloc();
+    }
     if(new_head == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
@@ -177,6 +179,11 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     }
     void *return_value = list->head->data;
 
+    if(list->flags & LIST_FLAG_FREE_NODES) {
+        list->head = list->head->next;
+        return return_value;
+    }
+
     if(list->node_count == 1) {
         singly_linked_list_node_free(list->head);
         list->head = NULL;
@@ -190,7 +197,6 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     list->head = new_head;
     list->node_count--;
     return return_value;
-    serial_printf("%i node count \n",list->node_count);
 }
 
 uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {

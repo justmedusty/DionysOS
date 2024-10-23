@@ -28,8 +28,8 @@ static struct vnode* __parse_path(char* path);
 
 
 void vfs_init() {
-    singly_linked_list_init(&vnode_static_pool);
-    singly_linked_list_init(&vnode_used_pool);
+    singly_linked_list_init(&vnode_static_pool, 0);
+    singly_linked_list_init(&vnode_used_pool, 0);
 
     for (int i = 0; i < 50; i++) {
         singly_linked_list_insert_head(&vnode_used_pool, &static_vnode_pool[i]);
