@@ -48,9 +48,6 @@ static void node_free(struct binary_tree_node* node) {
         return;
     }
 
-    if (node->right != NULL || node->left != NULL) {
-        serial_printf("here");
-    }
     if (node->parent != NULL) {
         if (node->parent->right == node) {
             node->parent->right = NULL;
@@ -225,10 +222,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
 
 
 void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to remove it from the tree*/) {
-    if ((tree_node_static_pool[2].parent != NULL && tree_node_static_pool[3].parent != NULL) && tree_node_static_pool[2]
-        .parent == tree_node_static_pool[3].parent) {
-        panic("[ERROR] Fucked up tree\n");
-    }
+
     struct binary_tree_node* current = tree->root;
     if (current == NULL) {
         return NULL; /* Indication of empty tree */
@@ -342,8 +336,11 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                     panic("[ERROR] LEFT NULL KEY 256\n");
                 }
 
-                if(current->parent->right == current) {
-                    current->parent->right->parent = current->parent;
+
+                if(current->parent->left == current) {
+                    current->parent->left = current->right;
+                }else {
+                    current->parent->right = current->right;
                 }
 
                 if(current->right) {
@@ -364,16 +361,14 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
                     panic("[ERROR] RIGHT NULL KEY 256\n");
                 }
 
-                if(current->parent->left) {
-                    current->parent->left->parent = current->parent;
+                if(current->parent->left == current) {
+                    current->parent->left = current->left;
+                }else {
+                    current->parent->right = current->left;
                 }
 
                 if(current->left) {
                     current->left->parent = current->parent;
-                }
-
-                if(current->parent->left == current) {
-                    current->parent->left->parent = current->parent;
                 }
                 node_free(current);
                 tree->node_count--;

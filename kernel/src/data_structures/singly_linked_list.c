@@ -111,7 +111,7 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
     if(data == (void *)0x1) {
-        serial_printf("here");
+        panic("here");
     }
     list->node_count++;
     new_head->data = data;
