@@ -200,7 +200,10 @@ uint64 counter = 0;
 void* phys_alloc(uint64 pages) {
     serial_printf("counter %i\n", counter++);
 
-    if(counter == 2064) {
+    if(counter == 2070) {
+        serial_printf("");
+    }
+    if(counter == 596) {
         serial_printf("");
     }
     struct buddy_block* block = buddy_alloc(pages);
@@ -220,7 +223,7 @@ void* phys_alloc(uint64 pages) {
 void phys_dealloc(void* address, uint64 pages) {
     buddy_free(address);
 }
-
+uint64 counter2 = 0;
 
 static struct buddy_block* buddy_alloc(uint64 pages) {
     if (pages > (1 << MAX_ORDER)) {
@@ -254,6 +257,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                     //TODO find out where pointers are being manipulated so I can take this out
                     if(block != NULL && block->order < index) {
                         block->flags |= IN_TREE_FLAG;
+                        serial_printf("index %i block order %i counter %i\n",index,block->order,counter2++);
                         insert_tree_node(&buddy_free_list_zone[0], block, block->order);
                     }
                     index++;
