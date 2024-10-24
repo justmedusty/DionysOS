@@ -22,7 +22,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
-#define UNUSED 0x3
+#define UNUSED 0x4
 
 #define BUDDY_HASH_TABLE_SIZE 300
 
