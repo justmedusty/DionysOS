@@ -52,6 +52,7 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
 
     struct singly_linked_list_node* new_node = singly_linked_list_remove_head(&free_nodes);
 
+
     if(new_node == NULL) {
         new_node = kalloc(sizeof(struct  singly_linked_list_node));
     }
@@ -104,6 +105,7 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 void singly_linked_list_insert_head(struct singly_linked_list* list, void* data) {
 
     struct singly_linked_list_node *new_head;
+
     if(list->flags & LIST_FLAG_FREE_NODES) {
         new_head = data;
     }else {
@@ -112,9 +114,7 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     if(new_head == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
     }
-    if(data == (void *)0x1) {
-        panic("here");
-    }
+
     list->node_count++;
     new_head->data = data;
     new_head->next = list->head;
@@ -168,7 +168,6 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     }
 
     list->node_count--;
-    serial_printf("%i node count \n",list->node_count);
     return return_value;
 
 }
@@ -181,6 +180,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
 
     if(list->flags & LIST_FLAG_FREE_NODES) {
         list->head = list->head->next;
+        list->node_count--;
         return return_value;
     }
 
@@ -191,8 +191,11 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         list->node_count--;
         return return_value;
     }
-
+    if(list->head->next == NULL && list->node_count > 1) {
+        panic("HERE");
+    }
     struct singly_linked_list_node* new_head = list->head->next;
+
     singly_linked_list_node_free(list->head);
     list->head = new_head;
     list->node_count--;
