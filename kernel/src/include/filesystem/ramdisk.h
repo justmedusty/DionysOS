@@ -12,5 +12,5 @@
 void ramdisk_init(uint64 size);
 uint64 ramdisk_mkfs(int8 *initramfs_img,uint64 size_bytes);
 void ramdisk_destroy();
-uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 size);
-uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 size);
+uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size);
+uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size);

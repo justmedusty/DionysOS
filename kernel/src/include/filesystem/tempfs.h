@@ -6,7 +6,7 @@
 #include "include/types.h"
 #include "include/filesystem/vfs.h"
 
-#define TEMPFS_BLOCKSIZE 2048
+#define TEMPFS_BLOCKSIZE 1024
 #define TEMPFS_MAGIC 0x7777777777777777
 #define TEMPFS_VERSION 1
 #define MAX_LEVEL_INDIRECTIONS 5
@@ -21,21 +21,26 @@ struct tempfs_superblock {
   uint64 magic;
   uint64 version;
   uint64 blocksize;
-  uint64 blocks;
-  uint64 inodes;
-  uint64 size;
-  /* Both bitmap entries hold block pointers */
-  uint64 inode_bitmap[3]; /* Can hold 50k inodes asuming 2048 size */
-  uint64 block_bitmap[12]; /* Can hold 196k blocks assuming the 2048 size doesn't change */
+  uint64 num_blocks;
+  uint64 num_inodes;
+  uint64 total_size;
+  /* Both bitmap entries hold n block pointers */
+  uint64 inode_bitmap_pointers[6]; /* Can hold 50k inodes assuming 1024 size */
+  uint64 block_bitmap_pointers[114]; /*  1mib worth of blocks */
+  uint64 inode_start_pointer; /* Where inodes start */
+  uint64 block_start_pointer; /* Where blocks start */
 };
 
-//2 inodes per block
+//4 inodes per block
 struct tempfs_inode {
-  uint32 uid;
-  uint32 gid;
+  uint16 uid;
+  uint16 gid;
+  uint16 type;
+  uint16 refcount;
   char name[MAX_FILENAME_LENGTH];
   uint64 size;
-  uint64 blocks[12]; /* Will point to logical block numbers */
+  uint64 blocks[13]; /* Will point to logical block numbers */
+  uint64 reserved;
 };
 
 struct tempfs_block {

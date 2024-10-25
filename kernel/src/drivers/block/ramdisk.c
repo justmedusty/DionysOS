@@ -43,10 +43,10 @@ void ramdisk_destroy() {
 /*
  * We will just assume tempfs for now, but we can add support for other file systems in the future
  */
-uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 size) {
+uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size) {
 }
 
-uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 size) {
+uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size) {
 }
 
 
