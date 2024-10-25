@@ -40,10 +40,24 @@ void hash_table_init(struct hash_table* table, uint64 size) {
     }
 
     table->size = size;
+
+    if(!full) {
+
+        for (uint64 i = 0; i < size; i++) {
+            table->table[i] = hash_bucket_static_pool[i];
+            singly_linked_list_init(&table->table[i],0);
+        }
+        full = 1;
+        return;
+    }
+
+    table = kalloc(sizeof(struct singly_linked_list) * table->size);
     for (uint64 i = 0; i < size; i++) {
-        table->table[i] = hash_bucket_static_pool[i];
         singly_linked_list_init(&table->table[i],0);
     }
+
+
+
 }
 
 void hash_table_destroy(struct hash_table* table) {

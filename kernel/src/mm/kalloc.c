@@ -26,7 +26,7 @@ int heap_init() {
             continue;
         }
         if(size == 32) {
-            heap_create_slab(&slabs[i],size,64);
+            heap_create_slab(&slabs[i],size,128);
         }else {
             heap_create_slab(&slabs[i],size,1);
         }

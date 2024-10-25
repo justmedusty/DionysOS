@@ -130,7 +130,8 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = (void *)(contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~
+            buddy_block_static_pool[index].start_address = (void*)(contiguous_pages[i].start_address + (j * (PAGE_SIZE))
+                & ~
                 0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
@@ -151,7 +152,7 @@ int phys_init() {
         /* Since the logic above will not apply for the last entry putting this here */
     }
 
-    singly_linked_list_init(&unused_buddy_blocks_list,0);
+    singly_linked_list_init(&unused_buddy_blocks_list, 0);
     for (uint64 i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
         buddy_block_static_pool[i].zone = 0xFFFF;
@@ -183,34 +184,16 @@ int phys_init() {
     uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
-    char* str = kalloc(PAGE_SIZE);
-    memset(str, 0, PAGE_SIZE);
-    for (int i = 0; i < 100; i++) {
-        str[i] = 'A';
-    }
-    serial_printf("%s\n", str);
-    kfree(str);
     return 0;
 }
 
 
-uint64 counter = 0;
-
 void* phys_alloc(uint64 pages) {
-    serial_printf("counter %i\n", counter++);
-
-    if(counter == 8726) {
-        serial_printf("");
-    }
-    if(counter == 1224) {
-        serial_printf("");
-    }
     struct buddy_block* block = buddy_alloc(pages);
 
     void* return_value;
 
     if (block == NULL) {
-        block = buddy_alloc(pages);
         panic("phys_alloc cannot allocate");
     }
     block->is_free = USED;
@@ -222,7 +205,6 @@ void* phys_alloc(uint64 pages) {
 void phys_dealloc(void* address, uint64 pages) {
     buddy_free(address);
 }
-uint64 counter2 = 0;
 
 static struct buddy_block* buddy_alloc(uint64 pages) {
     if (pages > (1 << MAX_ORDER)) {
@@ -237,7 +219,6 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 uint64 index = i;
                 index++;
                 while (index <= MAX_ORDER) {
-
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
 
 
@@ -250,18 +231,19 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                             }
                         }
 
-                        hash_table_insert(&used_buddy_hash_table, (uint64) block->start_address, block);
+                        hash_table_insert(&used_buddy_hash_table, (uint64)block->start_address, block);
                         return block;
                     }
                     //TODO find out where pointers are being manipulated so I can take this out
-                    if(block != NULL && block->order < index) {
-                        //block->flags |= IN_TREE_FLAG;
-                        serial_printf("index %i block order %i counter %i start addr %x.64\n",index,block->order,counter2++,block->start_address);
+                    /*
+                     * Note : there is only one
+                     */
+
+                    if (block != NULL && block->order < index) {
                         remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
                         continue;
                     }
                     index++;
-
                 }
             }
             block->flags &= ~IN_TREE_FLAG;
@@ -275,7 +257,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 return NULL;
             }
             if (buddy_split(block) != NULL) {
-                hash_table_insert(&used_buddy_hash_table, (uint64) block->start_address, block);
+                hash_table_insert(&used_buddy_hash_table, (uint64)block->start_address, block);
                 return block;
             }
 
@@ -301,13 +283,12 @@ static void buddy_free(void* address) {
     struct singly_linked_list_node* node = bucket->head;
 
     while (1) {
-
         if (node == NULL) {
             panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
         }
         struct buddy_block* block = node->data;
 
-        if ((uint64) block->start_address == (uint64)address) {
+        if ((uint64)block->start_address == (uint64)address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;
@@ -320,9 +301,8 @@ static void buddy_free(void* address) {
 }
 
 static struct buddy_block* buddy_split(struct buddy_block* block) {
-
-    if(block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[zone_pointer],block->order,block,NULL);
+    if (block->flags & IN_TREE_FLAG) {
+        remove_tree_node(&buddy_free_list_zone[zone_pointer], block->order, block,NULL);
         block->flags &= ~IN_TREE_FLAG;
     }
 
@@ -363,7 +343,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
     if (block == NULL) {
-        struct buddy_block *ret = kalloc(sizeof(struct buddy_block));
+        struct buddy_block* ret = kalloc(sizeof(struct buddy_block));
         return ret;
     }
     return block;
@@ -371,8 +351,8 @@ static struct buddy_block* buddy_block_get() {
 
 
 static void buddy_block_free(struct buddy_block* block) {
-    if(block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[0],block->order,block,NULL);
+    if (block->flags & IN_TREE_FLAG) {
+        remove_tree_node(&buddy_free_list_zone[0], block->order, block,NULL);
     }
     if (block->flags & STATIC_POOL_FLAG) {
         block->is_free = UNUSED;
@@ -411,7 +391,6 @@ static void buddy_coalesce(struct buddy_block* block) {
         insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         return;
     }
-
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
 
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
