@@ -10,6 +10,8 @@
 This is my take on my own operating system to further my understanding and improve my programming and system design skills. Also,  just to have some fun because let's face it, programming is like magic seeing how you can create almost anything by simply thinking it into existence. I will be combining some existing ideas and implementations and also mixing in some of my own thoughts and designs in as well.
 I may add a posix compliant layer at some point but for the time being I think I will end up rolling my own userspace. I will probably use this project as an opportunity to learn about everything from rolling my own cryptographic functions to better acquaint myself with the mathematics behind algorithms such as RSA, AES, SHA, maybe even some simpler ciphers for fun. I will also be rolling my own data structures and accompanying algorithms to improve my understanding and actually implement these concepts in C.
 
+Starting 10/26/2024 I am going to make the effort to comment my thoughts about every function, to save myself some headache down the line.
+
 # Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started)
 
 🟢Serial
@@ -35,6 +37,8 @@ I may add a posix compliant layer at some point but for the time being I think I
 🟡Implement a scheduler to schedule threads in order make multitasking possible.
 
 🟡Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
+
+🟡Implement a ramdisk driver to facilitate the tempsfs filesystem. 
 
 🔴Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
