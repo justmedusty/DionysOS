@@ -11,11 +11,8 @@
 
 
 /*
- * This is just using slab allocation for now but will incorporate other mechanisms in the future
- */
-
-/*
- * Init Memory for Kernel Heap
+ * Init Memory for Kernel Heap.
+ * Because 32 bytes is a common needed size so far in this kernel, I have allocated a metric fuckload of slab memory for it (comparatively)
  */
 int heap_init() {
     int size = 8;
@@ -43,7 +40,10 @@ int heap_init() {
     return 0;
 }
 
-
+/*
+ * kalloc tries to allocate from the cached slab memory wherever it can, otherwise it just invokes
+ * physalloc. When physalloc is invoked, the start of the memory is changed to the proper HHDM value.
+ */
 void *kalloc(uint64 size) {
 
     if(size > PAGE_SIZE) {
@@ -67,7 +67,12 @@ void *kalloc(uint64 size) {
 
     return return_value + PAGE_SIZE;
 }
-
+/*
+ * Krealloc is just realloc for the kernel. Allocate a bigger block of memory, copy the previous contents in.
+ * I will use this as a soapbox opportunity to say that realloc is not a safe function in a secure context. You have no
+ * way to know if the memory that just deallocated was erased if there was sensitive data in it. That is always something
+ * that needs to be kept in mind and it is best to avoid realloc and to use malloc and zero yourself.
+ */
 void *krealloc(void *address, uint64 new_size) {
     if (address == NULL) {
         return kalloc(new_size);
@@ -111,7 +116,9 @@ void *krealloc(void *address, uint64 new_size) {
 
     return address;
 }
-
+/*
+ * Kfree frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
+ */
 void kfree(void *address) {
     if (address == NULL) {
         return;
