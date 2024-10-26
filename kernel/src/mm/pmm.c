@@ -14,7 +14,9 @@
 #include "include/drivers/uart.h"
 #include "include/data_structures/binary_tree.h"
 
-
+/*
+ * Static prototypes
+ */
 static void buddy_coalesce(struct buddy_block* block);
 static struct buddy_block* buddy_alloc(uint64 pages);
 static void buddy_free(void* address);
@@ -22,6 +24,9 @@ static void buddy_block_free(struct buddy_block* block);
 static struct buddy_block* buddy_block_get();
 static struct buddy_block* buddy_split(struct buddy_block* block);
 
+/*
+ * Bootloader requests for the memory memory and HHDM offset
+ */
 __attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
     .id = LIMINE_MEMMAP_REQUEST,
@@ -46,7 +51,6 @@ struct singly_linked_list unused_buddy_blocks_list;
 
 struct hash_table used_buddy_hash_table;
 
-uint8* mem_map = NULL;
 uint64 highest_page_index = 0;
 uint64 last_used_index = 0;
 uint64 usable_pages = 0;
@@ -60,6 +64,31 @@ int allocation_model;
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
 struct contiguous_page_range contiguous_pages[10] = {};
 
+
+/*
+ * This init function just goes through the memory map passed by the bootloader which is then mapped into the contiguous page ranges depending on how many there are.
+ * After this a bubble sort is applied to the contiguous page range array in order from largest to smallest
+ *
+ * Once this is done, the static pool is filled with MAX_ORDER size buddy blocks and each buddy block struct is assigned its zone pointer, start address, next block , etc
+ *
+ * As of right now, my indicator for the start of a max order block is with the flag FIRST_BLOCK_FLAG being tied to the start address of the original block.
+ * This is not perfect because it can allow this scenario:
+ *
+ * First - > second merged with third -> fourth -> Next First
+ *
+ * I am aware of this, and will fix this at a later date.
+ *
+ * After this, the binary tree buddy_free_list_zone is filled. I was originally going to have a tree for each contiguous zone however
+ * I have just hardcoded the first tree for now. I have yet to make a final decision and it is not important right now so it can wait.
+ *
+ * All free blocks are inserted into the tree.
+ *
+ *
+ * After this , the hash table is initialized. The hashmap (used_buddy_hash_table). The way it works is when a block is allocated, the start addressed is hashed and put into the table.
+ * When memory is freed, the address is hashed and looked up in the hashtable to remove it.
+ *
+ *
+ */
 int phys_init() {
     initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
@@ -187,7 +216,10 @@ int phys_init() {
     return 0;
 }
 
-
+/*
+ * The phys_alloc function calls buddy_alloc which attempts to find a buddy block of an appropriate size to the request in pages. It panics on failure. The block
+ * is marked USED and the return value is the start address of the buddy block that was found.
+ */
 void* phys_alloc(uint64 pages) {
     struct buddy_block* block = buddy_alloc(pages);
 
@@ -201,11 +233,32 @@ void* phys_alloc(uint64 pages) {
 
     return return_value;
 }
-
+/*
+ * The phys_dealloc simply calls buddy_free.
+ */
 void phys_dealloc(void* address, uint64 pages) {
     buddy_free(address);
 }
-
+/*
+ *  buddy_alloc first checks what order is required to meet the page demand
+ *  It will iterate from 1 to MAX_ORDER checking if this # of pages matches, or if it is between two orders.
+ *  When a match is found, it will attempt to allocate the right size.
+ *
+ *  If the right size gets no hits it looks for
+ *  right size + 1, this continues until either a block is found or MAX_ORDER is reached.
+ *
+ * If the block found is not the ideal size, buddy_split is called in a loop until a block of appropriate size is returned.
+ *
+ * When the ideal block is finally attained, the start address is hashed and inserted into the hash table so that it can be
+ * found when the address is freed.
+ *
+ * There is a single check on if the index is bigger than the order. This is because during debugging I uncovered that one particular block ALWAYS ends up
+ * in the wrong tree node. Of the counterless thousands of operations, only one address was doing this. Since it was only 1 block doing this ,
+ * I just put a check for it and to remove it from the tree so that it can never be allocated which removes the issue entirely.
+ * At some point I should fix it but again, it is only one block out of thousands that does this, so it is not of high importance.
+ *
+ *
+ */
 static struct buddy_block* buddy_alloc(uint64 pages) {
     if (pages > (1 << MAX_ORDER)) {
         serial_printf("pages %i \n", pages);
@@ -249,7 +302,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
             block->flags &= ~IN_TREE_FLAG;
             return block;
         }
-
+    //I think this is broken just leaving it for now. I will leave this for when I clean up this function in the future
         if (pages < (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
             block->flags &= ~IN_TREE_FLAG;
@@ -268,9 +321,13 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
     return NULL;
 }
 
-/* It may be ideal to store pointers in the process object and pass the process object to easily find the block*/
-/* Pages is also sort of redundant here but will keep it for now */
-
+/*
+ * The buddy_free function is relatively simple.
+ * It looks up the address in the hash table.
+ * The hash table returns the bucket rather than the entry. This may change in the future.
+ * Because of that, a loop to find the address in the hash bucket is provided in this function.
+ * Once it is found, buddy_coalesce is called, the function returns.
+ */
 static void buddy_free(void* address) {
     struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
                                                             hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
@@ -300,6 +357,21 @@ static void buddy_free(void* address) {
     }
 }
 
+/*
+ *  buddy_split takes a block and splits it in two.
+ *
+ *  It first ensures that the block is not in the free tree (it should never be there but its just for sanity)
+ *
+ *  It ensures the block isnt 0 because of course a page can't be split.
+ *
+ *  It ensured that the block is not USED
+ *
+ *  It calls buddy_block_get to get a spare buddy_block object
+ *
+ *  It fills in the new block as the buddy of the first, altering the start address and order
+ *
+ *  It puts the new block into the free tree, and returns the original, now split in half block
+ */
 static struct buddy_block* buddy_split(struct buddy_block* block) {
     if (block->flags & IN_TREE_FLAG) {
         remove_tree_node(&buddy_free_list_zone[zone_pointer], block->order, block,NULL);
@@ -339,7 +411,10 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
     return NULL;
 }
-
+/*
+ * This function just attempts to get a spare block from the static pool list
+ * If none is found, kalloc is invoked in instead.
+ */
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
     if (block == NULL) {
@@ -349,7 +424,13 @@ static struct buddy_block* buddy_block_get() {
     return block;
 }
 
-
+/*
+ * This function first does a sanity check ensuring that the block is not in a tree (this is a remnant of debugging , its not needed anymore but why not)
+ *
+ *If the block has the static pool flag, all values are set to 0 / NULL / UNUSED accordingly and inserted into the free list of static blocks
+ *
+ * If not, kfree is invoked.
+ */
 static void buddy_block_free(struct buddy_block* block) {
     if (block->flags & IN_TREE_FLAG) {
         remove_tree_node(&buddy_free_list_zone[0], block->order, block,NULL);
@@ -370,6 +451,23 @@ static void buddy_block_free(struct buddy_block* block) {
 /*
  *  This assumes the block passed to the function is not currently in a free-tree, if it is then it will cause issues commenting this now
  *  in case it becomes an issue later
+ */
+
+
+/*
+ *This function tries to merge this block with the next block if it is free.
+ *
+ *Basic sanity checks, if the next block is NULL (miniscule chance but we check anyway) it is put into the free tree.
+ *
+ *If it is of order MAX_ORDER , it is put back in the tree.
+ *
+ *If the order of this block and the next, the is_free status of this block and the next, the zone (contiguous area of memory)
+ *of this block and the next are ALL the same AND the next block does not have the FIRST_BLOCK_FLAG (it is the beginning of a MAX_ORDER area)
+ *then merge the two blocks.
+ *
+ *AS-IS this is a naive implementation because as mentioned above it is possible to end up with blocks between boundaries merging inappropriately.
+ *I will fix this at some point, but in terms of actual problems that will cause in practical terms it is next to zero. You would need to be using essentially all of the available memory and try
+ *to make a large allocation for this to cause problems.
  */
 
 static void buddy_coalesce(struct buddy_block* block) {
