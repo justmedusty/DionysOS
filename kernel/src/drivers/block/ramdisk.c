@@ -15,7 +15,10 @@
 struct ramdisk ramdisk[RAMDISK_COUNT]; /* 3 Only need one but why not 3! */
 uint64 ramdisk_count = RAMDISK_COUNT;
 
-
+/*
+ * This function initializes a ramdisk of size bytes converted to pages, ramdisk id which is just the index into the array, and a string which could be useful at some point.
+ * It initializes the lock, page count, allocates memory yada yada yada
+ */
 void ramdisk_init(const uint64 size_bytes,const uint64 ramdisk_id,char *name ) {
 
         if(ramdisk_id > ramdisk_count) {
@@ -32,7 +35,9 @@ void ramdisk_init(const uint64 size_bytes,const uint64 ramdisk_id,char *name ) {
         safe_strcpy(ramdisk[ramdisk_id].ramdisk_name,name,sizeof(ramdisk[ramdisk_id].ramdisk_name));
         initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
 }
-
+ /*
+  * This function will read a filesystem image and copy it into the ramdisk memory to get the party started
+  */
 uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uint64 ramdisk_id) {
         if(ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
@@ -44,6 +49,9 @@ uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uin
         return SUCCESS;
 }
 
+/*
+ * I doubt I'll ever even use this but this is for deallocating a ramdisk, obviously
+ */
 void ramdisk_destroy(const uint64 ramdisk_id) {
         if(ramdisk_id > ramdisk_count) {
                 serial_printf("ramdisk id is out of range\n");
@@ -57,6 +65,7 @@ void ramdisk_destroy(const uint64 ramdisk_id) {
 
 /*
  * We will just assume tempfs for now, but we can add support for other file systems in the future
+ * This function will just read a block, offset, into buffer of buffer size until either read_size or buffer_size is hit.
  */
 uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size,uint64 ramdisk_id) {
         if(ramdisk_id > ramdisk_count) {
@@ -68,6 +77,10 @@ uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size
         }
 }
 
+/*
+ * We will just assume tempfs for now, but we can add support for other file systems in the future
+ * This function will just write a block, offset, from buffer of buffer size until either write_size or buffer_size is hit.
+ */
 uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size,uint64 ramdisk_id) {
 
 }
