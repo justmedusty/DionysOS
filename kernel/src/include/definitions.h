@@ -19,3 +19,4 @@
 #define PMM_LOCK 5
 #define BTREE_LOCK 6 // there are many of these but its still an insight
 #define BUDDY_LOCK 7
+#define RAMDISK_LOCK 8

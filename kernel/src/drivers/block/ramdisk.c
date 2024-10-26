@@ -9,23 +9,28 @@
 #include <include/mem/kalloc.h>
 #include "include/mem/mem.h"
 #include "include/mem/pmm.h"
+#include "include/definitions.h"
+#include "include/definitions/string.h"
 
-struct ramdisk ramdisk[3]; /* 3 Only need one but why not 3! */
-uint64 ramdisk_count = sizeof(ramdisk) / sizeof(ramdisk[0]);
+struct ramdisk ramdisk[RAMDISK_COUNT]; /* 3 Only need one but why not 3! */
+uint64 ramdisk_count = RAMDISK_COUNT;
 
-void ramdisk_init(const uint64 size,const uint64 ramdisk_id) {
+
+void ramdisk_init(const uint64 size_bytes,const uint64 ramdisk_id,char *name ) {
 
         if(ramdisk_id > ramdisk_count) {
                 serial_printf("ramdisk id is out of range\n");
                 return;
         }
-        uint64 pages = size / PAGE_SIZE;
+        uint64 pages = size_bytes / PAGE_SIZE;
         if (pages == 0) {
                 pages = DEFAULT_RAMDISK_SIZE;
         }
         ramdisk[ramdisk_id].ramdisk_start = kalloc(pages);
          ramdisk[ramdisk_id].ramdisk_size_pages = pages;
          ramdisk[ramdisk_id].ramdisk_end =  ramdisk[ramdisk_id].ramdisk_start + (pages * PAGE_SIZE);
+        safe_strcpy(ramdisk[ramdisk_id].ramdisk_name,name,sizeof(ramdisk[ramdisk_id].ramdisk_name));
+        initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
 }
 
 uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uint64 ramdisk_id) {
@@ -53,10 +58,18 @@ void ramdisk_destroy(const uint64 ramdisk_id) {
 /*
  * We will just assume tempfs for now, but we can add support for other file systems in the future
  */
-uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size) {
+uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size,uint64 ramdisk_id) {
+        if(ramdisk_id > ramdisk_count) {
+                return RAMDISK_ID_OUT_OF_RANGE;
+        }
+
+        if(offset > ramdisk[ramdisk_id].block_size) {
+                return RAMDISK_OFFSET_OUT_OF_RANGE;
+        }
 }
 
-uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size) {
+uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size,uint64 ramdisk_id) {
+
 }
 
 

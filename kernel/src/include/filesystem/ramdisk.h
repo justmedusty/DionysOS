@@ -6,9 +6,13 @@
 #include "include/types.h"
 #include "include/data_structures/spinlock.h"
 
+#define RAMDISK_COUNT 5
+
 #define SUCCESS 0
 #define RAMDISK_SIZE_TOO_SMALL 0x4
 #define RAMDISK_ID_OUT_OF_RANGE 0x8
+#define RAMDISK_BLOCK_OUT_OF_RANGE 0x10
+#define RAMDISK_OFFSET_OUT_OF_RANGE 0x20
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
 #define RAMDISK_TEMPFS_ID 0x1
@@ -29,5 +33,5 @@ struct ramdisk {
 void ramdisk_init(const uint64 size,const uint64 ramdisk_id);
 uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uint64 ramdisk_id);
 void ramdisk_destroy(const uint64 ramdisk_id);
-uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size);
-uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size);
+uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size, uint64 ramdisk_id);
+uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size,uint64 ramdisk_id);

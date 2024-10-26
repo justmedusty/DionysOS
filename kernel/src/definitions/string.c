@@ -14,6 +14,10 @@ void strcpy(char *dest, char *src) {
     while ((*dest++ = *src++));
 }
 
+void safe_strcpy(char *dest, char *src,uint64 dest_size) {
+    uint64 pointer = 0;
+    while (((*dest++ = *src++)) && (pointer++ < dest_size));
+}
 void strcat(char *str1, char *str2) {
     while (*str1 !='\0') {
         str1++;
