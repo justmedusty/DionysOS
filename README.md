@@ -7,7 +7,7 @@
 [History](https://www.worldhistory.org/Dionysos/)
 
 # Why Dionysos?
-As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme.
+As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme. The theme of fertility also is pertinent since programming is an act of creation.
 
 # Short Intro
 This is my take on my own operating system to further my understanding and improve my programming and system design skills. Also,  just to have some fun because let's face it, programming is like magic seeing how you can create almost anything by simply thinking it into existence. I will be combining some existing ideas and implementations and also mixing in some of my own thoughts and designs in as well.
