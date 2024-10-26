@@ -22,6 +22,9 @@ void safe_strcpy(char* dest, char* src, uint64 dest_size) {
     while (((*dest++ = *src++)) && (pointer++ < dest_size));
 }
 
+/*
+ * Your run of the mill concat string function, adds to the end of a string. This function is pretty dangerous so I may write a safe one later.
+ */
 void strcat(char* str1, char* str2) {
     while (*str1 != '\0') {
         str1++;
