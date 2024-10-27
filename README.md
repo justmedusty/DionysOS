@@ -66,7 +66,7 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 🔴Investigate performance of hash function in hash_table implementation
 
 
-Ideas for arcane syscall names:
+# Ideas for arcane syscall names:
 
 conjure (spawn)
 bifurcate(fork)
