@@ -60,10 +60,13 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 
 # Meta Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
 
-🟡Document all functions and explain ideas so that others can read and follow along better
-🟡Add locks in all areas where it will be needed
-🔴Implement empty placeholder files (RCU,LRU,AHCI,NVME,RB Tree, ext2, etc)
-🔴Investigate performance of hash function in hash_table implementation
+🟡Document all functions and explain ideas so that others can read and follow along better.
+
+🟡Add locks in all areas where it will be needed.
+
+🔴Implement empty placeholder files (RCU,LRU,AHCI,NVME,RB Tree, ext2, etc).
+
+🔴Investigate performance of hash function in hash_table implementation.
 
 
 # Ideas for arcane syscall names:
