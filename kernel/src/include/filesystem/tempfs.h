@@ -20,7 +20,7 @@ extern struct vnode_operations tempfs_vnode_ops;
 struct tempfs_superblock {
   uint64 magic;
   uint64 version;
-  uint64 blocksize;
+  uint64 block_size;
   uint64 num_blocks;
   uint64 num_inodes;
   uint64 total_size;

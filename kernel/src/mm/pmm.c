@@ -25,7 +25,7 @@ static struct buddy_block* buddy_block_get();
 static struct buddy_block* buddy_split(struct buddy_block* block);
 
 /*
- * Bootloader requests for the memory memory and HHDM offset
+ * Bootloader requests for the memory and HHDM offset
  */
 __attribute__((used, section(".requests")))
 volatile struct limine_memmap_request memmap_request = {
@@ -59,7 +59,6 @@ uint64 reserved_pages = 0;
 uint64 hhdm_offset = 0;
 int page_range_index = 0;
 
-int allocation_model;
 
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
 struct contiguous_page_range contiguous_pages[10] = {};

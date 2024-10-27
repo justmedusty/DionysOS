@@ -66,6 +66,8 @@ void ramdisk_destroy(const uint64 ramdisk_id) {
 /*
  * We will just assume tempfs for now, but we can add support for other file systems in the future
  * This function will just read a block, offset, into buffer of buffer size until either read_size or buffer_size is hit.
+ *
+ * We will act as though the buffer is always empty.
  */
 uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size,uint64 ramdisk_id) {
         if(ramdisk_id > ramdisk_count) {
@@ -75,6 +77,27 @@ uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size
         if(offset > ramdisk[ramdisk_id].block_size) {
                 return RAMDISK_OFFSET_OUT_OF_RANGE;
         }
+
+        if(read_size > buffer_size) {
+                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
+        }
+
+        if(block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
+                return BLOCK_OUT_OF_RANGE;
+        }
+
+        uint8 *read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
+
+        uint64 index = 0;
+
+        while(index < read_size) {
+                buffer[index] = read_start[index];
+                index++;
+        }
+
+        return SUCCESS;
+
+
 }
 
 /*
@@ -82,6 +105,32 @@ uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size
  * This function will just write a block, offset, from buffer of buffer size until either write_size or buffer_size is hit.
  */
 uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size,uint64 ramdisk_id) {
+        if(ramdisk_id > ramdisk_count) {
+                return RAMDISK_ID_OUT_OF_RANGE;
+        }
+
+        if(offset > ramdisk[ramdisk_id].block_size) {
+                return RAMDISK_OFFSET_OUT_OF_RANGE;
+        }
+
+        if(write_size > buffer_size) {
+                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
+        }
+
+        if(block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
+                return BLOCK_OUT_OF_RANGE;
+        }
+
+        uint8 *read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
+
+        uint64 index = 0;
+
+        while(index < write_size) {
+                read_start[index] = buffer[index];
+                index++;
+        }
+
+        return SUCCESS;
 
 }
 
