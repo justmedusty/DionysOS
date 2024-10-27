@@ -48,7 +48,7 @@ void queue_init(struct queue* queue_head, uint8 queue_mode, char* name) {
 }
 
 /*
- *  Init a single node
+ *  Internal function to init a single node
  */
 void __queue_node_init(struct queue_node* node, void* data, uint8 priority) {
     if (node == NULL) {
@@ -63,7 +63,7 @@ void __queue_node_init(struct queue_node* node, void* data, uint8 priority) {
 }
 
 /*
- *  Generic enqueue
+ *  Generic enqueue, it will check the queue_mode field to tell what mode this is, and call the appropriate function.
  */
 
 void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority) {
@@ -102,7 +102,7 @@ void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority) {
 }
 
 /*
- *  Generic dequeue
+ *  Generic dequeue, it will check the queue_mode field to tell what mode this is, and call the appropriate function.
  */
 void dequeue(struct queue* queue_head) {
     if (queue_head == NULL) {
@@ -134,7 +134,9 @@ void dequeue(struct queue* queue_head) {
     }
 }
 
-
+/*
+ * Your run-of-the-mill enqueue as-you-know-it function. Stick it last in the queue and update the pointers and node count appropriately
+ */
 static void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
     /*
      * Base cases
@@ -170,7 +172,12 @@ static void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node
     queue_head->node_count++;
 }
 
-/* Push */
+/* Your stack implementation of the queue, it goes to the head as opposed to the tail of the queue
+ *
+ *
+ * Is it really a queue when using this mode? I don't know I'm not a philosopher. You should ask Theseus.
+ *
+ */
 
 static void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) {
     /*
@@ -195,7 +202,10 @@ static void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node
     queue_head->head = new_node;
     queue_head->node_count++;
 }
-
+/*
+ *  Enqueue for priority mode which is for scheduling. It will place based on the priority value of the
+ *  node to be placed. Again, is it really a queue? Ask Theseus.
+ */
 static void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     if (new_node->data == NULL) {
         panic("Null head in enqueue priority");
@@ -273,7 +283,9 @@ static void __enqueue_priority(struct queue* queue_head, struct queue_node* new_
         pointer = pointer->next;
     }
 }
-
+/*
+ *  Dequeue function for your typical queue mode. Remove the head, update pointers accordingly
+ */
 static void __dequeue_fifo(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
@@ -292,6 +304,10 @@ static void __dequeue_fifo(struct queue* queue_head) {
     kfree(pointer);
 }
 
+/*
+ *  Dequeue mode for your stack mode. Pop off the head.
+ *  Update pointers accordingly
+ */
 static void __dequeue_lifo(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
@@ -313,7 +329,10 @@ static void __dequeue_lifo(struct queue* queue_head) {
 
     kfree(pointer);
 }
-
+/*
+ *  Dequeue for priority. This one always just copies the normal queue behaviour since it was written
+ *  with scheduling in mind.
+ */
 static void __dequeue_priority(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
