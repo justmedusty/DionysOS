@@ -3,7 +3,7 @@
 //
 #include "../../../limine.h"
 #include "include/types.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include <include/arch/arch_cpu.h>
 
 __attribute__((used, section(".requests")))

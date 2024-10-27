@@ -6,7 +6,7 @@
 #include "include/types.h"
 #include "include/arch/arch_paging.h"
 #include "limine.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/mem/pmm.h"
 
 

@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 
 #include "include/types.h"
 // Routines to let C code use special x86 instructions.

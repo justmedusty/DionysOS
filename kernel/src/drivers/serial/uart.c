@@ -2,7 +2,7 @@
 // Created by dustyn on 6/19/24.
 //
 #include "include/types.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 
 #include <include/data_structures/spinlock.h>
 #include "include/definitions.h"

@@ -11,7 +11,7 @@
 #include "limine.h"
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/data_structures/binary_tree.h"
 
 /*

@@ -5,7 +5,7 @@
 #include "include/data_structures/hash_table.h"
 #include <include/types.h>
 #include <include/arch/arch_cpu.h>
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/definitions.h"
 

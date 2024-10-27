@@ -8,7 +8,7 @@
 #include <include/arch/arch_cpu.h>
 
 #include "include/arch/x86_64/asm_functions.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/mem/mem.h"
 #include "stdbool.h"
 

@@ -13,7 +13,7 @@
 #include "include/mem/pmm.h"
 #include "include/mem/kalloc.h"
 #include "include/mem/mem_bounds.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 
 #include "include/arch//arch_vmm.h"
 #include "include/arch/x86_64/asm_functions.h"

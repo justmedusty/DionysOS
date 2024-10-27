@@ -13,6 +13,7 @@
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 //marks this block as an indirection block , an array of 64bit block pointers
 #define INDRECTION_HEADER 0x123456789ABCEFEC
+#define DEFAULT_TEMPFS_SIZE (TEMPFS_BLOCKSIZE * 19705 /* This figure is from some number crunching*/)
 
 
 extern struct vnode_operations tempfs_vnode_ops;
@@ -26,7 +27,7 @@ struct tempfs_superblock {
   uint64 total_size;
   /* Both bitmap entries hold n block pointers */
   uint64 inode_bitmap_pointers[6]; /* Can hold 50k inodes assuming 1024 size */
-  uint64 block_bitmap_pointers[114]; /*  1mib worth of blocks */
+  uint64 block_bitmap_pointers[114]; /*  7mib worth of blocks */
   uint64 inode_start_pointer; /* Where inodes start */
   uint64 block_start_pointer; /* Where blocks start */
 };

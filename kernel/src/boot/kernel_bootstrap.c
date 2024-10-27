@@ -4,7 +4,7 @@
 #include <arch/x86_64/idt.h>
 #include "include/filesystem/vfs.h"
 #include "include/arch/arch_memory_init.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/arch/arch_interrupts.h"
 #include "include/mem/pmm.h"
 #include "include/mem/mem_bounds.h"

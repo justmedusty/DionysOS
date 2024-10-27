@@ -4,7 +4,7 @@
 #include "include/filesystem/vfs.h"
 #include <include/definitions/string.h>
 #include <include/data_structures/singly_linked_list.h>
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
 #include "include/mem/mem.h"

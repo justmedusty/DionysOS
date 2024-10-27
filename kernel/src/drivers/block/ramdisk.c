@@ -2,9 +2,9 @@
 // Created by dustyn on 9/17/24.
 //
 
-#include "include/filesystem/ramdisk.h"
+#include "include/drivers/block/ramdisk.h"
 #include <include/types.h>
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 #include <include/filesystem/tempfs.h>
 #include <include/mem/kalloc.h>
 #include "include/mem/mem.h"

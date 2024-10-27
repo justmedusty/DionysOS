@@ -3,10 +3,10 @@
 //
 
 #include "include/acpi.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/arch//arch_paging.h"
 #include "include/mem/mem.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include <include/arch/arch_cpu.h>
 #include "include/madt.h"
 #include "limine.h"

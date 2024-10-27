@@ -6,7 +6,7 @@
 #include "include/definitions.h"
 #include "include/filesystem/vfs.h"
 #include "include/filesystem/tempfs.h"
-
+#include "include/drivers/block/ramdisk.h"
 
 struct spinlock tempfs_lock;
 
@@ -25,6 +25,7 @@ struct vnode_operations tempfs_vnode_ops = {
 
 void tempfs_init() {
   initlock(&tempfs_lock,TEMPFS_LOCK);
+
 };
 
 void tempfs_remove(struct vnode *vnode) {

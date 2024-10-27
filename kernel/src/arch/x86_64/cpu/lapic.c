@@ -5,7 +5,7 @@
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_global_interrupt_controller.h>
 #include "include/types.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include <include/arch/arch_smp.h>

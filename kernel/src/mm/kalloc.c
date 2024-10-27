@@ -5,7 +5,7 @@
 #include "include/mem/pmm.h"
 #include "include/mem/kalloc.h"
 #include "include/mem/slab.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
 

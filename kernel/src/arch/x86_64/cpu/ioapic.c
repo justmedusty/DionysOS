@@ -7,7 +7,7 @@
 #include "include/arch/arch_global_interrupt_controller.h"
 #include <include/arch/arch_paging.h>
 #include "include/arch/x86_64/asm_functions.h"
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 
 #define PIC1 0x20
 #define PIC2 0xA0
@@ -80,7 +80,6 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
      * Update 2 : Marking the redirection table volatile fixes the issue. This part makes sense, writing I/O ports fixing it doesn't make sense. I am going to leave this here as a little piece of history of this code base lol.
      */
 
-    //serial_printf("");
 
     volatile uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
     write_ioapic(ioapic, redir_table, (uint32)redirect);

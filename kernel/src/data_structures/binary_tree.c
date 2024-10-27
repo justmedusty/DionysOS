@@ -6,7 +6,7 @@
 
 #include <string.h>
 #include <include/arch/arch_cpu.h>
-#include <include/drivers/uart.h>
+#include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 
 /* Local Definitions */

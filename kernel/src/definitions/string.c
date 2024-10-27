@@ -5,7 +5,7 @@
 #include "include/definitions/string.h"
 #include "include/definitions.h"
 #include "include/arch/arch_cpu.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 
 /*
     Need to ensure there is enough memory in your string

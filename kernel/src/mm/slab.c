@@ -10,7 +10,7 @@
 
 #include "include/mem/pmm.h"
 #include "include/mem/mem.h"
-#include "include/drivers/uart.h"
+#include "include/drivers/serial/uart.h"
 
 //Kernel heap
 slab_t slabs[10];
