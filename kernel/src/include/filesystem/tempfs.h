@@ -5,6 +5,7 @@
 #pragma once
 #include "include/types.h"
 #include "include/filesystem/vfs.h"
+#define INITRAMFS 0 /* Just for ramdisk 0 id purposes*/
 
 #define TEMPFS_BLOCKSIZE 1024
 #define TEMPFS_MAGIC 0x7777777777777777
@@ -13,7 +14,7 @@
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 //marks this block as an indirection block , an array of 64bit block pointers
 #define INDRECTION_HEADER 0x123456789ABCEFEC
-#define DEFAULT_TEMPFS_SIZE (TEMPFS_BLOCKSIZE * 19705 /* This figure is from some number crunching*/)
+#define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE/* This figure is from some number crunching. (I have no idea why that left bracket is needed, it doesnt register the left bracket preceding unless I put it there))*/)
 
 
 extern struct vnode_operations tempfs_vnode_ops;

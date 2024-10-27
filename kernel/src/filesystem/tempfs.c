@@ -6,6 +6,7 @@
 #include "include/definitions.h"
 #include "include/filesystem/vfs.h"
 #include "include/filesystem/tempfs.h"
+#include <include/drivers/serial/uart.h>
 #include "include/drivers/block/ramdisk.h"
 
 struct spinlock tempfs_lock;
@@ -23,8 +24,15 @@ struct vnode_operations tempfs_vnode_ops = {
   .unlink = tempfs_unlink,
   };
 
+/*
+ * This function will do basic setup such as initing the tempfs lock, it will then setup the ramdisk driver and begin to fill ramdisk memory with a tempfs filesystem.
+ * It will use the size DEFAULT_TEMPFS_SIZE and any other size, modifications need to be made to the superblock object.
+ */
 void tempfs_init() {
   initlock(&tempfs_lock,TEMPFS_LOCK);
+    ramdisk_init(DEFAULT_TEMPFS_SIZE,INITRAMFS,"initramfs");
+
+
 
 };
 
