@@ -18,7 +18,10 @@
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
 #define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
 
-//Block macros
+/*
+ *  These macros make it easier to change the size created by tempfs_init by just modifying values of
+ *  TEMPFS_NUM_INODE_POINTER_BLOCKS and TEMPFS_NUM_BLOCK_POINTER_BLOCKS
+ */
 #define TEMPFS_SUPERBLOCK 0
 #define TEMPFS_START_INODE_BITMAP 1
 #define TEMPFS_START_BLOCK_BITMAP (TEMPFS_START_INODE_BITMAP + TEMPFS_NUM_INODE_POINTER_BLOCKS)

@@ -41,6 +41,9 @@ extern struct vnode vfs_root;
 #define VNODE_HARDLINK 1 << 1
 #define VNODE_STATIC_POOL 1<<63
 
+/*
+ *TODO optimize the size of this to be a divisor of page size and add an extra few pages in the slab init for this
+ */
 struct vnode {
     struct vnode* vnode_parent;
     struct vnode** vnode_children;

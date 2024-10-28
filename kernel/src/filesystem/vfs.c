@@ -26,7 +26,12 @@ struct spinlock vfs_lock;
 //static prototype
 static struct vnode* __parse_path(char* path);
 
-
+/*
+ *The vfs_init function simply initializes a linked list of all of the vnode static pool
+ *and marks each of them with a VNODE_STATIC_POOL flag
+ *
+ *It also initializes the lock for the VFS system.
+ */
 void vfs_init() {
     singly_linked_list_init(&vnode_static_pool, 0);
     singly_linked_list_init(&vnode_used_pool, 0);
@@ -41,7 +46,10 @@ void vfs_init() {
 }
 
 
-/* To make use of the static pool */
+/*
+ *  vnode_alloc is required with the static pool so that nodes may be taken from the pool if any are free,
+ *  otherwise kalloc is invoked.
+ */
 struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
 
@@ -58,7 +66,14 @@ struct vnode* vnode_alloc() {
 }
 
 
-/* To make use of the static pool */
+/*
+ * Same as above except for freeing
+ *
+ * Checks if mount point,
+ * Checks if ref_count not 0,
+ * Checks if part of static pool
+ * Checks if the node is root
+ */
 void vnode_free(struct vnode* vnode) {
     acquire_spinlock(&vfs_lock);
 
@@ -96,7 +111,11 @@ void vnode_free(struct vnode* vnode) {
     release_spinlock(&vfs_lock);
 }
 
-
+/*
+ *This is the public facing function that makes use of the internal __parse_path function
+ *Takes a string path and returns the final vnode, if it is a valid path. Can take
+ *absolute or relative path.
+ */
 struct vnode* vnode_lookup(char* path) {
     struct vnode* target = __parse_path(path);
 
@@ -128,7 +147,9 @@ struct vnode* vnode_create(char* path, uint8 vnode_type) {
     return new_vnode;
 }
 
-
+/*
+ *This simply invokes the remove function pointer which is filesystem specific, afterward invokes vnode_free
+ */
 void vnode_remove(struct vnode* vnode) {
     if (vnode->is_mount_point) {
         //should I make it a requirement to unmount before removing ?
@@ -139,7 +160,13 @@ void vnode_remove(struct vnode* vnode) {
     vnode_free(vnode);
 }
 
-
+/*
+ *  Open invokes vnode_open and checks for mounts in the target.
+ *
+ *  It then returns the vnode.
+ *
+ *  This will need to return a handle at some point.
+ */
 struct vnode* vnode_open(char* path) {
     struct vnode* vnode = vnode_alloc();
     vnode = vnode_lookup(path);
@@ -155,11 +182,23 @@ struct vnode* vnode_open(char* path) {
     return vnode;
 }
 
-
+/*
+ * Not yet implemented
+ */
 void vnode_close(struct vnode* vnode) {
 }
 
-
+/*
+ *  This function is for finding directory entries and following a path, only a fraction of the path is passed as the token parameter.
+ *
+ *  It ensures the type is correct (directory)
+ *
+ *  It accounts for mount points
+ *
+ *  It checks if the child is cached, otherwise it looks it up.
+ *
+ *  It iterates through the children in the vnode until it finds the child or the end of the children.
+ */
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 
     if (vnode->vnode_type != VNODE_DIRECTORY) {
@@ -192,7 +231,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 
 
 /*
- *  May want to pass a path here but will just keep a vnode for now
+ * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
 uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
     //handle already mounted case
@@ -215,7 +254,9 @@ uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
     return SUCCESS;
 }
 
-
+/*
+ * Clears mount data from the vnode, clearing it as a mount point.
+ */
 uint64 vnode_unmount(struct vnode* vnode) {
     if (!vnode->is_mount_point) {
         return NOT_MOUNTED;
@@ -227,7 +268,11 @@ uint64 vnode_unmount(struct vnode* vnode) {
     return SUCCESS;
 }
 
-
+/*
+ * Invokes the read function pointer. Filesystem dependent.
+ *
+ * Handles mount points properly.
+ */
 uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset,buffer, bytes);
@@ -244,7 +289,19 @@ uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffe
     return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
 }
 
-
+/*
+ * This function makes uses of my in-house strtok function in order to fully parse a path and return a vnode for the specified
+ * file or device.
+ *
+ * It checks whether the path is relative or absolute
+ *
+ * It parses token then finds the corresponding node by token invoking find_vnode_child.
+ *
+ * When it is done it frees the token memory and ensures that the final vnode is not NULL
+ *
+ * Returns target node.
+ *
+ */
 static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = vnode_alloc();

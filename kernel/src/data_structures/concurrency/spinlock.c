@@ -26,11 +26,12 @@ void release_spinlock(struct spinlock* spinlock) {
 
 void acquire_interrupt_safe_spinlock(struct spinlock* spinlock) {
     arch_atomic_swap(&spinlock->locked, 1);
-    sti();
+    disable_interrupts();
     spinlock->cpu = 0;
 }
 
 void release_interrupt_safe_spinlock(struct spinlock* spinlock) {
     spinlock->cpu = 0;
     spinlock->locked = 0;
+    enable_interrupts();
 }
