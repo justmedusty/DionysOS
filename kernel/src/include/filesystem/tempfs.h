@@ -55,11 +55,8 @@ struct tempfs_inode {
   uint64 reserved;
 };
 
-_Static_assert(sizeof(struct tempfs_inode) == 256 ,"Tempfs Superblock not the proper size");
+_Static_assert(sizeof(struct tempfs_inode) == 256 ,"Tempfs inode not the proper size");
 
-struct tempfs_block {
-  uint64 data[sizeof(uint64) * (TEMPFS_BLOCKSIZE / sizeof(uint64))];
-};
 
 void tempfs_init();
 uint64 tempfs_read(struct vnode *vnode,uint64 offset, char *buffer, uint64 bytes);
