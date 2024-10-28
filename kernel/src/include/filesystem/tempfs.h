@@ -41,6 +41,8 @@ struct tempfs_superblock {
   uint64 block_start_pointer; /* Where blocks start */
 };
 
+_Static_assert(sizeof(struct tempfs_superblock) == 1024 ,"Tempfs Superblock not the proper size");
+
 //4 inodes per block
 struct tempfs_inode {
   uint16 uid;
@@ -52,6 +54,8 @@ struct tempfs_inode {
   uint64 blocks[13]; /* Will point to logical block numbers */
   uint64 reserved;
 };
+
+_Static_assert(sizeof(struct tempfs_inode) == 256 ,"Tempfs Superblock not the proper size");
 
 struct tempfs_block {
   uint64 data[sizeof(uint64) * (TEMPFS_BLOCKSIZE / sizeof(uint64))];
