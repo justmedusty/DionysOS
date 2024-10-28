@@ -114,13 +114,42 @@ uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 wr
                 return RAMDISK_OFFSET_OUT_OF_RANGE;
         }
 
-        if (write_size > buffer_size) {
-                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
-        }
 
         if (block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
                 return BLOCK_OUT_OF_RANGE;
         }
+
+        /*
+         * We will make an exception for write size exceeding buffer in the case of a block being written many times over since this makes more
+         * sense performance wise than making an enormous buffer just to write zeros of special crafted blocks ad nauseam
+         */
+        if(write_size > buffer_size && write_size % buffer_size == 0) {
+
+                uint64 index = 0;
+                uint64 total_transfered = 0;
+
+                uint8* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
+
+                while (total_transfered < write_size) {
+
+                        read_start[index] = buffer[index];
+                        total_transfered++;
+
+                        if(index == buffer_size) {
+                                index = 0;
+                        }
+
+                        index++;
+                        total_transfered++;
+                }
+                return SUCCESS;
+
+        }
+
+        if (write_size > buffer_size) {
+                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
+        }
+
 
         uint8* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
 
