@@ -9,6 +9,7 @@
 #include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
+#include "include/mem/mem.h"
 
 struct spinlock tempfs_lock;
 struct tempfs_superblock tempfs_superblock;
@@ -118,4 +119,20 @@ void tempfs_mkfs(uint64 ramdisk_id) {
     for(uint64 i = 0; i < TEMPFS_NUM_BLOCK_POINTER_BLOCKS;i++) {
         tempfs_superblock.block_bitmap_pointers[i] = TEMPFS_START_BLOCK_BITMAP + i;
     }
+
+    tempfs_superblock.total_size = DEFAULT_TEMPFS_SIZE;
+
+    //copy the contents into our buffer
+    memcpy(buffer, &tempfs_superblock, sizeof(struct tempfs_superblock));
+
+    //Write the new superblock to the ramdisk
+    ramdisk_write(buffer,TEMPFS_SUPERBLOCK,0,TEMPFS_BLOCKSIZE,PAGE_SIZE,ramdisk_id);
+
+    memset(buffer,0,PAGE_SIZE);
+
+
+
+
+
+
 }

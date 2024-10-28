@@ -13,7 +13,7 @@
 #define MAX_LEVEL_INDIRECTIONS 5
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 #define INDIRECTION_HEADER 0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
-#define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE/* This figure is from some number crunching. (I have no idea why that left bracket is needed, it doesnt register the left bracket preceding unless I put it there))*/)
+#define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
 
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
 #define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
