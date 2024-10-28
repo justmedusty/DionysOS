@@ -36,4 +36,4 @@ void ramdisk_init(const uint64 size_bytes,const uint64 ramdisk_id,char *name);
 uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uint64 ramdisk_id);
 void ramdisk_destroy(const uint64 ramdisk_id);
 uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size, uint64 ramdisk_id);
-uint64 ramdisk_write(uint8 *buffer, uint64 block, uint64 offset, uint64 write_size,uint64 buffer_size,uint64 ramdisk_id);
+uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size, uint64 ramdisk_id);

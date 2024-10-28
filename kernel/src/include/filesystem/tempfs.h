@@ -12,10 +12,18 @@
 #define TEMPFS_VERSION 1
 #define MAX_LEVEL_INDIRECTIONS 5
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
-//marks this block as an indirection block , an array of 64bit block pointers
-#define INDRECTION_HEADER 0x123456789ABCEFEC
+#define INDIRECTION_HEADER 0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE/* This figure is from some number crunching. (I have no idea why that left bracket is needed, it doesnt register the left bracket preceding unless I put it there))*/)
 
+#define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
+#define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
+
+//Block macros
+#define TEMPFS_SUPERBLOCK 0
+#define TEMPFS_START_INODE_BITMAP 1
+#define TEMPFS_START_BLOCK_BITMAP (TEMPFS_START_INODE_BITMAP + TEMPFS_NUM_INODE_POINTER_BLOCKS)
+#define TEMPFS_START_INODES (TEMPFS_START_BLOCK_BITMAP + TEMPFS_NUM_BLOCK_POINTER_BLOCKS)
+#define TEMPFS_START_BLOCKS (TEMPFS_START_INODES + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8))
 
 extern struct vnode_operations tempfs_vnode_ops;
 
@@ -27,8 +35,8 @@ struct tempfs_superblock {
   uint64 num_inodes;
   uint64 total_size;
   /* Both bitmap entries hold n block pointers */
-  uint64 inode_bitmap_pointers[6]; /* Can hold 50k inodes assuming 1024 size */
-  uint64 block_bitmap_pointers[114]; /*  7mib worth of blocks */
+  uint64 inode_bitmap_pointers[TEMPFS_NUM_INODE_POINTER_BLOCKS]; /* Can hold 50k inodes assuming 1024 size */
+  uint64 block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS];
   uint64 inode_start_pointer; /* Where inodes start */
   uint64 block_start_pointer; /* Where blocks start */
 };

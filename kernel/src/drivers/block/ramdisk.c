@@ -104,7 +104,7 @@ uint64 ramdisk_read(uint8* buffer, uint64 block, uint64 offset, uint64 read_size
  * We will just assume tempfs for now, but we can add support for other file systems in the future
  * This function will just write a block, offset, from buffer of buffer size until either write_size or buffer_size is hit.
  */
-uint64 ramdisk_write(uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size,
+uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size,
                      uint64 ramdisk_id) {
         if (ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
