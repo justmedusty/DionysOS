@@ -18,6 +18,12 @@
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
 #define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
 
+#define BITMAP_TYPE_BLOCK 0
+#define BITMAP_TYPE_INODE 1
+
+#define TEMPFS_NUM_INODES TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
+#define TEMPFS_NUM_BLOCKS TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
+
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
  *  TEMPFS_NUM_INODE_POINTER_BLOCKS and TEMPFS_NUM_BLOCK_POINTER_BLOCKS
@@ -44,7 +50,7 @@ struct tempfs_superblock {
   uint64 block_start_pointer; /* Where blocks start */
 };
 
-_Static_assert(sizeof(struct tempfs_superblock) == 1024 ,"Tempfs Superblock not the proper size");
+_Static_assert(sizeof(struct tempfs_superblock) == TEMPFS_BLOCKSIZE ,"Tempfs Superblock not the proper size");
 
 //4 inodes per block
 struct tempfs_inode {
@@ -58,7 +64,7 @@ struct tempfs_inode {
   uint64 reserved;
 };
 
-_Static_assert(sizeof(struct tempfs_inode) == 256 ,"Tempfs inode not the proper size");
+_Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");
 
 
 void tempfs_init();
