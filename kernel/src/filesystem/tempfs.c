@@ -321,7 +321,6 @@ static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb
     uint64 byte = 0;
     uint64 bit = 0;
     uint64 offset = 0;
-    uint64 limit = sb->num_blocks;
     uint64 block_number = 0;
 
 retry:
@@ -349,21 +348,23 @@ retry:
                     goto found_free;
                 }
             }
-
+            
             byte++;
+
             if (byte == TEMPFS_BLOCKSIZE) {
                 block++;
                 byte = 0; /* We need to reset byte every block increment to avoid having a bad block number calculation at the end */
+            }
+
+            if (block == TEMPFS_NUM_BLOCK_POINTER_BLOCKS) {
+                panic("tempfs_get_free_block_and_mark_bitmap: No free inodes");
+                /* Panic for visibility so I can tweak this if it happens */
             }
 
             if (block * TEMPFS_BLOCKSIZE == buffer_size) {
                 offset = block * TEMPFS_BLOCKSIZE;
                 offset += buffer_size; /* Keep track of how far into the search we are */
                 /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in 2 pages*/
-                if (buffer_size == 1) {
-                    panic("tempfs_get_free_block_and_mark_bitmap: No free inodes");
-                    /* Panic for visibility so I can tweak this if it happens */
-                }
                 goto retry;
             }
         }
