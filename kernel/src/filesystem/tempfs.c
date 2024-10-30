@@ -14,19 +14,14 @@
 struct spinlock tempfs_lock;
 struct tempfs_superblock tempfs_superblock;
 
-static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
-                                   uint8 action);
-static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
-                               struct tempfs_inode* inode_to_be_filled);
-static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
+static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
+static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled);
+static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
-static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
-                                          uint64 buffer_size, uint64 inode_number, uint64 byte_start,
-                                          uint64 size_to_read);
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
-                                           struct tempfs_inode** children, uint64 inode_number);
+static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -149,6 +144,16 @@ void tempfs_mkfs(uint64 ramdisk_id) {
 
 
 /*
+*******************************************************************************************
+*******************************************************************************************
+*******************************************************************************************
+*******************************************************************************************
+*******************************************************************************************
+*******************************************************************************************
+*/
+
+
+/*
  *  These are all fairly self-explanatory internal helper functions for doing things such a reading and setting bitmaps,
  *  following block pointers to get data, getting specific bytes from a file and moving to a buffer, getting directory entries,
  *  and so on.
@@ -163,8 +168,7 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  * number is the block or inode # so that its spot can be calculated
  * action is the macros TEMPFS_TYPE_SET or TEMPFS_TYPE_CLEAR
  */
-static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
-                                   uint8 action) {
+static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action) {
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         goto unknown_code;
     }
@@ -231,23 +235,35 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
     return ret;
 }
 
-static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
-    uint8* buffer = kalloc(PAGE_SIZE * 4);
+/*
+ *  This function looks for a free inode and fills the passed inode structure with it so it can be manipulated and written to the disk.
+ *
+ *  The max size at the time of writing this
+ */
+static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled) {
+    uint64 buffer_size = PAGE_SIZE * 2;
+    uint8* buffer = kalloc(buffer_size);
     uint64 block = 0;
     uint64 byte = 0;
     uint64 bit = 0;
-    uint64 ret = ramdisk_read(buffer, sb->inode_bitmap_pointers[0], 0, PAGE_SIZE * 4,PAGE_SIZE * 4, ramdisk_id);
+    uint64 offset = 0;
+    uint64 limit = sb->num_inodes * (sb->block_size / TEMPFS_INODE_SIZE);
+
+retry:
+
+    uint64 ret = ramdisk_read(buffer, sb->inode_bitmap_pointers[offset], 0, PAGE_SIZE * 8, buffer_size, ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
         return ret;
     }
 
-    while ((block != (PAGE_SIZE * 4) / TEMPFS_BLOCKSIZE)) {
+    while (((block - offset) != (buffer_size) / TEMPFS_BLOCKSIZE)) {
         if (buffer[byte] != 0xFF) {
             for (uint64 i = 0; i <= 8; i++) {
                 if (!(buffer[byte] & (1 << i))) {
                     bit = i;
+                    buffer[byte] |= (1 << bit);
                     goto found_free;
                 }
             }
@@ -257,14 +273,116 @@ static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb
                 block++;
                 byte = 0;
             }
+            if (block * TEMPFS_BLOCKSIZE == buffer_size) {
+                offset = block * TEMPFS_BLOCKSIZE;
+                offset += buffer_size;
+                buffer_size /= 2;
+                /* Total size is 28.5 pages. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in 2 pages*/
+                if (buffer_size == 1) {
+                    panic("tempfs_get_free_inode_and_mark_bitmap: No free inodes");
+                    /* Panic for visibility so I can tweak this if it happens */
+                }
+                goto retry;
+            }
         }
     }
 
-found_free:
 
+found_free:
+    ret = ramdisk_write(buffer, sb->inode_bitmap_pointers[0], 0, PAGE_SIZE * 4,PAGE_SIZE * 4, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
+        panic("tempfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
+    }
 }
 
+/*
+ * This function searches the bitmap for as free block. It will keep track of the block , byte ,and bit so that once it is marked
+ * we can return the block that is now marked.
+ *
+ * Because at the time of writing this will always be 28.5 pages of total bitmap to scan, we will start with a 16 page read, then an 8 page read, then a 4 page read, then finally for
+ * the last half page a 2 page read. This will make is easiest to search quickly.
+ *
+ *block, byte, bit ,buffer, buffer_size are straight forward.
+ *
+ *offset is used to subtract from the block number when a buffer runs dry with no hits found.
+ * The reasoning is so that block doesn't need to be reset so we get absolute block number not
+ * buffer-relative block number.
+ *
+ *If all goes well, write the new bitmap block, and return the block number so that the caller can
+ *add it to the target inode and begin to use it.
+ *
+ */
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
+    uint64 buffer_size = PAGE_SIZE * 16;
+    uint8* buffer = kalloc(buffer_size);
+    uint64 block = 0;
+    uint64 byte = 0;
+    uint64 bit = 0;
+    uint64 offset = 0;
+    uint64 limit = sb->num_blocks * sb->block_size;
+    uint64 block_number = 0;
+
+retry:
+
+    uint64 ret = ramdisk_read(buffer, sb->block_bitmap_pointers[offset], 0, PAGE_SIZE * 8, buffer_size, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
+        return ret;
+    }
+
+    while (((block - offset) <= (buffer_size) / TEMPFS_BLOCKSIZE)) {
+
+        if (buffer[byte] != 0xFF) {
+            for (uint64 i = 0; i <= 8; i++) {
+                if (!(buffer[byte] & (1 << i))) {
+                    bit = i;
+                    buffer[byte] |= (1 << bit);
+                    block_number = ((block * TEMPFS_BLOCKSIZE * 8) + (8 * byte)) + i;
+                    goto found_free;
+                }
+            }
+
+            byte++;
+            if (byte == TEMPFS_BLOCKSIZE) {
+                block++;
+                byte = 0; /* We need to reset byte every block increment to avoid having a bad block number calculation at the end */
+            }
+
+            if (block * TEMPFS_BLOCKSIZE == buffer_size) {
+                offset = block * TEMPFS_BLOCKSIZE;
+                offset += buffer_size;
+                buffer_size /= 2;
+                /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in 2 pages*/
+                if (buffer_size == 1) {
+                    panic("tempfs_get_free_block_and_mark_bitmap: No free inodes");
+                    /* Panic for visibility so I can tweak this if it happens */
+                }
+                goto retry;
+            }
+        }
+    }
+
+
+found_free:
+    ret = ramdisk_write(&buffer[block * TEMPFS_BLOCKSIZE], sb->block_bitmap_pointers[block], 0, TEMPFS_BLOCKSIZE,buffer_size - (block * TEMPFS_BLOCKSIZE), ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
+        panic("tempfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
+    }
+
+    /*
+     * It will be very important that this return value not be wasted because it will leave a block marked and not used.
+     */
+    return block_number;
+
+
+
+
+
 }
 
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number) {
