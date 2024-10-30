@@ -232,6 +232,36 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
 }
 
 static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
+    uint8* buffer = kalloc(PAGE_SIZE * 4);
+    uint64 block = 0;
+    uint64 byte = 0;
+    uint64 bit = 0;
+    uint64 ret = ramdisk_read(buffer, sb->inode_bitmap_pointers[0], 0, PAGE_SIZE * 4,PAGE_SIZE * 4, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
+        return ret;
+    }
+
+    while (byte != PAGE_SIZE * 4) {
+        if (buffer[byte] != 0xFF) {
+            for (uint64 i = 0; i < 8; i++) {
+                if (!(buffer[byte] & (1 << i))) {
+                    bit = i;
+                    goto found_free;
+                }
+            }
+
+            byte++;
+            if (byte == TEMPFS_BLOCKSIZE) {
+                block++;
+                byte = 0;
+            }
+        }
+    }
+
+found_free:
+
 }
 
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
