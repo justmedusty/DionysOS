@@ -165,65 +165,52 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  */
 static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
                                    uint8 action) {
+
+    uint64 block_to_read;
+    uint64 block;
+
     if (type == BITMAP_TYPE_BLOCK) {
-        uint64 block_to_read = sb->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
 
-        uint64 block = sb->block_bitmap_pointers[block_to_read];
+         block_to_read = sb->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+         block = sb->block_bitmap_pointers[block_to_read];
 
-        uint64 byte_in_block = number / 8;
+    }else if (type == BITMAP_TYPE_INODE) {
 
-        uint64 bit = number % 8;
+        block_to_read = sb->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+        block = sb->inode_bitmap_pointers[block_to_read];
 
-        uint8* buffer = kalloc(PAGE_SIZE);
-        uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+    }else {
 
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-            return ret;
-        }
+        goto unknown_code;
 
-        buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
-
-        ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-            return ret;
-        }
-
-        return SUCCESS;
     }
 
-    if (type == BITMAP_TYPE_INODE) {
-        uint64 block_to_read = sb->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
 
-        uint64 block = sb->inode_bitmap_pointers[block_to_read];
+    uint64 byte_in_block = number / 8;
 
-        uint64 byte_in_block = number / 8;
+    uint64 bit = number % 8;
 
-        uint64 bit = number % 8;
+    uint8* buffer = kalloc(PAGE_SIZE);
+    uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
 
-        uint8* buffer = kalloc(PAGE_SIZE);
-        uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-            return ret;
-        }
-
-        buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
-
-        ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-            return ret;
-        }
-
-        return SUCCESS;
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+        return ret;
     }
 
-    panic("tempfs_modify_bitmap unknown type"); /* Dramatic but it's okay this shouldn't happen anyway */
+    buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
+
+    ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+        return ret;
+    }
+
+    return SUCCESS;
+
+    unknown_code :
+    panic("Unknown type tempfs_modify_bitmap");
 }
 
 /*
