@@ -165,26 +165,21 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  */
 static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
                                    uint8 action) {
+    if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
+        goto unknown_code;
+    }
 
     uint64 block_to_read;
     uint64 block;
 
     if (type == BITMAP_TYPE_BLOCK) {
-
-         block_to_read = sb->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
-         block = sb->block_bitmap_pointers[block_to_read];
-
-    }else if (type == BITMAP_TYPE_INODE) {
-
+        block_to_read = sb->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+        block = sb->block_bitmap_pointers[block_to_read];
+    }
+    if (type == BITMAP_TYPE_INODE) {
         block_to_read = sb->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
         block = sb->inode_bitmap_pointers[block_to_read];
-
-    }else {
-
-        goto unknown_code;
-
     }
-
 
     uint64 byte_in_block = number / 8;
 
@@ -209,7 +204,7 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
 
     return SUCCESS;
 
-    unknown_code :
+unknown_code :
     panic("Unknown type tempfs_modify_bitmap");
 }
 
