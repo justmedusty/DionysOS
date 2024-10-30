@@ -298,7 +298,7 @@ found_free:
 }
 
 /*
- * This function searches the bitmap for as free block. It will keep track of the block , byte ,and bit so that once it is marked
+ * This function searches the bitmap for a free block. It will keep track of the block , byte ,and bit so that once it is marked
  * we can return the block that is now marked.
  *
  * Because at the time of writing this will always be 28.5 pages of total bitmap to scan, we will start with a 16 page read, then an 8 page read, then a 4 page read, then finally for
@@ -321,21 +321,26 @@ static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb
     uint64 byte = 0;
     uint64 bit = 0;
     uint64 offset = 0;
-    uint64 limit = sb->num_blocks * sb->block_size;
+    uint64 limit = sb->num_blocks;
     uint64 block_number = 0;
 
 retry:
 
-    uint64 ret = ramdisk_read(buffer, sb->block_bitmap_pointers[offset], 0, PAGE_SIZE * 8, buffer_size, ramdisk_id);
+    /*
+     *We do not free the buffer we simply write into a smaller and smaller portion of the buffer.
+     *It is only freed after a block is found and the new bitmap block is written.
+     */
+
+    uint64 ret = ramdisk_read(buffer, sb->block_bitmap_pointers[offset], 0, buffer_size, buffer_size, ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
         return ret;
     }
 
-    while (((block - offset) <= (buffer_size) / TEMPFS_BLOCKSIZE)) {
+    while (1) {
 
-        if (buffer[byte] != 0xFF) {
+        if (buffer[(block * TEMPFS_BLOCKSIZE) + byte] != 0xFF) {
             for (uint64 i = 0; i <= 8; i++) {
                 if (!(buffer[byte] & (1 << i))) {
                     bit = i;
@@ -353,8 +358,7 @@ retry:
 
             if (block * TEMPFS_BLOCKSIZE == buffer_size) {
                 offset = block * TEMPFS_BLOCKSIZE;
-                offset += buffer_size;
-                buffer_size /= 2;
+                offset += buffer_size; /* Keep track of how far into the search we are */
                 /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in 2 pages*/
                 if (buffer_size == 1) {
                     panic("tempfs_get_free_block_and_mark_bitmap: No free inodes");
@@ -373,6 +377,8 @@ found_free:
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
         panic("tempfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
     }
+
+    kfree(buffer); /* Free the buffer, all other control paths lead to panic so until that changes this is the only place it is required */
 
     /*
      * It will be very important that this return value not be wasted because it will leave a block marked and not used.
