@@ -14,14 +14,19 @@
 struct spinlock tempfs_lock;
 struct tempfs_superblock tempfs_superblock;
 
-static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id,uint64 number);
-static void tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled);
+static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
+                                   uint8 action);
+static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
+                               struct tempfs_inode* inode_to_be_filled);
 static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
-static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number);
+static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
+                                          uint64 buffer_size, uint64 inode_number, uint64 byte_start,
+                                          uint64 size_to_read);
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
+                                           struct tempfs_inode** children, uint64 inode_number);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -80,37 +85,18 @@ void tempfs_unlink(struct vnode* vnode) {
 
 /*
  * This will be the function that spins up an empty tempfs filesystem and then fill with a root directory and a few basic directories and files.
+ *
+ * Takes a ramdisk ID to specify which ramdisk to operate on
  */
 void tempfs_mkfs(uint64 ramdisk_id) {
     uint8* buffer = kalloc(PAGE_SIZE);
 
     uint64 ret = ramdisk_read(buffer, 0, 0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
 
-    switch (ret) {
-    case SUCCESS:
-        break;
-    case RAMDISK_SIZE_TOO_SMALL:
-        serial_printf("Ramdisk size too small\n");
-        break;
-    case RAMDISK_ID_OUT_OF_RANGE:
-        serial_printf("RAMDISK ID OUT OF RANGE\n");
-        break;
-    case RAMDISK_BLOCK_OUT_OF_RANGE:
-        serial_printf("RAMDISK BLOCK OUT OF RANGE\n");
-        break;
-    case RAMDISK_OFFSET_OUT_OF_RANGE:
-        serial_printf("RAMDISK OFFSET OUT OF RANGE\n");
-        break;
-    case RAMDISK_READ_SIZE_OUT_OF_BOUNDS:
-        serial_printf("RAMDISK READ SIZE OUT OF BOUNDS\n");
-        break;
-    case BLOCK_OUT_OF_RANGE:
-        serial_printf("BLOCK OUT OF RANGE\n");
-        break;
-    default:
-        panic("An unexpected result was returned from ramdisk_read");
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_mkfs")
+        return;
     }
-
 
     tempfs_superblock = *(struct tempfs_superblock*)buffer;
     tempfs_superblock.magic = TEMPFS_MAGIC;
@@ -162,7 +148,6 @@ void tempfs_mkfs(uint64 ramdisk_id) {
 }
 
 
-
 /*
  *  These are all fairly self-explanatory internal helper functions for doing things such a reading and setting bitmaps,
  *  following block pointers to get data, getting specific bytes from a file and moving to a buffer, getting directory entries,
@@ -171,51 +156,97 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  *  These will be hidden away since the implementation is ugly with a lot of calculation and iteration, they are meant to be used
  *  in conjunction with each other in specific ways so they will not be linked outside of this file.
  */
-static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id,uint64 number) {
 
-    if(type == BITMAP_TYPE_BLOCK) {
+
+/*
+ * type is passed as the macro pair BITMAP_TYPE_BLOCK or BITMAP_TYPE_INODE
+ * number is the block or inode # so that its spot can be calculated
+ * action is the macros TEMPFS_TYPE_SET or TEMPFS_TYPE_CLEAR
+ */
+static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
+                                   uint8 action) {
+    if (type == BITMAP_TYPE_BLOCK) {
         uint64 block_to_read = sb->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
 
+        uint64 block = sb->block_bitmap_pointers[block_to_read];
+
+        uint64 byte_in_block = number / 8;
+
+        uint64 bit = number % 8;
+
+        uint8* buffer = kalloc(PAGE_SIZE);
+        uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+            return ret;
+        }
+
+        buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
+
+        ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+            return ret;
+        }
+
+        return SUCCESS;
     }
 
+    if (type == BITMAP_TYPE_INODE) {
+        uint64 block_to_read = sb->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+
+        uint64 block = sb->inode_bitmap_pointers[block_to_read];
+
+        uint64 byte_in_block = number / 8;
+
+        uint64 bit = number % 8;
+
+        uint8* buffer = kalloc(PAGE_SIZE);
+        uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+            return ret;
+        }
+
+        buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
+
+        ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+            return ret;
+        }
+
+        return SUCCESS;
+    }
+
+    panic("tempfs_modify_bitmap unknown type"); /* Dramatic but it's okay this shouldn't happen anyway */
 }
 
-static void tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled) {
+/*
+ *  Reads inode at place inode_number on ramdisk of ramdisk_id and fills the passed inode_to_be_filled with the ramdisk inode
+ */
+static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
+                               struct tempfs_inode* inode_to_be_filled) {
     uint64 inode_block = sb->inode_start_pointer + (sb->block_size / TEMPFS_INODE_SIZE);
     uint64 inode_in_block = inode_number % (sb->block_size / TEMPFS_INODE_SIZE);
 
-    uint8 *block = kalloc(PAGE_SIZE); /* I will need to add the tempfs block size to the heap until then I'll just allocate a page*/
+    uint8* block = kalloc(PAGE_SIZE);
+    /* I will need to add the tempfs block size to the heap until then I'll just allocate a page*/
 
-    uint64 ret = ramdisk_read(block, inode_block, inode_in_block * TEMPFS_INODE_SIZE,TEMPFS_INODE_SIZE,PAGE_SIZE, ramdisk_id);
+    uint64 ret = ramdisk_read(block, inode_block, inode_in_block * TEMPFS_INODE_SIZE,TEMPFS_INODE_SIZE,PAGE_SIZE,
+                              ramdisk_id);
 
-    if(ret == SUCCESS) {
+    if (ret == SUCCESS) {
         *inode_to_be_filled = *(struct tempfs_inode*)block;
-        return;
+        return SUCCESS;
     }
 
-    switch (ret) {
-    case RAMDISK_SIZE_TOO_SMALL:
-        serial_printf("Ramdisk size too small\n");
-        break;
-    case RAMDISK_ID_OUT_OF_RANGE:
-        serial_printf("RAMDISK ID OUT OF RANGE\n");
-        break;
-    case RAMDISK_BLOCK_OUT_OF_RANGE:
-        serial_printf("RAMDISK BLOCK OUT OF RANGE\n");
-        break;
-    case RAMDISK_OFFSET_OUT_OF_RANGE:
-        serial_printf("RAMDISK OFFSET OUT OF RANGE\n");
-        break;
-    case RAMDISK_READ_SIZE_OUT_OF_BOUNDS:
-        serial_printf("RAMDISK READ SIZE OUT OF BOUNDS\n");
-        break;
-    case BLOCK_OUT_OF_RANGE:
-        serial_printf("BLOCK OUT OF RANGE\n");
-        break;
-    default:
-        panic("An unexpected result was returned from ramdisk_read");
-    }
-
+    HANDLE_RAMDISK_ERROR(ret, "tempfs_get_inode")
+    return ret;
 }
 
 static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
@@ -236,6 +267,7 @@ static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 r
 }
 
 
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number) {
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
+                                           struct tempfs_inode** children, uint64 inode_number) {
 }
 

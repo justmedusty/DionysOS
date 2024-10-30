@@ -19,11 +19,38 @@
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
 #define RAMDISK_TEMPFS_ID 0x1
 #define RAMDISK_EXT2_ID 0x2
+/*
+ * ramdisk_read error handling very simple just prints a message
+ * takes the return value and a string for identifying where the message is being printed
+ */
+#define HANDLE_RAMDISK_ERROR(ret,string)               \
+switch (ret) {                              \
+case RAMDISK_SIZE_TOO_SMALL:           \
+serial_printf("Ramdisk size too small %s\n",string); \
+break;                              \
+case RAMDISK_ID_OUT_OF_RANGE:          \
+serial_printf("RAMDISK ID OUT OF RANGE %s \n",string); \
+break;                              \
+case RAMDISK_BLOCK_OUT_OF_RANGE:       \
+serial_printf("RAMDISK BLOCK OUT OF RANGE %s\n",string); \
+break;                              \
+case RAMDISK_OFFSET_OUT_OF_RANGE:      \
+serial_printf("RAMDISK OFFSET OUT OF RANGE %s\n",string); \
+break;                              \
+case RAMDISK_READ_SIZE_OUT_OF_BOUNDS:  \
+serial_printf("RAMDISK READ SIZE OUT OF BOUNDS %s\n",string); \
+break;                              \
+case BLOCK_OUT_OF_RANGE:                \
+serial_printf("BLOCK OUT OF RANGE %s\n",string); \
+break;                              \
+default:                                \
+panic("An unexpected result was returned from ramdisk_read"); \
+}
 
 
 struct ramdisk {
-    void *ramdisk_start;
-    void *ramdisk_end;
+    void* ramdisk_start;
+    void* ramdisk_end;
     uint64 ramdisk_size_pages;
     uint64 block_size;
     struct spinlock ramdisk_lock;
@@ -32,8 +59,10 @@ struct ramdisk {
 };
 
 
-void ramdisk_init(const uint64 size_bytes,const uint64 ramdisk_id,char *name);
-uint64 ramdisk_mkfs(const int8 *initramfs_img,const uint64 size_bytes, const uint64 ramdisk_id);
+void ramdisk_init(const uint64 size_bytes, const uint64 ramdisk_id, char* name);
+uint64 ramdisk_mkfs(const int8* initramfs_img, const uint64 size_bytes, const uint64 ramdisk_id);
 void ramdisk_destroy(const uint64 ramdisk_id);
-uint64 ramdisk_read(uint8 *buffer, uint64 block, uint64 offset, uint64 read_size,uint64 buffer_size, uint64 ramdisk_id);
-uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size, uint64 ramdisk_id);
+uint64 ramdisk_read(uint8* buffer, uint64 block, uint64 offset, uint64 read_size, uint64 buffer_size,
+                    uint64 ramdisk_id);
+uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size,
+                     uint64 ramdisk_id);
