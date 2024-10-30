@@ -243,7 +243,7 @@ static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb
         return ret;
     }
 
-    while (byte != PAGE_SIZE * 4) {
+    while ((block != (PAGE_SIZE * 4) / TEMPFS_BLOCKSIZE)) {
         if (buffer[byte] != 0xFF) {
             for (uint64 i = 0; i <= 8; i++) {
                 if (!(buffer[byte] & (1 << i))) {
