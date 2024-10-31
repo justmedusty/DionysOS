@@ -15,6 +15,10 @@
 #define INDIRECTION_HEADER 0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
 
+#define TEMPFS_REG_FILE 0
+#define TEMPFS_DIRECTORY 1
+#define TEMPFS_SYMLINK 2
+
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
 #define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
 
@@ -60,13 +64,21 @@ _Static_assert(sizeof(struct tempfs_superblock) == TEMPFS_BLOCKSIZE ,"Tempfs Sup
 //4 inodes per block
 struct tempfs_inode {
   uint16 uid;
-  uint16 gid;
+  uint16 inode_number;
   uint16 type;
   uint16 refcount;
   char name[MAX_FILENAME_LENGTH];
   uint64 size;
   uint64 blocks[13]; /* Will point to logical block numbers */
   uint64 reserved;
+};
+
+struct tempfs_directory_entry {
+    char name[MAX_FILENAME_LENGTH];
+    uint16 inode_number;
+    uint16 type;
+    uint16 refcount;
+    uint64 size;
 };
 
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");

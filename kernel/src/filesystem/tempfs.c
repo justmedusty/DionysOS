@@ -21,7 +21,7 @@ static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number);
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number,uint64 children_size);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -90,7 +90,7 @@ void tempfs_mkfs(uint64 ramdisk_id) {
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_mkfs")
-        return;
+        panic("tempfs_mkfs ramdisk read error"); /* Panic for easy diagnosis and tuning later if this happens */
     }
 
     tempfs_superblock = *(struct tempfs_superblock*)buffer;
@@ -377,7 +377,7 @@ retry:
             if (block * TEMPFS_BLOCKSIZE == buffer_size) {
                 offset = block * TEMPFS_BLOCKSIZE;
                 offset += buffer_size; /* Keep track of how far into the search we are */
-                /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in 2 pages*/
+                /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in a 2 page buffer*/
                 goto retry;
             }
         }
@@ -407,13 +407,12 @@ static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, ui
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number) {
 }
 
-static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
-                                          uint64 buffer_size, uint64 inode_number, uint64 byte_start,
-                                          uint64 size_to_read) {
+static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read) {
 }
 
 
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
-                                           struct tempfs_inode** children, uint64 inode_number) {
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,struct tempfs_inode** children, uint64 inode_number,uint64 children_size) {
+
+
 }
 
