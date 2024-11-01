@@ -10,9 +10,9 @@
 #define TEMPFS_BLOCKSIZE 1024
 #define TEMPFS_MAGIC 0x7777777777777777
 #define TEMPFS_VERSION 1
-#define MAX_LEVEL_INDIRECTIONS 5
+#define MAX_LEVEL_INDIRECTIONS 4
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
-#define INDIRECTION_HEADER 0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
+#define INDIRECTION_HEADER (uint64)0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
 
 #define TEMPFS_REG_FILE 0
