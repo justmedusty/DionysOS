@@ -6,7 +6,7 @@
 #define MATH_H
 #include "include/types.h"
 
-static inline pow(uint64 base, uint64 power){
+static inline uint64 pow(uint64 base, uint64 power){
 
   uint64 working_value = base;
   uint64 index = power;
