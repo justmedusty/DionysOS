@@ -30,8 +30,8 @@
 #define BITMAP_TYPE_BLOCK 0
 #define BITMAP_TYPE_INODE 1
 
-#define TEMPFS_TYPE_SET 1
-#define TEMPFS_TYPE_CLEAR 0
+#define BITMAP_ACTION_SET 1
+#define BITMAP_ACTION_CLEAR 0
 
 #define TEMPFS_NUM_BLOCK_POINTERS_PER_INODE 13
 #define TEMPFS_INODE_SIZE sizeof(struct tempfs_inode)

@@ -168,7 +168,7 @@ void tempfs_mkfs(uint64 ramdisk_id) {
 /*
  * type is passed as the macro pair BITMAP_TYPE_BLOCK or BITMAP_TYPE_INODE
  * number is the block or inode # so that its spot can be calculated
- * action is the macros TEMPFS_TYPE_SET or TEMPFS_TYPE_CLEAR
+ * action is the macros BITMAP_ACTION_SET or BITMAP_ACTION_CLEAR
  *
  * This will likely just be used for freeing.
  */
@@ -200,8 +200,11 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
         HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
         return ret;
     }
-
-    buffer[byte_in_block] = buffer[byte_in_block] & (action << bit); /* 0 the bit and write it back */
+    /*
+     * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
+     * I will use it for that.
+     */
+    buffer[byte_in_block] = buffer[byte_in_block] & (action << bit);
 
     ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
 
@@ -408,13 +411,14 @@ found_free:
 
 }
 /*
- *  These two functions are fairly self explanatory.
+ *  These two functions are fairly self-explanatory.
  *
  *  WARNING , MUST MAKE SURE A FUNCTION WILL TAKE CARE OF MODIFYING INODE-LOCAL BLOCK POINTERS
  */
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number) {
 
     uint8 *buffer = kalloc(PAGE_SIZE);
+    memset(buffer, 0, TEMPFS_BLOCKSIZE);
     uint64 block = sb->block_start_pointer + block_number;
     uint64 ret;
     ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id); // zero it , this is heavy but that is ok for now
@@ -424,8 +428,13 @@ static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, ui
         panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
     }
 
-    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_BLOCK,ramdisk_id,block_number,TEMPFS_TYPE_CLEAR);
+    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_BLOCK,ramdisk_id,block_number,BITMAP_ACTION_CLEAR);
+
+    if(ret != SUCCESS) {
+        panic("tempfs_free_block_and_mark_bitmap"); /* For visibility for changes later */
+    }
     kfree(buffer);
+    return SUCCESS;
 
 
 }
@@ -444,14 +453,20 @@ static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, ui
         panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
     }
 
-    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_INODE,ramdisk_id,inode_number,TEMPFS_TYPE_CLEAR);
+    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_INODE,ramdisk_id,inode_number,BITMAP_ACTION_CLEAR);
     kfree(buffer);
+    if(ret != SUCCESS) {
+        panic("tempfs_free_inode_and_mark_bitmap"); /* For visibility for changes later */
+    }
+    return SUCCESS;
 }
 
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read) {
 }
 
-
+/*
+ * Under Construction
+ */
 static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size) {
     uint64 buffer_size = PAGE_SIZE * 8; // 16 blocks
     uint8* buffer = kalloc(buffer_size);
@@ -468,7 +483,9 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 
     kfree(buffer);
 }
-
+/*
+ * Under Construction (imagine some big traffic cones around)
+ */
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode *inode,uint64 num_blocks_to_read,uint8 *buffer, uint64 buffer_size, uint64 offset,uint64 read_size) {
     uint64 start_block = offset / TEMPFS_BLOCKSIZE;
 
