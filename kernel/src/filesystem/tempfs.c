@@ -10,6 +10,7 @@
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/mem/mem.h"
+#include "include/definitions/math.h"
 
 struct spinlock tempfs_lock;
 struct tempfs_superblock tempfs_superblock;
@@ -18,7 +19,7 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
 static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled);
 static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
-static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
+static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
 static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size);
@@ -139,6 +140,8 @@ void tempfs_mkfs(uint64 ramdisk_id) {
      *Write zerod blocks for the blocks
      */
     ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * TEMPFS_BLOCKSIZE,TEMPFS_BLOCKSIZE,INITRAMFS);
+
+    kfree(buffer);
 }
 
 
@@ -207,6 +210,8 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
         return ret;
     }
 
+    kfree(buffer);
+
     return SUCCESS;
 
 unknown_code :
@@ -233,6 +238,7 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
     }
 
     HANDLE_RAMDISK_ERROR(ret, "tempfs_get_inode")
+    kfree(block);
     return ret;
 }
 
@@ -372,7 +378,7 @@ retry:
 
             if (block == TEMPFS_NUM_BLOCK_POINTER_BLOCKS) {
                 panic("tempfs_get_free_block_and_mark_bitmap: No free blocks");
-                /* Panic for visibility so I can tweak this if it happens */
+                /* Panic for visibility, so I can tweak this if it happens */
             }
 
             if (block * TEMPFS_BLOCKSIZE == buffer_size) {
@@ -401,11 +407,45 @@ found_free:
     return block_number;
 
 }
+/*
+ *  These two functions are fairly self explanatory.
+ *
+ *  WARNING , MUST MAKE SURE A FUNCTION WILL TAKE CARE OF MODIFYING INODE-LOCAL BLOCK POINTERS
+ */
+static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number) {
 
-static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number) {
+    uint8 *buffer = kalloc(PAGE_SIZE);
+    uint64 block = sb->block_start_pointer + block_number;
+    uint64 ret;
+    ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id); // zero it , this is heavy but that is ok for now
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
+        panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
+    }
+
+    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_BLOCK,ramdisk_id,block_number,TEMPFS_TYPE_CLEAR);
+    kfree(buffer);
+
+
 }
 
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number) {
+    uint64 inode_number_block = inode_number / TEMPFS_INODES_PER_BLOCK;
+    uint64 offset = inode_number % TEMPFS_INODES_PER_BLOCK;
+
+    uint8 *buffer = kalloc(PAGE_SIZE);
+
+    uint64 ret;
+    ret = ramdisk_write(buffer, sb->inode_start_pointer + inode_number_block, offset * TEMPFS_INODE_SIZE, TEMPFS_INODE_SIZE,PAGE_SIZE, ramdisk_id); // zero it , this is heavy but that is ok for now
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
+        panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
+    }
+
+    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_INODE,ramdisk_id,inode_number,TEMPFS_TYPE_CLEAR);
+    kfree(buffer);
 }
 
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read) {
@@ -425,6 +465,8 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
     }
 
     uint64 contiguous_blocks[2]; // for storing low, high in case we find there are contiguous blocks
+
+    kfree(buffer);
 }
 
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode *inode,uint64 num_blocks_to_read,uint8 *buffer, uint64 buffer_size, uint64 offset,uint64 read_size) {
@@ -448,6 +490,26 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
     uint8 *temp_buffer = kalloc(TEMPFS_BLOCKSIZE);
 
+    /*
+     * We need to calculate whether we have indirect blocks to deal with
+     */
+    uint64 extra_blocks = inode->size / TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024;
+    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS - 1);
+    uint64 total_levels_max_indirection = extra_blocks / max_indirection_in_one_block;
+
+    uint64 top_level_block;
+    uint64 indirect_block_1;
+    uint64 indirect_block_2;
+    uint64 indirect_block_3;
+
+    if(total_levels_max_indirection > 0) {
+
+    }else{
+
+    }
+
+
+
     if(current_block_to_read != 0) {
         while(1) {
             ramdisk_read(temp_buffer, current_block, 0, TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE , ramdisk_id);
@@ -455,19 +517,15 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
             if(depth > MAX_LEVEL_INDIRECTIONS) {
                 panic("tempfs_follow_block_pointers Too Many Indirection Blocks");
             }
+
             if ((uint64)*temp_buffer == INDIRECTION_HEADER) {
                 depth++;
+                previous_block = current_block;
                 current_block = (uint64)temp_buffer[sizeof(uint64)];
                 continue;
             }
 
         }
-
-
-
-
-
-
     }
 
     while (bytes_read < bytes_to_read && bytes_read < buffer_size){
@@ -475,6 +533,8 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
     }
 
+
+    kfree(buffer);
 
 
 }

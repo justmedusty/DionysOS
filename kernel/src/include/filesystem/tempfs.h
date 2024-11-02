@@ -10,10 +10,12 @@
 #define TEMPFS_BLOCKSIZE 1024
 #define TEMPFS_MAGIC 0x7777777777777777
 #define TEMPFS_VERSION 1
-#define MAX_LEVEL_INDIRECTIONS 4
+#define MAX_LEVEL_INDIRECTIONS 3
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
-#define INDIRECTION_HEADER (uint64)0x123456789ABCEFEC //marks this block as an indirection block , an array of 64bit block pointers
+#define INDIRECTION_HEADER ((uint64)0x123456789ABCEFED)  //marks this block as an indirection block , an array of 64bit block pointers
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
+
+#define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64)) - 1) /* -1 due to the indirection header */
 
 #define TEMPFS_REG_FILE 0
 #define TEMPFS_DIRECTORY 1
@@ -22,12 +24,16 @@
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
 #define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
 
+#define TEMPFS_INODES_PER_BLOCK (TEMPFS_BLOCKSIZE / TEMPFS_INODE_SIZE)
+
+
 #define BITMAP_TYPE_BLOCK 0
 #define BITMAP_TYPE_INODE 1
 
 #define TEMPFS_TYPE_SET 1
 #define TEMPFS_TYPE_CLEAR 0
 
+#define TEMPFS_NUM_BLOCK_POINTERS_PER_INODE 13
 #define TEMPFS_INODE_SIZE sizeof(struct tempfs_inode)
 #define TEMPFS_NUM_INODES TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
 #define TEMPFS_NUM_BLOCKS TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
