@@ -23,6 +23,9 @@ char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B',
 
 struct spinlock serial_lock;
 
+/*
+ * Your typical UART setup, COM1 port
+ */
 void init_serial() {
     write_port(COM1 + 1, 0x00);    // Disable all interrupts
     write_port(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -38,7 +41,11 @@ void init_serial() {
 static int is_transmit_empty() {
     return read_port(COM1 + 5) & 0x20;
 }
-
+/*
+ *  This function writes a single byte to the serial port,
+ *  if it a linebreak, it writes a carriage return after
+ *  because this is required to actually break the line
+ */
 static void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
@@ -48,7 +55,9 @@ static void write_serial(char a) {
     write_port(COM1, a);
 }
 
-//size is the size of the integer so you dont need to print 64 bit ints for a single byte or 4 bytes
+/*
+ * Writes a hex number of size (ie 8 bit, 16 bit, 32bit, 64 bit)
+ */
 static void write_hex_serial(uint64 num, int8 size) {
     write_string_serial("0x");
     for (int8 i = (size - 4); i >= 0; i -= 4) {
@@ -57,7 +66,9 @@ static void write_hex_serial(uint64 num, int8 size) {
     }
 }
 
-
+/*
+ * Unused but writes binary numbers of size
+ */
 static void write_binary_serial(uint64 num, uint8 size) {
     int separator = 0;
     for (uint8 i = size; i < 0; i--) {
@@ -73,7 +84,9 @@ static void write_binary_serial(uint64 num, uint8 size) {
         }
     }
 }
-
+/*
+ * Writes string to serial, just calls write_serial repeatedly
+ */
 static void write_string_serial(const char *str) {
     while (*str) {
         write_serial(*str++);
@@ -91,7 +104,9 @@ static char get_hex_char(uint8 nibble) {
      }
 }
 
-
+/*
+ * This is my homegrown printf, it allows printing unsigned integers, hex integers, strings, and binary
+ */
 void serial_printf(char *str, ...) {
     va_list args;
     va_start(args, str);
@@ -207,99 +222,6 @@ void serial_printf(char *str, ...) {
     }
 
     release_spinlock(&serial_lock);
-    va_end(args);
-
-}
-/*
- * For use in interrupt handlers to avoid any lock contention
-*
- * This seems to just cause more problems whenever used so it may be wise to axe it
- */
-void lock_free_serial_printf(char *str, ...) {
-    va_list args;
-    va_start(args, str);
-    while (*str) {
-
-        if (*str == '\n') {
-            write_string_serial("\n");
-            str++;
-            continue;
-        }
-
-        if (*str != '%') {
-            write_serial(*str);
-        } else {
-            str++;
-            switch (*str) {
-                case 'x': {
-                    if (*(str + 1) == '.') {
-                        str = str + 2;
-
-                        /*
-                         * We will check the length of the hex number, because I am lazy I will only check the first char and skip the second. No need to check the second anyway.
-                         * You will still be expected to put the second number there even though the internals do not require it, makes your code more readable anyway.
-                         * Usage looks like this :
-                         * %x.8 = print 8 bit hex
-                         * %x.16 = print 16 bit hex
-                         * %x.32 = print 32 bit hex
-                         * %x.64 = print 64 bit hex
-                         *
-                         */
-
-                        switch (*str) {
-                            case '8':
-                                uint64 value8 = va_arg(args, uint32);
-                                write_hex_serial(value8, 8);
-                                str++;
-                                break;
-                            case '1':
-                                uint64 value16 = va_arg(args, uint32);
-                                write_hex_serial(value16, 16);
-                                str++;
-                                break;
-                            case '3' :
-                                uint64 value32 = va_arg(args, uint32);
-                                write_hex_serial(value32, 32);
-                                str++;
-                                break;
-                            case '6' :
-                                uint64 value64 = va_arg(args, uint64);
-                                write_hex_serial(value64, 64);
-                                str++;
-                                break;
-                            default:
-                                uint64 value = va_arg(args, uint64);
-                                write_hex_serial(value, 64);
-                                break;
-                        }
-
-                    } else {
-                        uint64 value = va_arg(args, uint64);
-                        write_hex_serial(value, 64);
-                    }
-                    break;
-                }
-                case 'b': {
-                    uint64 value = va_arg(args, uint64);
-                    write_binary_serial(value, 64);
-                    break;
-                }
-
-                case 's': {
-                    char *value = va_arg(args,
-                    char*);
-                    write_string_serial(value);
-                    break;
-                }
-
-                default:
-                    write_serial('%');
-                    write_serial(*str);
-                    break;
-            }
-        }
-        str++;
-    }
     va_end(args);
 
 }
