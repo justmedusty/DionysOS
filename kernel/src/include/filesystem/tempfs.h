@@ -39,6 +39,8 @@
 #define TEMPFS_NUM_BLOCKS TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
 
 #define RAMDISK_ERROR 0xFFFFFFFFFFFFFFFF
+
+#define TEMPFS_MAX_FILES_IN_DIRECTORY ((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
  *  TEMPFS_NUM_INODE_POINTER_BLOCKS and TEMPFS_NUM_BLOCK_POINTER_BLOCKS
@@ -79,18 +81,27 @@ struct tempfs_inode {
   uint64 reserved;
 };
 
+/*
+ * As a note, we will NOT allow indirect blocks with directories for this filesystem,
+ * because 50-70 dirents in one inode is more than enough for us. We want to kill things
+ * simple after all.
+ *
+ * As it stands right now, 7 tempfs_dir entries will fit into a block, * 13 means
+ * that a directory can hold 91 entries. More than enough.
+ */
 struct tempfs_directory_entry {
     char name[MAX_FILENAME_LENGTH];
-    uint16 inode_number;
-    uint16 type;
-    uint16 refcount;
-    uint64 size;
+    uint32 inode_number;
+    uint32 type;
+    uint32 refcount;
+    uint32 size;
 };
 
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");
 
 
 void tempfs_init();
+void tempfs_mkfs(uint64 ramdisk_id);
 uint64 tempfs_read(struct vnode *vnode,uint64 offset, char *buffer, uint64 bytes);
 uint64 tempfs_write(struct vnode *vnode,uint64 offset, char *buffer, uint64 bytes);
 uint64 tempfs_stat(struct vnode *vnode,uint64 offset, char *buffer, uint64 bytes);

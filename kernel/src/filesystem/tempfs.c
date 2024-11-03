@@ -23,6 +23,7 @@ static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, ui
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
 static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size);
+
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
     .create = tempfs_create,
@@ -43,6 +44,7 @@ struct vnode_operations tempfs_vnode_ops = {
 void tempfs_init() {
     initlock(&tempfs_lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE,INITRAMFS, "initramfs");
+    tempfs_mkfs(INITRAMFS);
 };
 
 void tempfs_remove(struct vnode* vnode) {
@@ -86,14 +88,6 @@ void tempfs_unlink(struct vnode* vnode) {
 void tempfs_mkfs(uint64 ramdisk_id) {
     uint8* buffer = kalloc(PAGE_SIZE);
 
-    uint64 ret = ramdisk_read(buffer, 0, 0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_mkfs")
-        panic("tempfs_mkfs ramdisk read error"); /* Panic for easy diagnosis and tuning later if this happens */
-    }
-
-    tempfs_superblock = *(struct tempfs_superblock*)buffer;
     tempfs_superblock.magic = TEMPFS_MAGIC;
     tempfs_superblock.version = TEMPFS_VERSION;
     tempfs_superblock.block_size = TEMPFS_BLOCKSIZE;
@@ -142,6 +136,7 @@ void tempfs_mkfs(uint64 ramdisk_id) {
     ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * TEMPFS_BLOCKSIZE,TEMPFS_BLOCKSIZE,INITRAMFS);
 
     kfree(buffer);
+    serial_printf("Tempfs empty filesystem initialized\n");
 }
 
 
@@ -415,6 +410,7 @@ found_free:
  *
  *  WARNING , MUST MAKE SURE A FUNCTION WILL TAKE CARE OF MODIFYING INODE-LOCAL BLOCK POINTERS
  */
+
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number) {
 
     uint8 *buffer = kalloc(PAGE_SIZE);
@@ -465,10 +461,22 @@ static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 r
 }
 
 /*
- * Under Construction
+ * This function will fill the children array with directory entries found in the inode number passed to it. May make more sense to pass the inode directly or just a pointer to it but this is ok for now.
+ *
+ *
+ * Checks children_size to not write out of bounds.
+ *
+ * Get the inode via tempfs_get_inode
+ *
+ * Ensures this inode is actually a directory
+ *
+ * If all is kosher, iterate on directories_read, read a block of directory entries
+ * into the front of the buffer and then assignment operator it into the children directory,
+ * saving some buffer space.
+ *
  */
 static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size) {
-    uint64 buffer_size = PAGE_SIZE * 8; // 16 blocks
+    uint64 buffer_size = PAGE_SIZE; // 16 blocks
     uint8* buffer = kalloc(buffer_size);
 
     struct tempfs_inode inode;
@@ -479,9 +487,27 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
         panic("tempfs_get_inode"); /* For easy diagnosis, shouldn't happen anyway */
     }
 
-    uint64 contiguous_blocks[2]; // for storing low, high in case we find there are contiguous blocks
+    if(inode.type != TEMPFS_DIRECTORY) {
+        kfree(buffer);
+
+    }
+
+    uint64 directories_read = 0;
+    uint64 block_number = 0;
+
+    while(directories_read <= children_size && directories_read < (inode.size / sizeof(struct tempfs_directory_entry))) {
+        block_number = inode.blocks[directories_read++];
+        ret = ramdisk_read(buffer,block_number,0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_get_directory_entries ramdisk_read call")
+            panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
+        }
+
+        *children[directories_read] = *(struct tempfs_directory_entry*)buffer;
+    }
 
     kfree(buffer);
+    return SUCCESS;
 }
 /*
  * Under Construction (imagine some big traffic cones around)

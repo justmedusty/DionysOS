@@ -105,7 +105,9 @@ static char get_hex_char(uint8 nibble) {
 }
 
 /*
- * This is my homegrown printf, it allows printing unsigned integers, hex integers, strings, and binary
+ * This is my homegrown printf, it allows printing unsigned integers, hex integers, strings, and binary\
+ *
+ * if I find it necessary later I'll add ones compliment support
  */
 void serial_printf(char *str, ...) {
     va_list args;
