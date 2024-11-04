@@ -23,20 +23,19 @@
  *  HEAD->next->next->next->TAIL
  *  TAIL->prev->prev->prev->HEAD
  *
- *  For those unfamiliar, the __ prefix symbolically signifies that a function is internal and is not exposed outside of this file.
  */
 
 /*
  *  Internal function prototypes
  */
 
-static void __dequeue_priority(struct queue* queue_head);
-static void __dequeue_fifo(struct queue* queue_head);
-static void __dequeue_lifo(struct queue* queue_head);
+static void dequeue_priority(struct queue* queue_head);
+static void dequeue_fifo(struct queue* queue_head);
+static void dequeue_lifo(struct queue* queue_head);
 
-static void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node);
-static void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node);
-static void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node);
+static void enqueue_priority(struct queue* queue_head, struct queue_node* new_node);
+static void enqueue_fifo(struct queue* queue_head, struct queue_node* new_node);
+static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node);
 /*
  * Init a queue
  */
@@ -50,10 +49,10 @@ void queue_init(struct queue* queue_head, uint8 queue_mode, char* name) {
 /*
  *  Internal function to init a single node
  */
-void __queue_node_init(struct queue_node* node, void* data, uint8 priority) {
+void _queue_node_init(struct queue_node* node, void* data, uint8 priority) {
     if (node == NULL) {
         //I'll use panics to easily figure out if these things happen and can work from there if it ever is an issue
-        panic("__queue_node_init called with NULL node");
+        panic("_queue_node_init called with NULL node");
     }
 
     node->data = data;
@@ -66,7 +65,7 @@ void __queue_node_init(struct queue_node* node, void* data, uint8 priority) {
  *  Generic enqueue, it will check the queue_mode field to tell what mode this is, and call the appropriate function.
  */
 
-void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority) {
+void enqueue(struct queue* queue_head, void* data_toenqueue, uint8 priority) {
     uint8 queue_head_empty = 0;
     if (queue_head == NULL) {
         //So i can investigate when it happens, should have null data field not the entire head structure null
@@ -74,20 +73,20 @@ void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority) {
     }
 
     struct queue_node* new_node = kalloc(sizeof(struct queue_node));
-    __queue_node_init(new_node, data_to_enqueue, priority);
+    _queue_node_init(new_node, data_toenqueue, priority);
 
 
     switch (queue_head->queue_mode) {
     case QUEUE_MODE_FIFO:
-        __enqueue_fifo(queue_head, new_node);
+        enqueue_fifo(queue_head, new_node);
         break;
 
     case QUEUE_MODE_LIFO:
-        __enqueue_lifo(queue_head, new_node);
+        enqueue_lifo(queue_head, new_node);
         break;
 
     case QUEUE_MODE_PRIORITY:
-        __enqueue_priority(queue_head, new_node);
+        enqueue_priority(queue_head, new_node);
         break;
 
     case QUEUE_MODE_CIRCULAR:
@@ -112,15 +111,15 @@ void dequeue(struct queue* queue_head) {
 
     switch (queue_head->queue_mode) {
     case QUEUE_MODE_FIFO:
-        __dequeue_fifo(queue_head);
+        dequeue_fifo(queue_head);
         break;
 
     case QUEUE_MODE_LIFO:
-        __dequeue_lifo(queue_head);
+        dequeue_lifo(queue_head);
         break;
 
     case QUEUE_MODE_PRIORITY:
-        __dequeue_priority(queue_head);
+        dequeue_priority(queue_head);
         break;
 
     case QUEUE_MODE_CIRCULAR:
@@ -137,7 +136,7 @@ void dequeue(struct queue* queue_head) {
 /*
  * Your run-of-the-mill enqueue as-you-know-it function. Stick it last in the queue and update the pointers and node count appropriately
  */
-static void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
+static void enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) {
     /*
      * Base cases
      */
@@ -179,7 +178,7 @@ static void __enqueue_fifo(struct queue* queue_head, struct queue_node* new_node
  *
  */
 
-static void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) {
+static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) {
     /*
     * Base cases
     */
@@ -206,7 +205,7 @@ static void __enqueue_lifo(struct queue* queue_head, struct queue_node* new_node
  *  Enqueue for priority mode which is for scheduling. It will place based on the priority value of the
  *  node to be placed. Again, is it really a queue? Ask Theseus.
  */
-static void __enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
+static void enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     if (new_node->data == NULL) {
         panic("Null head in enqueue priority");
         kfree(queue_head);
@@ -286,7 +285,7 @@ static void __enqueue_priority(struct queue* queue_head, struct queue_node* new_
 /*
  *  Dequeue function for your typical queue mode. Remove the head, update pointers accordingly
  */
-static void __dequeue_fifo(struct queue* queue_head) {
+static void dequeue_fifo(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
     if (pointer == NULL) {
@@ -308,7 +307,7 @@ static void __dequeue_fifo(struct queue* queue_head) {
  *  Dequeue mode for your stack mode. Pop off the head.
  *  Update pointers accordingly
  */
-static void __dequeue_lifo(struct queue* queue_head) {
+static void dequeue_lifo(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
     if (pointer == NULL) {
@@ -333,7 +332,7 @@ static void __dequeue_lifo(struct queue* queue_head) {
  *  Dequeue for priority. This one always just copies the normal queue behaviour since it was written
  *  with scheduling in mind.
  */
-static void __dequeue_priority(struct queue* queue_head) {
+static void dequeue_priority(struct queue* queue_head) {
     struct queue_node* pointer = queue_head->head;
 
     if (pointer == NULL) {
