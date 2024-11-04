@@ -16,6 +16,7 @@
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "include/scheduling/dfs.h"
+#include "include/filesystem/tempfs.h"
 
 /*
  *  BSP boostrapping.
@@ -33,6 +34,7 @@ void kernel_bootstrap() {
     acpi_init();
     lapic_init();
     vfs_init();
+    tempfs_init();
     smp_init();
     arch_timer_init();
     dfs_init();

@@ -31,6 +31,7 @@ void ramdisk_init(const uint64 size_bytes, const uint64 ramdisk_id, char* name) 
         ramdisk[ramdisk_id].ramdisk_start = kalloc(pages);
         ramdisk[ramdisk_id].ramdisk_size_pages = pages;
         ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (pages * PAGE_SIZE);
+        ramdisk[ramdisk_id].block_size = TEMPFS_BLOCKSIZE;
         safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
         initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
         serial_printf("Ramdisk initialized\n");
