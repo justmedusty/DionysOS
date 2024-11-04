@@ -489,7 +489,6 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 
     if(inode.type != TEMPFS_DIRECTORY) {
         kfree(buffer);
-
     }
 
     uint64 directories_read = 0;
@@ -513,32 +512,40 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
  * Under Construction (imagine some big traffic cones around)
  */
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode *inode,uint64 num_blocks_to_read,uint8 *buffer, uint64 buffer_size, uint64 offset,uint64 read_size) {
+
+    if(buffer_size < TEMPFS_BLOCKSIZE) {
+        /*
+         * I'll set a sensible minimum buffer size
+         */
+        return TEMPFS_BUFFER_TOO_SMALL;
+    }
+
+
     uint64 start_block = offset / TEMPFS_BLOCKSIZE;
-
     uint64 end_block = start_block + num_blocks_to_read;
-
     uint64 current_block_to_read = offset / TEMPFS_BLOCKSIZE;
+    uint64 actual_block_number = 0;
 
     /*
      *  If 0 is passed, try to read everything
      */
 
     uint64 bytes_to_read = read_size == 0 ? inode->size : read_size;
-
     uint64 bytes_read = 0;
-
-    uint64 current_block = inode->blocks[0];
-    uint64 previous_block = inode->blocks[0];
-    uint64 depth = 0;
 
     uint8 *temp_buffer = kalloc(TEMPFS_BLOCKSIZE);
 
     /*
      * We need to calculate whether we have indirect blocks to deal with
      */
-    uint64 extra_blocks = inode->size / TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024;
+    uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) ? (inode->size -(TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024) / TEMPFS_BLOCKSIZE) : 0;
     uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS - 1);
-    uint64 total_levels_max_indirection = extra_blocks / max_indirection_in_one_block;
+    uint64 total_levels_max_indirection;
+    if(extra_blocks) {
+       total_levels_max_indirection = extra_blocks / max_indirection_in_one_block;
+    }else {
+        total_levels_max_indirection = 0;
+    }
 
     uint64 top_level_block;
     uint64 indirect_block_1;
@@ -546,38 +553,47 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
     uint64 indirect_block_3;
 
     if(total_levels_max_indirection > 0) {
-
+        //handle indirection calculations
     }else{
-
+        actual_block_number = inode->blocks[current_block_to_read];
+        goto no_indirection;
     }
 
+    /*
+     * Handle indirection calculation
+     */
 
 
-    if(current_block_to_read != 0) {
-        while(1) {
-            ramdisk_read(temp_buffer, current_block, 0, TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE , ramdisk_id);
+    no_indirection:
+    while (bytes_read < bytes_to_read){
+        uint64 ret = ramdisk_read(temp_buffer, actual_block_number, offset, bytes_to_read, TEMPFS_BLOCKSIZE - offset, ramdisk_id);
 
-            if(depth > MAX_LEVEL_INDIRECTIONS) {
-                panic("tempfs_follow_block_pointers Too Many Indirection Blocks");
-            }
-
-            if ((uint64)*temp_buffer == INDIRECTION_HEADER) {
-                depth++;
-                previous_block = current_block;
-                current_block = (uint64)temp_buffer[sizeof(uint64)];
-                continue;
-            }
-
+        if (ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret, "tempfs_follow_block_pointer ramdisk_read call")
+            panic("tempfs_follow_block_pointer ramdisk_read error"); /* Extreme but that is okay for diagnosing issues */
         }
-    }
 
-    while (bytes_read < bytes_to_read && bytes_read < buffer_size){
-        ramdisk_read(temp_buffer, current_block_to_read, offset, bytes_to_read, TEMPFS_BLOCKSIZE - offset, ramdisk_id);
+        memcpy(buffer + bytes_read, temp_buffer, TEMPFS_BLOCKSIZE - offset);
 
+        bytes_read += (TEMPFS_BLOCKSIZE - offset);
+        buffer_size -= bytes_read;
+        offset = 0;
+        current_block_to_read++;
+
+        if(current_block_to_read > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+            break;
+        }
+
+        if(buffer_size < TEMPFS_BLOCKSIZE) {
+            break;
+        }
+
+        actual_block_number = inode->blocks[current_block_to_read];
     }
 
 
     kfree(buffer);
+    return SUCCESS;
 
 
 }
