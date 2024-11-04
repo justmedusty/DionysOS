@@ -58,13 +58,6 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 🔴Set up a userspace terminal with pre-compiled shell programs that can be executed
 
 
-# Meta Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
-
-🟡Document all functions and explain ideas so that others can read and follow along better.
-
-🟡Add locks in all areas where it will be needed.
-
-
 
 # Ideas for arcane syscall names:
 
