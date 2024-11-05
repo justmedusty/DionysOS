@@ -17,7 +17,6 @@ struct tempfs_superblock tempfs_superblock;
 
 static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
 static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled);
-static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
@@ -36,6 +35,30 @@ struct vnode_operations tempfs_vnode_ops = {
     .link = tempfs_link,
     .unlink = tempfs_unlink,
 };
+
+
+/*
+ *  I have opted to go with this flow.
+ *
+ *  Read ramdisk structure into temporary variable.
+ *
+ *  Write temporary local variable.
+ *
+ *  Write said variable to the ramdisk.
+ *
+ *  We can improve performance by passing pointers directly to ramdisk memory
+ *  but I will try this approach for now.
+ *
+ *  I think this will allow for more flexibility when it comes to not locking certain
+ *  functions as it may help prevent race conditions so you don't read bad memory in a
+ *  lockless read.
+ *
+ *  If it turns out to cause noticeable performance issues I may change this.
+ *
+ *  Anyway, putting this here as a bulletin of the approach being taken and why.
+ */
+
+
 
 /*
  * This function will do basic setup such as initing the tempfs lock, it will then setup the ramdisk driver and begin to fill ramdisk memory with a tempfs filesystem.
@@ -63,6 +86,12 @@ uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 byte
 }
 
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
+    struct tempfs_inode inode_to_be_filled;
+
+
+
+
+
 }
 
 struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8 vnode_type) {
@@ -166,8 +195,11 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  * action is the macros BITMAP_ACTION_SET or BITMAP_ACTION_CLEAR
  *
  * This will likely just be used for freeing.
+ *
+ * I think I can get away with no locking here but I will let it stay for now.
  */
 static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action) {
+    acquire_spinlock(&tempfs_lock);
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         goto unknown_code;
     }
@@ -193,6 +225,7 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+        release_spinlock(&tempfs_lock);
         return ret;
     }
     /*
@@ -205,10 +238,12 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
+        release_spinlock(&tempfs_lock);
         return ret;
     }
 
     kfree(buffer);
+    release_spinlock(&tempfs_lock);
 
     return SUCCESS;
 
@@ -218,6 +253,7 @@ unknown_code :
 
 /*
  *  Reads inode at place inode_number on ramdisk of ramdisk_id and fills the passed inode_to_be_filled with the ramdisk inode
+ *  I amn going to try and go lock-less since I think I can get away with it for this function.
  */
 static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
                                struct tempfs_inode* inode_to_be_filled) {
@@ -232,6 +268,7 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
 
     if (ret == SUCCESS) {
         *inode_to_be_filled = *(struct tempfs_inode*)block;
+        kfree(block);
         return SUCCESS;
     }
 
@@ -258,6 +295,7 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
  *
  */
 static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode* inode_to_be_filled) {
+    acquire_spinlock(&tempfs_lock);
     uint64 buffer_size = PAGE_SIZE * 2;
     uint8* buffer = kalloc(buffer_size);
     uint64 block = 0;
@@ -306,6 +344,7 @@ found_free:
     }
 
     kfree(buffer);
+    release_spinlock(&tempfs_lock);
 
     return inode_number;
 
@@ -332,6 +371,7 @@ found_free:
  *
  */
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id) {
+    acquire_spinlock(&tempfs_lock);
     uint64 buffer_size = PAGE_SIZE * 16;
     uint8* buffer = kalloc(buffer_size);
     uint64 block = 0;
@@ -351,6 +391,7 @@ retry:
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
+        release_spinlock(&tempfs_lock);
         return ret;
     }
 
@@ -399,6 +440,7 @@ found_free:
 
     kfree(buffer); /* Free the buffer, all other control paths lead to panic so until that changes this is the only place it is required */
 
+    release_spinlock(&tempfs_lock);
     /*
      * It will be very important that this return value not be wasted because it will leave a block marked and not used.
      */
@@ -410,8 +452,11 @@ found_free:
  *
  *  WARNING , MUST MAKE SURE A FUNCTION WILL TAKE CARE OF MODIFYING INODE-LOCAL BLOCK POINTERS
  */
-
+/*
+ * I don't think I need locks on frees, I will find out one way or another if this is true
+ */
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number) {
+    acquire_spinlock(&tempfs_lock);
 
     uint8 *buffer = kalloc(PAGE_SIZE);
     memset(buffer, 0, TEMPFS_BLOCKSIZE);
@@ -430,11 +475,14 @@ static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, ui
         panic("tempfs_free_block_and_mark_bitmap"); /* For visibility for changes later */
     }
     kfree(buffer);
+    release_spinlock(&tempfs_lock);
     return SUCCESS;
 
 
 }
-
+/*
+ * I don't think I need locks on frees, I will find out one way or another if this is true
+ */
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number) {
     uint64 inode_number_block = inode_number / TEMPFS_INODES_PER_BLOCK;
     uint64 offset = inode_number % TEMPFS_INODES_PER_BLOCK;
@@ -456,7 +504,9 @@ static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, ui
     }
     return SUCCESS;
 }
-
+/*
+ * Unimplemented until follow_block_pointers is complete
+ */
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read) {
 }
 
@@ -474,6 +524,9 @@ static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 r
  * into the front of the buffer and then assignment operator it into the children directory,
  * saving some buffer space.
  *
+ * I will skip out on locking for now. I think it is not needed because writes are done in one fell swoop so either it will be there or
+ * it won't, there won't be any intermediate state. You can just read again if you suspect something has been added.
+ *
  */
 static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size) {
     uint64 buffer_size = PAGE_SIZE; // 16 blocks
@@ -489,6 +542,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 
     if(inode.type != TEMPFS_DIRECTORY) {
         kfree(buffer);
+        return TEMPFS_NOT_A_DIRECTORY;
     }
 
     uint64 directories_read = 0;
@@ -509,14 +563,17 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
     return SUCCESS;
 }
 /*
- * Under Construction (imagine some big traffic cones around)
+ * Under Construction (imagine some big traffic cones around) \
+ *
+ * I will put locks just in case it is being written at the time of this block following escapade
  */
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_inode *inode,uint64 num_blocks_to_read,uint8 *buffer, uint64 buffer_size, uint64 offset,uint64 read_size) {
-
+    acquire_spinlock(&tempfs_lock);
     if(buffer_size < TEMPFS_BLOCKSIZE) {
         /*
          * I'll set a sensible minimum buffer size
          */
+        release_spinlock(&tempfs_lock);
         return TEMPFS_BUFFER_TOO_SMALL;
     }
 
@@ -559,14 +616,17 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
         goto no_indirection;
     }
 
-    /*
+    /*TODO
      * Handle indirection calculation
      */
 
 
     no_indirection:
     while (bytes_read < bytes_to_read){
-        uint64 ret = ramdisk_read(temp_buffer, actual_block_number, offset, bytes_to_read, TEMPFS_BLOCKSIZE - offset, ramdisk_id);
+
+        uint64 bytes_left = buffer_size < TEMPFS_BLOCKSIZE ? buffer_size : TEMPFS_BLOCKSIZE - offset;
+
+        uint64 ret = ramdisk_read(temp_buffer, actual_block_number, offset, bytes_to_read, bytes_left, ramdisk_id);
 
         if (ret != SUCCESS) {
             HANDLE_RAMDISK_ERROR(ret, "tempfs_follow_block_pointer ramdisk_read call")
@@ -575,7 +635,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
         memcpy(buffer + bytes_read, temp_buffer, TEMPFS_BLOCKSIZE - offset);
 
-        bytes_read += (TEMPFS_BLOCKSIZE - offset);
+        bytes_read += (buffer_size);
         buffer_size -= bytes_read;
         offset = 0;
         current_block_to_read++;
@@ -584,7 +644,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
             break;
         }
 
-        if(buffer_size < TEMPFS_BLOCKSIZE) {
+        if(buffer_size <= 0) {
             break;
         }
 
@@ -593,6 +653,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
 
     kfree(buffer);
+    release_spinlock(&tempfs_lock);
     return SUCCESS;
 
 

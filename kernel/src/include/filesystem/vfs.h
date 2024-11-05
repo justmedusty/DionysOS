@@ -36,6 +36,9 @@ extern struct vnode vfs_root;
 #define VNODE_SPECIAL 6
 #define VNODE_SPECIAL_FILE 7
 
+#define VNODE_FS_TEMPFS 0xF
+#define VNODE_FS_EXT2 0x10
+
 /* Vnode flags */
 #define VNODE_SYMLINK 1 << 0
 #define VNODE_HARDLINK 1 << 1
@@ -60,6 +63,7 @@ struct vnode {
     uint64 is_mount_point;
     uint64 is_cached;
 };
+
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);

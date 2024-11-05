@@ -49,10 +49,10 @@ void queue_init(struct queue* queue_head, uint8 queue_mode, char* name) {
 /*
  *  Internal function to init a single node
  */
-void _queue_node_init(struct queue_node* node, void* data, uint8 priority) {
+void queue_node_init(struct queue_node* node, void* data, uint8 priority) {
     if (node == NULL) {
         //I'll use panics to easily figure out if these things happen and can work from there if it ever is an issue
-        panic("_queue_node_init called with NULL node");
+        panic("queue_node_init called with NULL node");
     }
 
     node->data = data;
@@ -73,7 +73,7 @@ void enqueue(struct queue* queue_head, void* data_toenqueue, uint8 priority) {
     }
 
     struct queue_node* new_node = kalloc(sizeof(struct queue_node));
-    _queue_node_init(new_node, data_toenqueue, priority);
+    queue_node_init(new_node, data_toenqueue, priority);
 
 
     switch (queue_head->queue_mode) {
