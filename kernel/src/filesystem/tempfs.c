@@ -86,9 +86,20 @@ uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 byte
 }
 
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
+
+    if(vnode->vnode_filesystem_id != VNODE_FS_TEMPFS || vnode->vnode_type != VNODE_DIRECTORY) {
+        return NULL;
+    }
     struct tempfs_inode inode_to_be_filled;
 
+    uint64 buffer_size = TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
 
+    uint8 *buffer = kalloc(TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE);
+
+    uint64 ret = tempfs_get_directory_entries(&tempfs_superblock,vnode->vnode_device_id,(struct tempfs_directory_entry **)&buffer,vnode->vnode_inode_number,buffer_size);
+    if(ret != SUCCESS) {
+        return NULL;
+    }
 
 
 
@@ -545,18 +556,18 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
         return TEMPFS_NOT_A_DIRECTORY;
     }
 
-    uint64 directories_read = 0;
+    uint64 directory_entries_read = 0;
     uint64 block_number = 0;
 
-    while(directories_read <= children_size && directories_read < (inode.size / sizeof(struct tempfs_directory_entry))) {
-        block_number = inode.blocks[directories_read++];
+    while(directory_entries_read <= (children_size / sizeof(struct tempfs_directory_entry)) && directory_entries_read < (inode.size / sizeof(struct tempfs_directory_entry))) {
+        block_number = inode.blocks[directory_entries_read++];
         ret = ramdisk_read(buffer,block_number,0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
         if (ret != SUCCESS) {
             HANDLE_RAMDISK_ERROR(ret, "tempfs_get_directory_entries ramdisk_read call")
             panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
         }
 
-        *children[directories_read] = *(struct tempfs_directory_entry*)buffer;
+        *children[directory_entries_read] = *(struct tempfs_directory_entry*)buffer;
     }
 
     kfree(buffer);

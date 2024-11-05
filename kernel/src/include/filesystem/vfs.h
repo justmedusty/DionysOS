@@ -9,6 +9,8 @@
 
 #define VFS_MAX_PATH 255
 
+#define VFS_STATIC_POOL_SIZE 100
+
 extern struct vnode vfs_root;
 
 
@@ -36,6 +38,7 @@ extern struct vnode vfs_root;
 #define VNODE_SPECIAL 6
 #define VNODE_SPECIAL_FILE 7
 
+/* FS Types */
 #define VNODE_FS_TEMPFS 0xF
 #define VNODE_FS_EXT2 0x10
 
@@ -57,6 +60,7 @@ struct vnode {
     uint64 vnode_xattrs;
     uint64 vnode_flags;
     uint64 vnode_type;
+    uint64 vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */
     uint64 vnode_refcount; // Pulled from actual inode or equivalent structure
     uint64 vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
     uint64 vnode_device_id;
@@ -88,3 +92,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 void vnode_remove(struct vnode* vnode);
 struct vnode* vnode_lookup(char* path);
 void vfs_init();
+
+/* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */
+struct vnode* vnode_alloc();
+void vnode_free(struct vnode* vnode);

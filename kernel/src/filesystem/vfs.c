@@ -15,7 +15,7 @@ struct singly_linked_list vnode_static_pool = {};
 struct singly_linked_list vnode_used_pool = {};
 
 //static pool
-struct vnode static_vnode_pool[50];
+struct vnode static_vnode_pool[VFS_STATIC_POOL_SIZE];
 
 //Root node
 struct vnode vfs_root;
@@ -36,7 +36,7 @@ void vfs_init() {
     singly_linked_list_init(&vnode_static_pool, 0);
     singly_linked_list_init(&vnode_used_pool, 0);
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < VFS_STATIC_POOL_SIZE; i++) {
         singly_linked_list_insert_head(&vnode_used_pool, &static_vnode_pool[i]);
         //Mark each one as being part of the static pool
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
