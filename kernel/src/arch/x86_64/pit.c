@@ -5,7 +5,7 @@
 #include <include/arch/arch_cpu.h>
 #include "include/arch/generic_asm_functions.h"
 #include "idt.h"
-#include "pit.h"
+#include "include/arch/x86_64/pit.h"
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_global_interrupt_controller.h>
 

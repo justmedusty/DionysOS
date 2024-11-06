@@ -12,7 +12,7 @@
 #include "include/arch/arch_smp.h"
 #include "include/mem/vmm.h"
 #include "include/mem/slab.h"
-#include "include/acpi.h"
+#include "include/arch/x86_64/acpi.h"
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "include/scheduling/dfs.h"

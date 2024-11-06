@@ -17,8 +17,8 @@
 
 #define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64)) - 1) /* -1 due to the indirection header */
 
-#define TEMPFS_REG_FILE 0
-#define TEMPFS_DIRECTORY 1
+#define TEMPFS_DIRECTORY 0
+#define TEMPFS_REG_FILE 1
 #define TEMPFS_SYMLINK 2
 
 #define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
@@ -94,7 +94,8 @@ struct tempfs_inode {
 struct tempfs_directory_entry {
     char name[MAX_FILENAME_LENGTH];
     uint32 inode_number;
-    uint32 type;
+    uint16 type;
+    uint16 device_number;
     uint32 refcount;
     uint32 size;
 };

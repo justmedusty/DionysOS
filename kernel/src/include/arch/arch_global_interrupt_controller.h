@@ -4,8 +4,8 @@
 
 #ifndef IOAPIC_H
 #define IOAPIC_H
-#include "include/madt.h"
-#include "include/acpi.h"
+#include "x86_64/madt.h"
+#include "x86_64/acpi.h"
 
 #define IOAPIC_ID 0x0
 #define IOAPIC_VERSION 0x1

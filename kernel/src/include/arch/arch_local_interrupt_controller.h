@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "include/madt.h"
-#include "include/acpi.h"
+#include "x86_64/madt.h"
+#include "x86_64/acpi.h"
 #include "include/types.h"
 #ifdef __x86_64__
 

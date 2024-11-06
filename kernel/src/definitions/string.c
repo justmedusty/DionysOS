@@ -49,6 +49,19 @@ uint64 strcmp(char* str1, char* str2) {
     return 1;
 }
 
+uint64 safe_strcmp(char* str1, char* str2,uint64 max_len) {
+    while (*str1 != '\0' && *str2 != '\0' && max_len > 0) {
+        if (*str1 != *str2) {
+            return 0;
+        }
+        str1++;
+        str2++;
+        max_len--;
+    }
+    return 1;
+}
+
+
 /*
  * Your run-of-the-mill string length function, walk and count until terminator (I'll be back)
  */

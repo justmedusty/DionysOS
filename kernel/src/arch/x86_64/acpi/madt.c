@@ -3,8 +3,8 @@
 //
 
 
-#include "include/acpi.h"
-#include "include/madt.h"
+#include "include/arch/x86_64/acpi.h"
+#include "include/arch/x86_64/madt.h"
 #include "include/drivers/serial/uart.h"
 #include <include/arch/arch_cpu.h>
 

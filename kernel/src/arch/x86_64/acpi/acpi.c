@@ -2,13 +2,13 @@
 // Created by dustyn on 8/3/24.
 //
 
-#include "include/acpi.h"
+#include "include/arch/x86_64/acpi.h"
 #include "include/drivers/serial/uart.h"
 #include "include/arch//arch_paging.h"
 #include "include/mem/mem.h"
 #include "include/drivers/serial/uart.h"
 #include <include/arch/arch_cpu.h>
-#include "include/madt.h"
+#include "include/arch/x86_64/madt.h"
 #include "limine.h"
 
 __attribute__((used, section(".requests")))

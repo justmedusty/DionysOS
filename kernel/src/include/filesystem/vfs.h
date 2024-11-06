@@ -7,7 +7,7 @@
 #include "include/data_structures/spinlock.h"
 #include "include/definitions.h"
 
-#define VFS_MAX_PATH 255
+#define VFS_MAX_NAME_LENGTH 128
 
 #define VFS_STATIC_POOL_SIZE 100
 
@@ -47,17 +47,19 @@ extern struct vnode vfs_root;
 #define VNODE_HARDLINK 1 << 1
 #define VNODE_STATIC_POOL 1<<63
 
-/*
- *TODO optimize the size of this to be a divisor of page size and add an extra few pages in the slab init for this
- */
+/* Vnode limits */
+#define VNOLD
+
 struct vnode {
     struct vnode* vnode_parent;
-    struct vnode** vnode_children;
+    struct vnode **vnode_children;
+    uint8 num_children;
     struct vnode_operations *vnode_ops;
     struct vnode* mounted_vnode;
-    char vnode_name[VFS_MAX_PATH];
+    char vnode_name[VFS_MAX_NAME_LENGTH];
+    uint64 vnode_size;
+    uint64 last_updated;
     uint64 vnode_inode_number;
-    uint64 vnode_xattrs;
     uint64 vnode_flags;
     uint64 vnode_type;
     uint64 vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */

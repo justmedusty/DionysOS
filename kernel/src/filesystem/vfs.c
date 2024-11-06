@@ -307,7 +307,7 @@ static struct vnode* __parse_path(char* path) {
     struct vnode* current_vnode = vnode_alloc();
     current_vnode = &vfs_root;
 
-    char* current_token = kalloc(VFS_MAX_PATH);
+    char* current_token = kalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
         /* This isn't implemented yet so it will be garbage until I finish it up */
@@ -332,7 +332,7 @@ static struct vnode* __parse_path(char* path) {
         }
 
         //Clear the token to be filled again next go round, this is important
-        memset(current_token, 0, VFS_MAX_PATH);
+        memset(current_token, 0, VFS_MAX_NAME_LENGTH);
     }
     kfree(current_token);
     return current_vnode;

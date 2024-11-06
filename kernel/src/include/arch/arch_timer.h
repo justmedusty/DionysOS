@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "arch/x86_64/pit.h"
+#include "include/arch/x86_64/pit.h"
 
 static inline void arch_timer_init(){
     pit_init();
