@@ -110,11 +110,13 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
         kfree(buffer);
         return NULL;
     }
- uint64 fill_vnode = 0;
+
+    uint64 fill_vnode = 0;
     if (!vnode->is_cached) {
         fill_vnode = 1;
     }
- struct vnode* child = NULL;
+
+    struct vnode* child = NULL;
 
     for (uint64 i = 0; i < vnode->vnode_size / sizeof(struct tempfs_directory_entry); i++) {
         struct tempfs_directory_entry* entry = (struct tempfs_directory_entry*)&buffer[i];

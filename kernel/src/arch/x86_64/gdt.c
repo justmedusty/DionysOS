@@ -3,7 +3,7 @@
 //
 
 #include "include/types.h"
-#include "gdt.h"
+#include "include/arch/x86_64/gdt.h"
 
 #include <include/arch/arch_cpu.h>
 

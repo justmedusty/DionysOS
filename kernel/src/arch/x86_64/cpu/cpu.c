@@ -1,8 +1,8 @@
 //
 // Created by dustyn on 7/2/24.
 //
-#include <arch/x86_64/gdt.h>
-#include <arch/x86_64/idt.h>
+#include <include/arch/x86_64/gdt.h>
+#include <include/arch/x86_64/idt.h>
 #include <include/arch/arch_cpu.h>
 #include <include/arch/arch_interrupts.h>
 #include <include/arch/arch_memory_init.h>

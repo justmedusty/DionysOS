@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 6/17/24.
 //
-#include <arch/x86_64/idt.h>
+#include <include/arch/x86_64/idt.h>
 #include "include/filesystem/vfs.h"
 #include "include/arch/arch_memory_init.h"
 #include "include/drivers/serial/uart.h"

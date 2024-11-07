@@ -48,7 +48,7 @@ extern struct vnode vfs_root;
 #define VNODE_STATIC_POOL 1<<63
 
 /* Vnode limits */
-#define VNOLD
+#define VNODE_MAX_DIRECTORY_ENTRIES 90
 
 struct vnode {
     struct vnode* vnode_parent;

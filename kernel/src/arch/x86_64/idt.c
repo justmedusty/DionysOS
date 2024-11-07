@@ -2,10 +2,10 @@
 // Created by dustyn on 6/20/24.
 //
 
-#include "gdt.h"
+#include "include/arch/x86_64/gdt.h"
 #include "include/arch/x86_64/asm_functions.h"
 #include "include/types.h"
-#include "idt.h"
+#include "include/arch/x86_64/idt.h"
 
 #include <include/arch/arch_cpu.h>
 #include "include/arch/x86_64/pit.h"

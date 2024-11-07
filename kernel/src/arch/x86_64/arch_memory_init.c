@@ -3,7 +3,7 @@
 //
 
 #include "include/arch/arch_memory_init.h"
-#include "gdt.h"
+#include "include/arch/x86_64/gdt.h"
 void arch_init_segments(){
     gdt_init();
 }
