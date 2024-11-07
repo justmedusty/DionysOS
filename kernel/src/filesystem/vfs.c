@@ -65,7 +65,10 @@ struct vnode* vnode_alloc() {
     return vnode;
 }
 
-
+void vnode_directory_alloc_children(struct vnode* vnode) {
+    vnode->vnode_children = kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+    vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
+}
 /*
  * Same as above except for freeing
  *
@@ -94,6 +97,9 @@ void vnode_free(struct vnode* vnode) {
         return;
     }
 
+    if(vnode->vnode_type == VNODE_DIRECTORY) {
+        kfree(vnode->vnode_children);
+    }
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);

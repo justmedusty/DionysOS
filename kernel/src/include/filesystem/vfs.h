@@ -46,9 +46,10 @@ extern struct vnode vfs_root;
 #define VNODE_SYMLINK 1 << 0
 #define VNODE_HARDLINK 1 << 1
 #define VNODE_STATIC_POOL 1<<63
+#define VNODE_CHILD_MEMORY_ALLOCATED (1 << 62)
 
 /* Vnode limits */
-#define VNODE_MAX_DIRECTORY_ENTRIES 90
+#define VNODE_MAX_DIRECTORY_ENTRIES 64 // 4 pages
 
 struct vnode {
     struct vnode* vnode_parent;
@@ -84,7 +85,7 @@ struct vnode_operations {
     void (*close)(struct vnode* vnode);
 };
 
-
+void vnode_directory_alloc_children(struct vnode* vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);
 uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);

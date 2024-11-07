@@ -14,14 +14,24 @@
 #define PIC1_DATA PIC1 + 1
 #define PIC2_DATA PIC2 + 1
 
-
+/*
+ * Disable the legacy PIC , in case it is neeeded.
+ * It may already be masked, but better safe than sorry
+ */
 void pic_disable() {
     //Mask all legacy PIC interrupts
     outb(PIC1_DATA, 0xFF);
     outb(PIC2_DATA, 0xFF);
 }
 
-
+/*
+ * These are the typical x86 IOAPIC functions.
+ * Rather than explain each one I will link to the
+ * documentation since there is nothing special here.
+ *
+ * https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf
+ *
+ */
 void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
     uint64 base = (uint64)P2V(madt_ioapic_list[ioapic]->apic_addr);
     *((volatile uint32*)base) = reg;

@@ -91,12 +91,34 @@ uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 byt
 
 uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
 }
-
+/*
+ * A lookup function to be invoked on a vnode via the tempfs pointer function struct.
+ *
+ * Ensure the filesystem is tempfs.
+ *
+ * Ensure the type is directory.
+ *
+ * If vnode is not cached, set fill_vnode so that we will fill it with children
+ *
+ * If the allocation flag for children pointer is not set, call vnode_directory_alloc_children to allocate memory and set the flag
+ *
+ * Since I am not allowing indirection with directory entries, we only need to allocate num blocks in inode * block size
+ *
+ * We invoke tempfs_get_directory_entries() which will fill up the buffer with directory entries
+ *
+ * Iterate through each entry in the buffer,if fill_vnode flag is set, add each entry to the array of children on the parent
+ *
+ * Check that we found the directory we are searching for, check if child is NULL first otherwise we will need to span 128 byte chars for every single
+ * entry even after we found the entry we were lookling for.
+ *
+ * Set cached to true
+ *
+ * Finally, return child
+ */
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
     if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS || vnode->vnode_type != VNODE_DIRECTORY) {
         return NULL;
     }
-    struct tempfs_inode inode_to_be_filled;
 
     uint64 buffer_size = TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
 
@@ -112,16 +134,23 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
     }
 
     uint64 fill_vnode = 0;
+
     if (!vnode->is_cached) {
         fill_vnode = 1;
     }
 
+    if(fill_vnode && !(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
+        vnode_directory_alloc_children(vnode);
+    }
+
     struct vnode* child = NULL;
 
-    for (uint64 i = 0; i < vnode->vnode_size / sizeof(struct tempfs_directory_entry); i++) {
+    uint8 max_directories = vnode->vnode_size / sizeof(struct tempfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES ? VNODE_MAX_DIRECTORY_ENTRIES : vnode->vnode_size / sizeof(struct tempfs_directory_entry);
+
+    for (uint64 i = 0; i < max_directories; i++) {
         struct tempfs_directory_entry* entry = (struct tempfs_directory_entry*)&buffer[i];
         if (fill_vnode) {
-            // vnode->vnode_children[i] =
+             vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(entry);
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
@@ -133,6 +162,7 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
             }
         }
     }
+    vnode->is_cached = TRUE;
 
 done:
     return child;
