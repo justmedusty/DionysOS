@@ -802,24 +802,29 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
 
     uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS);
 
-    uint64 max_levels = extra_blocks > max_indirection_in_one_block ? extra_blocks : max_indirection_in_one_block;
+    uint64 max_levels = extra_blocks == 0 ? 0 : extra_blocks / max_indirection_in_one_block;
+    uint64 remainder = extra_blocks % max_indirection_in_one_block;
 
-    if (extra_blocks / max_indirection_in_one_block == 0) {
+    if(extra_blocks == 0 && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+        remainder =  (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
+    }
 
 
+    if (extra_blocks || (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
 
-        if(extra_blocks < NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
-
+        if(remainder < NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
         }
 
-        if(extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) {
+        if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) {
         }
 
-        if(extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) {
+        if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) {
         }
+
 
 
         for (uint64 i = 0; i < num_blocks_to_allocate; i++) {
+
         }
     }
 }
