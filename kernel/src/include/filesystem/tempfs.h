@@ -14,6 +14,7 @@
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 #define INDIRECTION_HEADER ((uint64)0x123456789ABCEFED)  //marks this block as an indirection block , an array of 64bit block pointers
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
+#define MAX_BLOCKS_IN_INODE (((((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) * TEMPFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
 #define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64)) - 1) /* -1 due to the indirection header */
 
@@ -41,6 +42,10 @@
 #define RAMDISK_ERROR 0xFFFFFFFFFFFFFFFF
 #define TEMPFS_BUFFER_TOO_SMALL 0x1
 #define TEMPFS_NOT_A_DIRECTORY 0x2
+#define TEMPFS_CANT_ALLOCATE_BLOCKS_FOR_DIR 0x3
+
+#define TEMPFS_ERROR 0x6
+#define SUCCESS 0
 
 #define TEMPFS_MAX_FILES_IN_DIRECTORY ((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
 /*

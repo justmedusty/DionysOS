@@ -91,6 +91,7 @@ uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 byt
 
 uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
 }
+
 /*
  * A lookup function to be invoked on a vnode via the tempfs pointer function struct.
  *
@@ -139,18 +140,20 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
         fill_vnode = 1;
     }
 
-    if(fill_vnode && !(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
+    if (fill_vnode && !(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
         vnode_directory_alloc_children(vnode);
     }
 
     struct vnode* child = NULL;
 
-    uint8 max_directories = vnode->vnode_size / sizeof(struct tempfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES ? VNODE_MAX_DIRECTORY_ENTRIES : vnode->vnode_size / sizeof(struct tempfs_directory_entry);
+    uint8 max_directories = vnode->vnode_size / sizeof(struct tempfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES
+                                ? VNODE_MAX_DIRECTORY_ENTRIES
+                                : vnode->vnode_size / sizeof(struct tempfs_directory_entry);
 
     for (uint64 i = 0; i < max_directories; i++) {
         struct tempfs_directory_entry* entry = (struct tempfs_directory_entry*)&buffer[i];
         if (fill_vnode) {
-             vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(entry);
+            vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(entry);
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
@@ -161,6 +164,10 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
                 goto done;
             }
         }
+
+        if (i == max_directories) {
+            memset(vnode->vnode_children[i + 1], 0, sizeof(struct vnode));
+        }
     }
     vnode->is_cached = TRUE;
 
@@ -169,6 +176,9 @@ done:
 }
 
 struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8 vnode_type) {
+    if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS) {
+        return NULL;
+    }
 }
 
 void tempfs_close(struct vnode* vnode) {
@@ -711,7 +721,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
      * We need to calculate whether we have indirect blocks to deal with
      */
     uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
-                              ? (inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024) / TEMPFS_BLOCKSIZE)
+                              ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
                               : 0;
     uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS - 1);
     uint64 total_levels_max_indirection;
@@ -728,16 +738,13 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
     uint64 indirect_block_3;
 
     if (total_levels_max_indirection > 0) {
-        //handle indirection calculations
     }
     else {
         actual_block_number = inode->blocks[current_block_to_read];
         goto no_indirection;
     }
 
-    /*TODO
-     * Handle indirection calculation
-     */
+indirection:
 
 
 no_indirection:
@@ -774,5 +781,41 @@ no_indirection:
     kfree(buffer);
     release_spinlock(&tempfs_lock);
     return SUCCESS;
+}
+
+uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
+                                       uint32 num_blocks_to_allocate) {
+    // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
+    if (inode->type == TEMPFS_DIRECTORY) {
+        serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
+        return TEMPFS_ERROR;
+    }
+
+    if (num_blocks_to_allocate > MAX_BLOCKS_IN_INODE - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+        serial_printf("tempfs_inode_allocate_new_block too many blocks to request!\n");
+        return TEMPFS_ERROR;
+    }
+
+    uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
+                           ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
+                           : 0;
+
+    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS );
+if()
+    switch (extra_blocks) {
+        case extra_blocks < NUM_BLOCKS_IN_INDIRECTION_BLOCK:
+            break;
+        case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,2):
+            break;
+    case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,3):
+            break;
+
+    }
+
+    for(uint64 i = 0; i < num_blocks_to_allocate; i++) {
+
+    }
+
+
 }
 

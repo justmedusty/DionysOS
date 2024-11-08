@@ -113,6 +113,10 @@ void vnode_free(struct vnode* vnode) {
         return;
     }
 
+    if(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+        kfree(vnode->vnode_children);
+    }
+
     kfree(vnode);
     release_spinlock(&vfs_lock);
 }
@@ -136,7 +140,7 @@ struct vnode* vnode_lookup(char* path) {
 
 
 /*
- *  This is going to need to take more information
+ *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
 struct vnode* vnode_create(char* path, uint8 vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
@@ -227,7 +231,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     struct vnode* child = vnode->vnode_children[index];
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
-    while (child && !strcmp(child->vnode_name, token)) {
+    while (child && !safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH)) {
         child = vnode->vnode_children[index++];
     }
 
