@@ -723,7 +723,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
     uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
                               ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
                               : 0;
-    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS - 1);
+    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS);
     uint64 total_levels_max_indirection;
     if (extra_blocks) {
         total_levels_max_indirection = extra_blocks / max_indirection_in_one_block;
@@ -784,7 +784,7 @@ no_indirection:
 }
 
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
-                                       uint32 num_blocks_to_allocate) {
+                                        uint32 num_blocks_to_allocate) {
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
     if (inode->type == TEMPFS_DIRECTORY) {
         serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
@@ -797,25 +797,31 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     }
 
     uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
-                           ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
-                           : 0;
+                              ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
+                              : 0;
 
-    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS );
-if()
-    switch (extra_blocks) {
+    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS);
+
+    uint64 max_levels = extra_blocks > max_indirection_in_one_block ? extra_blocks  : max_indirection_in_one_block;
+
+    if (extra_blocks / max_indirection_in_one_block == 0) {
+
+
+
+        switch (extra_blocks) {
         case extra_blocks < NUM_BLOCKS_IN_INDIRECTION_BLOCK:
             break;
-        case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,2):
+        case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2):
             break;
-    case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,3):
+        case extra_blocks < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3):
             break;
-
+        default:
+            panic("tempfs_inode_allocate_new_blocks this should never happen");
+        }
     }
 
-    for(uint64 i = 0; i < num_blocks_to_allocate; i++) {
 
+    for (uint64 i = 0; i < num_blocks_to_allocate; i++) {
     }
-
-
 }
 
