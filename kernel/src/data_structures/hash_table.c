@@ -23,6 +23,10 @@
 struct singly_linked_list hash_bucket_static_pool[300];
 uint32 full = 0;
 
+/*
+ * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
+ * we get wrap-around.
+ */
 uint64 hash(uint64 key, uint64 modulus) {
     uint64 hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
 
@@ -33,7 +37,13 @@ uint64 hash(uint64 key, uint64 modulus) {
     return hash;
 }
 
-
+/*
+ * Initialize a hash table of size, size.
+ *
+ * If the static pool is not full, ie if this is phys_init calling,
+ * allocate all of the static pool hash buckets.
+ *Init all of the lists
+ */
 void hash_table_init(struct hash_table* table, uint64 size) {
     if (table == NULL) {
         panic("hash_table_init: table is NULL");
@@ -59,18 +69,24 @@ void hash_table_init(struct hash_table* table, uint64 size) {
 
 
 }
-
+/*
+ * Free the tables buckets and the entire table
+ */
 void hash_table_destroy(struct hash_table* table) {
     kfree(table->table);
     kfree(table);
 }
-
+/*
+ * Hashes the passed value, and inserts into the list at the hash index
+ */
 void hash_table_insert(struct hash_table* table, uint64 key, void* data) {
     uint64 hash_key = hash(key, table->size);
     singly_linked_list_insert_tail(&table->table[hash_key], data);
 
 }
-//
+/*
+ * Retrieve a hash bucket based on a key passed
+ */
 struct singly_linked_list* hash_table_retrieve(struct hash_table* table, uint64 hash_key) {
     struct singly_linked_list* hash_bucket = &table->table[hash_key];
     return hash_bucket;

@@ -782,11 +782,14 @@ no_indirection:
     release_spinlock(&tempfs_lock);
     return SUCCESS;
 }
-
+/*
+ * This function will allocate new blocks to an inode. If needed it will also slide pointers down if there is a write to the beginning or
+ * to the end of the file
+ */
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
-    if (inode->type == TEMPFS_DIRECTORY) {
+    if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
         return TEMPFS_ERROR;
     }
