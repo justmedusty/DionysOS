@@ -808,6 +808,11 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     uint64 max_levels = extra_blocks == 0 ? 0 : extra_blocks / max_indirection_in_one_block;
     uint64 remainder = extra_blocks % max_indirection_in_one_block;
 
+    uint64 top_level_block = 0;
+    uint64 indirect_block_1_index = 0;
+    uint64 indirect_block_2_index = 0;
+    uint64 indirect_block_3_index = 0;
+
     if(extra_blocks == 0 && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         remainder =  (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
     }
@@ -816,13 +821,16 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     if (extra_blocks || (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
 
         if(remainder < NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
-
+            indirect_block_1_index = NUM_BLOCKS_IN_INDIRECTION_BLOCK - remainder;
         }
 
         if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) {
+            indirect_block_1_index = remainder / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+            indirect_block_2_index = remainder % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         }
 
         if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) {
+
         }
 
 
