@@ -105,6 +105,11 @@ struct tempfs_directory_entry {
     uint32 size;
 };
 
+struct tempfs_indirection_index {
+    uint16 index_1;
+    uint16 index_2;
+    uint16 index_3;
+};
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");
 
 

@@ -816,6 +816,7 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     if (extra_blocks || (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
 
         if(remainder < NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
+
         }
 
         if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) {
@@ -830,5 +831,10 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
 
         }
     }
+}
+
+static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count_inside_high_level_block) {
+    struct tempfs_indirection_index result;
+
 }
 
