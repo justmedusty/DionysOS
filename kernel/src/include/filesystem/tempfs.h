@@ -27,7 +27,6 @@
 
 #define TEMPFS_INODES_PER_BLOCK (TEMPFS_BLOCKSIZE / TEMPFS_INODE_SIZE)
 
-
 #define BITMAP_TYPE_BLOCK 0
 #define BITMAP_TYPE_INODE 1
 
@@ -106,10 +105,12 @@ struct tempfs_directory_entry {
 };
 
 struct tempfs_indirection_index {
-    uint16 index_1;
-    uint16 index_2;
-    uint16 index_3;
+    uint16 num_full_indirections;
+    uint16 num_second_indirections;
+    uint16 num_singular_indirections;
+    uint16 num_block_pointers;
 };
+
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");
 
 

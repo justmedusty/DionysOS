@@ -30,6 +30,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
                                            struct tempfs_directory_entry** children, uint64 inode_number,
                                            uint64 children_size);
 static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry);
+static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -782,6 +783,7 @@ no_indirection:
     release_spinlock(&tempfs_lock);
     return SUCCESS;
 }
+
 /*
  * This function will allocate new blocks to an inode. If needed it will also slide pointers down if there is a write to the beginning or
  * to the end of the file
@@ -789,7 +791,8 @@ no_indirection:
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
-    if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+    if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) >
+        TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
         return TEMPFS_ERROR;
     }
@@ -799,50 +802,47 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
         return TEMPFS_ERROR;
     }
 
-    uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
-                              ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
-                              : 0;
+    struct tempfs_indirection_index result = {};
 
-    uint64 max_indirection_in_one_block = pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK,MAX_LEVEL_INDIRECTIONS);
-
-    uint64 max_levels = extra_blocks == 0 ? 0 : extra_blocks / max_indirection_in_one_block;
-    uint64 remainder = extra_blocks % max_indirection_in_one_block;
-
-    uint64 top_level_block = 0;
-    uint64 indirect_block_1_index = 0;
-    uint64 indirect_block_2_index = 0;
-    uint64 indirect_block_3_index = 0;
-
-    if(extra_blocks == 0 && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
-        remainder =  (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
+    if (inode->size % TEMPFS_BLOCKSIZE == 0) {
+        result = tempfs_indirection_indices(inode->size / TEMPFS_BLOCKSIZE);
+    }
+    else {
+        result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + 1);
     }
 
 
-    if (extra_blocks || (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) > TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
-
-        if(remainder < NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
-            indirect_block_1_index = NUM_BLOCKS_IN_INDIRECTION_BLOCK - remainder;
-        }
-
-        if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) {
-            indirect_block_1_index = remainder / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-            indirect_block_2_index = remainder % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-        }
-
-        if(remainder < pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) {
-
-        }
 
 
 
-        for (uint64 i = 0; i < num_blocks_to_allocate; i++) {
-
-        }
+    for (uint64 i = 0; i < num_blocks_to_allocate; i++) {
     }
 }
 
-static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count_inside_high_level_block) {
-    struct tempfs_indirection_index result;
+static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count) {
+    struct tempfs_indirection_index result = {};
 
+    if (block_count < TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+        result.num_full_indirections = 0;
+        result.num_second_indirections = 0;
+        result.num_singular_indirections = 0;
+        result.num_singular_indirections = 0;
+        return result;
+    }
+
+    uint64 extra_blocks = block_count - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
+
+    result.num_full_indirections = extra_blocks / pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3);
+    result.num_second_indirections = result.num_full_indirections == 0
+                                         ? extra_blocks / pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)
+                                         : (extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) / pow(
+                                             NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2);
+    result.num_singular_indirections = result.num_second_indirections == 0
+                                           ? extra_blocks / NUM_BLOCKS_IN_INDIRECTION_BLOCK
+                                           : ((extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) % pow(
+                                               NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+    result.num_block_pointers = extra_blocks % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+
+    return result;
 }
 
