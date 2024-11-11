@@ -31,6 +31,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
                                            uint64 children_size);
 static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry);
 static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count);
+static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode,uint64 ramdisk_id);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -506,7 +507,7 @@ retry:
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
         release_spinlock(&tempfs_lock);
-        return ret;
+        panic("tempfs_get_free_inode_and_mark_bitmap ramdisk read failed"); /* For diagnostic purposes , shouldn't happen if it does I want to know right away */
     }
 
     while (1) {
@@ -787,6 +788,11 @@ no_indirection:
 /*
  * This function will allocate new blocks to an inode. If needed it will also slide pointers down if there is a write to the beginning or
  * to the end of the file
+ *
+ * IMPORTANT: LOCK MUST BE HELD WHILE THIS FUNCTION IS EXECUTING.
+ * ENSURE THAT THE CALLING FUNCTION HANDLES LOCKING, OR AT LEAST THE FUNCTION AT
+ * THE TOP OF THE STACK FRAMES ABOVE THIS FUNCTION
+ *
  */
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
@@ -811,6 +817,56 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
         result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + 1);
     }
 
+    if(inode->size / TEMPFS_BLOCKSIZE  + (inode->size % TEMPFS_BLOCKSIZE != 0) < TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE){
+
+        uint64 blocks_left_in_high_level =   TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - ((inode->size / TEMPFS_BLOCKSIZE)  + (inode->size % TEMPFS_BLOCKSIZE != 0));
+        for (uint64 i = blocks_left_in_high_level; i != 0; i--) {
+            inode->blocks[TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - i] = tempfs_get_free_block_and_mark_bitmap(sb,ramdisk_id);
+            num_blocks_to_allocate--;
+        }
+
+        tempfs_write_inode(sb,inode,ramdisk_id);
+
+        uint8* buffer = kalloc(PAGE_SIZE);
+        uint64 block_to_read = inode->blocks[TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - 1];
+        uint64 ret = ramdisk_read(buffer,block_to_read,0,TEMPFS_BLOCKSIZE,PAGE_SIZE,ramdisk_id);
+        if(ret != SUCCESS) {
+            HANDLE_RAMDISK_ERROR(ret,"ramdisk_read inside tempfs_inode_allocate_new_blocks")
+            panic("tempfs_inode_allocate_new_blocks error"); /* For visibility */
+        }
+        uint64 index = 0;
+
+        uint64 **block_pointers = (uint64 **)buffer;
+
+        if (inode->size % TEMPFS_BLOCKSIZE == 0) {
+            result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + num_blocks_to_allocate);
+        }
+        else {
+            result = tempfs_indirection_indices(((inode->size / TEMPFS_BLOCKSIZE) + 1) + num_blocks_to_allocate);
+        }
+
+        while(num_blocks_to_allocate > 0) {
+
+            for(index = 0; index < NUM_BLOCKS_IN_INDIRECTION_BLOCK; index++) {
+
+                if(index == 0) {
+                    *block_pointers[index] = INDIRECTION_HEADER;
+                }else if(num_blocks_to_allocate != 0){
+                    *block_pointers[index] = tempfs_get_free_block_and_mark_bitmap(sb,ramdisk_id);
+                    num_blocks_to_allocate--;
+                }else {
+                    *block_pointers[index] = TEMPFS_BLOCK_UNALLOCATED; // unallocated
+                }
+
+            }
+
+
+        }
+
+
+    }
+
+
 
 
 
@@ -820,13 +876,14 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
 }
 
 static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count) {
+
     struct tempfs_indirection_index result = {};
 
     if (block_count < TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         result.num_full_indirections = 0;
         result.num_second_indirections = 0;
         result.num_singular_indirections = 0;
-        result.num_singular_indirections = 0;
+        result.num_block_pointers = 0;
         return result;
     }
 
@@ -837,7 +894,7 @@ static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_c
                                          ? extra_blocks / pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)
                                          : (extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) / pow(
                                              NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2);
-    result.num_singular_indirections = result.num_second_indirections == 0
+    result.num_singular_indirections = result.num_second_indirections == 0 && result.num_full_indirections == 0
                                            ? extra_blocks / NUM_BLOCKS_IN_INDIRECTION_BLOCK
                                            : ((extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) % pow(
                                                NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
@@ -846,3 +903,13 @@ static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_c
     return result;
 }
 
+static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode,uint64 ramdisk_id) {
+    uint64 inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
+    uint64 block_number = sb->block_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
+    uint64 ret = ramdisk_write((uint8 *)inode,block_number,sizeof(struct tempfs_inode) * inode_number_in_block,sizeof(struct tempfs_inode),sizeof(struct tempfs_inode),ramdisk_id);
+    if(ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret,"tempfs_write_inode");
+        panic("tempfs_write_inode"); /* For diagnostic purposes */
+    }
+
+}
