@@ -31,7 +31,11 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
                                            uint64 children_size);
 static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry);
 static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count);
-static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode,uint64 ramdisk_id);
+static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id);
+static void tempfs_write_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
+                                         uint64 ramdisk_id, uint64 offset, uint64 write_size);
+static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
+                                        uint64 ramdisk_id, uint64 offset, uint64 read_size);
 
 struct vnode_operations tempfs_vnode_ops = {
     .lookup = tempfs_lookup,
@@ -335,27 +339,15 @@ static uint64 tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uin
     uint64 bit = number % 8;
 
     uint8* buffer = kalloc(PAGE_SIZE);
-    uint64 ret = ramdisk_read(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
 
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-        release_spinlock(&tempfs_lock);
-        return ret;
-    }
+    tempfs_read_block_by_number(block,buffer,sb,ramdisk_id,0,TEMPFS_BLOCKSIZE);
+
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
     buffer[byte_in_block] = buffer[byte_in_block] & (action << bit);
-
-    ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_modify_bitmap read")
-        release_spinlock(&tempfs_lock);
-        return ret;
-    }
-
+    tempfs_write_block_by_number(block,buffer,sb,ramdisk_id,0,TEMPFS_BLOCKSIZE);
     kfree(buffer);
     release_spinlock(&tempfs_lock);
 
@@ -374,21 +366,16 @@ static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number
     uint64 inode_block = sb->inode_start_pointer + (sb->block_size / TEMPFS_INODE_SIZE);
     uint64 inode_in_block = inode_number % (sb->block_size / TEMPFS_INODE_SIZE);
 
-    uint8* block = kalloc(PAGE_SIZE);
+    uint8* buffer = kalloc(PAGE_SIZE);
     /* I will need to add the tempfs block size to the heap until then I'll just allocate a page*/
 
-    uint64 ret = ramdisk_read(block, inode_block, inode_in_block * TEMPFS_INODE_SIZE,TEMPFS_INODE_SIZE,PAGE_SIZE,
-                              ramdisk_id);
+    tempfs_read_block_by_number(inode_block, buffer, sb, ramdisk_id, inode_in_block * TEMPFS_INODE_SIZE,
+                                TEMPFS_INODE_SIZE);
 
-    if (ret == SUCCESS) {
-        *inode_to_be_filled = *(struct tempfs_inode*)block;
-        kfree(block);
-        return SUCCESS;
-    }
 
-    HANDLE_RAMDISK_ERROR(ret, "tempfs_get_inode")
-    kfree(block);
-    return ret;
+    *inode_to_be_filled = *(struct tempfs_inode*)buffer;
+    kfree(buffer);
+    return SUCCESS;
 }
 
 
@@ -452,13 +439,7 @@ static uint64 tempfs_get_free_inode_and_mark_bitmap(struct tempfs_superblock* sb
 
 
 found_free:
-    ret = ramdisk_write(&buffer[block], sb->inode_bitmap_pointers[block], 0,TEMPFS_BLOCKSIZE, buffer_size, ramdisk_id);
-
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
-        panic("tempfs_get_free_inode_and_mark_bitmap ramdisk write failed");
-    }
-
+    tempfs_write_block_by_number(sb->inode_bitmap_pointers[block], &buffer[block], sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
     kfree(buffer);
     release_spinlock(&tempfs_lock);
 
@@ -501,13 +482,13 @@ retry:
      *We do not free the buffer we simply write into a smaller and smaller portion of the buffer.
      *It is only freed after a block is found and the new bitmap block is written.
      */
-
     uint64 ret = ramdisk_read(buffer, sb->block_bitmap_pointers[offset], 0, buffer_size, buffer_size, ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
         release_spinlock(&tempfs_lock);
-        panic("tempfs_get_free_inode_and_mark_bitmap ramdisk read failed"); /* For diagnostic purposes , shouldn't happen if it does I want to know right away */
+        panic("tempfs_get_free_inode_and_mark_bitmap ramdisk read failed");
+        /* For diagnostic purposes , shouldn't happen if it does I want to know right away */
     }
 
     while (1) {
@@ -578,16 +559,11 @@ static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, ui
     uint8* buffer = kalloc(PAGE_SIZE);
     memset(buffer, 0, TEMPFS_BLOCKSIZE);
     uint64 block = sb->block_start_pointer + block_number;
-    uint64 ret;
-    ret = ramdisk_write(buffer, block, 0, TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-    // zero it , this is heavy but that is ok for now
 
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
-        panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
-    }
+    tempfs_write_block_by_number(block, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
 
-    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_BLOCK, ramdisk_id, block_number,BITMAP_ACTION_CLEAR);
+
+    uint64 ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_BLOCK, ramdisk_id, block_number,BITMAP_ACTION_CLEAR);
 
     if (ret != SUCCESS) {
         panic("tempfs_free_block_and_mark_bitmap"); /* For visibility for changes later */
@@ -606,16 +582,11 @@ static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, ui
 
     uint8* buffer = kalloc(PAGE_SIZE);
 
-    uint64 ret;
-    ret = ramdisk_write(buffer, sb->inode_start_pointer + inode_number_block, offset * TEMPFS_INODE_SIZE,
-                        TEMPFS_INODE_SIZE,PAGE_SIZE, ramdisk_id); // zero it , this is heavy but that is ok for now
+    tempfs_write_block_by_number(sb->inode_start_pointer + inode_number_block, buffer, sb, ramdisk_id, offset,
+                                 TEMPFS_INODE_SIZE);
 
-    if (ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
-        panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
-    }
 
-    ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_INODE, ramdisk_id, inode_number,BITMAP_ACTION_CLEAR);
+    uint64 ret = tempfs_modify_bitmap(sb,BITMAP_TYPE_INODE, ramdisk_id, inode_number,BITMAP_ACTION_CLEAR);
     kfree(buffer);
     if (ret != SUCCESS) {
         panic("tempfs_free_inode_and_mark_bitmap"); /* For visibility for changes later */
@@ -674,11 +645,8 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
     while (directory_entries_read <= (children_size / sizeof(struct tempfs_directory_entry)) && directory_entries_read <
         (inode.size / sizeof(struct tempfs_directory_entry))) {
         block_number = inode.blocks[directory_entries_read++];
-        ret = ramdisk_read(buffer, block_number, 0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_get_directory_entries ramdisk_read call")
-            panic("tempfs_free_block"); /* Extreme but that is okay for diagnosing issues */
-        }
+
+        tempfs_read_block_by_number(block_number, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
 
         *children[directory_entries_read] = *(struct tempfs_directory_entry*)buffer;
     }
@@ -753,13 +721,7 @@ no_indirection:
     while (bytes_read < bytes_to_read) {
         uint64 bytes_left = buffer_size < TEMPFS_BLOCKSIZE ? buffer_size : TEMPFS_BLOCKSIZE - offset;
 
-        uint64 ret = ramdisk_read(temp_buffer, actual_block_number, offset, bytes_to_read, bytes_left, ramdisk_id);
-
-        if (ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret, "tempfs_follow_block_pointer ramdisk_read call")
-            panic("tempfs_follow_block_pointer ramdisk_read error");
-            /* Extreme but that is okay for diagnosing issues */
-        }
+        tempfs_read_block_by_number(actual_block_number, temp_buffer, sb, ramdisk_id, offset, bytes_to_read);
 
         memcpy(buffer + bytes_read, temp_buffer, TEMPFS_BLOCKSIZE - offset);
 
@@ -796,6 +758,11 @@ no_indirection:
  */
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
+    struct tempfs_indirection_index result = {};
+    uint8* buffer = kalloc(PAGE_SIZE);
+    uint64 ret;
+    uint64 index = 0;
+
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
     if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) >
         TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
@@ -808,8 +775,6 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
         return TEMPFS_ERROR;
     }
 
-    struct tempfs_indirection_index result = {};
-
     if (inode->size % TEMPFS_BLOCKSIZE == 0) {
         result = tempfs_indirection_indices(inode->size / TEMPFS_BLOCKSIZE);
     }
@@ -817,26 +782,22 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
         result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + 1);
     }
 
-    if(inode->size / TEMPFS_BLOCKSIZE  + (inode->size % TEMPFS_BLOCKSIZE != 0) < TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE){
-
-        uint64 blocks_left_in_high_level =   TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - ((inode->size / TEMPFS_BLOCKSIZE)  + (inode->size % TEMPFS_BLOCKSIZE != 0));
+    if (inode->size / TEMPFS_BLOCKSIZE + (inode->size % TEMPFS_BLOCKSIZE != 0) < TEMPFS_BLOCKSIZE *
+        TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
+        uint64 blocks_left_in_high_level = TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - ((inode->size / TEMPFS_BLOCKSIZE) + (
+            inode->size % TEMPFS_BLOCKSIZE != 0));
         for (uint64 i = blocks_left_in_high_level; i != 0; i--) {
-            inode->blocks[TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - i] = tempfs_get_free_block_and_mark_bitmap(sb,ramdisk_id);
+            inode->blocks[TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - i] = tempfs_get_free_block_and_mark_bitmap(
+                sb, ramdisk_id);
             num_blocks_to_allocate--;
         }
 
-        tempfs_write_inode(sb,inode,ramdisk_id);
-
-        uint8* buffer = kalloc(PAGE_SIZE);
+        tempfs_write_inode(sb, inode, ramdisk_id);
         uint64 block_to_read = inode->blocks[TEMPFS_NUM_BLOCK_POINTERS_PER_INODE - 1];
-        uint64 ret = ramdisk_read(buffer,block_to_read,0,TEMPFS_BLOCKSIZE,PAGE_SIZE,ramdisk_id);
-        if(ret != SUCCESS) {
-            HANDLE_RAMDISK_ERROR(ret,"ramdisk_read inside tempfs_inode_allocate_new_blocks")
-            panic("tempfs_inode_allocate_new_blocks error"); /* For visibility */
-        }
-        uint64 index = 0;
 
-        uint64 **block_pointers = (uint64 **)buffer;
+        tempfs_read_block_by_number(block_to_read, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
+
+        uint64** block_pointers = (uint64**)buffer;
 
         if (inode->size % TEMPFS_BLOCKSIZE == 0) {
             result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + num_blocks_to_allocate);
@@ -845,30 +806,32 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
             result = tempfs_indirection_indices(((inode->size / TEMPFS_BLOCKSIZE) + 1) + num_blocks_to_allocate);
         }
 
-        while(num_blocks_to_allocate > 0) {
+        uint64 current_indirection_depth = 0;
 
-            for(index = 0; index < NUM_BLOCKS_IN_INDIRECTION_BLOCK; index++) {
 
-                if(index == 0) {
+        while (num_blocks_to_allocate > 0) {
+            for (index = 0; index < NUM_BLOCKS_IN_INDIRECTION_BLOCK; index++) {
+                if (index == 0) {
                     *block_pointers[index] = INDIRECTION_HEADER;
-                }else if(num_blocks_to_allocate != 0){
-                    *block_pointers[index] = tempfs_get_free_block_and_mark_bitmap(sb,ramdisk_id);
+                }
+                else if (num_blocks_to_allocate != 0) {
+                    *block_pointers[index] = tempfs_get_free_block_and_mark_bitmap(sb, ramdisk_id);
                     num_blocks_to_allocate--;
-                }else {
+                }
+                else {
                     *block_pointers[index] = TEMPFS_BLOCK_UNALLOCATED; // unallocated
                 }
-
             }
 
+            tempfs_write_block_by_number(block_to_read, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
 
+            if (num_blocks_to_allocate > 0) {
+                block_to_read = *block_pointers[NUM_BLOCKS_IN_INDIRECTION_BLOCK - 1];
+                memset(buffer, 0, TEMPFS_BLOCKSIZE);
+                tempfs_read_block_by_number(block_to_read, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
+            }
         }
-
-
     }
-
-
-
-
 
 
     for (uint64 i = 0; i < num_blocks_to_allocate; i++) {
@@ -876,7 +839,6 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
 }
 
 static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count) {
-
     struct tempfs_indirection_index result = {};
 
     if (block_count < TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
@@ -903,13 +865,42 @@ static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_c
     return result;
 }
 
-static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode,uint64 ramdisk_id) {
+static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id) {
     uint64 inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
     uint64 block_number = sb->block_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
-    uint64 ret = ramdisk_write((uint8 *)inode,block_number,sizeof(struct tempfs_inode) * inode_number_in_block,sizeof(struct tempfs_inode),sizeof(struct tempfs_inode),ramdisk_id);
-    if(ret != SUCCESS) {
-        HANDLE_RAMDISK_ERROR(ret,"tempfs_write_inode");
+    uint64 ret = ramdisk_write((uint8*)inode, block_number, sizeof(struct tempfs_inode) * inode_number_in_block,
+                               sizeof(struct tempfs_inode), sizeof(struct tempfs_inode), ramdisk_id);
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_write_inode");
         panic("tempfs_write_inode"); /* For diagnostic purposes */
     }
+}
 
+static void tempfs_write_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
+                                         uint64 ramdisk_id, uint64 offset, uint64 write_size) {
+    if (write_size > TEMPFS_BLOCKSIZE) {
+        write_size = TEMPFS_BLOCKSIZE;
+    }
+
+    uint64 ret = ramdisk_write(buffer, block_number, offset, write_size - offset, write_size, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_write_block_by_number");
+        panic("tempfs_write_block_by_number");
+    }
+}
+
+static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
+                                        uint64 ramdisk_id, uint64 offset, uint64 read_size) {
+    if (read_size > TEMPFS_BLOCKSIZE) {
+        read_size = TEMPFS_BLOCKSIZE;
+    }
+
+
+    uint64 ret = ramdisk_read(buffer, block_number, offset, read_size - offset, read_size, ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_write_block_by_number");
+        panic("tempfs_write_block_by_number");
+    }
 }
