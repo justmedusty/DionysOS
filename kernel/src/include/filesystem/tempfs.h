@@ -112,7 +112,16 @@ struct tempfs_indirection_index {
     uint16 num_second_indirections;
     uint16 num_singular_indirections;
     uint16 num_block_pointers;
-    uint16 zero;
+    uint16 zero; /* Just a marker that this struct is empty without checking every field */
+};
+
+struct tempfs_byte_offset_indices {
+    uint16 top_level_block_number;
+    uint16 third_level_block_number;
+    uint16 second_level_block_number;
+    uint16 first_level_block_number;
+    uint16 block_number;
+    uint16 levels_indirection;
 };
 
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0 ,"Tempfs inode not the proper size");
