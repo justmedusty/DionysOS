@@ -743,17 +743,27 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
 
 }
 
+/*
+ * A much simpler index derivation function for getting a tempfs index based off a block number given. Could be for reading a block at an arbitrary offset or finding the end
+ * of the file to allocate or write.
+ *
+ * It is fairly simple.
+ *
+ * We avoid off-by-ones by using the greater than as opposed to greater than or equal operator.
+ *
+ * Panic if the block number is too high
+ */
 
 static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64 block_number) {
     struct tempfs_byte_offset_indices byte_offset_indices = {};
 
-    if(block_number <= NUM_BLOCKS_DIRECT) {
-        byte_offset_indices.top_level_block_number = block_number - 1;
+    if(block_number < NUM_BLOCKS_DIRECT) {
+        byte_offset_indices.top_level_block_number = block_number;
         byte_offset_indices.levels_indirection = 0;
         return byte_offset_indices;
     }
 
-    if(block_number <= (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+    if(block_number < (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 1;
         byte_offset_indices.top_level_block_number = 0;
@@ -761,22 +771,22 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
         return byte_offset_indices;
     }
 
-    if(block_number <= (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+    if(block_number < (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 2;
         byte_offset_indices.top_level_block_number = 0;
-        byte_offset_indices.second_level_block_number = (block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK) - 1;
+        byte_offset_indices.second_level_block_number = (block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK);
         byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         return byte_offset_indices;
     }
 
-    if(block_number <= (NUM_BLOCKS_TRIPLE_INDIRECTION + NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+    if(block_number < (NUM_BLOCKS_TRIPLE_INDIRECTION + NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 3;
         byte_offset_indices.top_level_block_number = 0;
         byte_offset_indices.third_level_block_number = block_number  / NUM_BLOCKS_DOUBLE_INDIRECTION;
         byte_offset_indices.second_level_block_number = (block_number - ((byte_offset_indices.third_level_block_number * NUM_BLOCKS_DOUBLE_INDIRECTION))) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-        byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        byte_offset_indices.first_level_block_number = block_number % (NUM_BLOCKS_IN_INDIRECTION_BLOCK);
         return byte_offset_indices;
     }
 

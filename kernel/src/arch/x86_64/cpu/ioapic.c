@@ -15,7 +15,7 @@
 #define PIC2_DATA PIC2 + 1
 
 /*
- * Disable the legacy PIC , in case it is neeeded.
+ * Disable the legacy PIC , in case it is needed.
  * It may already be masked, but better safe than sorry
  */
 void pic_disable() {
