@@ -115,13 +115,6 @@ struct tempfs_directory_entry {
     uint32 size;
 };
 
-struct tempfs_indirection_index {
-    uint16 num_full_indirections;
-    uint16 num_second_indirections;
-    uint16 num_singular_indirections;
-    uint16 num_block_pointers;
-    uint16 zero; /* Just a marker that this struct is empty without checking every field */
-};
 
 struct tempfs_byte_offset_indices {
     uint16 top_level_block_number;

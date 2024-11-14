@@ -30,7 +30,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
                                            struct tempfs_directory_entry** children, uint64 inode_number,
                                            uint64 children_size);
 static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry);
-static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count);
+static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64 block_number);
 static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id);
 static void tempfs_write_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
                                          uint64 ramdisk_id, uint64 offset, uint64 write_size);
@@ -714,7 +714,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
  */
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
-    struct tempfs_indirection_index result = {};
+    struct tempfs_byte_offset_indices result = {};
     uint8* buffer = kalloc(PAGE_SIZE);
     uint64 ret;
     uint64 index = 0;
@@ -723,67 +723,65 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) >
         TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
+        kfree(buffer);
         return TEMPFS_ERROR;
     }
 
     if (num_blocks_to_allocate > MAX_BLOCKS_IN_INODE - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         serial_printf("tempfs_inode_allocate_new_block too many blocks to request!\n");
+        kfree(buffer);
         return TEMPFS_ERROR;
     }
 
     if (inode->size % TEMPFS_BLOCKSIZE == 0) {
-        result = tempfs_indirection_indices(inode->size / TEMPFS_BLOCKSIZE);
+        result = tempfs_indirection_indices_for_block_number(inode->size / TEMPFS_BLOCKSIZE);
     }
     else {
-        result = tempfs_indirection_indices((inode->size / TEMPFS_BLOCKSIZE) + 1);
+        result = tempfs_indirection_indices_for_block_number((inode->size / TEMPFS_BLOCKSIZE) + 1);
     }
 
 
 }
 
-static struct tempfs_indirection_index tempfs_indirection_indices(uint64 block_count) {
-    struct tempfs_indirection_index result = {};
 
-    if (block_count < TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
-        result.num_full_indirections = 0;
-        result.num_second_indirections = 0;
-        result.num_singular_indirections = 0;
-        result.num_block_pointers = 0;
-        result.zero = TRUE;
-        return result;
-    }
-
-    uint64 extra_blocks = block_count - TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
-
-    result.num_full_indirections = extra_blocks / pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3);
-    result.num_second_indirections = result.num_full_indirections == 0
-                                         ? extra_blocks / pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)
-                                         : (extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) / pow(
-                                             NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2);
-    result.num_singular_indirections = result.num_second_indirections == 0 && result.num_full_indirections == 0
-                                           ? extra_blocks / NUM_BLOCKS_IN_INDIRECTION_BLOCK
-                                           : ((extra_blocks % pow(NUM_BLOCKS_IN_INDIRECTION_BLOCK, 3)) % pow(
-                                               NUM_BLOCKS_IN_INDIRECTION_BLOCK, 2)) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-    result.num_block_pointers = extra_blocks % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-    result.zero = FALSE;
-
-    return result;
-}
-
-
-static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(
-    uint64 block_count, uint64 block_number) {
-    struct tempfs_indirection_index result = tempfs_indirection_indices(block_count);
+static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64 block_number) {
     struct tempfs_byte_offset_indices byte_offset_indices = {};
 
-    if (result.zero) {
+    if(block_number <= NUM_BLOCKS_DIRECT) {
+        byte_offset_indices.top_level_block_number = block_number - 1;
         byte_offset_indices.levels_indirection = 0;
-        uint16 top_level_block_number = block_number / TEMPFS_BLOCKSIZE;
+        return byte_offset_indices;
+    }
+
+    if(block_number <= (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+        block_number -= (NUM_BLOCKS_DIRECT);
+        byte_offset_indices.levels_indirection = 1;
+        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.first_level_block_number = block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        return byte_offset_indices;
+    }
+
+    if(block_number <= (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+        block_number -= (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
+        byte_offset_indices.levels_indirection = 2;
+        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.second_level_block_number = (block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK) - 1;
+        byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        return byte_offset_indices;
+    }
+
+    if(block_number <= (NUM_BLOCKS_TRIPLE_INDIRECTION + NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
+        block_number -= (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
+        byte_offset_indices.levels_indirection = 3;
+        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.third_level_block_number = block_number  / NUM_BLOCKS_DOUBLE_INDIRECTION;
+        byte_offset_indices.second_level_block_number = (block_number - ((byte_offset_indices.third_level_block_number * NUM_BLOCKS_DOUBLE_INDIRECTION))) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         return byte_offset_indices;
     }
 
 
-    return byte_offset_indices;
+    panic("tempfs_indirection_indices_for_block_number invalid block number");
 }
 
 /*
