@@ -360,13 +360,13 @@ static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint6
     tempfs_write_block_by_number(block, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
     kfree(buffer);
     release_spinlock(&tempfs_lock);
-
-    return;
 }
 
 /*
  *  Reads inode at place inode_number on ramdisk of ramdisk_id and fills the passed inode_to_be_filled with the ramdisk inode
  *  I amn going to try and go lock-less since I think I can get away with it for this function.
+ *
+ *  Lockless due to just being a read only
  */
 static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
                                struct tempfs_inode* inode_to_be_filled) {
@@ -631,6 +631,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
     uint8* buffer = kalloc(buffer_size);
     struct tempfs_inode inode;
     uint64 directory_entries_read = 0;
+    uint64 directory_block = 0;
     uint64 block_number = 0;
 
     tempfs_get_inode(sb, inode_number, ramdisk_id, &inode);
@@ -643,11 +644,16 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 
     while (directory_entries_read <= (children_size / sizeof(struct tempfs_directory_entry)) && directory_entries_read <
         (inode.size / sizeof(struct tempfs_directory_entry))) {
-        block_number = inode.blocks[directory_entries_read++];
+        block_number = inode.blocks[directory_block++]; /*Should be okay to leave this unrestrained since we check children size and inode size */
 
         tempfs_read_block_by_number(block_number, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
 
-        *children[directory_entries_read] = *(struct tempfs_directory_entry*)buffer;
+        for(uint64 i = 0; i < (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)) ; i++) {
+            if(directory_entries_read >= inode.size / sizeof(struct tempfs_directory_entry) || directory_entries_read >= children_size / sizeof(struct tempfs_directory_entry)) {
+                break;
+            }
+            *children[directory_entries_read++] = *(struct tempfs_directory_entry*)buffer[i * sizeof(struct tempfs_directory_entry)];
+        }
     }
 
     kfree(buffer);
@@ -655,14 +661,13 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 }
 
 /*
- * Under Construction (imagine some big traffic cones around) \
+ * Under Construction (imagine some big traffic cones around)
  *
- * I will put locks just in case it is being written at the time of this block following escapade
  */
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
                                     uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,
                                     uint64 read_size) {
-    acquire_spinlock(&tempfs_lock);
+
     if (buffer_size < TEMPFS_BLOCKSIZE) {
         /*
          * I'll set a sensible minimum buffer size
@@ -673,9 +678,8 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
 
     uint64 start_block = offset / TEMPFS_BLOCKSIZE;
+    uint64 current_block_number = 0;
     uint64 end_block = start_block + num_blocks_to_read;
-    uint64 current_block_to_read = offset / TEMPFS_BLOCKSIZE;
-    uint64 actual_block_number = 0;
 
     /*
      *  If 0 is passed, try to read everything
@@ -683,15 +687,34 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
     uint64 bytes_to_read = read_size == 0 ? inode->size : read_size;
     uint64 bytes_read = 0;
+    uint8* temp_buffer = kalloc(PAGE_SIZE);
+    uint64 **indirection_block = (uint64 **) temp_buffer;
+    struct tempfs_byte_offset_indices indices = tempfs_indirection_indices_for_block_number(start_block);
 
-    uint8* temp_buffer = kalloc(TEMPFS_BLOCKSIZE);
+    switch (indices.levels_indirection) {
+    case 0:
+        current_block_number = inode->blocks[start_block];
+        break;
+        case 1:
+            tempfs_read_block_by_number(inode->single_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            current_block_number = *indirection_block[indices.first_level_block_number];
+            break;
+        case 2:
+            tempfs_read_block_by_number(inode->double_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            current_block_number = *indirection_block[indices.second_level_block_number];
+            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            break;
+        case 3:
+            tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            current_block_number = *indirection_block[indices.third_level_block_number];
+            tempfs_read_block_by_number(inode->double_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            current_block_number = *indirection_block[indices.second_level_block_number];
+            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            break;
+        default:
+            panic("follow_block_pointers: unknown indirection");
+    }
 
-    /*
-     * We need to calculate whether we have indirect blocks to deal with
-     */
-    uint64 extra_blocks = (inode->size > (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024))
-                              ? ((inode->size - (TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * 1024)) / TEMPFS_BLOCKSIZE)
-                              : 0;
 
 
     /*
@@ -699,7 +722,6 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
      */
 
     kfree(buffer);
-    release_spinlock(&tempfs_lock);
     return SUCCESS;
 }
 
@@ -738,6 +760,11 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
     }
     else {
         result = tempfs_indirection_indices_for_block_number((inode->size / TEMPFS_BLOCKSIZE) + 1);
+    }
+
+
+    if(result.levels_indirection == 0) {
+
     }
 
 
