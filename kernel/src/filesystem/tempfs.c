@@ -707,7 +707,7 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
         case 3:
             tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
             current_block_number = *indirection_block[indices.third_level_block_number];
-            tempfs_read_block_by_number(inode->double_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
             current_block_number = *indirection_block[indices.second_level_block_number];
             tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
             break;
