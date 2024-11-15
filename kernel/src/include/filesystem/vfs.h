@@ -58,7 +58,7 @@ struct vnode {
     struct vnode_operations *vnode_ops;
     struct vnode* mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
-    void *superblock;
+    void *filesystem_object;
     uint64 vnode_size;
     uint64 last_updated;
     uint64 vnode_inode_number;

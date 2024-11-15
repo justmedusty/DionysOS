@@ -125,11 +125,18 @@ struct tempfs_byte_offset_indices {
     uint16 levels_indirection;
 };
 
+struct tempfs_filesystem {
+    uint64 filesystem_id;
+    struct spinlock *lock;
+    struct tempfs_superblock *superblock;
+    uint64 ramdisk_id;
+};
+
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the proper size");
 
 
 void tempfs_init();
-void tempfs_mkfs(uint64 ramdisk_id);
+void tempfs_mkfs(uint64 ramdisk_id, struct tempfs_filesystem* fs);
 uint64 tempfs_read(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
 uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
 uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
