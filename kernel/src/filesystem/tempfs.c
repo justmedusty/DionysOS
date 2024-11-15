@@ -43,6 +43,7 @@ static uint64 tempfs_allocate_double_indirect_block(struct tempfs_superblock* sb
 static uint64 tempfs_allocate_triple_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static void tempfs_read_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id,
                               uint64 inode_number);
+static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *inode,uint64 current_block,struct tempfs_superblock *sb , uint64 ramdisk_id);
 
 /*
  * VFS pointer functions for vnodes
@@ -661,58 +662,59 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
 }
 
 /*
- * Under Construction (imagine some big traffic cones around)
+ * Fills a buffer with file data , following block pointers and appending bytes to the passed buffer.
+ *
+ * Took locks out since this will be called from a function that is locked.
  *
  */
 static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk_id, struct tempfs_inode* inode,
-                                    uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,
+                                    uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,uint64 start_block,
                                     uint64 read_size) {
 
     if (buffer_size < TEMPFS_BLOCKSIZE) {
         /*
          * I'll set a sensible minimum buffer size
          */
-        release_spinlock(&tempfs_lock);
         return TEMPFS_BUFFER_TOO_SMALL;
     }
 
+    if(offset > TEMPFS_BLOCKSIZE) {
+        panic("follow_block_pointers bad offset"); /* Should never happen, panic for visibility  */
+    }
 
-    uint64 start_block = offset / TEMPFS_BLOCKSIZE;
+    /*
+ *  If 0 is passed, try to read everything
+ */
+    uint64 bytes_to_read = read_size == 0 ? inode->size -(start_block * TEMPFS_BLOCKSIZE) : read_size;
+    if(read_size > inode->size) {
+        read_size = inode->size - (start_block * TEMPFS_BLOCKSIZE);
+    }
+
     uint64 current_block_number = 0;
     uint64 end_block = start_block + num_blocks_to_read;
+    uint64 end_offset = (read_size  - offset) % TEMPFS_BLOCKSIZE;
 
     /*
      *  If 0 is passed, try to read everything
      */
 
-    uint64 bytes_to_read = read_size == 0 ? inode->size : read_size;
     uint64 bytes_read = 0;
-    uint8* temp_buffer = kalloc(PAGE_SIZE);
-    uint64 **indirection_block = (uint64 **) temp_buffer;
-    struct tempfs_byte_offset_indices indices = tempfs_indirection_indices_for_block_number(start_block);
 
-    switch (indices.levels_indirection) {
-    case 0:
-        current_block_number = inode->blocks[start_block];
-        break;
-        case 1:
-            tempfs_read_block_by_number(inode->single_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            current_block_number = *indirection_block[indices.first_level_block_number];
-            break;
-        case 2:
-            tempfs_read_block_by_number(inode->double_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            current_block_number = *indirection_block[indices.second_level_block_number];
-            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            break;
-        case 3:
-            tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            current_block_number = *indirection_block[indices.third_level_block_number];
-            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            current_block_number = *indirection_block[indices.second_level_block_number];
-            tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
-            break;
-        default:
-            panic("follow_block_pointers: unknown indirection");
+    for(uint64 i = start_block; i < end_block; i++) {
+
+        current_block_number =  tempfs_get_logical_block_number_from_file(inode,i,sb,ramdisk_id);
+
+        tempfs_read_block_by_number(current_block_number, buffer, sb, ramdisk_id, offset, TEMPFS_BLOCKSIZE - offset);
+
+        bytes_read += (TEMPFS_BLOCKSIZE - offset);
+
+        if(offset) {
+            offset = 0;
+        }
+
+        if(i+1 == end_block) {
+            offset = end_offset;
+        }
     }
 
 
@@ -723,6 +725,60 @@ static uint64 follow_block_pointers(struct tempfs_superblock* sb, uint64 ramdisk
 
     kfree(buffer);
     return SUCCESS;
+}
+/*
+ * We will take the logical block number in the file and get the next to return it
+ *
+ * This could be done more efficiently such as transferring directly into a buffer but as knuth said,
+ *
+ * Premature optimization is the root of all evil.
+ *
+ * If this approach causes noticeable slowdowns we will revisit.
+ *
+ * The switch statement just separates what level the requested block is, and then the indices to get the block from there.
+ */
+static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *inode,uint64 current_block,struct tempfs_superblock *sb , uint64 ramdisk_id) {
+
+    uint8* temp_buffer = kalloc(PAGE_SIZE);
+    struct tempfs_byte_offset_indices indices = tempfs_indirection_indices_for_block_number(current_block);
+    uint64 current_block_number = 0;
+    uint64 **indirection_block = (uint64 **) temp_buffer;
+    switch (indices.levels_indirection) {
+
+    case 0:
+
+        current_block_number = inode->blocks[indices.top_level_block_number];
+        kfree(temp_buffer);
+        return current_block_number;
+
+    case 1:
+
+        tempfs_read_block_by_number(inode->single_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+        current_block_number = *indirection_block[indices.first_level_block_number];
+        kfree(temp_buffer);
+        return current_block_number;
+
+    case 2:
+
+        tempfs_read_block_by_number(inode->double_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+        current_block_number = *indirection_block[indices.second_level_block_number];
+        kfree(temp_buffer);
+        return current_block_number;
+
+    case 3:
+
+        tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+        current_block_number = *indirection_block[indices.third_level_block_number];
+        tempfs_read_block_by_number(current_block_number, temp_buffer, sb, ramdisk_id, 0, TEMPFS_BLOCKSIZE);
+        current_block_number = *indirection_block[indices.second_level_block_number];
+        kfree(temp_buffer);
+        return current_block_number;
+
+    default:
+        panic("tempfs_get_next_logical_block_from_file: unknown indirection");
+    }
+
+
 }
 
 /*
