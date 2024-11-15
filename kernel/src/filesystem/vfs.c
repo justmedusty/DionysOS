@@ -178,8 +178,7 @@ void vnode_remove(struct vnode* vnode) {
  *  This will need to return a handle at some point.
  */
 struct vnode* vnode_open(char* path) {
-    struct vnode* vnode = vnode_alloc();
-    vnode = vnode_lookup(path);
+    struct vnode* vnode = vnode_lookup(path);
 
     if (vnode == NULL) {
         return NULL;

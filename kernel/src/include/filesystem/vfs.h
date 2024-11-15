@@ -58,17 +58,31 @@ struct vnode {
     struct vnode_operations *vnode_ops;
     struct vnode* mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
+    void *superblock;
     uint64 vnode_size;
     uint64 last_updated;
     uint64 vnode_inode_number;
     uint64 vnode_flags;
-    uint64 vnode_type;
+    uint16 vnode_type;
     uint64 vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */
-    uint64 vnode_refcount; // Pulled from actual inode or equivalent structure
-    uint64 vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
+    uint16 vnode_refcount; // Pulled from actual inode or equivalent structure
+    uint16 vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
     uint64 vnode_device_id;
-    uint64 is_mount_point;
+    uint16 is_mount_point;
     uint64 is_cached;
+};
+struct date_time {
+    uint16 month;
+    uint16 year;
+    uint8 day;
+    uint8 hour;
+    uint8 minute;
+    uint8 second;
+};
+struct vnode_stat {
+    struct vnode* vnode;
+    uint64 vnode_size;
+
 };
 
 

@@ -16,33 +16,21 @@
 struct spinlock tempfs_lock;
 struct tempfs_superblock tempfs_superblock;
 
-static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,
-                                 uint8 action);
-static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
-                               struct tempfs_inode* inode_to_be_filled);
+static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint64 ramdisk_id, uint64 number,uint8 action);
 static uint64 tempfs_get_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id);
 static uint64 tempfs_free_block_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 block_number);
 static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, uint64 ramdisk_id, uint64 inode_number);
-static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
-                                          uint64 buffer_size, uint64 inode_number, uint64 byte_start,
-                                          uint64 size_to_read);
-static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,
-                                           struct tempfs_directory_entry** children, uint64 inode_number,
-                                           uint64 children_size);
-static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry);
+static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,uint64 buffer_size, uint64 inode_number, uint64 byte_start,uint64 size_to_read);
+static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 ramdisk_id,struct tempfs_directory_entry** children, uint64 inode_number,uint64 children_size);
+static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry,struct tempfs_superblock *sb);
 static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64 block_number);
 static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id);
-static void tempfs_write_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
-                                         uint64 ramdisk_id, uint64 offset, uint64 write_size);
-static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,
-                                        uint64 ramdisk_id, uint64 offset, uint64 read_size);
-static uint64 tempfs_allocate_single_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id,
-                                                    uint64 num_allocated, uint64 num_to_allocate);
-static uint64 tempfs_allocate_double_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id,
-                                                    uint64 num_allocated, uint64 num_to_allocate);
+static void tempfs_write_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,uint64 ramdisk_id, uint64 offset, uint64 write_size);
+static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, struct tempfs_superblock* sb,uint64 ramdisk_id, uint64 offset, uint64 read_size);
+static uint64 tempfs_allocate_single_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id,uint64 num_allocated, uint64 num_to_allocate);
+static uint64 tempfs_allocate_double_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id,uint64 num_allocated, uint64 num_to_allocate);
 static uint64 tempfs_allocate_triple_indirect_block(struct tempfs_superblock* sb, uint64 ramdisk_id);
-static void tempfs_read_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id,
-                              uint64 inode_number);
+static void tempfs_read_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id,uint64 inode_number);
 static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *inode,uint64 current_block,struct tempfs_superblock *sb , uint64 ramdisk_id);
 
 /*
@@ -170,13 +158,13 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
     for (uint64 i = 0; i < max_directories; i++) {
         struct tempfs_directory_entry* entry = (struct tempfs_directory_entry*)&buffer[i];
         if (fill_vnode) {
-            vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(entry);
+            vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(entry,vnode->superblock);
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
          */
         if (child == NULL && safe_strcmp(name, entry->name,VFS_MAX_NAME_LENGTH)) {
-            child = tempfs_directory_entry_to_vnode(entry);
+            child = tempfs_directory_entry_to_vnode(entry,vnode->superblock);
             if (!fill_vnode) {
                 goto done;
             }
@@ -208,6 +196,12 @@ struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
 }
 
 void tempfs_unlink(struct vnode* vnode) {
+
+    struct tempfs_inode inode;
+    tempfs_read_inode(vnode->superblock,&inode,vnode->vnode_device_id,vnode->vnode_inode_number);
+    if(inode.refcount <= 1) {
+    }
+
 }
 
 /*
@@ -304,7 +298,7 @@ void tempfs_mkfs(uint64 ramdisk_id) {
  * Simple function for taking a tempfs directory entry and converting it a vnode,
  * and returning said vnode.
  */
-static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry) {
+static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_entry* entry,struct tempfs_superblock *sb) {
     struct vnode* vnode = vnode_alloc();
     vnode->vnode_type = entry->type;
     vnode->vnode_device_id = entry->device_number;
@@ -322,6 +316,7 @@ static struct vnode* tempfs_directory_entry_to_vnode(struct tempfs_directory_ent
     vnode->num_children = entry->type == TEMPFS_DIRECTORY
                               ? entry->size / sizeof(struct tempfs_directory_entry)
                               : 0;
+    vnode->superblock = sb;
 
     return vnode;
 }
@@ -361,29 +356,6 @@ static void tempfs_modify_bitmap(struct tempfs_superblock* sb, uint8 type, uint6
     tempfs_write_block_by_number(block, buffer, sb, ramdisk_id, 0,TEMPFS_BLOCKSIZE);
     kfree(buffer);
     release_spinlock(&tempfs_lock);
-}
-
-/*
- *  Reads inode at place inode_number on ramdisk of ramdisk_id and fills the passed inode_to_be_filled with the ramdisk inode
- *  I amn going to try and go lock-less since I think I can get away with it for this function.
- *
- *  Lockless due to just being a read only
- */
-static uint64 tempfs_get_inode(struct tempfs_superblock* sb, uint64 inode_number, uint64 ramdisk_id,
-                               struct tempfs_inode* inode_to_be_filled) {
-    uint64 inode_block = sb->inode_start_pointer + (sb->block_size / TEMPFS_INODE_SIZE);
-    uint64 inode_in_block = inode_number % (sb->block_size / TEMPFS_INODE_SIZE);
-
-    uint8* buffer = kalloc(PAGE_SIZE);
-    /* I will need to add the tempfs block size to the heap until then I'll just allocate a page*/
-
-    tempfs_read_block_by_number(inode_block, buffer, sb, ramdisk_id, inode_in_block * TEMPFS_INODE_SIZE,
-                                TEMPFS_INODE_SIZE);
-
-
-    *inode_to_be_filled = *(struct tempfs_inode*)buffer;
-    kfree(buffer);
-    return SUCCESS;
 }
 
 
@@ -605,6 +577,13 @@ static uint64 tempfs_free_inode_and_mark_bitmap(struct tempfs_superblock* sb, ui
 static uint64 tempfs_get_bytes_from_inode(struct tempfs_superblock* sb, uint64 ramdisk_id, uint8* buffer,
                                           uint64 buffer_size, uint64 inode_number, uint64 byte_start,
                                           uint64 size_to_read) {
+
+     struct tempfs_inode inode;
+     tempfs_read_inode(sb,&inode,ramdisk_id,inode_number);
+
+
+
+
 }
 
 /*
@@ -635,7 +614,7 @@ static uint64 tempfs_get_directory_entries(struct tempfs_superblock* sb, uint64 
     uint64 directory_block = 0;
     uint64 block_number = 0;
 
-    tempfs_get_inode(sb, inode_number, ramdisk_id, &inode);
+    tempfs_read_inode(sb, &inode, ramdisk_id,inode_number);
 
     if (inode.type != TEMPFS_DIRECTORY) {
         kfree(buffer);
@@ -776,6 +755,7 @@ static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *ino
 
     default:
         panic("tempfs_get_next_logical_block_from_file: unknown indirection");
+        return 0; /* Just to shut up the linter, this is unreachable */
     }
 
 
@@ -818,10 +798,6 @@ uint64 tempfs_inode_allocate_new_blocks(struct tempfs_superblock* sb, uint64 ram
         result = tempfs_indirection_indices_for_block_number((inode->size / TEMPFS_BLOCKSIZE) + 1);
     }
 
-
-    if(result.levels_indirection == 0) {
-
-    }
 
 
 }
@@ -891,11 +867,10 @@ static void tempfs_write_inode(struct tempfs_superblock* sb, struct tempfs_inode
     }
 }
 
-static void tempfs_read_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id,
-                              uint64 inode_number) {
+static void tempfs_read_inode(struct tempfs_superblock* sb, struct tempfs_inode* inode, uint64 ramdisk_id,uint64 inode_number) {
     uint64 inode_number_in_block = inode_number % NUM_INODES_PER_BLOCK;
     uint64 block_number = sb->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
-    uint64 ret = ramdisk_write((uint8*)inode, block_number, sizeof(struct tempfs_inode) * inode_number_in_block,
+    uint64 ret = ramdisk_read((uint8*)inode, block_number, sizeof(struct tempfs_inode) * inode_number_in_block,
                                sizeof(struct tempfs_inode), sizeof(struct tempfs_inode), ramdisk_id);
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_write_inode");
