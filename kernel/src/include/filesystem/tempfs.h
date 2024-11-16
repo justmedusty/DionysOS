@@ -53,6 +53,9 @@
 #define TEMPFS_ERROR 0x6
 #define SUCCESS 0
 
+#define CURRENT_DIRECTORY_NAME "."
+#define PARENT_DIRECTORY_NAME ".."
+
 #define TEMPFS_MAX_FILES_IN_DIRECTORY ((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
@@ -76,7 +79,7 @@ struct tempfs_superblock {
     uint64 total_size;
     /* Both bitmap entries hold n block pointers */
     uint64 inode_bitmap_pointers[TEMPFS_NUM_INODE_POINTER_BLOCKS]; /* Can hold 50k inodes assuming 1024 size */
-    uint64 block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS];
+    uint64 block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS]; /* Can hold approx 1 mil blocks */
     uint64 inode_start_pointer; /* Where inodes start */
     uint64 block_start_pointer; /* Where blocks start */
 };
@@ -91,11 +94,11 @@ struct tempfs_inode {
     uint16 refcount;
     char name[MAX_FILENAME_LENGTH];
     uint64 size;
+    uint64 block_count;
     uint64 blocks[10]; /* Will point to logical block numbers */
     uint64 single_indirect;
     uint64 double_indirect;
     uint64 triple_indirect;
-    uint64 reserved;
 };
 
 /*
@@ -109,9 +112,10 @@ struct tempfs_inode {
 struct tempfs_directory_entry {
     char name[MAX_FILENAME_LENGTH];
     uint32 inode_number;
+    uint32 parent_inode_number;
     uint16 type;
     uint16 device_number;
-    uint32 refcount;
+    uint16 refcount;
     uint32 size;
 };
 
