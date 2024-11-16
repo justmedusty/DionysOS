@@ -994,8 +994,7 @@ static uint64 tempfs_allocate_triple_indirect_block(struct tempfs_filesystem *fs
     return triple_indirect;
 }
 
-static uint64 tempfs_allocate_double_indirect_block(struct tempfs_filesystem *fs,
-                                                    uint64 num_allocated, uint64 num_to_allocate) {
+static uint64 tempfs_allocate_double_indirect_block(struct tempfs_filesystem *fs,uint64 num_allocated, uint64 num_to_allocate) {
     if (num_allocated + num_to_allocate > NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
         num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated;
     }
@@ -1011,14 +1010,16 @@ static uint64 tempfs_allocate_double_indirect_block(struct tempfs_filesystem *fs
         index = 0;
         allocated = 0;
     }else {
-        index = num_allocated % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-        allocated = num_allocated % NUM_BLOCKS_IN_INDIRECTION_BLOCK; // we're using a second variable here so we can easily 0 it after it's not needed. if we use index we can't zero it after.
+        index = num_allocated / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        allocated = num_allocated % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
     }
     while(num_to_allocate > 0){
+
         uint64 amount = num_to_allocate < NUM_BLOCKS_IN_INDIRECTION_BLOCK ? num_to_allocate : NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-        *block_array[index] = tempfs_allocate_single_indirect_block(fs, allocated,amount);
+        *block_array[index++] = tempfs_allocate_single_indirect_block(fs, allocated,amount);
         allocated = 0; // reset after the first allocation round
         num_to_allocate -= amount;
+
     }
     tempfs_write_block_by_number(double_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
     kfree(buffer);
