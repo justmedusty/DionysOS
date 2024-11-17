@@ -213,6 +213,7 @@ uint64 tempfs_open(struct vnode* vnode) {
 }
 
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
+
 }
 
 void tempfs_unlink(struct vnode* vnode) {
@@ -221,9 +222,11 @@ void tempfs_unlink(struct vnode* vnode) {
     struct tempfs_filesystem *fs = vnode->filesystem_object;
     tempfs_read_inode(fs,&inode,vnode->vnode_inode_number);
     if(inode.refcount <= 1) {
-
+        tempfs_remove(vnode);
+    }else {
+        inode.refcount--;
+        tempfs_write_inode(fs,&inode);
     }
-
 }
 
 /*
@@ -687,7 +690,7 @@ static uint64 follow_block_pointers(struct tempfs_filesystem *fs, struct tempfs_
                                     uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,uint64 start_block,
                                     uint64 read_size) {
 
-    if (buffer_size < TEMPFS_BLOCKSIZE) {
+    if (buffer_size < TEMPFS_BLOCKSIZE || buffer_size < TEMPFS_BLOCKSIZE * num_blocks_to_read) {
         /*
          * I'll set a sensible minimum buffer size
          */
@@ -801,11 +804,6 @@ static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *ino
 /*
  * This function will allocate new blocks to an inode. If needed it will also slide pointers down if there is a write to the beginning or
  * to the end of the file
- *
- * IMPORTANT: LOCK MUST BE HELD WHILE THIS FUNCTION IS EXECUTING.
- * ENSURE THAT THE CALLING FUNCTION HANDLES LOCKING, OR AT LEAST THE FUNCTION AT
- * THE TOP OF THE STACK FRAMES ABOVE THIS FUNCTION
- *
  */
 uint64 tempfs_inode_allocate_new_blocks(struct tempfs_filesystem *fs, struct tempfs_inode* inode,
                                         uint32 num_blocks_to_allocate) {
@@ -892,6 +890,9 @@ level_three:
     num_blocks_to_allocate -= num_in_indirect;
 
 done:
+    if(num_blocks_to_allocate != 0) {
+        panic("tempfs_inode_allocate_new_block: num_blocks_to_allocate != 0!\n");
+    }
     kfree(buffer);
     return SUCCESS;
 }
@@ -1003,6 +1004,15 @@ static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, stru
         HANDLE_RAMDISK_ERROR(ret, "tempfs_write_block_by_number");
         panic("tempfs_write_block_by_number");
     }
+}
+
+static void free_blocks_from_inode(struct tempfs_filesystem *fs,uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode *inode) {
+
+}
+
+
+static void shift_blocks_in_inode(struct tempfs_filesystem *fs,uint64 start_block, uint8 shift_direction,uint64 num_blocks,struct tempfs_inode *inode) {
+
 }
 
 
