@@ -21,8 +21,11 @@ static volatile struct limine_smp_request smp_request = {
         .id = LIMINE_SMP_REQUEST,
         .revision = 0,
 };
+
 uint8 smp_enabled = 0;
+
 uint8 cpus_online = 1;
+
 void smp_init(){
 
     initlock(&bootstrap_lock,SMP_BOOSTRAP_LOCK);

@@ -65,7 +65,7 @@ struct vnode_operations tempfs_vnode_ops = {
 
 
 /*
- *  I have opted to go with this flow.
+ *  I have opted to go with this general flow.
  *
  *  Read ramdisk structure into temporary variable.
  *
@@ -73,7 +73,7 @@ struct vnode_operations tempfs_vnode_ops = {
  *
  *  Write said variable to the ramdisk.
  *
- *  We can improve performance by passing pointers directly to ramdisk memory
+ *  We can improve performance by passing pointers directly to ramdisk memory,
  *  but I will try this approach for now.
  *
  *  I think this will allow for more flexibility when it comes to not locking certain
@@ -101,18 +101,43 @@ void tempfs_init(uint64 filesystem_id) {
 };
 
 void tempfs_remove(struct vnode* vnode) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 void tempfs_rename(struct vnode* vnode, char* new_name) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 uint64 tempfs_read(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 /*
@@ -140,6 +165,8 @@ uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 byte
  * Finally, return child
  */
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+
     if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS || vnode->vnode_type != VNODE_DIRECTORY) {
         return NULL;
     }
@@ -147,8 +174,6 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
     uint64 buffer_size = TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
 
     uint8* buffer = kalloc(TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE);
-
-    struct tempfs_filesystem* fs = vnode->filesystem_object;
 
     uint64 ret = tempfs_get_directory_entries(fs, (struct tempfs_directory_entry**)&buffer, vnode->vnode_inode_number,
                                               buffer_size);
@@ -204,15 +229,36 @@ struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8 
     if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS) {
         return NULL;
     }
+
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 void tempfs_close(struct vnode* vnode) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 uint64 tempfs_open(struct vnode* vnode) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 }
 
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
+    struct tempfs_filesystem *fs = vnode->filesystem_object;
+    acquire_spinlock(fs->lock);
+
+
+    release_spinlock(fs->lock);
 
 }
 
@@ -235,6 +281,7 @@ void tempfs_unlink(struct vnode* vnode) {
  * Takes a ramdisk ID to specify which ramdisk to operate on
  */
 void tempfs_mkfs(uint64 ramdisk_id, struct tempfs_filesystem* fs) {
+
     uint8* buffer = kalloc(PAGE_SIZE);
 
     fs->superblock->magic = TEMPFS_MAGIC;
@@ -353,9 +400,6 @@ static void tempfs_directory_entry_free(struct tempfs_filesystem *fs,struct temp
 
     tempfs_read_inode(fs,&inode,entry->parent_inode_number);
 
-
-
-
 }
 
 static void tempfs_remove_file(struct tempfs_directory_entry* entry) {
@@ -400,6 +444,7 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem *fs, uint8 type, uint6
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
+
     buffer[byte_in_block] = buffer[byte_in_block] & (action << bit);
     tempfs_write_block_by_number(block, buffer, fs, 0,TEMPFS_BLOCKSIZE);
     kfree(buffer);

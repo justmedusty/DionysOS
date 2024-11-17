@@ -85,6 +85,14 @@ struct vnode_stat {
 
 };
 
+struct virtual_handle {
+    uint64 handle_id;
+    struct process *process;
+    struct vnode *vnode;
+    uint64 offset; // for lseek or equivalent
+
+};
+
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
