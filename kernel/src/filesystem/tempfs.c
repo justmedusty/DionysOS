@@ -46,6 +46,7 @@ static uint64 tempfs_allocate_double_indirect_block(struct tempfs_filesystem *fs
 static uint64 tempfs_allocate_triple_indirect_block(struct tempfs_filesystem *fs,struct tempfs_inode *inode,uint64 num_allocated, uint64 num_to_allocate);
 static void tempfs_read_inode(struct tempfs_filesystem *fs, struct tempfs_inode* inode,uint64 inode_number);
 static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *inode,uint64 current_block,struct tempfs_filesystem *fs );
+static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode);
 
 /*
  * VFS pointer functions for vnodes
@@ -403,10 +404,6 @@ static void tempfs_directory_entry_free(struct tempfs_filesystem *fs,struct temp
 }
 
 static void tempfs_remove_file(struct tempfs_directory_entry* entry) {
-
-}
-
-static void tempfs_free_blocks(struct tempfs_directory_entry* entry) {
 
 }
 
@@ -1050,9 +1047,111 @@ static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, stru
         panic("tempfs_write_block_by_number");
     }
 }
+/*
+ * This function will start at block offset and go to num_blocks in order to free as many blocks as requested, afterwards it will shift blocks if the
+ * freeing left space on the end of the file.
+ */
+static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode) {
 
-static void free_blocks_from_inode(struct tempfs_filesystem *fs,uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode *inode) {
+    uint64 total_blocks = inode->size / NUM_BLOCKS_IN_INDIRECTION_BLOCK + ((inode->size %
+        NUM_BLOCKS_IN_INDIRECTION_BLOCK) != 0);
+    uint64 block_number = offset / TEMPFS_BLOCKSIZE + ((offset % NUM_BLOCKS_IN_INDIRECTION_BLOCK) != 0);
+    uint64 indirection_block;
+    uint64 double_indirection_block;
+    uint64 triple_indirection_block;
+    uint8* buffer = kalloc(PAGE_SIZE);
+    uint8* buffer2 = kalloc(PAGE_SIZE);
+    uint8* buffer3 = kalloc(PAGE_SIZE);
+    uint64** blocks = (uint64**)buffer;
+    uint64** blocks_2 = (uint64**)buffer2;
+    uint64** blocks_3 = (uint64**)buffer3;
 
+    struct tempfs_byte_offset_indices byte_offset_indices = tempfs_indirection_indices_for_block_number(block_number);
+
+    switch (byte_offset_indices.levels_indirection) {
+    case 0:
+        goto level_zero;
+    case 1:
+        indirection_block = byte_offset_indices.first_level_block_number;
+        goto level_one;
+    case 2:
+        double_indirection_block = byte_offset_indices.second_level_block_number;
+        goto level_two;
+    case 3:
+        triple_indirection_block = byte_offset_indices.third_level_block_number;
+        goto level_three;
+    default:
+        panic("tempfs_indirection_indices_for_block_number invalid block number");
+    }
+
+
+level_zero:
+    for (uint64 i = byte_offset_indices.top_level_block_number; i < NUM_BLOCKS_DIRECT; i++) {
+        tempfs_free_block_and_mark_bitmap(fs, inode->blocks[i]);
+        num_blocks--;
+        if (num_blocks == 0) {
+            goto done;
+        }
+    }
+
+    indirection_block = 0;
+
+level_one:
+    tempfs_read_block_by_number(inode->single_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    for (uint64 i = indirection_block; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i++) {
+        tempfs_free_block_and_mark_bitmap(fs, *blocks[i]);
+        num_blocks--;
+        if (num_blocks == 0) {
+            goto done;
+        }
+    }
+    double_indirection_block = 0;
+level_two:
+    tempfs_read_block_by_number(inode->double_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    for (uint64 i = double_indirection_block / NUM_BLOCKS_IN_INDIRECTION_BLOCK; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i
+         ++) {
+        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, TEMPFS_BLOCKSIZE);
+        for (uint64 j = double_indirection_block % NUM_BLOCKS_IN_INDIRECTION_BLOCK; j < NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+             j++) {
+            tempfs_free_block_and_mark_bitmap(fs, *blocks_2[j]);
+            num_blocks--;
+            if (num_blocks == 0) {
+                goto done;
+            }
+        }
+    }
+    triple_indirection_block = 0;
+level_three:
+    tempfs_read_block_by_number(inode->triple_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    for (uint64 i = triple_indirection_block / NUM_BLOCKS_DOUBLE_INDIRECTION; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i
+         ++) {
+        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, TEMPFS_BLOCKSIZE);
+        for (uint64 j = triple_indirection_block / NUM_BLOCKS_IN_INDIRECTION_BLOCK; j < NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+             j++) {
+            tempfs_read_block_by_number(*blocks_2[j], buffer3, fs, 0, TEMPFS_BLOCKSIZE);
+            for (uint64 k = triple_indirection_block % NUM_BLOCKS_IN_INDIRECTION_BLOCK; k <
+                 NUM_BLOCKS_IN_INDIRECTION_BLOCK; k++) {
+                tempfs_free_block_and_mark_bitmap(fs, *blocks_3[k]);
+                num_blocks--;
+                if (num_blocks == 0) {
+                    goto done;
+                }
+            }
+        }
+    }
+
+
+done:
+    /*
+     * Shift blocks down
+     */
+    if(offset + num_blocks < total_blocks) {
+        tempfs_shift_blocks(inode,offset,offset+num_blocks,LEFT_SHIFT);
+    }
+    inode->block_count -= num_blocks;
+    kfree(buffer);
+    kfree(buffer2);
+    kfree(buffer3);
 }
 
 

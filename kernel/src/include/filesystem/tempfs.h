@@ -53,6 +53,9 @@
 #define TEMPFS_ERROR 0x6
 #define SUCCESS 0
 
+#define LEFT_SHIFT 0
+#define RIGHT_SHIFT 1
+
 #define CURRENT_DIRECTORY_NAME "."
 #define PARENT_DIRECTORY_NAME ".."
 
