@@ -46,7 +46,7 @@ static uint64 tempfs_allocate_double_indirect_block(struct tempfs_filesystem *fs
 static uint64 tempfs_allocate_triple_indirect_block(struct tempfs_filesystem *fs,struct tempfs_inode *inode,uint64 num_allocated, uint64 num_to_allocate);
 static void tempfs_read_inode(struct tempfs_filesystem *fs, struct tempfs_inode* inode,uint64 inode_number);
 static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *inode,uint64 current_block,struct tempfs_filesystem *fs );
-static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode);
+static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode);
 static void tempfs_shift_blocks(struct tempfs_inode *inode,uint64 start_block, uint64 shift_length,uint8 shift_direction);
 static uint64 follow_block_pointers(struct tempfs_filesystem *fs, struct tempfs_inode* inode,uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,uint64 start_block,uint64 read_size_bytes);
 /*
@@ -105,8 +105,10 @@ void tempfs_init(uint64 filesystem_id) {
 void tempfs_remove(struct vnode* vnode) {
     struct tempfs_filesystem *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-
-
+    struct tempfs_inode inode;
+    tempfs_read_inode(fs,&inode,vnode->vnode_inode_number);
+    free_blocks_from_inode(fs,0,inode.block_count,&inode);
+    tempfs_free_inode_and_mark_bitmap(fs,vnode->vnode_inode_number);
     release_spinlock(fs->lock);
 }
 
@@ -774,15 +776,10 @@ static uint64 follow_block_pointers(struct tempfs_filesystem *fs, struct tempfs_
         }
     }
 
-
-
-    /*
-     * Calculate block
-     */
-
     kfree(buffer);
     return SUCCESS;
 }
+
 /*
  * We will take the logical block number in the file and get the next to return it
  *
@@ -803,7 +800,6 @@ static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *ino
     switch (indices.levels_indirection) {
 
     case 0:
-
         current_block_number = inode->blocks[indices.top_level_block_number];
         kfree(temp_buffer);
         return current_block_number;
@@ -1047,7 +1043,7 @@ static void tempfs_read_block_by_number(uint64 block_number, uint8* buffer, stru
  * This function will start at block offset and go to num_blocks in order to free as many blocks as requested, afterwards it will shift blocks if the
  * freeing left space on the end of the file.
  */
-static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 blocks_to_free, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode) {
+static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode) {
 
     uint64 total_blocks = inode->block_count;
     uint64 block_number = offset / TEMPFS_BLOCKSIZE;

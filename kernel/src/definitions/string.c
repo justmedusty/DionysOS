@@ -20,6 +20,10 @@ void strcpy(char* dest, char* src) {
 void safe_strcpy(char* dest, char* src, uint64 dest_size) {
     uint64 pointer = 0;
     while (((*dest++ = *src++)) && (pointer++ < dest_size));
+
+    if(pointer == dest_size) {
+        dest[dest_size - 1] = '\0';
+    }
 }
 
 /*
