@@ -59,6 +59,7 @@ override KCFLAGS += \
     -mno-sse2 \
     -mno-red-zone \
    	-g \
+   	-fanalyzer \
     -I kernel/src/include \
     -I kernel/src/arch/x86_64 \
 
