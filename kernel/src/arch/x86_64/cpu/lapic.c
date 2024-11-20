@@ -12,8 +12,8 @@
 #include <include/arch/x86_64/msr.h>
 #include <include/arch/x86_64/asm_functions.h>
 
-uint64 apic_ticks = 0;
-uint64 lapic_base = 0;
+uint64_t apic_ticks = 0;
+uint64_t lapic_base = 0;
 
 void lapic_init() {
     pic_disable();
@@ -30,21 +30,21 @@ void lapic_init() {
 }
 
 
-void lapic_write(uint32 reg, uint32 val) {
+void lapic_write(uint32_t reg, uint32_t val) {
     if (lapic_base == 0) {
         lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-    *((volatile uint32*)(P2V(lapic_base) + reg)) = val;
+    *((volatile uint32_t*)(P2V(lapic_base) + reg)) = val;
 }
 
-uint32 lapic_read(uint32 reg) {
+uint32_t lapic_read(uint32_t reg) {
     if (lapic_base == 0) {
         lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-    return *((volatile uint32*)(P2V(lapic_base) + reg));
+    return *((volatile uint32_t*)(P2V(lapic_base) + reg));
 }
 
-uint32 get_lapid_id() {
+uint32_t get_lapid_id() {
     return lapic_read(LAPIC_ID_REG) >> 24;
 }
 
@@ -54,7 +54,7 @@ void lapic_timer_stop() {
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
 }
 
-void lapic_timer_oneshot(uint8 vec, uint64 ms) {
+void lapic_timer_oneshot(uint8_t vec, uint64_t ms) {
     lapic_timer_stop();
     lapic_write(LAPIC_TIMER_DIV, 0);
     lapic_write(LAPIC_TIMER_LVT, vec);
@@ -67,7 +67,7 @@ void lapic_calibrate_timer() {
     lapic_write(LAPIC_TIMER_LVT, (1 << 16) | 0xff);
     lapic_write(LAPIC_TIMER_INITCNT, 0xFFFFFFFF);
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
-    uint32 ticks = 0xFFFFFFFF - lapic_read(LAPIC_TIMER_CURCNT);
+    uint32_t ticks = 0xFFFFFFFF - lapic_read(LAPIC_TIMER_CURCNT);
     apic_ticks = ticks;
     serial_printf("LAPIC ticks %x.64\n", apic_ticks);
     lapic_timer_stop();
@@ -77,12 +77,12 @@ void lapic_eoi() {
     lapic_write(LAPIC_EOI, 0x0);
 }
 
-void lapic_ipi(uint32 id, uint8 dat) {
+void lapic_ipi(uint32_t id, uint8_t dat) {
     lapic_write(LAPIC_ICRHI, id << LAPIC_ICDESTSHIFT);
     lapic_write(LAPIC_ICRLO, dat);
 }
 
-void lapic_broadcast_interrupt(uint32 vec) {
+void lapic_broadcast_interrupt(uint32_t vec) {
 
     for (int i = 0; i < cpu_count; i++) {
         if (i == my_cpu()->lapic_id) {
@@ -96,6 +96,6 @@ void lapic_broadcast_interrupt(uint32 vec) {
 }
 
 
-void lapic_send_int(uint32 id, uint32 vec) {
+void lapic_send_int(uint32_t id, uint32_t vec) {
     lapic_ipi(id, vec | LAPIC_ICRAES);
 }

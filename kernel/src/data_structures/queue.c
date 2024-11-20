@@ -39,7 +39,7 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node);
 /*
  * Init a queue
  */
-void queue_init(struct queue* queue_head, uint8 queue_mode, char* name) {
+void queue_init(struct queue* queue_head, uint8_t queue_mode, char* name) {
     queue_head->name = name;
     queue_head->head = NULL;
     queue_head->tail = NULL;
@@ -49,7 +49,7 @@ void queue_init(struct queue* queue_head, uint8 queue_mode, char* name) {
 /*
  *  Internal function to init a single node
  */
-void queue_node_init(struct queue_node* node, void* data, uint8 priority) {
+void queue_node_init(struct queue_node* node, void* data, uint8_t priority) {
     if (node == NULL) {
         //I'll use panics to easily figure out if these things happen and can work from there if it ever is an issue
         panic("queue_node_init called with NULL node");
@@ -65,8 +65,8 @@ void queue_node_init(struct queue_node* node, void* data, uint8 priority) {
  *  Generic enqueue, it will check the queue_mode field to tell what mode this is, and call the appropriate function.
  */
 
-void enqueue(struct queue* queue_head, void* data_toenqueue, uint8 priority) {
-    uint8 queue_head_empty = 0;
+void enqueue(struct queue* queue_head, void* data_toenqueue, uint8_t priority) {
+    uint8_t queue_head_empty = 0;
     if (queue_head == NULL) {
         //So i can investigate when it happens, should have null data field not the entire head structure null
         panic("Null head");

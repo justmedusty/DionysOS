@@ -17,17 +17,17 @@ static volatile struct limine_rsdp_request rsdp_request = {
   .revision = 0,
 };
 
-int8 acpi_extended = 0;
+int8_t acpi_extended = 0;
 
 void* acpi_root_sdt;
 
-void* find_acpi_table(const int8* name) {
+void* find_acpi_table(const int8_t* name) {
   acpi_rsdt* rsdt = (acpi_rsdt*)acpi_root_sdt;
   if (!acpi_extended) {
-    uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
+    uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
 
     for (int i = 0; i < entries; i++) {
-      acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint32*)rsdt->table + i));
+      acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint32_t*)rsdt->table + i));
       if (!memcmp(sdt->signature, name, 4))
         return (void*)sdt;
     }
@@ -35,10 +35,10 @@ void* find_acpi_table(const int8* name) {
   }
 
   // Extended
-  uint32 entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 8;
+  uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 8;
 
   for (int i = 0; i < entries; i++) {
-    acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64*)rsdt->table + i));
+    acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64_t*)rsdt->table + i));
     if (!memcmp(sdt->signature, name, 4)) {
       return (void*)sdt;
     }
@@ -61,7 +61,7 @@ void acpi_init() {
     // Use XSDT
     serial_printf("Using xsdt\n");
     acpi_extended = 1;
-    acpi_root_sdt = (acpi_rsdt*)P2V((uint64)rsdp->xsdt_addr);
+    acpi_root_sdt = (acpi_rsdt*)P2V((uint64_t)rsdp->xsdt_addr);
     serial_printf("xsdt addr %x.64 \n", rsdp->xsdt_addr);
 
     if (rsdp->xsdt_addr == 0) {
@@ -70,7 +70,7 @@ void acpi_init() {
   }
 
   else {
-    acpi_root_sdt = (acpi_rsdt*)P2V((uint32)rsdp->rsdt_addr);
+    acpi_root_sdt = (acpi_rsdt*)P2V((uint32_t)rsdp->rsdt_addr);
     serial_printf("rsdt addr %x.32 \n", rsdp->rsdt_addr);
 
     if (rsdp->rsdt_addr == 0) {

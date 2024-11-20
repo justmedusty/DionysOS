@@ -51,18 +51,18 @@ panic("An unexpected result was returned from ramdisk_read"); \
 struct ramdisk {
     void* ramdisk_start;
     void* ramdisk_end;
-    uint64 ramdisk_size_pages;
-    uint64 block_size;
+    uint64_t ramdisk_size_pages;
+    uint64_t block_size;
     struct spinlock ramdisk_lock;
-    uint16 file_system_id;
+    uint16_t file_system_id;
     char ramdisk_name[32];
 };
 
 
-void ramdisk_init(const uint64 size_bytes, const uint64 ramdisk_id, char* name);
-uint64 ramdisk_mkfs(const int8* initramfs_img, const uint64 size_bytes, const uint64 ramdisk_id);
-void ramdisk_destroy(const uint64 ramdisk_id);
-uint64 ramdisk_read(uint8* buffer, uint64 block, uint64 offset, uint64 read_size, uint64 buffer_size,
-                    uint64 ramdisk_id);
-uint64 ramdisk_write(const uint8* buffer, uint64 block, uint64 offset, uint64 write_size, uint64 buffer_size,
-                     uint64 ramdisk_id);
+void ramdisk_init(const uint64_t size_bytes, const uint64_t ramdisk_id, char* name);
+uint64_t ramdisk_mkfs(const int8_t* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id);
+void ramdisk_destroy(const uint64_t ramdisk_id);
+uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
+                    uint64_t ramdisk_id);
+uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t write_size, uint64_t buffer_size,
+                     uint64_t ramdisk_id);

@@ -32,30 +32,30 @@ void pic_disable() {
  * https://pdos.csail.mit.edu/6.828/2016/readings/ia32/ioapic.pdf
  *
  */
-void write_ioapic(uint32 ioapic, uint32 reg, uint32 value) {
-    uint64 base = (uint64)P2V(madt_ioapic_list[ioapic]->apic_addr);
-    *((volatile uint32*)base) = reg;
+void write_ioapic(uint32_t ioapic, uint32_t reg, uint32_t value) {
+    uint64_t base = (uint64_t)P2V(madt_ioapic_list[ioapic]->apic_addr);
+    *((volatile uint32_t*)base) = reg;
     base += IOAPIC_IOWIN;
-    *((uint32*)base) = value;
+    *((uint32_t*)base) = value;
 }
 
-uint32 read_ioapic(uint32 ioapic, uint32 reg) {
-    uint64 base = (uint64)P2V(madt_ioapic_list[ioapic]->apic_addr);
-    *(uint32*)base = reg;
+uint32_t read_ioapic(uint32_t ioapic, uint32_t reg) {
+    uint64_t base = (uint64_t)P2V(madt_ioapic_list[ioapic]->apic_addr);
+    *(uint32_t*)base = reg;
     base += IOAPIC_IOWIN;
-    return *((volatile uint32*)base);
+    return *((volatile uint32_t*)base);
 }
 
-uint64 ioapic_gsi_count(uint32 ioapic) {
+uint64_t ioapic_gsi_count(uint32_t ioapic) {
     if (ioapic > madt_ioapic_len) {
         return 0;
     }
-    uint64 value = (read_ioapic(ioapic, 1) & 0xFF0000) >> 16;
+    uint64_t value = (read_ioapic(ioapic, 1) & 0xFF0000) >> 16;
     return value;
 }
 
-uint32 ioapic_get_gsi(uint32 gsi) {
-    for (uint64 i = 0; i < madt_ioapic_len; i++) {
+uint32_t ioapic_get_gsi(uint32_t gsi) {
+    for (uint64_t i = 0; i < madt_ioapic_len; i++) {
         if (madt_ioapic_list[i]->gsi_base <= gsi && madt_ioapic_list[i]->gsi_base + ioapic_gsi_count(i) > gsi) {
             return i;
         }
@@ -63,9 +63,9 @@ uint32 ioapic_get_gsi(uint32 gsi) {
     panic("Cannot determine IOAPIC from GSI\n");
 }
 
-void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags, uint8 mask) {
-    uint32 ioapic = ioapic_get_gsi(gsi);
-    uint64 redirect = (uint64)vector;
+void ioapic_redirect_gsi(uint32_t lapic_id, uint8_t vector, uint32_t gsi, uint16_t flags, uint8_t mask) {
+    uint32_t ioapic = ioapic_get_gsi(gsi);
+    uint64_t redirect = (uint64_t)vector;
 
     if ((flags & (1 << 1)) != 0) {
         redirect |= (1 << 13);
@@ -77,7 +77,7 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
     if(mask == 1) {
         redirect |= 1 << 16;
     }
-    redirect |= (uint64)lapic_id << 56;
+    redirect |= (uint64_t)lapic_id << 56;
 
     /*
      * If I don't put this empty print statement here then the redirection table is NOT written at all. I have no idea why. Is this gcc doing something funny? Is my memory access in write_ioapic buggy? Is this some QEMU bug or quirk?
@@ -91,15 +91,15 @@ void ioapic_redirect_gsi(uint32 lapic_id, uint8 vector, uint32 gsi, uint16 flags
      */
 
 
-    volatile uint32 redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
-    write_ioapic(ioapic, redir_table, (uint32)redirect);
-    write_ioapic(ioapic, redir_table + 1, (uint32)redirect >> 32);
+    volatile uint32_t redir_table = (gsi - madt_ioapic_list[ioapic]->gsi_base) * 2 + 16;
+    write_ioapic(ioapic, redir_table, (uint32_t)redirect);
+    write_ioapic(ioapic, redir_table + 1, (uint32_t)redirect >> 32);
 
 
 }
 
-void ioapic_redirect_irq(uint32 lapic_id, uint8 vector, uint8 irq, uint8 mask) {
-    uint32 index = 0;
+void ioapic_redirect_irq(uint32_t lapic_id, uint8_t vector, uint8_t irq, uint8_t mask) {
+    uint32_t index = 0;
     madt_iso* iso;
 
     while (index < madt_iso_len) {

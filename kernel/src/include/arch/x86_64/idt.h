@@ -40,10 +40,10 @@ inline void load_idtr(struct idtr_desc *idtr) {
 
 
 void idt_init(void);
-void irq_register(uint8 vec, void* handler);
-void irq_unregister(uint8 vec);
-uint8 idt_get_vector();
+void irq_register(uint8_t vec, void* handler);
+void irq_unregister(uint8_t vec);
+uint8_t idt_get_vector();
 void idt_reload();
-void irq_handler(uint8 vec);
+void irq_handler(uint8_t vec);
 void irq_handler_init();
 void spurious_interrupt();

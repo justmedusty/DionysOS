@@ -11,10 +11,10 @@ void arch_setup_interrupts(){
     idt_init();
 }
 //will do all this later, just thinking about the HAL now
-void arch_register_irq(uint8 vector,void *handler) {
+void arch_register_irq(uint8_t vector,void *handler) {
     irq_register(vector,handler);
 }
-void arch_unregister_irq(uint8 vector) {
+void arch_unregister_irq(uint8_t vector) {
     irq_unregister(vector);
 }
 

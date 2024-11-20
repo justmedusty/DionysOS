@@ -11,8 +11,8 @@
 
 
 struct file_handle {
-      uint32 handle;
-      uint64 offset;
+      uint32_t handle;
+      uint64_t offset;
       struct vnode *file_vnode;
       struct process *process;
   }

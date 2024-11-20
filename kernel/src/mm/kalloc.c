@@ -16,7 +16,7 @@
  */
 int heap_init() {
     int size = 8;
-    for (uint64 i = 0; i < 9 ; i++) {
+    for (uint64_t i = 0; i < 9 ; i++) {
 
         if(size >= PAGE_SIZE){
             serial_printf("Entry too large , skipping slab alloc.\n");
@@ -44,7 +44,7 @@ int heap_init() {
  * kalloc tries to allocate from the cached slab memory wherever it can, otherwise it just invokes
  * physalloc. When physalloc is invoked, the start of the memory is changed to the proper HHDM value.
  */
-void *kalloc(uint64 size) {
+void *kalloc(uint64_t size) {
 
     if(size > PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
@@ -53,7 +53,7 @@ void *kalloc(uint64 size) {
         }
     }
 
-    uint64 page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    uint64_t page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
     void *return_value = P2V(phys_alloc(page_count + 1));
 
     if (return_value == NULL) {
@@ -73,12 +73,12 @@ void *kalloc(uint64 size) {
  * way to know if the memory that just deallocated was erased if there was sensitive data in it. That is always something
  * that needs to be kept in mind and it is best to avoid realloc and to use malloc and zero yourself.
  */
-void *krealloc(void *address, uint64 new_size) {
+void *krealloc(void *address, uint64_t new_size) {
     if (address == NULL) {
         return kalloc(new_size);
     }
 
-    if (((uint64) address & 0xFFF) == 0) {
+    if (((uint64_t) address & 0xFFF) == 0) {
         metadata_t *metadata = (metadata_t *) (address - PAGE_SIZE);
         if (((metadata->size + (PAGE_SIZE - 1)) / PAGE_SIZE) == ((new_size + (PAGE_SIZE - 1)) / PAGE_SIZE)) {
             metadata->size = new_size;
@@ -100,7 +100,7 @@ void *krealloc(void *address, uint64 new_size) {
         return new_address;
     }
 
-    header *slab_header = (header *) ((uint64) address & ~0xFFF);
+    header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
     slab_t *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
@@ -124,13 +124,13 @@ void kfree(void *address) {
         return;
     }
 
-    if (((uint64) address & 0xFFF) == 0) {
+    if (((uint64_t) address & 0xFFF) == 0) {
         metadata_t *metadata = (metadata_t *) (address - PAGE_SIZE);
         phys_dealloc((void *) metadata - hhdm_request.response->offset, metadata->pages + 1);
         return;
     }
 
-    header *slab_header = (header *) ((uint64) address & ~0xFFF);
+    header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
     heap_free_in_slab(slab_header->slab, address);
 }
 

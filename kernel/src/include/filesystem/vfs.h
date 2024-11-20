@@ -54,65 +54,65 @@ extern struct vnode vfs_root;
 struct vnode {
     struct vnode* vnode_parent;
     struct vnode **vnode_children;
-    uint8 num_children;
+    uint8_t num_children;
     struct vnode_operations *vnode_ops;
     struct vnode* mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
     void *filesystem_object;
-    uint64 vnode_size;
-    uint64 last_updated;
-    uint64 vnode_inode_number;
-    uint64 vnode_flags;
-    uint16 vnode_type;
-    uint64 vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */
-    uint16 vnode_refcount; // Pulled from actual inode or equivalent structure
-    uint16 vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
-    uint64 vnode_device_id;
-    uint16 is_mount_point;
-    uint64 is_cached;
+    uint64_t vnode_size;
+    uint64_t last_updated;
+    uint64_t vnode_inode_number;
+    uint64_t vnode_flags;
+    uint16_t vnode_type;
+    uint64_t vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */
+    uint16_t vnode_refcount; // Pulled from actual inode or equivalent structure
+    uint16_t vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
+    uint64_t vnode_device_id;
+    uint16_t is_mount_point;
+    uint64_t is_cached;
 };
 struct date_time {
-    uint16 month;
-    uint16 year;
-    uint8 day;
-    uint8 hour;
-    uint8 minute;
-    uint8 second;
+    uint16_t month;
+    uint16_t year;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
 };
 struct vnode_stat {
     struct vnode* vnode;
-    uint64 vnode_size;
+    uint64_t vnode_size;
 
 };
 
 struct virtual_handle {
-    uint64 handle_id;
+    uint64_t handle_id;
     struct process *process;
     struct vnode *vnode;
-    uint64 offset; // for lseek or equivalent
+    uint64_t offset; // for lseek or equivalent
 
 };
 
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
-    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode,uint8 vnode_type);
+    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode,uint8_t vnode_type);
     void (*remove)(struct vnode* vnode);
     void (*rename)(struct vnode* vnode, char* new_name);
-    uint64 (*write)(struct vnode* vnode,uint64 offset,char *buffer,uint64 bytes);
-    uint64 (*read)(struct vnode* vnode,uint64 offset,char *buffer,uint64 bytes);
+    uint64_t (*write)(struct vnode* vnode,uint64_t offset,char *buffer,uint64_t bytes);
+    uint64_t (*read)(struct vnode* vnode,uint64_t offset,char *buffer,uint64_t bytes);
     struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
     void (*unlink)(struct vnode* vnode);
-    uint64 (*open)(struct vnode* vnode);
+    uint64_t (*open)(struct vnode* vnode);
     void (*close)(struct vnode* vnode);
 };
 
 void vnode_directory_alloc_children(struct vnode* vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
-uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);
-uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes,char *buffer);
-uint64 vnode_unmount(struct vnode* vnode);
-uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
+uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes,char *buffer);
+uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char *buffer);
+uint64_t vnode_unmount(struct vnode* vnode);
+uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 void vnode_remove(struct vnode* vnode);
 struct vnode* vnode_lookup(char* path);

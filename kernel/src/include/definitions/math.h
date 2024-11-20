@@ -8,11 +8,11 @@
 /*
  * Simpe power function returns base^power
  */
-static inline uint64 pow(uint64 base, uint64 power) {
-    uint64 working_value = base;
-    uint64 index = power;
+static inline uint64_t pow(uint64_t base, uint64_t power) {
+    uint64_t working_value = base;
+    uint64_t index = power;
     /*
-     * Use index to track how many times we have raises working_value to base, and also check for rollover in case we go over UINT64_MAX
+     * Use index to track how many times we have raises working_value to base, and also check for rollover in case we go over uint64_t_MAX
      */
     while (index - 1 != 0 && working_value >= base) {
         working_value = working_value * base;

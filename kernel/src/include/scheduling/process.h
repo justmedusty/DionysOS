@@ -30,16 +30,16 @@
 
 struct process {
 
-    uint8 current_state;
-    uint8 priority;
-    uint16 process_id;
-    uint16 parent_process_id;
-    uint64 signal; /* This will probably end up being some sort of queue but I will put this here for now */
-    uint64 signal_mask;
-    uint64 time_quantum;
-    uint64 ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
-    uint64 process_type;
-    uint16 file_descriptors[16];
+    uint8_t current_state;
+    uint8_t priority;
+    uint16_t process_id;
+    uint16_t parent_process_id;
+    uint64_t signal; /* This will probably end up being some sort of queue but I will put this here for now */
+    uint64_t signal_mask;
+    uint64_t time_quantum;
+    uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
+    uint64_t process_type;
+    uint16_t file_descriptors[16];
     void *sleep_channel;
     void* kernel_stack;
     struct page_map* page_map;
@@ -52,23 +52,23 @@ struct process {
 #ifdef __x86_64__
 
 struct gpr_state {
-    uint64 rax;
-    uint64 rbx;
-    uint64 rcx;
-    uint64 rdx;
-    uint64 rdi;
-    uint64 rsi;
-    uint64 rbp;
-    uint64 rsp;
-    uint64 rip;
-    uint64 r8;
-    uint64 r9;
-    uint64 r10;
-    uint64 r11;
-    uint64 r12;
-    uint64 r13;
-    uint64 r14;
-    uint64 r15;
+    uint64_t rax;
+    uint64_t rbx;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rbp;
+    uint64_t rsp;
+    uint64_t rip;
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
 };
 
 #endif

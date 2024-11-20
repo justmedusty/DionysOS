@@ -296,7 +296,7 @@ extern void irq_wrapper_255();
 void (*irq_routines[256])() = {
 };
 
-uint8 idt_free_vec = 32;
+uint8_t idt_free_vec = 32;
 
 void (*irq_wrappers[256])() = {
     irq_wrapper_0,
@@ -643,7 +643,7 @@ void create_void_gate(struct gate_desc* gate_desc) {
     gate_desc->off_3 = 0xffff;
 }
 
-uint8 idt_get_irq_vector() {
+uint8_t idt_get_irq_vector() {
     if (idt_free_vec == 255) {
         panic("idt_get_irq_vector out of space");
     }
@@ -669,11 +669,11 @@ void idt_init(void) {
     serial_printf("IDT Loaded, ISRs mapped\n");
 }
 
-void irq_handler(uint8 vec) {
+void irq_handler(uint8_t vec) {
     irq_routines[vec]();
 }
 
-void no_irq_handler(uint8 vec) {
+void no_irq_handler(uint8_t vec) {
     serial_printf("VECTOR %x.8  \n",vec);
     panic("IRQ NOT IMPLEMENTED");
 }
@@ -695,7 +695,7 @@ void spurious_interrupt() {
 }
 
 
-void irq_register(uint8 vec, void* handler) {
+void irq_register(uint8_t vec, void* handler) {
     //The first IRQ we register fires off IPIs so we need to ensure that each CPU is online first
     while(smp_enabled != 1) {
         asm volatile("nop");
@@ -706,6 +706,6 @@ void irq_register(uint8 vec, void* handler) {
 }
 
 
-void irq_unregister(uint8 vec) {
+void irq_unregister(uint8_t vec) {
     irq_routines[vec] = (void *)no_irq_handler;
 }

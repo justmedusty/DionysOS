@@ -85,7 +85,7 @@ void general_protection_fault() {
 
 // Exception 14: Page Fault
 void page_fault() {
-    uint64 faulting_address = rcr2();
+    uint64_t faulting_address = rcr2();
     serial_printf("Page Fault Occurred With Access %x.64\n", faulting_address);
     panic("Page Fault!");
 }

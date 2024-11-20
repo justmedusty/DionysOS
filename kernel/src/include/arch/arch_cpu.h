@@ -15,36 +15,36 @@
 #ifdef __x86_64__
 
 typedef struct cpu_state {
-    uint64 ds;
-    uint64 es;
-    uint64 rax;
-    uint64 rbx;
-    uint64 rcx;
-    uint64 rdx;
-    uint64 rdi;
-    uint64 rsi;
-    uint64 rbp;
-    uint64 rsp;
-    uint64 rip;
-    uint64 cs;
-    uint64 rflags;
-    uint64 r8;
-    uint64 r9;
-    uint64 r10;
-    uint64 r11;
-    uint64 r12;
-    uint64 r13;
-    uint64 r14;
-    uint64 r15;
-    uint64 err;
-    uint64 ss;
+    uint64_t ds;
+    uint64_t es;
+    uint64_t rax;
+    uint64_t rbx;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rbp;
+    uint64_t rsp;
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
+    uint64_t err;
+    uint64_t ss;
 } cpu_state;
 
 
 typedef struct {
-    uint8 cpu_number;
-    uint32 lapic_id;
-    uint64 lapic_timer_frequency;
+    uint8_t cpu_number;
+    uint32_t lapic_id;
+    uint64_t lapic_timer_frequency;
     cpu_state* cpu_state;
     struct tss* tss;
     struct virt_map* page_map;
@@ -71,4 +71,4 @@ cpu* my_cpu();
 struct process* current_process();
 void arch_initialise_cpu(struct limine_smp_info* smp_info);
 // For other processors panicking the next PIT interrupt
-extern uint8 panicked;
+extern uint8_t panicked;

@@ -14,7 +14,7 @@ struct doubly_linked_list_node{
 struct doubly_linked_list {
     struct doubly_linked_list_node* head;
     struct doubly_linked_list_node* tail;
-    uint64 node_count;
+    uint64_t node_count;
 };
 
 void doubly_linked_list_init(struct doubly_linked_list *list);

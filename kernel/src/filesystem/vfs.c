@@ -142,7 +142,7 @@ struct vnode* vnode_lookup(char* path) {
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
-struct vnode* vnode_create(char* path, uint8 vnode_type) {
+struct vnode* vnode_create(char* path, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode* parent_directory = vnode_lookup(path);
@@ -225,7 +225,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
         return child;
     }
 
-    uint32 index = 0;
+    uint32_t index = 0;
 
     struct vnode* child = vnode->vnode_children[index];
 
@@ -242,7 +242,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 /*
  * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
-uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
+uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
     //handle already mounted case
     if (mount_point->is_mount_point) {
         return ALREADY_MOUNTED;
@@ -266,7 +266,7 @@ uint64 vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
 /*
  * Clears mount data from the vnode, clearing it as a mount point.
  */
-uint64 vnode_unmount(struct vnode* vnode) {
+uint64_t vnode_unmount(struct vnode* vnode) {
     if (!vnode->is_mount_point) {
         return NOT_MOUNTED;
     }
@@ -282,7 +282,7 @@ uint64 vnode_unmount(struct vnode* vnode) {
  *
  * Handles mount points properly.
  */
-uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer) {
+uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset,buffer, bytes);
     }
@@ -291,7 +291,7 @@ uint64 vnode_read(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer
 }
 
 
-uint64 vnode_write(struct vnode* vnode, uint64 offset, uint64 bytes, char* buffer) {
+uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
     }
@@ -326,8 +326,8 @@ static struct vnode* __parse_path(char* path) {
         path++;
     }
     //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the lasty. It is part of the altered design choice I chose
-    uint64 last_token = 1;
-    uint64 index = 1;
+    uint64_t last_token = 1;
+    uint64_t index = 1;
 
     while (last_token != LAST_TOKEN) {
         last_token = strtok(path, '/', current_token, index);

@@ -17,12 +17,12 @@
  *  I will leave out things like sorts since I am trying to make this as generic as possible and I can't sort without knowing the type the data pointer leads to.
  */
 
-uint8 static_pool_setup = 0;
-uint8 pool_full = 0;
+uint8_t static_pool_setup = 0;
+uint8_t pool_full = 0;
 struct singly_linked_list free_nodes;
 struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
 
-void singly_linked_list_init(struct singly_linked_list* list,uint64 flags) {
+void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
 
     if(list == NULL) {
         panic("singly linked list memory allocation failed");
@@ -34,7 +34,7 @@ void singly_linked_list_init(struct singly_linked_list* list,uint64 flags) {
         free_nodes.node_count = 0;
         free_nodes.head = NULL;
         free_nodes.tail = NULL;
-        for(uint64 i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
+        for(uint64_t i = 0; i < SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE; i++) {
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE;
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_FREE_NODE;
             singly_linked_list_insert_head(&free_nodes, &singly_linked_list_node_static_pool[i]);
@@ -202,7 +202,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     return return_value;
 }
 
-uint64 singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {
+uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {
     struct singly_linked_list_node* prev = list->head;
     struct singly_linked_list_node* node = list->head;
 

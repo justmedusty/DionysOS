@@ -13,17 +13,17 @@
 
 
 static struct binary_tree_node tree_node_static_pool[BINARY_TREE_NODE_STATIC_POOL_SIZE];
-static uint8 pool_full = 0;
-static int32 last_freed = -1; /* These two fields are just simple safeguards to prevent linear lookups when possible */
+static uint8_t pool_full = 0;
+static int32_t last_freed = -1; /* These two fields are just simple safeguards to prevent linear lookups when possible */
 
 void init_red_black_tree(struct binary_tree* tree);
 void init_binary_tree(struct binary_tree* tree);
-uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key);
-uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key);
-uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address, struct binary_tree_node* node);
-uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key);
+uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key);
+uint64_t insert_red_black_tree(struct binary_tree* tree, void* data, uint64_t key);
+uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* address, struct binary_tree_node* node);
+uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key);
 
-static uint8 static_pool_init = 0;
+static uint8_t static_pool_init = 0;
 
 
 //TODO OPTIMIZE SIZE AND ALIGNMENT OF NODES AND SET UP THE HEAP ALLOCATOR TO HAVE APPROPRIATE SIZE
@@ -39,7 +39,7 @@ static struct binary_tree_node* node_alloc() {
         return kalloc(sizeof(struct binary_tree_node));
     }
 
-    for (uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+    for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
         if (tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
             tree_node_static_pool[i].flags &= ~BINARY_TREE_NODE_FREE;
             tree_node_static_pool[i].index = i;
@@ -79,9 +79,9 @@ static void node_free(struct binary_tree_node* node) {
 /*
  * Initialize a binary tree of type reg tree or rb, calls the appropriate function
  */
-uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
+uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags) {
     if (static_pool_init == 0) {
-        for (uint64 i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+        for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
             tree_node_static_pool[i].flags = BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
         }
     }
@@ -102,7 +102,7 @@ uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags) {
 /*
  *  Inserts a tree node, calls a different function depending on the type of tree
  */
-uint64 insert_tree_node(struct binary_tree* tree, void* data, uint64 key) {
+uint64_t insert_tree_node(struct binary_tree* tree, void* data, uint64_t key) {
     switch (tree->mode) {
     case REGULAR_TREE:
         return insert_binary_tree(tree, data, key);
@@ -118,7 +118,7 @@ uint64 insert_tree_node(struct binary_tree* tree, void* data, uint64 key) {
 /*
  * Removes a tree node, calls the appropriate function depending on tree type
  */
-uint64 remove_tree_node(struct binary_tree* tree, uint64 key, void* address,
+uint64_t remove_tree_node(struct binary_tree* tree, uint64_t key, void* address,
                         struct binary_tree_node* node /* Optional */) {
     switch (tree->mode) {
     case REGULAR_TREE:
@@ -134,7 +134,7 @@ uint64 remove_tree_node(struct binary_tree* tree, uint64 key, void* address,
  * Frees a tree, if it is not free, frees all the nodes inside.
  * This function is untested.
  */
-uint64 destroy_tree(struct binary_tree* tree) {
+uint64_t destroy_tree(struct binary_tree* tree) {
     struct binary_tree_node* current = tree->root;
     struct binary_tree_node* parent = tree->root;
 
@@ -179,7 +179,7 @@ uint64 destroy_tree(struct binary_tree* tree) {
  *  Current smaller? go left
  *  Continue until spot is found and insert beneath or in since we putting buckets in our tree
  */
-uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
+uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) {
     struct binary_tree_node* current = tree->root;
 
     if (current == NULL) {
@@ -250,7 +250,7 @@ uint64 insert_binary_tree(struct binary_tree* tree, void* data, uint64 key) {
  *  If the remove flag is set, it will remove the first entry
  *  in the bucket if the key is found, otherwise just will return the pointer.
  */
-void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to remove it from the tree*/) {
+void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag to remove it from the tree*/) {
 
     struct binary_tree_node* current = tree->root;
     if (current == NULL) {
@@ -296,7 +296,7 @@ void* lookup_tree(struct binary_tree* tree, uint64 key, uint8 remove /* Flag to 
     }
 }
 
-uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
+uint64_t insert_red_black_tree(struct binary_tree* tree, void* data, uint64_t key) {
 }
 /*
  * Removes from a binary tree, node is optional this is the node to remove. If it is not null it will just remove right from the node,
@@ -316,7 +316,7 @@ uint64 insert_red_black_tree(struct binary_tree* tree, void* data, uint64 key) {
  * Two children? Bring the right sub-tree min value up (ie all lefts until a final right)
  *
  */
-uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
+uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* address,
                           struct binary_tree_node* node /* Optional */
                           /* This is required because there may be many of the same value so address needed to be passed as well */) {
     acquire_spinlock(&tree->lock);
@@ -339,7 +339,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
         release_spinlock(&tree->lock);
         return SUCCESS;
     }
-    uint8 depth = 0; /* Not sure if I am going to use this yet */
+    uint8_t depth = 0; /* Not sure if I am going to use this yet */
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
@@ -477,7 +477,7 @@ uint64 remove_binary_tree(struct binary_tree* tree, uint64 key, void* address,
 }
 
 
-uint64 remove_red_black_tree(struct binary_tree* tree, uint64 key) {
+uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key) {
 }
 
 /*

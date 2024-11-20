@@ -7,10 +7,10 @@
 #include "include/screen/draw.h"
 
 
-void draw_char(uint32 *framebuffer, int32 fb_width, int32 fb_height, int32 fb_pitch,int8 c, int32 x, int32 y, uint32 color) {
+void draw_char(uint32_t *framebuffer, int32_t fb_width, int32_t fb_height, int32_t fb_pitch,int8_t c, int32_t x, int32_t y, uint32_t color) {
 
     if (c < 0 || c >= 128) return; // Ensure the character is within the font bounds
-    const uint8 *bitmap = &default_font.data[(int32)c];
+    const uint8_t *bitmap = &default_font.data[(int32_t)c];
     for (int cy = 0; cy < 8; cy++) { // 8 rows for each character
         for (int cx = 0; cx < 8; cx++) { // 8 columns for each character
             if (bitmap[cy] & (1 << (7 - cx))) { // Check if the pixel should be set

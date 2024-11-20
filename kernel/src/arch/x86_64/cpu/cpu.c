@@ -17,7 +17,7 @@
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "limine.h"
 
-uint8 panicked = 0;
+uint8_t panicked = 0;
 cpu cpu_list[16];
 struct queue local_run_queues[16];
 

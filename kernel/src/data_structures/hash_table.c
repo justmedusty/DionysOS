@@ -21,14 +21,14 @@
  */
 
 struct singly_linked_list hash_bucket_static_pool[300];
-uint32 full = 0;
+uint32_t full = 0;
 
 /*
  * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
  * we get wrap-around.
  */
-uint64 hash(uint64 key, uint64 modulus) {
-    uint64 hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
+uint64_t hash(uint64_t key, uint64_t modulus) {
+    uint64_t hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
 
     if (hash > modulus) {
         hash %= modulus;
@@ -44,7 +44,7 @@ uint64 hash(uint64 key, uint64 modulus) {
  * allocate all of the static pool hash buckets.
  *Init all of the lists
  */
-void hash_table_init(struct hash_table* table, uint64 size) {
+void hash_table_init(struct hash_table* table, uint64_t size) {
     if (table == NULL) {
         panic("hash_table_init: table is NULL");
     }
@@ -53,7 +53,7 @@ void hash_table_init(struct hash_table* table, uint64 size) {
 
     if(!full) {
 
-        for (uint64 i = 0; i < size; i++) {
+        for (uint64_t i = 0; i < size; i++) {
             table->table[i] = hash_bucket_static_pool[i];
             singly_linked_list_init(&table->table[i],0);
         }
@@ -62,7 +62,7 @@ void hash_table_init(struct hash_table* table, uint64 size) {
     }
 
     table = kalloc(sizeof(struct singly_linked_list) * table->size);
-    for (uint64 i = 0; i < size; i++) {
+    for (uint64_t i = 0; i < size; i++) {
         singly_linked_list_init(&table->table[i],0);
     }
 
@@ -79,15 +79,15 @@ void hash_table_destroy(struct hash_table* table) {
 /*
  * Hashes the passed value, and inserts into the list at the hash index
  */
-void hash_table_insert(struct hash_table* table, uint64 key, void* data) {
-    uint64 hash_key = hash(key, table->size);
+void hash_table_insert(struct hash_table* table, uint64_t key, void* data) {
+    uint64_t hash_key = hash(key, table->size);
     singly_linked_list_insert_tail(&table->table[hash_key], data);
 
 }
 /*
  * Retrieve a hash bucket based on a key passed
  */
-struct singly_linked_list* hash_table_retrieve(struct hash_table* table, uint64 hash_key) {
+struct singly_linked_list* hash_table_retrieve(struct hash_table* table, uint64_t hash_key) {
     struct singly_linked_list* hash_bucket = &table->table[hash_key];
     return hash_bucket;
 }

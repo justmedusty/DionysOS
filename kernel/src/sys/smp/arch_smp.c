@@ -10,8 +10,8 @@
 #include <include/arch/arch_smp.h>
 #include <include/data_structures/spinlock.h>
 
-uint64 bootstrap_lapic_id;
-uint64 cpu_count;
+uint64_t bootstrap_lapic_id;
+uint64_t cpu_count;
 
 
 struct limine_smp_info **smp_info;
@@ -22,9 +22,9 @@ static volatile struct limine_smp_request smp_request = {
         .revision = 0,
 };
 
-uint8 smp_enabled = 0;
+uint8_t smp_enabled = 0;
 
-uint8 cpus_online = 1;
+uint8_t cpus_online = 1;
 
 void smp_init(){
 
@@ -40,7 +40,7 @@ void smp_init(){
     smp_info = response->cpus;
 
     serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n",bootstrap_lapic_id,cpu_count);
-    uint8 i = 0;
+    uint8_t i = 0;
 
     //For output cleanliness
     acquire_spinlock(&bootstrap_lock);
@@ -61,7 +61,7 @@ void smp_init(){
     }
     release_spinlock(&bootstrap_lock);
 
-    while((volatile uint8) cpus_online != cpu_count) {
+    while((volatile uint8_t) cpus_online != cpu_count) {
         asm volatile("nop");
     }
     smp_enabled = 1;

@@ -10,10 +10,10 @@
 #include "include/mem/pmm.h"
 
 
-uint64 kernel_min, kernel_max, kernel_size;
-uint64 kernel_phys_min, kernel_phys_max, kernel_phys_size;
-uint64 virt_addr_min, virt_addr_max, virt_addr_size;
-uint64 userspace_addr_min, userspace_addr_max, userspace_addr_size;
+uint64_t kernel_min, kernel_max, kernel_size;
+uint64_t kernel_phys_min, kernel_phys_max, kernel_phys_size;
+uint64_t virt_addr_min, virt_addr_max, virt_addr_size;
+uint64_t userspace_addr_min, userspace_addr_max, userspace_addr_size;
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_kernel_address_request kernel_address_request = {
@@ -24,7 +24,7 @@ static volatile struct limine_kernel_address_request kernel_address_request = {
 void mem_bounds_init() {
     // kernel's virtual memory bounds
     kernel_min = kernel_address_request.response->virtual_base;
-    kernel_max = (uint64) data_end;
+    kernel_max = (uint64_t) data_end;
     kernel_size = kernel_max - kernel_min;
 
     /* The kernel's phys memory bounds */

@@ -4,8 +4,8 @@
 
 #pragma once
 #include "include/mem/pmm.h"
-#define P2V(addr) (void *)(((uint64)addr) + (uint64)hhdm_offset)
-#define V2P(addr) (void *)(((uint64)addr) - (uint64)hhdm_offset)
+#define P2V(addr) (void *)(((uint64_t)addr) + (uint64_t)hhdm_offset)
+#define V2P(addr) (void *)(((uint64_t)addr) - (uint64_t)hhdm_offset)
 
 void arch_paging_init();
 
@@ -30,18 +30,18 @@ void arch_paging_init();
 extern p4d_t *global_pg_dir;
 
 // page 4 directory index
-#define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & PAGE_DIR_MASK)
+#define P4DX(va)         (((uint64_t)(va) >> P4DXSHIFT) & PAGE_DIR_MASK)
 // page upper directory index
-#define PUDX(va)         (((uint64)(va) >> PUDXSHIFT) & PAGE_DIR_MASK)
+#define PUDX(va)         (((uint64_t)(va) >> PUDXSHIFT) & PAGE_DIR_MASK)
 
 // page middle directory index
-#define PMDX(va)         (((uint64)(va) >> PMDXSHIFT) & PAGE_DIR_MASK)
+#define PMDX(va)         (((uint64_t)(va) >> PMDXSHIFT) & PAGE_DIR_MASK)
 
 // page table index
-#define PTX(va)         (((uint64)(va) >> PTXSHIFT) & PAGE_DIR_MASK)
+#define PTX(va)         (((uint64_t)(va) >> PTXSHIFT) & PAGE_DIR_MASK)
 
 // construct virtual address from indexes (long mode) and offset
-#define PGADDR(p4d,pud,pmd, pte, offset) ((uint64)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
+#define PGADDR(p4d,pud,pmd, pte, offset) ((uint64_t)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
 
 
 
@@ -50,19 +50,19 @@ extern p4d_t *global_pg_dir;
 #define PUDXSHIFT       30     // offset of PUDX in a linear address
 #define P4DXSHIFT       39     // offset of P4DX
 
-#define PGROUNDUP(sz)  (uint64) (uint64)((((uint64)sz)+PAGE_SIZE-1) & ~(uint64)(PAGE_SIZE-1))
-#define PGROUNDDOWN(a) (uint64) ((((uint64)a)) & ~(uint64)(PAGE_SIZE-1))
+#define PGROUNDUP(sz)  (uint64_t) (uint64_t)((((uint64_t)sz)+PAGE_SIZE-1) & ~(uint64_t)(PAGE_SIZE-1))
+#define PGROUNDDOWN(a) (uint64_t) ((((uint64_t)a)) & ~(uint64_t)(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
-#define PTE_P           (uint64)0x001   // Present
-#define PTE_RW          (uint64)0x2
-#define PTE_U           (uint64)0x004   // User
-#define PTE_A           (uint64)0x020   //accessed , for demand paging
-#define PTE_PS          (uint64)0x080   // Page Size
-#define PTE_NX          (uint64) 1 << 63 // no execute
+#define PTE_P           (uint64_t)0x001   // Present
+#define PTE_RW          (uint64_t)0x2
+#define PTE_U           (uint64_t)0x004   // User
+#define PTE_A           (uint64_t)0x020   //accessed , for demand paging
+#define PTE_PS          (uint64_t)0x080   // Page Size
+#define PTE_NX          (uint64_t) 1 << 63 // no execute
 
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint64)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte)  ((uint64)(pte) &  0xFFF)
+#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFF)
+#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFF)
 

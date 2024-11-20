@@ -18,7 +18,7 @@
  * Static prototypes
  */
 static void buddy_coalesce(struct buddy_block* block);
-static struct buddy_block* buddy_alloc(uint64 pages);
+static struct buddy_block* buddy_alloc(uint64_t pages);
 static void buddy_free(void* address);
 static void buddy_block_free(struct buddy_block* block);
 static struct buddy_block* buddy_block_get();
@@ -41,7 +41,7 @@ volatile struct limine_hhdm_request hhdm_request = {
 struct spinlock pmm_lock;
 struct spinlock buddy_lock;
 
-uint64 zone_pointer; /* will just use one zone until it's all allocated then increment the zone pointer */
+uint64_t zone_pointer; /* will just use one zone until it's all allocated then increment the zone pointer */
 struct binary_tree buddy_free_list_zone[PHYS_ZONE_COUNT];
 
 struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
@@ -51,12 +51,12 @@ struct singly_linked_list unused_buddy_blocks_list;
 
 struct hash_table used_buddy_hash_table;
 
-uint64 highest_page_index = 0;
-uint64 last_used_index = 0;
-uint64 usable_pages = 0;
-uint64 used_pages = 0;
-uint64 reserved_pages = 0;
-uint64 hhdm_offset = 0;
+uint64_t highest_page_index = 0;
+uint64_t last_used_index = 0;
+uint64_t usable_pages = 0;
+uint64_t used_pages = 0;
+uint64_t reserved_pages = 0;
+uint64_t hhdm_offset = 0;
 int page_range_index = 0;
 
 
@@ -95,10 +95,10 @@ int phys_init() {
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_hhdm_response* hhdm = hhdm_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
-    uint64 highest_address = 0;
+    uint64_t highest_address = 0;
     hhdm_offset = hhdm->offset;
 
-    for (uint64 i = 0; i < memmap->entry_count; i++) {
+    for (uint64_t i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry* entry = entries[i];
 
         switch (entry->type) {
@@ -181,7 +181,7 @@ int phys_init() {
     }
 
     singly_linked_list_init(&unused_buddy_blocks_list, 0);
-    for (uint64 i = index; i < STATIC_POOL_SIZE; i++) {
+    for (uint64_t i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
         buddy_block_static_pool[i].zone = 0xFFFF;
         buddy_block_static_pool[i].next = NULL;
@@ -209,7 +209,7 @@ int phys_init() {
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
     highest_page_index = highest_address / PAGE_SIZE;
-    uint32 pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+    uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
@@ -219,7 +219,7 @@ int phys_init() {
  * The phys_alloc function calls buddy_alloc which attempts to find a buddy block of an appropriate size to the request in pages. It panics on failure. The block
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
-void* phys_alloc(uint64 pages) {
+void* phys_alloc(uint64_t pages) {
     struct buddy_block* block = buddy_alloc(pages);
 
     void* return_value;
@@ -235,7 +235,7 @@ void* phys_alloc(uint64 pages) {
 /*
  * The phys_dealloc simply calls buddy_free.
  */
-void phys_dealloc(void* address, uint64 pages) {
+void phys_dealloc(void* address, uint64_t pages) {
     buddy_free(address);
 }
 /*
@@ -258,17 +258,17 @@ void phys_dealloc(void* address, uint64 pages) {
  *
  *
  */
-static struct buddy_block* buddy_alloc(uint64 pages) {
+static struct buddy_block* buddy_alloc(uint64_t pages) {
     if (pages > (1 << MAX_ORDER)) {
         serial_printf("pages %i \n", pages);
         //TODO Handle tall orders
     }
 
-    for (uint64 i = 0; i < MAX_ORDER; i++) {
+    for (uint64_t i = 0; i < MAX_ORDER; i++) {
         if (pages == (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
             if (block == NULL) {
-                uint64 index = i;
+                uint64_t index = i;
                 index++;
                 while (index <= MAX_ORDER) {
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
@@ -283,7 +283,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                             }
                         }
 
-                        hash_table_insert(&used_buddy_hash_table, (uint64)block->start_address, block);
+                        hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
                         return block;
                     }
                     //TODO find out where pointers are being manipulated so I can take this out
@@ -309,7 +309,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
                 return NULL;
             }
             if (buddy_split(block) != NULL) {
-                hash_table_insert(&used_buddy_hash_table, (uint64)block->start_address, block);
+                hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
                 return block;
             }
 
@@ -329,7 +329,7 @@ static struct buddy_block* buddy_alloc(uint64 pages) {
  */
 static void buddy_free(void* address) {
     struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
-                                                            hash((uint64)address, BUDDY_HASH_TABLE_SIZE));
+                                                            hash((uint64_t)address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
         panic("Buddy Dealloc: Buddy hash table not found");
@@ -344,7 +344,7 @@ static void buddy_free(void* address) {
         }
         struct buddy_block* block = node->data;
 
-        if ((uint64)block->start_address == (uint64)address) {
+        if ((uint64_t)block->start_address == (uint64_t)address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;
@@ -402,7 +402,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
 
     new_block->flags |= IN_TREE_FLAG;
-    const uint64 ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
+    const uint64_t ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
 
     if (ret == SUCCESS) {
         return block;

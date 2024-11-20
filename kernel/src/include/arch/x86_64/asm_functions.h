@@ -9,8 +9,8 @@
 // Routines to let C code use special x86 instructions.
 
 // Reads a byte from the specified I/O port.
-static inline uint8 inb(uint16 port) {
-    uint8 data;
+static inline uint8_t inb(uint16_t port) {
+    uint8_t data;
     asm volatile("in %1,%0" : "=a" (data) : "d" (port));
     return data;
 }
@@ -32,12 +32,12 @@ static inline void insq(int port, void* addr, int cnt) {
 }
 
 // Writes a byte to the specified I/O port.
-static inline void outb(uint16 port, uint8 data) {
+static inline void outb(uint16_t port, uint8_t data) {
     asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
 // Writes a 16-bit value to the specified I/O port.
-static inline void outw(uint16 port, uint16 data) {
+static inline void outw(uint16_t port, uint16_t data) {
     asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
@@ -83,19 +83,19 @@ static inline void stosq(void* addr, long long data, int cnt) {
 
 
 // Loads the Task Register (TR).
-static inline void ltr(uint16 sel) {
+static inline void ltr(uint16_t sel) {
     asm volatile("ltr %0" : : "r" (sel));
 }
 
 // Reads the EFLAGS register.
-static inline uint64 readeflags(void) {
-    uint32 eflags;
+static inline uint64_t readeflags(void) {
+    uint32_t eflags;
     asm volatile("pushfl; popq %0" : "=r" (eflags));
     return eflags;
 }
 
 // Loads a 16-bit value into the GS segment register.
-static inline void loadgs(uint16 v) {
+static inline void loadgs(uint16_t v) {
     asm volatile("movw %0, %%gs" : : "r" (v));
 }
 
@@ -110,8 +110,8 @@ static inline void sti(void) {
 }
 
 // Atomic exchange of a value.
-static inline uint64 xchg(volatile unsigned long long* addr, uint64 newval) {
-    uint64 result;
+static inline uint64_t xchg(volatile uint64_t *addr, uint64_t newval) {
+    uint64_t result;
     asm volatile("lock; xchg %0, %1" :
         "+m" (*addr), "=a" (result) :
         "1" (newval) :
@@ -119,20 +119,20 @@ static inline uint64 xchg(volatile unsigned long long* addr, uint64 newval) {
     return result;
 }
 
-static inline uint64 rcr2(void) {
-    uint64 val;
+static inline uint64_t rcr2(void) {
+    uint64_t val;
     asm volatile("mov %%cr2, %0" : "=r" (val));
     return val;
 }
 
 // Loads a value into the CR3 register.
-static inline void lcr3(uint64 val) {
+static inline void lcr3(uint64_t val) {
     asm volatile("movq %0,%%cr3" : : "r" (val));
 }
 
 // reads a value from the CR3 register.
-static inline uint64 rcr3(void) {
-    uint64 destination;
+static inline uint64_t rcr3(void) {
+    uint64_t destination;
     asm volatile("mov %%cr3,%0" : "=r"(destination));
     return destination;
 }
@@ -146,8 +146,8 @@ static inline void flush_tlb() {
         : "rax");
 }
 
-static inline uint64 interrupts_enabled() {
-    uint64 flags;
+static inline uint64_t interrupts_enabled() {
+    uint64_t flags;
     asm volatile(
           "pushfq\n\t"       // Push RFLAGS onto the stack
           "popq %0\n\t"      // Pop the value from the stack into the variable
@@ -173,25 +173,25 @@ struct trapframe {
     unsigned long long rax;
 
     // rest of trap frame
-    uint16 gs;
-    uint16 padding1;
-    uint16 fs;
-    uint16 padding2;
-    uint16 es;
-    uint16 padding3;
-    uint16 ds;
-    uint16 padding4;
-    uint32 trapno;
+    uint16_t gs;
+    uint16_t padding1;
+    uint16_t fs;
+    uint16_t padding2;
+    uint16_t es;
+    uint16_t padding3;
+    uint16_t ds;
+    uint16_t padding4;
+    uint32_t trapno;
 
     // below here defined by x86 hardware
     unsigned long long err;
     unsigned long long rip;
-    uint16 cs;
-    uint16 padding5;
+    uint16_t cs;
+    uint16_t padding5;
     unsigned long long eflags;
 
     // below here only when crossing rings, such as from user to kernel
-    uint32 rsp;
-    uint16 ss;
-    uint16 padding6;
+    uint32_t rsp;
+    uint16_t ss;
+    uint16_t padding6;
 };

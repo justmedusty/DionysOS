@@ -13,13 +13,13 @@ extern struct virt_map* kernel_pg_map;
 #define ALIGN_DOWN(x,y) (x / y) * y
 
 typedef struct virtual_region {
-    uint64 va;
-    uint64 pa;
-    uint64 end_addr;
-    uint64 num_pages;
-    uint64 flags;
+    uint64_t va;
+    uint64_t pa;
+    uint64_t end_addr;
+    uint64_t num_pages;
+    uint64_t flags;
 
-    uint64 ref_count;
+    uint64_t ref_count;
 
     struct virtual_region* next;
     struct virtual_region* prev;
@@ -27,7 +27,7 @@ typedef struct virtual_region {
 } virtual_region;
 
 typedef struct virt_map {
-    uint64 *top_level;
+    uint64_t *top_level;
     struct virtual_region *vm_region_head;
 };
 

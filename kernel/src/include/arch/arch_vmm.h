@@ -14,8 +14,8 @@ static void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
 }
 
-static void native_flush_tlb_range(unsigned long vaddr,uint64 pages) {
-    for(uint64 i = 0; i < pages; i++){
+static void native_flush_tlb_range(unsigned long vaddr,uint64_t pages) {
+    for(uint64_t i = 0; i < pages; i++){
         asm volatile("invlpg (%0)" ::"r" (vaddr + (i * PAGE_SIZE)) : "memory");
     }
 }
@@ -32,8 +32,8 @@ extern char kernel_end[];
 
 void arch_init_vmm();
 void arch_switch_page_table(p4d_t *page_dir);
-int arch_map_pages(p4d_t *pgdir, uint64 physaddr, uint64 *va, uint64 perms,uint64 size);
-uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address);
-void arch_dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size);
+int arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms,uint64_t size);
+uint64_t arch_dealloc_va(p4d_t* pgdir, uint64_t address);
+void arch_dealloc_va_range(p4d_t* pgdir, uint64_t address, uint64_t size);
 void arch_map_kernel_address_space(p4d_t* pgdir);
 void arch_reload_vmm();

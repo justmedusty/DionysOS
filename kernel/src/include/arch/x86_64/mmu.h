@@ -31,34 +31,34 @@
 #ifndef __ASSEMBLER__
 // Segment Descriptor for 64-bit mode
 struct segdesc {
-    uint64 lim_15_0 : 16;  // Low bits of segment limit
-    uint64 base_15_0 : 16; // Low bits of segment base address
-    uint64 base_23_16 : 8; // Middle bits of segment base address
-    uint64 type : 4;       // Segment type (see STS_ constants)
-    uint64 s : 1;          // 0 = system, 1 = application
-    uint64 dpl : 2;        // Descriptor Privilege Level
-    uint64 p : 1;          // Present
-    uint64 lim_19_16 : 4;  // High bits of segment limit
-    uint64 avl : 1;        // Unused (available for software use)
-    uint64 l : 1;          // 64-bit code segment (IA-64e mode only)
-    uint64 db : 1;         // 0 = 16-bit segment, 1 = 64-bit segment (must be 0 for 64-bit)
-    uint64 g : 1;          // Granularity: limit scaled by 4K when set
-    uint64 base_31_24 : 8; // High bits of segment base address
-    uint64 base_63_64 : 64; // Upper bits of segment base address
-    uint64 reserved : 64; // Reserved
+    uint64_t lim_15_0 : 16;  // Low bits of segment limit
+    uint64_t base_15_0 : 16; // Low bits of segment base address
+    uint64_t base_23_16 : 8; // Middle bits of segment base address
+    uint64_t type : 4;       // Segment type (see STS_ constants)
+    uint64_t s : 1;          // 0 = system, 1 = application
+    uint64_t dpl : 2;        // Descriptor Privilege Level
+    uint64_t p : 1;          // Present
+    uint64_t lim_19_16 : 4;  // High bits of segment limit
+    uint64_t avl : 1;        // Unused (available for software use)
+    uint64_t l : 1;          // 64-bit code segment (IA-64e mode only)
+    uint64_t db : 1;         // 0 = 16-bit segment, 1 = 64-bit segment (must be 0 for 64-bit)
+    uint64_t g : 1;          // Granularity: limit scaled by 4K when set
+    uint64_t base_31_24 : 8; // High bits of segment base address
+    uint64_t base_63_64 : 64; // Upper bits of segment base address
+    uint64_t reserved : 64; // Reserved
 };
 
 // Normal segment for 64-bit mode
 #define SEG(type, base, lim, dpl) (struct segdesc)  \
-{ ((lim) >> 12) & 0xffff, (uint64)(base) & 0xffff,    \
-  ((uint64)(base) >> 16) & 0xff, type, 1, dpl, 1,     \
-  (uint64)(lim) >> 28, 0, 1, 0, 1, (uint64)(base) >> 24, \
-  (uint64)(base) >> 64, 0 }
+{ ((lim) >> 12) & 0xffff, (uint64_t)(base) & 0xffff,    \
+  ((uint64_t)(base) >> 16) & 0xff, type, 1, dpl, 1,     \
+  (uint64_t)(lim) >> 28, 0, 1, 0, 1, (uint64_t)(base) >> 24, \
+  (uint64_t)(base) >> 64, 0 }
 #define SEG16(type, base, lim, dpl) (struct segdesc) \
-{ (lim) & 0xffff, (uint64)(base) & 0xffff,            \
-  ((uint64)(base) >> 16) & 0xff, type, 1, dpl, 1,     \
-  (uint64)(lim) >> 16, 0, 0, 1, 0, (uint64)(base) >> 24, \
-  (uint64)(base) >> 64, 0 }
+{ (lim) & 0xffff, (uint64_t)(base) & 0xffff,            \
+  ((uint64_t)(base) >> 16) & 0xff, type, 1, dpl, 1,     \
+  (uint64_t)(lim) >> 16, 0, 0, 1, 0, (uint64_t)(base) >> 24, \
+  (uint64_t)(base) >> 64, 0 }
 #endif
 
 #define DPL_USER    0x3     // User DPL
@@ -83,18 +83,18 @@ struct segdesc {
 
 
 // page 4 directory index
-#define P4DX(va)         (((uint64)(va) >> P4DXSHIFT) & 0x1FF)
+#define P4DX(va)         (((uint64_t)(va) >> P4DXSHIFT) & 0x1FF)
 // page upper directory index
-#define PUDX(va)         (((uint64)(va) >> PUDXSHIFT) & 0x1FF)
+#define PUDX(va)         (((uint64_t)(va) >> PUDXSHIFT) & 0x1FF)
 
 // page middle directory index
-#define PMDX(va)         (((uint64)(va) >> PMDXSHIFT) & 0x1FF)
+#define PMDX(va)         (((uint64_t)(va) >> PMDXSHIFT) & 0x1FF)
 
 // page table index
-#define PTX(va)         (((uint64)(va) >> PTXSHIFT) & 0x1FF)
+#define PTX(va)         (((uint64_t)(va) >> PTXSHIFT) & 0x1FF)
 
 // construct virtual address from indexes (long mode) and offset
-#define PGADDR(p4d,pud,pmd, pte, offset) ((uint64)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
+#define PGADDR(p4d,pud,pmd, pte, offset) ((uint64_t)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
 
 // Page directory and page table constants.
 #define NP4DENTRIES     512    // # directory entries per page middle directory
@@ -119,11 +119,11 @@ struct segdesc {
 #define PTE_PS          0x080   // Page Size
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint64)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte)  ((uint64)(pte) &  0xFFF)
+#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFF)
+#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFF)
 
 #ifndef __ASSEMBLER__
-typedef uint64 pte_t;
+typedef uint64_t pte_t;
 
 
 // Set up a normal interrupt/trap gate descriptor.
@@ -136,7 +136,7 @@ typedef uint64 pte_t;
 //        this interrupt/trap gate explicitly using an int instruction.
 #define SETGATE(gate, istrap, sel, off, d)                \
 {                                                         \
-  (gate).off_15_0 = (uint64)(off) & 0xffff;                \
+  (gate).off_15_0 = (uint64_t)(off) & 0xffff;                \
   (gate).cs = (sel);                                      \
   (gate).args = 0;                                        \
   (gate).rsv1 = 0;                                        \
@@ -144,7 +144,7 @@ typedef uint64 pte_t;
   (gate).s = 0;                                           \
   (gate).dpl = (d);                                       \
   (gate).p = 1;                                           \
-  (gate).off_31_16 = (uint64)(off) >> 16;                  \
+  (gate).off_31_16 = (uint64_t)(off) >> 16;                  \
 }
 
 #endif

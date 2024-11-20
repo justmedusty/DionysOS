@@ -18,15 +18,15 @@ slab_t slabs[10];
 /*
  * Create a slab of physical memory,
  */
-void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages) {
+void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
 
     slab->first_free = P2V(phys_alloc(pages));
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE - 1)));
 
-    uint64 header_offset = (sizeof(header) + (entry_size - 1)) / entry_size * entry_size;
-    uint64 available_size = PAGE_SIZE - header_offset;
+    uint64_t header_offset = (sizeof(header) + (entry_size - 1)) / entry_size * entry_size;
+    uint64_t available_size = PAGE_SIZE - header_offset;
     header *slab_pointer = (header *) slab->first_free;
 
     slab_pointer->slab = slab;
@@ -34,10 +34,10 @@ void heap_create_slab(slab_t *slab, uint64 entry_size,uint64 pages) {
 
     void **array = (void **) slab->first_free;
 
-    uint64 max = available_size / entry_size - 1;
-    uint64 factor = entry_size / sizeof(void *);
+    uint64_t max = available_size / entry_size - 1;
+    uint64_t factor = entry_size / sizeof(void *);
 
-    for (uint64 i = 0; i < max; i++) {
+    for (uint64_t i = 0; i < max; i++) {
         array[i * factor] = &array[(i + 1) * factor];
     }
     array[max * factor] = NULL;

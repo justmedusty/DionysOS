@@ -22,12 +22,12 @@
 p4d_t* global_pg_dir = 0;
 
 void arch_switch_page_table(p4d_t* page_dir){
-    lcr3((uint64)(page_dir));
+    lcr3((uint64_t)(page_dir));
 }
 
 void arch_init_vmm(){
     kernel_pg_map = kalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64*)phys_alloc(1);
+    kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
     kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
@@ -48,43 +48,43 @@ void arch_reload_vmm() {
 
 void arch_map_kernel_address_space(p4d_t* pgdir){
 
-    if (arch_map_pages(pgdir, (uint64)(text_start - kernel_min) + kernel_phys_min, (uint64*)text_start, 0,
+    if (arch_map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
 
 
-    if (arch_map_pages(pgdir, (uint64)(rodata_start - kernel_min) + kernel_phys_min, (uint64*)rodata_start, PTE_NX,
+    if (arch_map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
 
 
-    if (arch_map_pages(pgdir, (uint64)(data_start - kernel_min) + kernel_phys_min, (uint64*)data_start,
+    if (arch_map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
     }
     /*
      * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if (arch_map_pages(pgdir, 0, 0 + (uint64*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
+    if (arch_map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
         panic("Mapping first 4gb!");
     }
 
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
 
-    for (uint64 i = 0; i < memmap->entry_count; i++){
-        uint64 base = PGROUNDDOWN(entries[i]->base);
-        uint64 top = PGROUNDUP(entries[i]->base + entries[i]->length);
+    for (uint64_t i = 0; i < memmap->entry_count; i++){
+        uint64_t base = PGROUNDDOWN(entries[i]->base);
+        uint64_t top = PGROUNDUP(entries[i]->base + entries[i]->length);
         if (top < 0x100000000){
             continue;
         }
-        for (uint64 j = base; j < top; j += PAGE_SIZE){
-            if (j < (uint64)0x100000000){
+        for (uint64_t j = base; j < top; j += PAGE_SIZE){
+            if (j < (uint64_t)0x100000000){
                 continue;
             }
-            if (arch_map_pages(kernel_pg_map->top_level, j, (uint64*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
+            if (arch_map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
                 panic("hhdm mapping");
             }
         }
@@ -154,10 +154,10 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int flags){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int arch_map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint64 size){
+int arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, uint64_t perms, uint64_t size){
     pte_t* pte;
-    uint64 address = PGROUNDDOWN((uint64) va);
-    uint64 last = PGROUNDUP(((uint64) va) + size - 1);
+    uint64_t address = PGROUNDDOWN((uint64_t) va);
+    uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
 
     for (;;){
         if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
@@ -182,8 +182,8 @@ int arch_map_pages(p4d_t* pgdir, uint64 physaddr, uint64* va, uint64 perms, uint
 }
 
 
-uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address){
-    uint64 aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
+uint64_t arch_dealloc_va(p4d_t* pgdir, uint64_t address){
+    uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0){
@@ -201,10 +201,10 @@ uint64 arch_dealloc_va(p4d_t* pgdir, uint64 address){
     return 0;
 }
 
-void arch_dealloc_va_range(p4d_t* pgdir, uint64 address, uint64 size){
-    uint64 aligned_size = ALIGN_UP(size, PAGE_SIZE);
+void arch_dealloc_va_range(p4d_t* pgdir, uint64_t address, uint64_t size){
+    uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
-    for (uint64 i = 0; i <= aligned_size; i += PAGE_SIZE){
+    for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE){
         arch_dealloc_va(pgdir, address + i);
     }
 }

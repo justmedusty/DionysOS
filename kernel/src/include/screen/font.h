@@ -6,9 +6,9 @@
 #define DIONYSOS_FONT_H
 
 typedef struct {
-    uint32 width;
-    uint32 height;
-    uint8 *data;
+    uint32_t width;
+    uint32_t height;
+    uint8_t *data;
 } font;
 
 extern font default_font;

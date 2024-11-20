@@ -33,24 +33,24 @@
 struct binary_tree {
     struct spinlock lock; /* Optional */
     struct binary_tree_node* root;
-    uint64 node_count;
-    uint64 mode;
-    uint64 flags; /* Unused for now */
+    uint64_t node_count;
+    uint64_t mode;
+    uint64_t flags; /* Unused for now */
 };
 
 struct binary_tree_node {
     struct binary_tree_node* parent;
     struct binary_tree_node* left;
     struct binary_tree_node* right;
-    uint64 key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
+    uint64_t key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
     struct singly_linked_list data;
-    uint16 color; /* Only for RB tree */
-    uint16 flags;
-    uint8 index;
+    uint16_t color; /* Only for RB tree */
+    uint16_t flags;
+    uint8_t index;
 };
 
-uint64 init_tree(struct binary_tree* tree, uint64 mode, uint64 flags);
-uint64 insert_tree_node(struct binary_tree* tree, void* data, uint64 key);
-uint64 remove_tree_node(struct binary_tree *tree, uint64 key,void *address,struct binary_tree_node *node /* Optional */);
-uint64 destroy_tree(struct binary_tree* tree);
-void* lookup_tree(struct binary_tree* tree, uint64 key,uint8 remove);
+uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags);
+uint64_t insert_tree_node(struct binary_tree* tree, void* data, uint64_t key);
+uint64_t remove_tree_node(struct binary_tree *tree, uint64_t key,void *address,struct binary_tree_node *node /* Optional */);
+uint64_t destroy_tree(struct binary_tree* tree);
+void* lookup_tree(struct binary_tree* tree, uint64_t key,uint8_t remove);

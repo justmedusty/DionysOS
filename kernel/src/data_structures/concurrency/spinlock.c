@@ -8,7 +8,7 @@
 #include "include/arch/arch_asm_functions.h"
 
 //TODO replace cli/sti with architecture agnostic wrapper function
-void initlock(struct spinlock* spinlock, uint64 id) {
+void initlock(struct spinlock* spinlock, uint64_t id) {
     spinlock->id = id;
     spinlock->locked = 0;
     spinlock->cpu = 0;

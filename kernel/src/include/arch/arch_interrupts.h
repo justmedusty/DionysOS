@@ -7,6 +7,6 @@
 
 #include "include/arch/x86_64/idt.h"
  void arch_setup_interrupts();
-void arch_register_irq(uint8 vector,void *handler);
-void arch_unregister_irq(uint8 vector);
+void arch_register_irq(uint8_t vector,void *handler);
+void arch_unregister_irq(uint8_t vector);
 

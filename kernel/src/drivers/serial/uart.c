@@ -13,8 +13,8 @@
 static int is_transmit_empty();
 static void write_serial(char a);
 static void write_string_serial(const char *str);
-static void write_hex_serial(uint64 num,int8 size);
-static char get_hex_char(uint8 nibble);
+static void write_hex_serial(uint64_t num,int8_t size);
+static char get_hex_char(uint8_t nibble);
 
 //The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
 #define COM1 0x3F8   // COM1 base port
@@ -43,7 +43,7 @@ static int is_transmit_empty() {
 }
 /*
  *  This function writes a single byte to the serial port,
- *  if it a linebreak, it writes a carriage return after
+ *  if it is a linebreak, it writes a carriage return after
  *  because this is required to actually break the line
  */
 static void write_serial(char a) {
@@ -58,10 +58,10 @@ static void write_serial(char a) {
 /*
  * Writes a hex number of size (ie 8 bit, 16 bit, 32bit, 64 bit)
  */
-static void write_hex_serial(uint64 num, int8 size) {
+static void write_hex_serial(uint64_t num, int8_t size) {
     write_string_serial("0x");
-    for (int8 i = (size - 4); i >= 0; i -= 4) {
-        uint8 nibble = (num >> i) & 0xF;  // Extract 4 bits
+    for (int8_t i = (size - 4); i >= 0; i -= 4) {
+        uint8_t nibble = (num >> i) & 0xF;  // Extract 4 bits
         write_serial(get_hex_char(nibble));
     }
 }
@@ -69,9 +69,9 @@ static void write_hex_serial(uint64 num, int8 size) {
 /*
  * Unused but writes binary numbers of size
  */
-static void write_binary_serial(uint64 num, uint8 size) {
+static void write_binary_serial(uint64_t num, uint8_t size) {
     int separator = 0;
-    for (uint8 i = size; i < 0; i--) {
+    for (uint8_t i = size; i < 0; i--) {
         if (num >> i & 1) {
             write_serial('1');
         } else {
@@ -96,7 +96,7 @@ static void write_string_serial(const char *str) {
 /*
     Index into the char array if the value is valid
  */
-static char get_hex_char(uint8 nibble) {
+static char get_hex_char(uint8_t nibble) {
     if(nibble <= 16) {
         return characters[nibble];
      } else {
@@ -147,38 +147,38 @@ void serial_printf(char *str, ...) {
 
                         switch (*str) {
                             case '8':
-                                uint64 value8 = va_arg(args, uint32);
+                                uint64_t value8 = va_arg(args, uint32_t);
                                 write_hex_serial(value8, 8);
                                 break;
                             case '1':
-                                uint64 value16 = va_arg(args, uint32);
+                                uint64_t value16 = va_arg(args, uint32_t);
                                 write_hex_serial(value16, 16);
                                 str++;
                                 break;
                             case '3' :
-                                uint64 value32 = va_arg(args, uint32);
+                                uint64_t value32 = va_arg(args, uint32_t);
                                 write_hex_serial(value32, 32);
                                 str++;
                                 break;
                             case '6' :
-                                uint64 value64 = va_arg(args, uint64);
+                                uint64_t value64 = va_arg(args, uint64_t);
                                 write_hex_serial(value64, 64);
                                 str++;
                                 break;
                             default:
-                                uint64 value = va_arg(args, uint64);
+                                uint64_t value = va_arg(args, uint64_t);
                                 write_hex_serial(value, 64);
                                 break;
                         }
 
                     } else {
-                        uint64 value = va_arg(args, uint64);
+                        uint64_t value = va_arg(args, uint64_t);
                         write_hex_serial(value, 64);
                     }
                     break;
                 }
                 case 'b': {
-                    uint64 value = va_arg(args, uint64);
+                    uint64_t value = va_arg(args, uint64_t);
                     write_binary_serial(value, 64);
                     break;
                 }
@@ -191,7 +191,7 @@ void serial_printf(char *str, ...) {
                 }
 
                 case 'i': {
-                    uint64 value = va_arg(args, uint64);
+                    uint64_t value = va_arg(args, uint64_t);
 
                     if(value == 0) {
                         write_serial('0');

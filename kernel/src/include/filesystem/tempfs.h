@@ -4,6 +4,7 @@
 
 #pragma once
 #include "include/types.h"
+#include "stdint.h"
 #include "include/filesystem/vfs.h"
 #define INITRAMFS 0 /* Just for ramdisk 0 id purposes*/
 
@@ -16,7 +17,7 @@
 #define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
 #define MAX_BLOCKS_IN_INODE (((((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) * TEMPFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
-#define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64)))
+#define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64_t)))
 
 #define TEMPFS_DIRECTORY 0
 #define TEMPFS_REG_FILE 1
@@ -27,7 +28,7 @@
 
 #define NUM_INODES_PER_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_inode)))
 #define TEMPFS_INODES_PER_BLOCK (TEMPFS_BLOCKSIZE / TEMPFS_INODE_SIZE)
-#define TEMPFS_BLOCK_POINTER_SIZE sizeof(uint64)
+#define TEMPFS_BLOCK_POINTER_SIZE sizeof(uint64_t)
 
 #define BITMAP_TYPE_BLOCK 0
 #define BITMAP_TYPE_INODE 1
@@ -75,35 +76,35 @@
 extern struct vnode_operations tempfs_vnode_ops;
 
 struct tempfs_superblock {
-    uint64 magic;
-    uint64 version;
-    uint64 block_size;
-    uint64 num_blocks;
-    uint64 num_inodes;
-    uint64 total_size;
+    uint64_t magic;
+    uint64_t version;
+    uint64_t block_size;
+    uint64_t num_blocks;
+    uint64_t num_inodes;
+    uint64_t total_size;
     /* Both bitmap entries hold n block pointers */
-    uint64 inode_bitmap_pointers[TEMPFS_NUM_INODE_POINTER_BLOCKS]; /* Can hold 50k inodes assuming 1024 size */
-    uint64 block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS]; /* Can hold approx 1 mil blocks */
-    uint64 inode_start_pointer; /* Where inodes start */
-    uint64 block_start_pointer; /* Where blocks start */
+    uint64_t inode_bitmap_pointers[TEMPFS_NUM_INODE_POINTER_BLOCKS]; /* Can hold 50k inodes assuming 1024 size */
+    uint64_t block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS]; /* Can hold approx 1 mil blocks */
+    uint64_t inode_start_pointer; /* Where inodes start */
+    uint64_t block_start_pointer; /* Where blocks start */
 };
 
 _Static_assert(sizeof(struct tempfs_superblock) == TEMPFS_BLOCKSIZE, "Tempfs Superblock not the proper size");
 
 //4 inodes per block
 struct tempfs_inode {
-    uint16 uid;
-    uint16 inode_number;
-    uint16 parent_inode_number;
-    uint16 type;
-    uint16 refcount;
+    uint16_t uid;
+    uint16_t inode_number;
+    uint16_t parent_inode_number;
+    uint16_t type;
+    uint16_t refcount;
     char name[MAX_FILENAME_LENGTH];
-    uint32 size; // For directories, we'll just add 1 for each dirent
-    uint32 block_count;
-    uint64 blocks[10]; /* Will point to logical block numbers */
-    uint64 single_indirect;
-    uint64 double_indirect;
-    uint64 triple_indirect;
+    uint32_t size; // For directories, we'll just add 1 for each dirent
+    uint32_t block_count;
+    uint64_t blocks[10]; /* Will point to logical block numbers */
+    uint64_t single_indirect;
+    uint64_t double_indirect;
+    uint64_t triple_indirect;
 };
 
 /*
@@ -116,44 +117,44 @@ struct tempfs_inode {
  */
 struct tempfs_directory_entry {
     char name[MAX_FILENAME_LENGTH];
-    uint32 inode_number;
-    uint32 parent_inode_number;
-    uint16 type;
-    uint16 device_number;
-    uint32 size;
+    uint32_t inode_number;
+    uint32_t parent_inode_number;
+    uint16_t type;
+    uint16_t device_number;
+    uint32_t size;
 };
 
 
 struct tempfs_byte_offset_indices {
-    uint16 direct_block_number;
-    uint16 third_level_block_number;
-    uint16 second_level_block_number;
-    uint16 first_level_block_number;
-    uint16 block_number;
-    uint16 levels_indirection;
+    uint16_t direct_block_number;
+    uint16_t third_level_block_number;
+    uint16_t second_level_block_number;
+    uint16_t first_level_block_number;
+    uint16_t block_number;
+    uint16_t levels_indirection;
 };
 
 struct tempfs_filesystem {
-    uint64 filesystem_id;
+    uint64_t filesystem_id;
     struct spinlock *lock;
     struct tempfs_superblock *superblock;
-    uint64 ramdisk_id;
+    uint64_t ramdisk_id;
 };
 
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the proper size");
 
 
 void tempfs_init();
-void tempfs_mkfs(uint64 ramdisk_id, struct tempfs_filesystem* fs);
-uint64 tempfs_read(struct vnode* vnode, uint64 offset, int8* buffer, uint64 bytes);
-uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
-uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
+void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs);
+uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
+uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
+uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name);
-struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8 vnode_type);
+struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8_t vnode_type);
 void tempfs_close(struct vnode* vnode);
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode);
 void tempfs_unlink(struct vnode* vnode);
 void tempfs_remove(struct vnode* vnode);
 void tempfs_rename(struct vnode* vnode, char* new_name);
-uint64 tempfs_open(struct vnode* vnode);
+uint64_t tempfs_open(struct vnode* vnode);
 

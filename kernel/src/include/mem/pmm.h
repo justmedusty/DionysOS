@@ -26,25 +26,25 @@ extern volatile struct limine_memmap_request memmap_request;
 
 #define BUDDY_HASH_TABLE_SIZE 300
 
-extern uint64 hhdm_offset;
+extern uint64_t hhdm_offset;
 
 int phys_init();
-void *phys_alloc(uint64 pages);
-void phys_dealloc(void *address, uint64 pages);
+void *phys_alloc(uint64_t pages);
+void phys_dealloc(void *address, uint64_t pages);
 
 
 struct contiguous_page_range {
-      uint64 start_address;
-      uint64 end_address;
-      uint64 pages;
+      uint64_t start_address;
+      uint64_t end_address;
+      uint64_t pages;
   };
 
 
 struct buddy_block {
     struct buddy_block *next;
-    uint8 zone;
+    uint8_t zone;
     void* start_address;
-    uint8 flags;
-    uint8 order;
-    uint8 is_free;
+    uint8_t flags;
+    uint8_t order;
+    uint8_t is_free;
 };

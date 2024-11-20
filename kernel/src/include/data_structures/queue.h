@@ -18,7 +18,7 @@ struct queue_node{
     void* data;
     struct queue_node* next;
     struct queue_node* prev;
-    uint8 priority;
+    uint8_t priority;
 };
 
 
@@ -27,11 +27,11 @@ struct queue {
     struct queue_node* tail;
     //for ID , debugging
     char *name; /* Should be short */
-    uint8 queue_mode; /* Determines the behaviour of enqueue, dequeue, init behaviours to provide maximum flexibility for use elsewhere in the kernel */
-    uint32 node_count;
+    uint8_t queue_mode; /* Determines the behaviour of enqueue, dequeue, init behaviours to provide maximum flexibility for use elsewhere in the kernel */
+    uint32_t node_count;
 
 };
 
-void queue_init(struct queue* queue_head, uint8 queue_mode, char* name);
-void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8 priority);
+void queue_init(struct queue* queue_head, uint8_t queue_mode, char* name);
+void enqueue(struct queue* queue_head, void* data_to_enqueue, uint8_t priority);
 void dequeue(struct queue* queue_head);

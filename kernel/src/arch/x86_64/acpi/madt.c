@@ -13,10 +13,10 @@ madt_lapic* madt_lapic_list[32] = {0};
 madt_iso* madt_iso_list[32] = {0};
 madt_nmi* madt_nmi_list[32] = {0};
 
-uint32 madt_ioapic_len = 0;
-uint32 madt_iso_len = 0;
-uint32 madt_lapic_len = 0;
-uint32 madt_nmi_len = 0;
+uint32_t madt_ioapic_len = 0;
+uint32_t madt_iso_len = 0;
+uint32_t madt_lapic_len = 0;
+uint32_t madt_nmi_len = 0;
 
 void madt_init() {
   acpi_madt* madt = (acpi_madt*)find_acpi_table("APIC");
@@ -25,8 +25,8 @@ void madt_init() {
     panic("No MADT!");
   }
 
-  uint64 offset = 0;
-  uint64 current_idx = 0;
+  uint64_t offset = 0;
+  uint64_t current_idx = 0;
   madt_ioapic_len = 0;
   madt_lapic_len = 0;
   madt_iso_len = 0;

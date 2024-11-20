@@ -40,15 +40,15 @@
 
 void lapic_init();
 void lapic_timer_stop();
-void lapic_timer_oneshot(uint8 vec, uint64 ms);
+void lapic_timer_oneshot(uint8_t vec, uint64_t ms);
 void lapic_calibrate_timer();
-void lapic_write(uint32 reg, uint32 val);
-uint32 lapic_read(uint32 reg);
+void lapic_write(uint32_t reg, uint32_t val);
+uint32_t lapic_read(uint32_t reg);
 void lapic_eoi();
-void lapic_ipi(uint32 id, uint8 dat);
-void lapic_broadcast_interrupt(uint32 vec);
-void lapic_send_int(uint32 id, uint32 vec);
-void lapic_init_cpu(uint32 id);
-void lapic_start_cpu(uint32 id, uint32 vec);
-uint32 get_lapid_id();
+void lapic_ipi(uint32_t id, uint8_t dat);
+void lapic_broadcast_interrupt(uint32_t vec);
+void lapic_send_int(uint32_t id, uint32_t vec);
+void lapic_init_cpu(uint32_t id);
+void lapic_start_cpu(uint32_t id, uint32_t vec);
+uint32_t get_lapid_id();
 #endif

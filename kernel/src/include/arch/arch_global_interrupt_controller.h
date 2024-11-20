@@ -15,11 +15,11 @@
 #define IOAPIC_IOWIN 0x10
 
 void pic_disable();
-void write_ioapic(uint32 ioapic, uint32 reg, uint32 value);
-uint32 read_ioapic(uint32 ioapic, uint32 reg);
-void ioapic_set_entry(uint32 ioapic, uint8 index, uint64 data);
-void ioapic_redirect_irq(uint32 lapic_id,uint8 vector,uint8 irq,uint8 mask);
-void ioapic_redirect_gsi(uint32 lapic_id,uint8 vector,uint32 gsi,uint16 flags,uint8 mask);
-uint32 ioapic_get_gsi(uint32 gsi);
+void write_ioapic(uint32_t ioapic, uint32_t reg, uint32_t value);
+uint32_t read_ioapic(uint32_t ioapic, uint32_t reg);
+void ioapic_set_entry(uint32_t ioapic, uint8_t index, uint64_t data);
+void ioapic_redirect_irq(uint32_t lapic_id,uint8_t vector,uint8_t irq,uint8_t mask);
+void ioapic_redirect_gsi(uint32_t lapic_id,uint8_t vector,uint32_t gsi,uint16_t flags,uint8_t mask);
+uint32_t ioapic_get_gsi(uint32_t gsi);
 void ioapic_init();
 #endif //IOAPIC_H

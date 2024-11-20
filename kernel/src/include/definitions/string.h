@@ -9,11 +9,11 @@
 #define LAST_TOKEN 0
 #define NEXT_TOKEN 1
 
-uint64 strlen(const char *src);
+uint64_t strlen(const char *src);
 void strcat(char *str1, char *str2);
 void strcpy(char *dest, char *src);
-uint64 strtok(char *str, char delimiter, char *token,uint64 token_number);
-uint64 strcmp(char *str1, char *str2);
-uint64 safe_strcmp(char* str1, char* str2,uint64 max_len);
-uint64 strtok_count(char* str, char delimiter);
-void safe_strcpy(char *dest, char *src,uint64 dest_size);
+uint64_t strtok(char *str, char delimiter, char *token,uint64_t token_number);
+uint64_t strcmp(char *str1, char *str2);
+uint64_t safe_strcmp(char* str1, char* str2,uint64_t max_len);
+uint64_t strtok_count(char* str, char delimiter);
+void safe_strcpy(char *dest, char *src,uint64_t dest_size);
