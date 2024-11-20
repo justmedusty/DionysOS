@@ -49,6 +49,8 @@ static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *ino
 static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 offset,uint64 num_blocks, struct tempfs_inode* inode);
 static void tempfs_shift_blocks(struct tempfs_inode *inode,uint64 start_block, uint64 shift_length,uint8 shift_direction);
 static uint64 follow_block_pointers(struct tempfs_filesystem *fs, struct tempfs_inode* inode,uint64 num_blocks_to_read, uint8* buffer, uint64 buffer_size, uint64 offset,uint64 start_block,uint64 read_size_bytes);
+static void tempfs_remove_file(struct tempfs_filesystem *fs,struct tempfs_inode *inode);
+static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem *fs,struct tempfs_directory_entry* entry);
 /*
  * VFS pointer functions for vnodes
  */
@@ -71,9 +73,9 @@ struct vnode_operations tempfs_vnode_ops = {
  *
  *  Read ramdisk structure into temporary variable.
  *
- *  Write temporary local variable.
+ *  Write to temporary local variable.
  *
- *  Write said variable to the ramdisk.
+ *  Then write said variable to the ramdisk.
  *
  *  We can improve performance by passing pointers directly to ramdisk memory,
  *  but I will try this approach for now.
@@ -93,36 +95,39 @@ struct vnode_operations tempfs_vnode_ops = {
  * It will use the size DEFAULT_TEMPFS_SIZE and any other size, modifications need to be made to the superblock object.
  */
 void tempfs_init(uint64 filesystem_id) {
+
     if(filesystem_id >= NUM_FILESYSTEM_OBJECTS) {
         return;
     }
-
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE,tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs");
     tempfs_mkfs(filesystem_id,&tempfs_filesystem[filesystem_id]);
 };
 
+/*
+ * TODO this does not handle removing it from the parent directory
+ */
 void tempfs_remove(struct vnode* vnode) {
     struct tempfs_filesystem *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-    struct tempfs_inode inode;
-    tempfs_read_inode(fs,&inode,vnode->vnode_inode_number);
-    free_blocks_from_inode(fs,0,inode.block_count,&inode);
-    tempfs_free_inode_and_mark_bitmap(fs,vnode->vnode_inode_number);
+
     release_spinlock(fs->lock);
 }
 
 void tempfs_rename(struct vnode* vnode, char* new_name) {
     struct tempfs_filesystem *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-
-
+    struct tempfs_inode inode;
+    tempfs_read_inode(fs,&inode,vnode->vnode_inode_number);
+    safe_strcpy(inode.name,new_name,MAX_FILENAME_LENGTH);
+    tempfs_write_inode(fs,&inode);
     release_spinlock(fs->lock);
 }
 
-uint64 tempfs_read(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes) {
+uint64 tempfs_read(struct vnode* vnode, uint64 offset, int8* buffer, uint64 bytes) {
     struct tempfs_filesystem *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
+    tempfs_get_bytes_from_inode(fs,buffer,bytes,vnode->vnode_inode_number,offset,bytes);
 
 
     release_spinlock(fs->lock);
@@ -377,42 +382,102 @@ void tempfs_mkfs(uint64 ramdisk_id, struct tempfs_filesystem* fs) {
  */
 static struct vnode* tempfs_directory_entry_to_vnode(struct vnode *parent,struct tempfs_directory_entry* entry,struct tempfs_filesystem *fs) {
     struct vnode* vnode = vnode_alloc();
+    struct tempfs_inode inode;
+    tempfs_read_inode(fs,&inode,vnode->vnode_inode_number);
     vnode->vnode_type = entry->type;
     vnode->vnode_device_id = entry->device_number;
     vnode->vnode_size = entry->size;
     vnode->vnode_inode_number = entry->inode_number;
     vnode->vnode_filesystem_id = VNODE_FS_TEMPFS;\
     vnode->vnode_ops = &tempfs_vnode_ops;
-    vnode->vnode_refcount = entry->refcount;
+    vnode->vnode_refcount = inode.refcount;
     vnode->is_mount_point = FALSE;
     vnode->mounted_vnode = NULL;
     vnode->is_cached = FALSE;
     *vnode->vnode_name = *entry->name;
     vnode->last_updated = 0;
     vnode->num_children = entry->type == TEMPFS_DIRECTORY
-                              ? entry->size / sizeof(struct tempfs_directory_entry)
+                              ? entry->size
                               : 0;
     vnode->filesystem_object = fs;
     vnode->vnode_parent = parent;
 
     return vnode;
 }
+/*
+ * Can either pass a directory entry inside the target directory or an inode number of the directory
+ */
+static void tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry,
+                                        struct tempfs_inode* inode) {
+    struct tempfs_inode parent_inode;
 
-static void tempfs_directory_entry_free(struct tempfs_filesystem *fs,struct tempfs_directory_entry* entry) {
+    if (entry != NULL) {
+        tempfs_read_inode(fs, &parent_inode, entry->parent_inode_number);
+    }
+    else {
+        tempfs_read_inode(fs, &parent_inode, inode->parent_inode_number);
+    }
+    uint64 dir_num = 0;
+    uint64 inode_to_remove = entry == NULL ? inode->inode_number : entry->inode_number;
+    uint8* buffer = kalloc(PAGE_SIZE);
+    struct tempfs_directory_entry** entries = (struct tempfs_directory_entry**)buffer;
 
+    struct tempfs_directory_entry* entry_to_remove = (struct tempfs_directory_entry*)buffer;
+
+    for (uint64 i = 0; i < parent_inode.size; i++) {
+        if (i % (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)) == 0) {
+            tempfs_read_block_by_number(parent_inode.blocks[dir_num / (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry))], buffer, fs,0,TEMPFS_BLOCKSIZE);
+        }
+
+        if (entries[i]->inode_number == inode_to_remove) {
+
+            if (entries[i]->type == TEMPFS_DIRECTORY) {
+                tempfs_recursive_directory_entry_free(fs,entries[i]);
+            }
+            else if (entries[i]->type == TEMPFS_REG_FILE) {
+                struct tempfs_inode temp_inode;
+                tempfs_read_inode(fs, &temp_inode, entries[i]->inode_number);
+
+
+                /*
+                 * If this is the only reference remove it , otherwise just drops to setting the entry memory only.
+                 */
+                if (temp_inode.refcount <= 1) {
+                    tempfs_remove_file(fs, &temp_inode);
+                }
+            }
+            //TODO shift the last directory entry to the cleared entries spot
+            memset(entries[i], 0, sizeof(struct tempfs_directory_entry));
+            return;
+
+        }
+
+        dir_num++;
+    }
+}
+
+static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem *fs,struct tempfs_directory_entry* entry) {
     struct tempfs_inode inode;
+    tempfs_read_inode(fs, &inode, entry->inode_number);
+    uint8 *buffer = kalloc(PAGE_SIZE);
+    struct tempfs_directory_entry *current = entry;
 
-    tempfs_read_inode(fs,&inode,entry->parent_inode_number);
+    while(1) {
+
+
+    }
+}
+
+static void tempfs_remove_file(struct tempfs_filesystem *fs,struct tempfs_inode *inode) {
+
+    free_blocks_from_inode(fs,0,inode->block_count,inode);
+
+    tempfs_free_inode_and_mark_bitmap(fs,inode->inode_number);
 
 }
 
-static void tempfs_remove_file(struct tempfs_directory_entry* entry) {
 
-}
-
-
-static void tempfs_modify_bitmap(struct tempfs_filesystem *fs, uint8 type, uint64 number,
-                                 uint8 action) {
+static void tempfs_modify_bitmap(struct tempfs_filesystem *fs, uint8 type, uint64 number,uint8 action) {
 
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         panic("Unknown type tempfs_modify_bitmap");
@@ -424,8 +489,7 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem *fs, uint8 type, uint6
     if (type == BITMAP_TYPE_BLOCK) {
         block_to_read = fs->superblock->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
         block = fs->superblock->block_bitmap_pointers[block_to_read];
-    }
-    if (type == BITMAP_TYPE_INODE) {
+    }else{
         block_to_read = fs->superblock->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
         block = fs->superblock->inode_bitmap_pointers[block_to_read];
     }
@@ -800,7 +864,7 @@ static uint64 tempfs_get_logical_block_number_from_file(struct tempfs_inode *ino
     switch (indices.levels_indirection) {
 
     case 0:
-        current_block_number = inode->blocks[indices.top_level_block_number];
+        current_block_number = inode->blocks[indices.direct_block_number];
         kfree(temp_buffer);
         return current_block_number;
 
@@ -946,7 +1010,7 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
     struct tempfs_byte_offset_indices byte_offset_indices = {};
 
     if(block_number < NUM_BLOCKS_DIRECT) {
-        byte_offset_indices.top_level_block_number = block_number;
+        byte_offset_indices.direct_block_number = block_number;
         byte_offset_indices.levels_indirection = 0;
         return byte_offset_indices;
     }
@@ -954,7 +1018,7 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
     if(block_number < (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 1;
-        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.direct_block_number = 0;
         byte_offset_indices.first_level_block_number = block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         return byte_offset_indices;
     }
@@ -962,7 +1026,7 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
     if(block_number < (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 2;
-        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.direct_block_number = 0;
         byte_offset_indices.second_level_block_number = (block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK);
         byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         return byte_offset_indices;
@@ -971,7 +1035,7 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
     if(block_number < (NUM_BLOCKS_TRIPLE_INDIRECTION + NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT)) {
         block_number -= (NUM_BLOCKS_DOUBLE_INDIRECTION + NUM_BLOCKS_IN_INDIRECTION_BLOCK + NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 3;
-        byte_offset_indices.top_level_block_number = 0;
+        byte_offset_indices.direct_block_number = 0;
         byte_offset_indices.third_level_block_number = block_number  / NUM_BLOCKS_DOUBLE_INDIRECTION;
         byte_offset_indices.second_level_block_number = (block_number - ((byte_offset_indices.third_level_block_number * NUM_BLOCKS_DOUBLE_INDIRECTION))) / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         byte_offset_indices.first_level_block_number = block_number % (NUM_BLOCKS_IN_INDIRECTION_BLOCK);
@@ -1077,7 +1141,7 @@ static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64 offset,u
 
 
 level_zero:
-    for (uint64 i = byte_offset_indices.top_level_block_number; i < NUM_BLOCKS_DIRECT; i++) {
+    for (uint64 i = byte_offset_indices.direct_block_number; i < NUM_BLOCKS_DIRECT; i++) {
         tempfs_free_block_and_mark_bitmap(fs, inode->blocks[i]);
         num_blocks--;
         if (num_blocks == 0) {

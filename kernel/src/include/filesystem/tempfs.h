@@ -93,11 +93,12 @@ _Static_assert(sizeof(struct tempfs_superblock) == TEMPFS_BLOCKSIZE, "Tempfs Sup
 struct tempfs_inode {
     uint16 uid;
     uint16 inode_number;
+    uint16 parent_inode_number;
     uint16 type;
     uint16 refcount;
     char name[MAX_FILENAME_LENGTH];
-    uint64 size;
-    uint64 block_count;
+    uint32 size; // For directories, we'll just add 1 for each dirent
+    uint32 block_count;
     uint64 blocks[10]; /* Will point to logical block numbers */
     uint64 single_indirect;
     uint64 double_indirect;
@@ -118,13 +119,12 @@ struct tempfs_directory_entry {
     uint32 parent_inode_number;
     uint16 type;
     uint16 device_number;
-    uint16 refcount;
     uint32 size;
 };
 
 
 struct tempfs_byte_offset_indices {
-    uint16 top_level_block_number;
+    uint16 direct_block_number;
     uint16 third_level_block_number;
     uint16 second_level_block_number;
     uint16 first_level_block_number;
@@ -144,7 +144,7 @@ _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the pro
 
 void tempfs_init();
 void tempfs_mkfs(uint64 ramdisk_id, struct tempfs_filesystem* fs);
-uint64 tempfs_read(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
+uint64 tempfs_read(struct vnode* vnode, uint64 offset, int8* buffer, uint64 bytes);
 uint64 tempfs_write(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
 uint64 tempfs_stat(struct vnode* vnode, uint64 offset, char* buffer, uint64 bytes);
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name);
