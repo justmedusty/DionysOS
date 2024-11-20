@@ -417,26 +417,25 @@ static void tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct tem
     else {
         tempfs_read_inode(fs, &parent_inode, inode->parent_inode_number);
     }
-    uint64 dir_num = 0;
+
     uint64 inode_to_remove = entry == NULL ? inode->inode_number : entry->inode_number;
     uint8* buffer = kalloc(PAGE_SIZE);
     struct tempfs_directory_entry** entries = (struct tempfs_directory_entry**)buffer;
-
     struct tempfs_directory_entry* entry_to_remove = (struct tempfs_directory_entry*)buffer;
 
     for (uint64 i = 0; i < parent_inode.size; i++) {
-        if (i % (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)) == 0) {
-            tempfs_read_block_by_number(parent_inode.blocks[dir_num / (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry))], buffer, fs,0,TEMPFS_BLOCKSIZE);
+        if (i % TEMPFS_MAX_FILES_IN_BLOCK == 0) {
+            tempfs_read_block_by_number(parent_inode.blocks[i / TEMPFS_MAX_FILES_IN_BLOCK], buffer, fs,0,TEMPFS_BLOCKSIZE);
         }
 
-        if (entries[i]->inode_number == inode_to_remove) {
+        if (entries[i % TEMPFS_MAX_FILES_IN_BLOCK]->inode_number == inode_to_remove) {
 
-            if (entries[i]->type == TEMPFS_DIRECTORY) {
-                tempfs_recursive_directory_entry_free(fs,entries[i]);
+            if (entries[i % TEMPFS_MAX_FILES_IN_BLOCK]->type == TEMPFS_DIRECTORY) {
+                tempfs_recursive_directory_entry_free(fs,entries[i % TEMPFS_MAX_FILES_IN_BLOCK]);
             }
             else if (entries[i]->type == TEMPFS_REG_FILE) {
                 struct tempfs_inode temp_inode;
-                tempfs_read_inode(fs, &temp_inode, entries[i]->inode_number);
+                tempfs_read_inode(fs, &temp_inode, entries[i % TEMPFS_MAX_FILES_IN_BLOCK]->inode_number);
 
 
                 /*
@@ -446,13 +445,24 @@ static void tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct tem
                     tempfs_remove_file(fs, &temp_inode);
                 }
             }
+            uint8 *shift_buffer = kalloc(PAGE_SIZE);
+            if(parent_inode.size > 1) {
+                tempfs_read_block_by_number(parent_inode.blocks[i / TEMPFS_MAX_FILES_IN_BLOCK], shift_buffer, fs,0,TEMPFS_BLOCKSIZE);
+                struct tempfs_directory_entry** entries2 = (struct tempfs_directory_entry**)shift_buffer;
+                memmove(entries2[i % TEMPFS_MAX_FILES_IN_BLOCK],entries2[i % TEMPFS_MAX_FILES_IN_BLOCK],sizeof(struct tempfs_directory_entry));
+                memset(entries2[i % TEMPFS_MAX_FILES_IN_BLOCK], 0, sizeof(struct tempfs_directory_entry));
+                parent_inode.size -= 1;
+            }else {
+                memset(entries[i % TEMPFS_MAX_FILES_IN_BLOCK], 0, sizeof(struct tempfs_directory_entry));
+            }
+
             //TODO shift the last directory entry to the cleared entries spot
-            memset(entries[i], 0, sizeof(struct tempfs_directory_entry));
+
+            kfree(buffer);
             return;
 
         }
 
-        dir_num++;
     }
 }
 

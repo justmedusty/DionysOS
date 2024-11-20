@@ -59,7 +59,8 @@
 #define CURRENT_DIRECTORY_NAME "."
 #define PARENT_DIRECTORY_NAME ".."
 
-#define TEMPFS_MAX_FILES_IN_DIRECTORY ((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
+#define TEMPFS_MAX_FILES_IN_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
+#define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
  *  TEMPFS_NUM_INODE_POINTER_BLOCKS and TEMPFS_NUM_BLOCK_POINTER_BLOCKS
