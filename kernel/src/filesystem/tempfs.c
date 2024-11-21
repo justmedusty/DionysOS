@@ -65,7 +65,7 @@ static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempf
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block, uint64_t read_size_bytes);
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode);
-static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry);
+static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number);
 /*
  * VFS pointer functions for vnodes
  */
@@ -452,7 +452,7 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
 
             if (entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]->type == TEMPFS_DIRECTORY) {
 
-                tempfs_recursive_directory_entry_free(fs, entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]);
+                tempfs_recursive_directory_entry_free(fs, entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK],0);
 
             }
             else if (entries[i]->type == TEMPFS_REG_FILE) {
@@ -518,14 +518,53 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
     return NOT_FOUND;
 }
 
-static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry) {
-    struct tempfs_inode inode;
-    tempfs_read_inode(fs, &inode, entry->inode_number);
-    uint8_t* buffer = kalloc(PAGE_SIZE);
-    struct tempfs_directory_entry* current = entry;
+/*
+ * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
+ */
+static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number) {
 
-    while (1) {
+    struct tempfs_inode inode;
+
+    if(entry != NULL) {
+        tempfs_read_inode(fs, &inode, entry->inode_number);
+    }else {
+        tempfs_read_inode(fs, &inode, inode_number);
     }
+
+    uint8_t* buffer = kalloc(PAGE_SIZE);
+    struct tempfs_directory_entry** entries = (struct tempfs_directory_entry**)buffer;
+
+    tempfs_read_inode(fs, &inode, entry->inode_number);
+    for (uint64_t i = 0; i < inode.size; i++) {
+        if (i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK == 0) {
+            tempfs_read_block_by_number(inode.blocks[0], buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        }
+
+        if (entries[i]->type == TEMPFS_REG_FILE) {
+            struct tempfs_inode temp_inode;
+            tempfs_read_inode(fs, &temp_inode, entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]->inode_number);
+            /*
+                        * If this is the only reference remove it , otherwise just drops to setting the entry memory only and decrementing refcount.
+                        */
+            if (temp_inode.refcount <= 1) {
+                tempfs_remove_file(fs, &temp_inode);
+            }
+            else {
+                temp_inode.refcount--;
+                tempfs_write_inode(fs, &temp_inode);
+            }
+        }
+        else if (entries[i]->type == TEMPFS_DIRECTORY) {
+            tempfs_recursive_directory_entry_free(fs, entries[i],0);
+        }
+        else {
+            struct tempfs_inode temp_inode;
+            tempfs_read_inode(fs, &temp_inode, entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]->inode_number);
+            tempfs_remove_file(fs, &temp_inode);
+        }
+    }
+
+    kfree(buffer);
 }
 
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
@@ -1294,6 +1333,7 @@ static void tempfs_shift_blocks(struct tempfs_inode* inode, uint64_t start_block
 
     uint8_t* write_buffer = kalloc(PAGE_SIZE);
     uint8_t* read_buffer = kalloc(PAGE_SIZE);
+
 
     struct tempfs_byte_offset_indices byte_offset_indices_start =
         tempfs_indirection_indices_for_block_number(start_block);
