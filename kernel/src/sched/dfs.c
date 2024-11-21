@@ -27,7 +27,7 @@ struct spinlock dfs_global_lock;
 void dfs_init() {
   initlock(&dfs_global_lock, DFS_LOCK);
   queue_init(&dfs_global_queue,QUEUE_MODE_FIFO,"dfs_global");
-  for(int i = 0; i < cpu_count; i++) {
+  for(uint32_t i = 0; i < cpu_count; i++) {
     queue_init(&local_run_queues[i],QUEUE_MODE_FIFO,"dfs");
     cpu_list[i].local_run_queue = &local_run_queues[i];
   }

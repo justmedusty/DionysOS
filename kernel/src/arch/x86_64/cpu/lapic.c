@@ -84,7 +84,7 @@ void lapic_ipi(uint32_t id, uint8_t dat) {
 
 void lapic_broadcast_interrupt(uint32_t vec) {
 
-    for (int i = 0; i < cpu_count; i++) {
+    for (uint32_t i = 0; i < cpu_count; i++) {
         if (i == my_cpu()->lapic_id) {
             continue;
         }

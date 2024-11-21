@@ -26,7 +26,7 @@ void* find_acpi_table(const int8_t* name) {
   if (!acpi_extended) {
     uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
 
-    for (int i = 0; i < entries; i++) {
+    for (uint32_t i = 0; i < entries; i++) {
       acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint32_t*)rsdt->table + i));
       if (!memcmp(sdt->signature, name, 4))
         return (void*)sdt;
@@ -37,7 +37,7 @@ void* find_acpi_table(const int8_t* name) {
   // Extended
   uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 8;
 
-  for (int i = 0; i < entries; i++) {
+  for (uint32_t i = 0; i < entries; i++) {
     acpi_sdt* sdt = (acpi_sdt*)P2V(*((uint64_t*)rsdt->table + i));
     if (!memcmp(sdt->signature, name, 4)) {
       return (void*)sdt;

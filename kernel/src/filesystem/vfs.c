@@ -282,7 +282,7 @@ uint64_t vnode_unmount(struct vnode* vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char *buffer) {
+uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset,buffer, bytes);
     }
@@ -291,7 +291,7 @@ uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char *
 }
 
 
-uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
+uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t* buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
     }

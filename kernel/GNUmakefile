@@ -60,6 +60,8 @@ override KCFLAGS += \
     -mno-red-zone \
    	-g \
    	-fanalyzer \
+   	-Wno-unused-variable \
+   	-Wno-unused-function \
     -I kernel/src/include \
     -I kernel/src/arch/x86_64 \
 

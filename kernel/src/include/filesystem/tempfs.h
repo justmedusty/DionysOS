@@ -53,6 +53,7 @@
 
 #define TEMPFS_ERROR 0x6
 #define SUCCESS 0
+#define NOT_FOUND 1
 
 #define LEFT_SHIFT 0
 #define RIGHT_SHIFT 1
@@ -60,7 +61,7 @@
 #define CURRENT_DIRECTORY_NAME "."
 #define PARENT_DIRECTORY_NAME ".."
 
-#define TEMPFS_MAX_FILES_IN_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
+#define TEMPFS_MAX_FILES_IN_DIRENT_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
 #define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
@@ -146,9 +147,9 @@ _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the pro
 
 void tempfs_init();
 void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs);
-uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
-uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
-uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
+uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
+uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
+uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name);
 struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8_t vnode_type);
 void tempfs_close(struct vnode* vnode);
