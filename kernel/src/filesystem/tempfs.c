@@ -65,7 +65,7 @@ static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempf
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block, uint64_t read_size_bytes);
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode);
-static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number);
+static uint64_t tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number);
 /*
  * VFS pointer functions for vnodes
  */
@@ -521,7 +521,7 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
 /*
  * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
  */
-static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number) {
+static uint64_t tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry, uint64_t inode_number) {
 
     struct tempfs_inode inode;
 
@@ -534,10 +534,9 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, 
     uint8_t* buffer = kalloc(PAGE_SIZE);
     struct tempfs_directory_entry** entries = (struct tempfs_directory_entry**)buffer;
 
-    tempfs_read_inode(fs, &inode, entry->inode_number);
     for (uint64_t i = 0; i < inode.size; i++) {
         if (i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK == 0) {
-            tempfs_read_block_by_number(inode.blocks[0], buffer, fs, 0, TEMPFS_BLOCKSIZE);
+            tempfs_read_block_by_number(inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0, TEMPFS_BLOCKSIZE);
         }
 
         if (entries[i]->type == TEMPFS_REG_FILE) {
@@ -563,18 +562,23 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs, 
             tempfs_remove_file(fs, &temp_inode);
         }
     }
-
+    tempfs_write_inode(fs, &inode);
     kfree(buffer);
+    return tempfs_directory_entry_free(fs,NULL,&inode);
 }
 
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
-
+    uint64_t inode_number = inode->inode_number;
+    memset(inode, 0, sizeof(struct tempfs_inode));
+    inode->inode_number = inode_number; /* Ensure that the inode number is preserved before when we zero the inode struct, then write it back to ramdisk */
+    tempfs_write_inode(fs, inode);
     tempfs_free_inode_and_mark_bitmap(fs, inode->inode_number);
 }
 
 
 static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number, uint8_t action) {
+
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         panic("Unknown type tempfs_modify_bitmap");
     }
@@ -645,7 +649,7 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
     }
 
     while (1) {
-        if (buffer[(block * TEMPFS_BLOCKSIZE) + byte] != 0xFF) {
+        if (buffer[block * TEMPFS_BLOCKSIZE + byte] != 0xFF) {
             for (uint64_t i = 0; i <= 8; i++) {
                 if (!(buffer[(block * TEMPFS_BLOCKSIZE) + byte] & (1 << i))) {
                     bit = i;
@@ -724,7 +728,7 @@ retry:
     }
 
     while (1) {
-        if (buffer[(block * TEMPFS_BLOCKSIZE) + byte] != 0xFF) {
+        if (buffer[block * TEMPFS_BLOCKSIZE + byte] != 0xFF) {
             /* Iterate through every bit in the byte to find the first free bit */
             for (uint64_t i = 0; i <= 8; i++) {
                 if (!(buffer[buffer[(block * TEMPFS_BLOCKSIZE)] + byte] & (1 << i))) {
@@ -888,7 +892,6 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
  * Fills a buffer with file data , following block pointers and appending bytes to the passed buffer.
  *
  * Took locks out since this will be called from a function that is locked.
- *
  */
 static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
