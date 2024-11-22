@@ -58,8 +58,6 @@
 #define LEFT_SHIFT 0
 #define RIGHT_SHIFT 1
 
-#define CURRENT_DIRECTORY_NAME "."
-#define PARENT_DIRECTORY_NAME ".."
 
 #define TEMPFS_MAX_FILES_IN_DIRENT_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
 #define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))

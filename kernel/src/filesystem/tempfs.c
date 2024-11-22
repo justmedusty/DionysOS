@@ -6,8 +6,6 @@
 #include "include/definitions.h"
 #include "include/filesystem/vfs.h"
 #include "include/filesystem/tempfs.h"
-
-#include <stdlib.h>
 #include <include/definitions/string.h>
 #include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
@@ -194,9 +192,9 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
         return NULL;
     }
 
-    uint64_t buffer_size = TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
+    uint64_t buffer_size = fs->superblock->block_size * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE;
 
-    uint8_t* buffer = kalloc(TEMPFS_BLOCKSIZE * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE);
+    uint8_t* buffer = kalloc(fs->superblock->block_size * TEMPFS_NUM_BLOCK_POINTERS_PER_INODE);
 
     uint64_t ret = tempfs_get_directory_entries(fs, (struct tempfs_directory_entry**)&buffer, vnode->vnode_inode_number,
                                                 buffer_size);
@@ -307,9 +305,9 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     fs->superblock->magic = TEMPFS_MAGIC;
     fs->superblock->version = TEMPFS_VERSION;
-    fs->superblock->block_size = TEMPFS_BLOCKSIZE;
-    fs->superblock->num_blocks = ((sizeof(fs->superblock->block_bitmap_pointers) / 8) * TEMPFS_BLOCKSIZE) * 8;
-    fs->superblock->num_inodes = ((sizeof(fs->superblock->inode_bitmap_pointers) / 8) * TEMPFS_BLOCKSIZE) * 8;
+    fs->superblock->block_size = fs->superblock->block_size;
+    fs->superblock->num_blocks = ((sizeof(fs->superblock->block_bitmap_pointers) / 8) * fs->superblock->block_size) * 8;
+    fs->superblock->num_inodes = ((sizeof(fs->superblock->inode_bitmap_pointers) / 8) * fs->superblock->block_size) * 8;
     fs->superblock->inode_start_pointer = TEMPFS_START_INODES;
     fs->superblock->block_start_pointer = TEMPFS_START_BLOCKS;
 
@@ -328,30 +326,30 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     memcpy(buffer, &tempfs_superblock, sizeof(struct tempfs_superblock));
 
     //Write the new superblock to the ramdisk
-    ramdisk_write(buffer,TEMPFS_SUPERBLOCK, 0,TEMPFS_BLOCKSIZE,PAGE_SIZE, ramdisk_id);
+    ramdisk_write(buffer,TEMPFS_SUPERBLOCK, 0,fs->superblock->block_size,PAGE_SIZE, ramdisk_id);
 
     memset(buffer, 0,PAGE_SIZE);
 
     /*
      * Fill in inode bitmap with zeros blocks
      */
-    ramdisk_write(buffer,TEMPFS_START_INODE_BITMAP, 0,TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE,
-                  TEMPFS_BLOCKSIZE, ramdisk_id);
+    ramdisk_write(buffer,TEMPFS_START_INODE_BITMAP, 0,TEMPFS_NUM_INODE_POINTER_BLOCKS * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
 
     /*
      * Fill in block bitmap with zerod blocks
      */
-    ramdisk_write(buffer,TEMPFS_START_BLOCK_BITMAP, 0,TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE,
-                  TEMPFS_BLOCKSIZE, ramdisk_id);
+    ramdisk_write(buffer,TEMPFS_START_BLOCK_BITMAP, 0,TEMPFS_NUM_BLOCK_POINTER_BLOCKS * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
 
     /*
      *Write zerod blocks for the inode blocks
      */
-    ramdisk_write(buffer,TEMPFS_START_INODES, 0,TEMPFS_NUM_INODES * TEMPFS_BLOCKSIZE,TEMPFS_BLOCKSIZE, ramdisk_id);
+    ramdisk_write(buffer,TEMPFS_START_INODES, 0,TEMPFS_NUM_INODES * fs->superblock->block_size,fs->superblock->block_size, ramdisk_id);
     /*
      *Write zerod blocks for the blocks
      */
-    ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * TEMPFS_BLOCKSIZE,TEMPFS_BLOCKSIZE, ramdisk_id);
+    ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * fs->superblock->block_size,fs->superblock->block_size, ramdisk_id);
 
     kfree(buffer);
     serial_printf("Tempfs empty filesystem initialized\n");
@@ -445,7 +443,7 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
         if (i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK == 0) {
 
             tempfs_read_block_by_number(parent_inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0,
-                                        TEMPFS_BLOCKSIZE);
+                                        fs->superblock->block_size);
         }
 
         if (entries[i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]->inode_number == inode_to_remove) {
@@ -480,7 +478,7 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
             if (parent_inode.size > 1) {
 
                 tempfs_read_block_by_number(parent_inode.blocks[parent_inode.size / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], shift_buffer, fs, 0,
-                                            TEMPFS_BLOCKSIZE);
+                                            fs->superblock->block_size);
 
                 struct tempfs_directory_entry** entries2 = (struct tempfs_directory_entry**)shift_buffer;
 
@@ -536,7 +534,7 @@ static uint64_t tempfs_recursive_directory_entry_free(struct tempfs_filesystem* 
 
     for (uint64_t i = 0; i < inode.size; i++) {
         if (i % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK == 0) {
-            tempfs_read_block_by_number(inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0, TEMPFS_BLOCKSIZE);
+            tempfs_read_block_by_number(inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0, fs->superblock->block_size);
         }
 
         if (entries[i]->type == TEMPFS_REG_FILE) {
@@ -583,11 +581,11 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
     uint64_t block;
 
     if (type == BITMAP_TYPE_BLOCK) {
-        block_to_read = fs->superblock->block_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+        block_to_read = fs->superblock->block_bitmap_pointers[number / (fs->superblock->block_size * 8)];
         block = fs->superblock->block_bitmap_pointers[block_to_read];
     }
     else {
-        block_to_read = fs->superblock->inode_bitmap_pointers[number / (TEMPFS_BLOCKSIZE * 8)];
+        block_to_read = fs->superblock->inode_bitmap_pointers[number / (fs->superblock->block_size * 8)];
         block = fs->superblock->inode_bitmap_pointers[block_to_read];
     }
 
@@ -597,7 +595,7 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
 
     uint8_t* buffer = kalloc(PAGE_SIZE);
 
-    tempfs_read_block_by_number(block, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(block, buffer, fs, 0,fs->superblock->block_size);
 
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
@@ -605,7 +603,7 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
      */
 
     buffer[byte_in_block] = buffer[byte_in_block] & (action << bit);
-    tempfs_write_block_by_number(block, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(block, buffer, fs, 0,fs->superblock->block_size);
     kfree(buffer);
 }
 
@@ -637,7 +635,7 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
 
 
     uint64_t ret = ramdisk_read(buffer, fs->superblock->inode_bitmap_pointers[0], 0,
-                                TEMPFS_BLOCKSIZE * TEMPFS_NUM_INODE_POINTER_BLOCKS, buffer_size, fs->ramdisk_id);
+                                fs->superblock->block_size * TEMPFS_NUM_INODE_POINTER_BLOCKS, buffer_size, fs->ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
@@ -645,18 +643,18 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
     }
 
     while (1) {
-        if (buffer[block * TEMPFS_BLOCKSIZE + byte] != 0xFF) {
+        if (buffer[block * fs->superblock->block_size + byte] != 0xFF) {
             for (uint64_t i = 0; i <= 8; i++) {
-                if (!(buffer[(block * TEMPFS_BLOCKSIZE) + byte] & (1 << i))) {
+                if (!(buffer[(block * fs->superblock->block_size) + byte] & (1 << i))) {
                     bit = i;
                     buffer[byte] |= (1 << bit);
-                    inode_number = (block * TEMPFS_BLOCKSIZE * 8) + (byte * 8) + bit;
+                    inode_number = (block * fs->superblock->block_size * 8) + (byte * 8) + bit;
                     goto found_free;
                 }
             }
 
             byte++;
-            if (byte == TEMPFS_BLOCKSIZE) {
+            if (byte == fs->superblock->block_size) {
                 block++;
                 byte = 0;
             }
@@ -669,7 +667,7 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
 
 
 found_free:
-    tempfs_write_block_by_number(fs->superblock->inode_bitmap_pointers[block], &buffer[block], fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(fs->superblock->inode_bitmap_pointers[block], &buffer[block], fs, 0,fs->superblock->block_size);
     kfree(buffer);
 
     return inode_number;
@@ -724,13 +722,13 @@ retry:
     }
 
     while (1) {
-        if (buffer[block * TEMPFS_BLOCKSIZE + byte] != 0xFF) {
+        if (buffer[block * fs->superblock->block_size + byte] != 0xFF) {
             /* Iterate through every bit in the byte to find the first free bit */
             for (uint64_t i = 0; i <= 8; i++) {
-                if (!(buffer[buffer[(block * TEMPFS_BLOCKSIZE)] + byte] & (1 << i))) {
+                if (!(buffer[buffer[(block * fs->superblock->block_size)] + byte] & (1 << i))) {
                     bit = i;
                     buffer[byte] |= (1 << bit);
-                    block_number = ((block * TEMPFS_BLOCKSIZE * 8) + (8 * byte)) + i;
+                    block_number = ((block * fs->superblock->block_size * 8) + (8 * byte)) + i;
                     goto found_free;
                 }
             }
@@ -738,7 +736,7 @@ retry:
 
         byte++;
 
-        if (byte == TEMPFS_BLOCKSIZE) {
+        if (byte == fs->superblock->block_size) {
             block++;
             byte = 0;
             /* We need to reset byte every block increment to avoid having a bad block number calculation at the end */
@@ -749,8 +747,8 @@ retry:
             /* Panic for visibility, so I can tweak this if it happens */
         }
 
-        if (block * TEMPFS_BLOCKSIZE == buffer_size) {
-            offset = block * TEMPFS_BLOCKSIZE;
+        if (block * fs->superblock->block_size == buffer_size) {
+            offset = block * fs->superblock->block_size;
             offset += buffer_size; /* Keep track of how far into the search we are */
             /* Total size is 28.5 pages at the time of writing. We start with 16 pages, then 8 , then 4 , then finally we can get the last half page in a 2 page buffer*/
             goto retry;
@@ -759,9 +757,9 @@ retry:
 
 
 found_free:
-    ret = ramdisk_write(&buffer[block * TEMPFS_BLOCKSIZE], fs->superblock->block_bitmap_pointers[block], 0,
-                        TEMPFS_BLOCKSIZE,
-                        buffer_size - (block * TEMPFS_BLOCKSIZE), fs->ramdisk_id);
+    ret = ramdisk_write(&buffer[block * fs->superblock->block_size], fs->superblock->block_bitmap_pointers[block], 0,
+                        fs->superblock->block_size,
+                        buffer_size - (block * fs->superblock->block_size), fs->ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
@@ -787,10 +785,10 @@ found_free:
  */
 static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t block_number) {
     uint8_t* buffer = kalloc(PAGE_SIZE);
-    memset(buffer, 0, TEMPFS_BLOCKSIZE);
+    memset(buffer, 0, fs->superblock->block_size);
     uint64_t block = fs->superblock->block_start_pointer + block_number;
 
-    tempfs_write_block_by_number(block, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(block, buffer, fs, 0,fs->superblock->block_size);
 
     tempfs_modify_bitmap(fs,BITMAP_TYPE_BLOCK, block_number,BITMAP_ACTION_CLEAR);
 
@@ -874,9 +872,9 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
         block_number = inode.blocks[directory_block++];
         /*Should be okay to leave this unrestrained since we check children size and inode size */
 
-        tempfs_read_block_by_number(block_number, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(block_number, buffer, fs, 0,fs->superblock->block_size);
 
-        for (uint64_t i = 0; i < (TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)); i++) {
+        for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct tempfs_directory_entry)); i++) {
             if (directory_entries_read >= inode.size / sizeof(struct tempfs_directory_entry) || directory_entries_read
                 >= children_size / sizeof(struct tempfs_directory_entry)) {
                 break;
@@ -899,28 +897,28 @@ static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempf
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block,
                                       uint64_t read_size_bytes) {
-    if (buffer_size < TEMPFS_BLOCKSIZE || buffer_size < TEMPFS_BLOCKSIZE * num_blocks_to_read) {
+    if (buffer_size < fs->superblock->block_size || buffer_size < fs->superblock->block_size * num_blocks_to_read) {
         /*
          * I'll set a sensible minimum buffer size
          */
         return TEMPFS_BUFFER_TOO_SMALL;
     }
 
-    if (offset > TEMPFS_BLOCKSIZE) {
+    if (offset > fs->superblock->block_size) {
         panic("follow_block_pointers bad offset"); /* Should never happen, panic for visibility  */
     }
 
     /*
  *  If 0 is passed, try to read everything
  */
-    uint64_t bytes_to_read = read_size_bytes == 0 ? inode->size - (start_block * TEMPFS_BLOCKSIZE) : read_size_bytes;
+    uint64_t bytes_to_read = read_size_bytes == 0 ? inode->size - (start_block * fs->superblock->block_size) : read_size_bytes;
     if (read_size_bytes > inode->size) {
-        read_size_bytes = inode->size - (start_block * TEMPFS_BLOCKSIZE);
+        read_size_bytes = inode->size - (start_block * fs->superblock->block_size);
     }
 
     uint64_t current_block_number = 0;
     uint64_t end_block = start_block + num_blocks_to_read;
-    uint64_t end_offset = (read_size_bytes - offset) % TEMPFS_BLOCKSIZE;
+    uint64_t end_offset = (read_size_bytes - offset) % fs->superblock->block_size;
 
     /*
      *  If 0 is passed, try to read everything
@@ -931,9 +929,9 @@ static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempf
     for (uint64_t i = start_block; i < end_block; i++) {
         current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
 
-        tempfs_read_block_by_number(current_block_number, buffer, fs, offset, TEMPFS_BLOCKSIZE - offset);
+        tempfs_read_block_by_number(current_block_number, buffer, fs, offset, fs->superblock->block_size - offset);
 
-        bytes_read += (TEMPFS_BLOCKSIZE - offset);
+        bytes_read += (fs->superblock->block_size - offset);
 
         if (offset) {
             offset = 0;
@@ -973,27 +971,27 @@ static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* i
 
     case 1:
 
-        tempfs_read_block_by_number(inode->single_indirect, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(inode->single_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.first_level_block_number];
         kfree(temp_buffer);
         return current_block_number;
 
     case 2:
 
-        tempfs_read_block_by_number(inode->double_indirect, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(inode->double_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.second_level_block_number];
-        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.first_level_block_number];
         kfree(temp_buffer);
         return current_block_number;
 
     case 3:
 
-        tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(inode->triple_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.third_level_block_number];
-        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.second_level_block_number];
-        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = *indirection_block[indices.first_level_block_number];
         kfree(temp_buffer);
         return current_block_number;
@@ -1010,30 +1008,28 @@ static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* i
  */
 uint64_t tempfs_inode_allocate_new_blocks(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                           uint32_t num_blocks_to_allocate) {
-    struct tempfs_byte_offset_indices result = {};
+    struct tempfs_byte_offset_indices result = {0};
     uint8_t* buffer = kalloc(PAGE_SIZE);
-    uint64_t ret;
-    uint64_t index = 0;
 
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
-    if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE)) >
+    if (inode->type == TEMPFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / fs->superblock->block_size)) >
         TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) {
         serial_printf("tempfs_inode_allocate_new_block inode type not directory!\n");
         kfree(buffer);
         return TEMPFS_ERROR;
     }
 
-    if (num_blocks_to_allocate + (inode->size / TEMPFS_BLOCKSIZE) > MAX_BLOCKS_IN_INODE) {
+    if (num_blocks_to_allocate + (inode->size / fs->superblock->block_size) > MAX_BLOCKS_IN_INODE) {
         serial_printf("tempfs_inode_allocate_new_block too many blocks to request!\n");
         kfree(buffer);
         return TEMPFS_ERROR;
     }
 
-    if (inode->size % TEMPFS_BLOCKSIZE == 0) {
-        result = tempfs_indirection_indices_for_block_number(inode->size / TEMPFS_BLOCKSIZE);
+    if (inode->size % fs->superblock->block_size == 0) {
+        result = tempfs_indirection_indices_for_block_number(inode->size / fs->superblock->block_size);
     }
     else {
-        result = tempfs_indirection_indices_for_block_number((inode->size / TEMPFS_BLOCKSIZE) + 1);
+        result = tempfs_indirection_indices_for_block_number((inode->size / fs->superblock->block_size) + 1);
     }
 
     switch (result.levels_indirection) {
@@ -1181,10 +1177,10 @@ static void tempfs_read_inode(struct tempfs_filesystem* fs, struct tempfs_inode*
 
 static void tempfs_write_block_by_number(uint64_t block_number, uint8_t* buffer, struct tempfs_filesystem* fs,
                                          uint64_t offset, uint64_t write_size) {
-    if (write_size > TEMPFS_BLOCKSIZE) {
-        write_size = TEMPFS_BLOCKSIZE;
+    if (write_size > fs->superblock->block_size) {
+        write_size = fs->superblock->block_size;
     }
-    if (offset >= TEMPFS_BLOCKSIZE) {
+    if (offset >= fs->superblock->block_size) {
         offset = 0;
     }
 
@@ -1198,11 +1194,11 @@ static void tempfs_write_block_by_number(uint64_t block_number, uint8_t* buffer,
 
 static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, struct tempfs_filesystem* fs,
                                         uint64_t offset, uint64_t read_size) {
-    if (read_size > TEMPFS_BLOCKSIZE) {
-        read_size = TEMPFS_BLOCKSIZE - offset;
+    if (read_size > fs->superblock->block_size) {
+        read_size = fs->superblock->block_size - offset;
     }
 
-    if (offset >= TEMPFS_BLOCKSIZE) {
+    if (offset >= fs->superblock->block_size) {
         offset = 0;
     }
 
@@ -1221,7 +1217,7 @@ static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, 
 static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64_t offset, uint64_t num_blocks,
                                    struct tempfs_inode* inode) {
     uint64_t total_blocks = inode->block_count;
-    uint64_t block_number = offset / TEMPFS_BLOCKSIZE;
+    uint64_t block_number = offset / fs->superblock->block_size;
     uint64_t indirection_block;
     uint64_t double_indirection_block;
     uint64_t triple_indirection_block;
@@ -1263,7 +1259,7 @@ level_zero:
     indirection_block = 0;
 
 level_one:
-    tempfs_read_block_by_number(inode->single_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(inode->single_indirect, buffer, fs, 0, fs->superblock->block_size);
 
     for (uint64_t i = indirection_block; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i++) {
         tempfs_free_block_and_mark_bitmap(fs, *blocks[i]);
@@ -1275,10 +1271,10 @@ level_one:
 
     double_indirection_block = 0;
 level_two:
-    tempfs_read_block_by_number(inode->double_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(inode->double_indirect, buffer, fs, 0, fs->superblock->block_size);
     for (uint64_t i = double_indirection_block / NUM_BLOCKS_IN_INDIRECTION_BLOCK; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i
          ++) {
-        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, fs->superblock->block_size);
 
         for (uint64_t j = double_indirection_block % NUM_BLOCKS_IN_INDIRECTION_BLOCK; j <
              NUM_BLOCKS_IN_INDIRECTION_BLOCK; j++) {
@@ -1291,14 +1287,14 @@ level_two:
     }
     triple_indirection_block = 0;
 level_three:
-    tempfs_read_block_by_number(inode->triple_indirect, buffer, fs, 0, TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(inode->triple_indirect, buffer, fs, 0, fs->superblock->block_size);
     for (uint64_t i = triple_indirection_block / NUM_BLOCKS_DOUBLE_INDIRECTION; i < NUM_BLOCKS_IN_INDIRECTION_BLOCK; i
          ++) {
-        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, TEMPFS_BLOCKSIZE);
+        tempfs_read_block_by_number(*blocks[i], buffer2, fs, 0, fs->superblock->block_size);
 
         for (uint64_t j = triple_indirection_block / NUM_BLOCKS_IN_INDIRECTION_BLOCK; j <
              NUM_BLOCKS_IN_INDIRECTION_BLOCK; j++) {
-            tempfs_read_block_by_number(*blocks_2[j], buffer3, fs, 0, TEMPFS_BLOCKSIZE);
+            tempfs_read_block_by_number(*blocks_2[j], buffer3, fs, 0, fs->superblock->block_size);
 
             for (uint64_t k = triple_indirection_block % NUM_BLOCKS_IN_INDIRECTION_BLOCK; k <
                  NUM_BLOCKS_IN_INDIRECTION_BLOCK; k++) {
@@ -1327,10 +1323,11 @@ done:
 
 /*
  * Assume that everything is already freed on a left shift and that on a right shift the blocks are already allocated
+ * A left shift would be removing data in the middle of a file, right shift would be inserting data into the middle of a file
+ *
  */
 
-static void tempfs_shift_blocks(struct tempfs_inode* inode, uint64_t start_block, uint64_t shift_length,
-                                uint8_t shift_direction) {
+static void tempfs_shift_blocks_left(struct tempfs_filesystem *fs,struct tempfs_inode* inode, uint64_t start_block, uint64_t start_offset, uint64_t shift_length,uint64_t blocks_to_shift) {
     if (shift_length + start_block > inode->block_count) {
         serial_printf("tempfs_shift_blocks: shift_length + start_block > inode->block_count\n");
         return;
@@ -1361,6 +1358,28 @@ static void tempfs_shift_blocks(struct tempfs_inode* inode, uint64_t start_block
 
 }
 
+static void tempfs_shift_blocks_right(struct tempfs_filesystem *fs,struct tempfs_inode* inode, uint64_t start_block, uint64_t start_offset, uint64_t shift_length_bytes) {
+    
+    if ((shift_length_bytes + (start_block * fs->superblock->block_size)) > inode->block_count) {
+        panic("tempfs_shift_blocks: shift_length + start_block > inode->block_count\n"); /* For visibility */
+        return;
+    }
+
+    uint8_t* write_buffer = kalloc(PAGE_SIZE);
+    uint8_t* read_buffer = kalloc(PAGE_SIZE);
+
+    uint64_t end_offset = (shift_length_bytes - start_offset) % fs->superblock->block_size;
+
+    struct tempfs_byte_offset_indices byte_offset_indices_start =
+        tempfs_indirection_indices_for_block_number(start_block);
+
+    struct tempfs_byte_offset_indices byte_offset_indices_place_to_shift =
+        tempfs_indirection_indices_for_block_number(start_block);
+
+    tempfs_read_block_by_number(tempfs_get_logical_block_number_from_file(inode,start_block,fs),read_buffer,fs,start_offset,fs->superblock->block_size);
+    
+
+}
 /*
  *  Functions beneath are self-explanatory
  *  Easy allocate functions for different levels of
@@ -1379,7 +1398,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
                                    : inode->triple_indirect;
     inode->triple_indirect = triple_indirect; // could be more elegant but this is fine
 
-    tempfs_read_block_by_number(triple_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(triple_indirect, buffer, fs, 0,fs->superblock->block_size);
 
     if (num_allocated == 0) {
         index = 0;
@@ -1400,7 +1419,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
         num_to_allocate -= amount;
     }
 
-    tempfs_write_block_by_number(triple_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(triple_indirect, buffer, fs, 0,fs->superblock->block_size);
     kfree(buffer);
     return triple_indirect;
 }
@@ -1419,7 +1438,7 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
                                    : inode->double_indirect;
     inode->double_indirect = double_indirect; // could be more elegant but this is fine
 
-    tempfs_read_block_by_number(double_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(double_indirect, buffer, fs, 0,fs->superblock->block_size);
     uint64_t** block_array = (uint64_t**)buffer;
 
     if (num_allocated == 0) {
@@ -1439,7 +1458,7 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
         allocated = 0; // reset after the first allocation round
         num_to_allocate -= amount;
     }
-    tempfs_write_block_by_number(double_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(double_indirect, buffer, fs, 0,fs->superblock->block_size);
     kfree(buffer);
     return double_indirect;
 }
@@ -1456,13 +1475,13 @@ static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* 
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->single_indirect;
     inode->single_indirect = single_indirect; // could be more elegant but this is fine
-    tempfs_read_block_by_number(single_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_read_block_by_number(single_indirect, buffer, fs, 0,fs->superblock->block_size);
     /* We can probably just write over the memory which makes these reads redundant, just a note for now */
     uint64_t** block_array = (uint64_t**)buffer;
     for (uint64_t i = num_allocated; i < num_to_allocate; i++) {
         *block_array[i] = tempfs_get_free_block_and_mark_bitmap(fs);
     }
-    tempfs_write_block_by_number(single_indirect, buffer, fs, 0,TEMPFS_BLOCKSIZE);
+    tempfs_write_block_by_number(single_indirect, buffer, fs, 0,fs->superblock->block_size);
     kfree(buffer);
     return single_indirect;
 }
