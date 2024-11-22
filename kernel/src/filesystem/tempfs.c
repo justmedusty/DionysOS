@@ -569,10 +569,6 @@ static uint64_t tempfs_recursive_directory_entry_free(struct tempfs_filesystem* 
 
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
-    uint64_t inode_number = inode->inode_number;
-    memset(inode, 0, sizeof(struct tempfs_inode));
-    inode->inode_number = inode_number; /* Ensure that the inode number is preserved before when we zero the inode struct, then write it back to ramdisk */
-    tempfs_write_inode(fs, inode);
     tempfs_free_inode_and_mark_bitmap(fs, inode->inode_number);
 }
 
@@ -806,6 +802,12 @@ static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, 
  * I don't think I need locks on frees, I will find out one way or another if this is true
  */
 static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t inode_number) {
+
+    struct tempfs_inode inode;
+    tempfs_read_inode(fs,&inode,inode_number);
+    memset(&inode,0,sizeof(struct tempfs_inode));
+    inode.inode_number = inode_number;
+    tempfs_write_inode(fs,&inode); /* zero the inode leaving just the inode number */
     uint64_t inode_number_block = inode_number / TEMPFS_INODES_PER_BLOCK;
     uint64_t offset = inode_number % TEMPFS_INODES_PER_BLOCK;
 
