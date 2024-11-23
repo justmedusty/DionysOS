@@ -118,7 +118,6 @@ void tempfs_init(uint64_t filesystem_id) {
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs");
     tempfs_mkfs(filesystem_id, &tempfs_filesystem[filesystem_id]);
-    serial_printf("tempfs initialized\n");
 };
 
 /*
@@ -145,8 +144,6 @@ uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     tempfs_get_bytes_from_inode(fs, buffer, bytes, vnode->vnode_inode_number, offset, bytes);
-
-
     release_spinlock(fs->lock);
 }
 
@@ -254,9 +251,9 @@ struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8_
     if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS) {
         return NULL;
     }
-
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
+
 
 
     release_spinlock(fs->lock);
