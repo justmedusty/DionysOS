@@ -126,7 +126,7 @@ void kfree(void *address) {
 
     if (((uint64_t) address & 0xFFF) == 0) {
         metadata_t *metadata = (metadata_t *) (address - PAGE_SIZE);
-        phys_dealloc((void *) metadata - hhdm_request.response->offset, metadata->pages + 1);
+        phys_dealloc((void *) metadata - hhdm_request.response->offset);
         return;
     }
 

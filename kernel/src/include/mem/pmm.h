@@ -27,10 +27,10 @@ extern volatile struct limine_memmap_request memmap_request;
 #define BUDDY_HASH_TABLE_SIZE 300
 
 extern uint64_t hhdm_offset;
-
+extern uint64_t total_allocated;
 int phys_init();
 void *phys_alloc(uint64_t pages);
-void phys_dealloc(void *address, uint64_t pages);
+void phys_dealloc(void *address);
 uint64_t next_power_of_two(uint64_t x);
 bool is_power_of_two(uint64_t x);
 

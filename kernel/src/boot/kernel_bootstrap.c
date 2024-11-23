@@ -38,6 +38,7 @@ void kernel_bootstrap() {
     smp_init();
     arch_timer_init();
     dfs_init();
+    serial_printf("Total Pages Allocated %i\n",total_allocated);
 
     for (;;) {
         asm volatile("nop");

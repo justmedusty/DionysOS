@@ -230,6 +230,7 @@ void* phys_alloc(uint64_t pages) {
         panic("phys_alloc cannot allocate");
     }
     block->is_free = USED;
+    total_allocated += 1 << block->order;
     return_value = (void*)block->start_address;
 
     return return_value;
@@ -238,7 +239,8 @@ void* phys_alloc(uint64_t pages) {
 /*
  * The phys_dealloc simply calls buddy_free.
  */
-void phys_dealloc(void* address, uint64_t pages) {
+void phys_dealloc(void* address) {
+
     buddy_free(address);
 }
 
@@ -394,6 +396,7 @@ static void buddy_free(void* address) {
             singly_linked_list_remove_node_by_address(bucket, address);
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;
+            total_allocated  -= 1 << block->order;
             buddy_coalesce(block);
             return;
         }
