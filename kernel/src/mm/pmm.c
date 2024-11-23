@@ -38,6 +38,8 @@ volatile struct limine_hhdm_request hhdm_request = {
     .revision = 0
 };
 
+uint64_t total_allocated = 0;
+
 struct spinlock pmm_lock;
 struct spinlock buddy_lock;
 
@@ -240,6 +242,7 @@ void phys_dealloc(void* address, uint64_t pages) {
     buddy_free(address);
 }
 
+
 /*
  *  buddy_alloc first checks what order is required to meet the page demand
  *  It will iterate from 1 to MAX_ORDER checking if this # of pages matches, or if it is between two orders.
@@ -260,13 +263,33 @@ void phys_dealloc(void* address, uint64_t pages) {
  *
  *
  */
+
+bool is_power_of_two(uint64_t x) {
+    return x && ((x & (x - 1)) == 0);
+}
+
+uint64_t next_power_of_two(uint64_t x) {
+   if(x == 0) {
+       return 1;
+   }
+
+     x--;
+    x|=(x>>1);
+    x|=(x>>2);
+    x|=(x>>4);
+    x|=(x>>8);
+    x|=(x>>16);
+    return x+1;
+}
 static struct buddy_block* buddy_alloc(uint64_t pages) {
     if (pages > (1 << MAX_ORDER)) {
         serial_printf("pages %i \n", pages);
+        panic("UNIMPLEMENTED TALL ORDER");
         //TODO Handle tall orders
     }
 
     for (uint64_t i = 0; i < MAX_ORDER; i++) {
+
         if (pages == (1 << i)) {
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
             if (block == NULL) {
@@ -306,50 +329,37 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
             }
         }
 
+        /*
+         * Theres some odd stuff going on with non power of two allocations , this works below but I am not sure where the bug(s) are happening so I will leave this for
+         * now since it works but I will need to come back and find the bugs later. The bug is mainly ending in a hash bucket with the address no present on a free.
+         */
         if (pages < (1 << i)) {
+            struct buddy_block *block;
+            uint64_t index = i;
+            while (index <= MAX_ORDER) {
+                block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
 
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
 
-            if (block == NULL) {
-
-                uint64_t index = i;
-                index++;
-
-                while (index <= MAX_ORDER) {
-
-                    block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
-
-                    if (block != NULL && block->order >= index) {
-
-                        block->flags &= ~IN_TREE_FLAG;
-
-                        while (block->order != i) {
-
-                            block = buddy_split(block);
-
-                            if (block == NULL) {
-                                panic("buddy_alloc cannot split block");
-                            }
+                if (block != NULL && block->order >= index) {
+                    block->flags &= ~IN_TREE_FLAG;
+                    while (block->order != i) {
+                        block = buddy_split(block);
+                        if (block == NULL) {
+                            panic("buddy_alloc cannot split block");
                         }
-
-                        hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
-                        return block;
                     }
 
-                    if (block != NULL && block->order < index) {
-                        remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
-                        continue;
-                    }
-                    index++;
-                }
-            }
-            else {
-                block->flags &= ~IN_TREE_FLAG;
-                if (buddy_split(block) != NULL) {
                     hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
                     return block;
                 }
+
+                if (block != NULL && block->order < index) {
+                    remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
+                    continue;
+                }
+                index++;
             }
+
         }
     }
 

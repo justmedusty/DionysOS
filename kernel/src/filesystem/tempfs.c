@@ -118,6 +118,7 @@ void tempfs_init(uint64_t filesystem_id) {
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs");
     tempfs_mkfs(filesystem_id, &tempfs_filesystem[filesystem_id]);
+    serial_printf("tempfs initialized\n");
 };
 
 /*

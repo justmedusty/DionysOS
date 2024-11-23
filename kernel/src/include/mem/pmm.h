@@ -31,7 +31,8 @@ extern uint64_t hhdm_offset;
 int phys_init();
 void *phys_alloc(uint64_t pages);
 void phys_dealloc(void *address, uint64_t pages);
-
+uint64_t next_power_of_two(uint64_t x);
+bool is_power_of_two(uint64_t x);
 
 struct contiguous_page_range {
       uint64_t start_address;
@@ -48,3 +49,4 @@ struct buddy_block {
     uint8_t order;
     uint8_t is_free;
 };
+
