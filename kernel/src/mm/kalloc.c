@@ -55,18 +55,13 @@ void *kalloc(uint64_t size) {
     }
 
     uint64_t page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
-    void *return_value = P2V(phys_alloc(page_count + 1));
+    void *return_value = P2V(phys_alloc(page_count));
 
     if (return_value == NULL) {
         return NULL;
     }
 
-    metadata_t *metadata = (metadata_t *) return_value;
-
-    metadata->pages = page_count;
-    metadata->size = size;
-
-    return return_value + PAGE_SIZE;
+    return return_value;
 }
 /*
  * Krealloc is just realloc for the kernel. Allocate a bigger block of memory, copy the previous contents in.
@@ -126,8 +121,7 @@ void kfree(void *address) {
     }
 
     if (((uint64_t) address & 0xFFF) == 0) {
-        metadata_t *metadata = (metadata_t *) (address - PAGE_SIZE);
-        phys_dealloc((void *) metadata - hhdm_request.response->offset);
+        phys_dealloc(V2P(address));
         return;
     }
 
