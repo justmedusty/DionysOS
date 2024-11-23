@@ -26,15 +26,24 @@ uint32_t full = 0;
 /*
  * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
  * we get wrap-around.
+ *
+ * Multiply by large primes and xor to try and get the most diffusion, was having problems with the previous hash function
+ * causing too many collisions. This seems to work better.
  */
 uint64_t hash(uint64_t key, uint64_t modulus) {
-    uint64_t hash = key ^ ((key << 8 ^ key) ^ (key << 3 ^ key));
+    key = key ^ key >> 4;
+    key *= 0xBF58476D1CE4E5B9;
+    key ^= (key >> 31);
+    key *= 0x94D049BB133111EB;
+    key ^= (key >> 30);
+    key *= 0x9E3779B97F4A7C15;
+    key ^= (key >> 26);
 
-    if (hash > modulus) {
-        hash %= modulus;
+    if (key > modulus) {
+        key %= modulus;
     }
 
-    return hash;
+    return key;
 }
 
 /*
@@ -82,7 +91,6 @@ void hash_table_destroy(struct hash_table* table) {
 void hash_table_insert(struct hash_table* table, uint64_t key, void* data) {
     uint64_t hash_key = hash(key, table->size);
     singly_linked_list_insert_tail(&table->table[hash_key], data);
-
 }
 /*
  * Retrieve a hash bucket based on a key passed
