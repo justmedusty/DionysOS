@@ -13,6 +13,7 @@
 #define CURRENT_DIRECTORY_NAME "."
 #define PARENT_DIRECTORY_NAME ".."
 
+#define ROOT_DIRECTORY_NAME "/"
 
 
 struct file_handle {
