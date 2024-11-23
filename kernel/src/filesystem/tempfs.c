@@ -55,7 +55,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
 static void tempfs_read_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t inode_number);
 static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* inode, uint64_t current_block,
                                                           struct tempfs_filesystem* fs);
-static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64_t byte_start, uint64_t byte_end,
+static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode);
 static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
@@ -64,10 +64,6 @@ static uint64_t follow_block_pointers(struct tempfs_filesystem* fs, struct tempf
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode);
 static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
                                                       struct tempfs_directory_entry* entry, uint64_t inode_number);
-static void tempfs_shift_blocks_left(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t start_block,
-                                     uint64_t start_offset,uint64_t end_offset, uint64_t shift_length_bytes);
-static void tempfs_shift_blocks_right(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t start_block,
-                                     uint64_t start_offset,uint64_t end_offset, uint64_t shift_length_bytes);
 static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct tempfs_directory_entry* entry,
                                             struct tempfs_inode* inode);
 /*
@@ -576,7 +572,7 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
 }
 
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
-    free_blocks_from_inode(fs, 0, 0,inode->size,inode->block_count, inode);
+    free_blocks_from_inode(fs,0,inode->block_count, inode);
     tempfs_free_inode_and_mark_bitmap(fs, inode->inode_number);
 }
 
@@ -1226,7 +1222,7 @@ static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, 
  * This function will start at block offset and go to num_blocks in order to free as many blocks as requested, afterwards it will shift blocks if the
  * freeing left space on the end of the file.
  */
-static void free_blocks_from_inode(struct tempfs_filesystem* fs, uint64_t byte_start, uint64_t byte_end,
+static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode) {
     uint64_t total_blocks = inode->block_count;
@@ -1322,97 +1318,12 @@ level_three:
 
 
 done:
-    /*
-     * Shift blocks down
-     */
-    if (block_start + num_blocks < total_blocks) {
-        tempfs_shift_blocks_left(fs, inode, block_start / fs->superblock->block_size,byte_start % fs->superblock->block_size,byte_end % fs->superblock->block_size, (num_blocks * fs->superblock->block_size));
-    }
     inode->block_count -= num_blocks;
     kfree(buffer);
     kfree(buffer2);
     kfree(buffer3);
 }
 
-/*
- * Assume that everything is already freed on a left shift and that on a right shift the blocks are already allocated
- * A left shift would be removing data in the middle of a file, right shift would be inserting data into the middle of a file
- *
- */
-
-static void tempfs_shift_blocks_left(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t start_block,
-                                     uint64_t start_offset,uint64_t end_offset, uint64_t shift_length_bytes) {
-    if ((shift_length_bytes + (start_block * fs->superblock->block_size)) > inode->block_count) {
-        panic("tempfs_shift_blocks: shift_length + start_block > inode->block_count\n"); /* For visibility */
-        return;
-    }
-
-    uint8_t* write_buffer = kalloc(PAGE_SIZE);
-    uint8_t* read_buffer = kalloc(PAGE_SIZE);
-
-
-
-    tempfs_read_block_by_number(tempfs_get_logical_block_number_from_file(inode, start_block, fs), read_buffer, fs,
-                                start_offset, fs->superblock->block_size);
-
-    kfree(write_buffer);
-    kfree(read_buffer);
-}
-
-static void tempfs_shift_blocks_right(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t start_block,
-                                      uint64_t start_offset,uint64_t end_offset, uint64_t shift_length_bytes) {
-    if ((shift_length_bytes + (start_block * fs->superblock->block_size)) > inode->block_count) {
-        panic("tempfs_shift_blocks: shift_length + start_block > inode->block_count\n"); /* For visibility */
-        return;
-    }
-
-    uint8_t* write_buffer = kalloc(PAGE_SIZE);
-    uint8_t* read_buffer = kalloc(PAGE_SIZE);
-
-    tempfs_read_block_by_number(tempfs_get_logical_block_number_from_file(inode, start_block, fs), read_buffer, fs,
-                                start_offset, fs->superblock->block_size);
-
-    kfree(write_buffer);
-    kfree(read_buffer);
-}
-
-void tempfs_shift_single_block_left(struct tempfs_filesystem* fs, struct tempfs_inode* inode,uint64_t block_number, uint64_t start_offset,uint64_t shift_length_bytes) {
-    uint8_t *write_buffer = kalloc(PAGE_SIZE);
-    uint8_t *read_buffer = kalloc(PAGE_SIZE);
-
-    uint8_t *transient_buffer = kalloc(PAGE_SIZE);
-
-    uint64_t end_block = ((block_number * fs->superblock->block_size) + shift_length_bytes) - start_offset / fs->superblock->block_size;
-
-
-    tempfs_read_block_by_number(block_number,read_buffer,fs,start_offset,fs->superblock->block_size);
-
-
-    tempfs_read_block_by_number(block_number,transient_buffer,fs,start_offset,fs->superblock->block_size);
-
-    kfree(write_buffer);
-    kfree(read_buffer);
-    kfree(transient_buffer);
-}
-
-
-void tempfs_shift_single_block_right(struct tempfs_filesystem* fs, struct tempfs_inode* inode,uint64_t block_number, uint64_t start_offset,uint64_t shift_length_bytes) {
-
-    uint8_t *write_buffer = kalloc(PAGE_SIZE);
-    uint8_t *read_buffer = kalloc(PAGE_SIZE);
-
-    uint64_t end_block = ((block_number * fs->superblock->block_size) + shift_length_bytes) - start_offset / fs->superblock->block_size;
-    uint64_t end_offset = ((block_number * fs->superblock->block_size) + shift_length_bytes) + start_offset % fs->superblock->block_size;
-    uint64_t start_offset_pivot = 0;
-
-    tempfs_read_block_by_number(block_number,read_buffer,fs,start_offset,fs->superblock->block_size);
-
-    tempfs_read_block_by_number(end_block,write_buffer,fs,0,end_offset);
-
-
-    kfree(write_buffer);
-    kfree(read_buffer);
-}
 
 
 /*
