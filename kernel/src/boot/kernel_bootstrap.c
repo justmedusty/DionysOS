@@ -34,7 +34,7 @@ void kernel_bootstrap() {
     acpi_init();
     lapic_init();
     vfs_init();
-    tempfs_init();
+    tempfs_init(0);
     smp_init();
     arch_timer_init();
     dfs_init();

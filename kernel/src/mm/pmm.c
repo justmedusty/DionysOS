@@ -232,12 +232,14 @@ void* phys_alloc(uint64_t pages) {
 
     return return_value;
 }
+
 /*
  * The phys_dealloc simply calls buddy_free.
  */
 void phys_dealloc(void* address, uint64_t pages) {
     buddy_free(address);
 }
+
 /*
  *  buddy_alloc first checks what order is required to meet the page demand
  *  It will iterate from 1 to MAX_ORDER checking if this # of pages matches, or if it is between two orders.
@@ -298,22 +300,56 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                     index++;
                 }
             }
-            block->flags &= ~IN_TREE_FLAG;
-            return block;
-        }
-    //I think this is broken just leaving it for now. I will leave this for when I clean up this function in the future
-        if (pages < (1 << i)) {
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
-            block->flags &= ~IN_TREE_FLAG;
-            if (block == NULL) {
-                return NULL;
-            }
-            if (buddy_split(block) != NULL) {
-                hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
+            else {
+                block->flags &= ~IN_TREE_FLAG;
                 return block;
             }
+        }
 
-            return NULL;
+        if (pages < (1 << i)) {
+
+            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], 1 << i,REMOVE_FROM_TREE);
+
+            if (block == NULL) {
+
+                uint64_t index = i;
+                index++;
+
+                while (index <= MAX_ORDER) {
+
+                    block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
+
+                    if (block != NULL && block->order >= index) {
+
+                        block->flags &= ~IN_TREE_FLAG;
+
+                        while (block->order != i) {
+
+                            block = buddy_split(block);
+
+                            if (block == NULL) {
+                                panic("buddy_alloc cannot split block");
+                            }
+                        }
+
+                        hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
+                        return block;
+                    }
+
+                    if (block != NULL && block->order < index) {
+                        remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
+                        continue;
+                    }
+                    index++;
+                }
+            }
+            else {
+                block->flags &= ~IN_TREE_FLAG;
+                if (buddy_split(block) != NULL) {
+                    hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
+                    return block;
+                }
+            }
         }
     }
 
@@ -410,6 +446,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
     return NULL;
 }
+
 /*
  * This function just attempts to get a spare block from the static pool list
  * If none is found, kalloc is invoked in instead.

@@ -143,7 +143,7 @@ struct tempfs_filesystem {
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the proper size");
 
 
-void tempfs_init();
+void tempfs_init(uint64_t filesystem_id);
 void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs);
 uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
 uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);

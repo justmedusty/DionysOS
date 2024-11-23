@@ -31,6 +31,8 @@ struct tempfs_filesystem tempfs_filesystem[10] = {
 };
 
 static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number, uint8_t action);
+static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
+                                                      struct tempfs_inode* inode_to_be_filled);
 static uint64_t tempfs_get_free_block_and_mark_bitmap(struct tempfs_filesystem* fs);
 static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t block_number);
 static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t inode_number);
@@ -150,7 +152,6 @@ uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint
 uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-
 
     release_spinlock(fs->lock);
 }
