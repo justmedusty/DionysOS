@@ -151,9 +151,13 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name) {
         return NULL;
     }
 
-    struct vnode* new_vnode = vnode_alloc();
+    if(!parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+        vnode_directory_alloc_children(parent_directory);
+    }
 
-    new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    struct vnode* new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
+
     return new_vnode;
 }
 
