@@ -15,7 +15,7 @@
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 
 #define DEFAULT_TEMPFS_SIZE (TEMPFS_BLOCKSIZE /* super block */ + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCK_POINTER_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_INODES  * TEMPFS_BLOCKSIZE))
-#define MAX_BLOCKS_IN_INODE (((((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) * TEMPFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
+#define MAX_BLOCKS_IN_INODE (((((NUM_BLOCKS_DIRECT) * TEMPFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
 #define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64_t)))
 
@@ -44,7 +44,6 @@
 #define NUM_BLOCKS_DOUBLE_INDIRECTION (NUM_BLOCKS_IN_INDIRECTION_BLOCK * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 #define NUM_BLOCKS_TRIPLE_INDIRECTION (NUM_BLOCKS_IN_INDIRECTION_BLOCK * NUM_BLOCKS_IN_INDIRECTION_BLOCK * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
-#define TEMPFS_NUM_BLOCK_POINTERS_PER_INODE 10
 #define TEMPFS_INODE_SIZE sizeof(struct tempfs_inode)
 #define TEMPFS_NUM_INODES TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
 #define TEMPFS_NUM_BLOCKS TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8
@@ -57,10 +56,6 @@
 #define TEMPFS_ERROR 0x6
 #define SUCCESS 0
 #define NOT_FOUND 1
-
-#define LEFT_SHIFT 0
-#define RIGHT_SHIFT 1
-
 
 #define TEMPFS_MAX_FILES_IN_DIRENT_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
 #define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
@@ -155,7 +150,7 @@ uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint
 uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
 uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes);
 struct vnode* tempfs_lookup(struct vnode* vnode, char* name);
-struct vnode* tempfs_create(struct vnode* vnode, struct vnode* new_vnode, uint8_t vnode_type);
+struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type);
 void tempfs_close(struct vnode* vnode);
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode);
 void tempfs_unlink(struct vnode* vnode);

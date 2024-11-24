@@ -96,7 +96,7 @@ struct virtual_handle {
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
-    struct vnode* (*create)(struct vnode* vnode, struct vnode* new_vnode,uint8_t vnode_type);
+    struct vnode* (*create)(struct vnode* parent, char *name, uint8_t vnode_type);
     void (*remove)(struct vnode* vnode);
     void (*rename)(struct vnode* vnode, char* new_name);
     uint64_t (*write)(struct vnode* vnode,uint64_t offset,uint8_t *buffer,uint64_t bytes);
@@ -108,6 +108,7 @@ struct vnode_operations {
 };
 
 void vnode_directory_alloc_children(struct vnode* vnode);
+struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes,uint8_t *buffer);
 uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t *buffer);

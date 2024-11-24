@@ -142,7 +142,7 @@ struct vnode* vnode_lookup(char* path) {
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
-struct vnode* vnode_create(char* path, uint8_t vnode_type) {
+struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode* parent_directory = vnode_lookup(path);
@@ -153,7 +153,7 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type) {
 
     struct vnode* new_vnode = vnode_alloc();
 
-    new_vnode = parent_directory->vnode_ops->create(parent_directory, new_vnode, vnode_type);
+    new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
     return new_vnode;
 }
 
