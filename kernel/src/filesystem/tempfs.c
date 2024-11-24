@@ -303,7 +303,6 @@ void tempfs_unlink(struct vnode* vnode) {
  */
 void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     uint8_t* buffer = kalloc(PAGE_SIZE);
-
     fs->superblock->magic = TEMPFS_MAGIC;
     fs->superblock->version = TEMPFS_VERSION;
     fs->superblock->block_size = fs->superblock->block_size;

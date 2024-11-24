@@ -61,7 +61,6 @@ uint64_t reserved_pages = 0;
 uint64_t hhdm_offset = 0;
 int page_range_index = 0;
 
-
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
 struct contiguous_page_range contiguous_pages[10] = {};
 
@@ -287,6 +286,15 @@ uint64_t next_power_of_two(uint64_t x) {
 
 static struct buddy_block* buddy_alloc(uint64_t pages) {
 
+    /*
+     * My approach for tall orders is as follows :
+     *
+     * Alloc MAX_ORDER buddy block, and iterate through all of its MAX_ORDER blocks in the chain until there is enough to satisfy the order.
+     *
+     * The number of max order blocks is stored in the start block's buddy_chain_length field
+     *
+     * Freeing will just require an iterative approach to free everything and add it to the binary search tree
+     */
     if (pages > (1 << MAX_ORDER)) {
 
         uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
@@ -298,7 +306,6 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
 
         if(block->order != MAX_ORDER) {
             while(block && block->order != MAX_ORDER) {
-                serial_printf("order %i addr %x.64\n",block->order,block);
                 block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
             }
         }
@@ -324,6 +331,8 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
             current_blocks++;
         }
 
+        total_allocated += (1 << MAX_ORDER) * block->buddy_chain_length;
+
         return block;
     }
 
@@ -335,16 +344,15 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
     for (uint64_t i = 0; i < MAX_ORDER; i++) {
 
         if (pages == (1 << i)) {
+
             struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
+
             if (block == NULL) {
-                uint64_t index = i;
-                index++;
+
+                uint64_t index = i + 1;
+
                 while (index <= MAX_ORDER) {
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
-                    if(block) {
-                        serial_printf("ASKED ORDER == %i GOT ORDER = %i\n",1<<i,block->order);
-                    }
-
 
                     if (block != NULL && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
@@ -371,6 +379,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                 }
             }
             else {
+                hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
                 block->flags &= ~IN_TREE_FLAG;
                 return block;
             }
