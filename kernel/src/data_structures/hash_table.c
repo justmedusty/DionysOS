@@ -3,9 +3,7 @@
 //
 
 #include "include/data_structures/hash_table.h"
-#include <include/types.h>
 #include <include/arch/arch_cpu.h>
-#include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/definitions.h"
 
@@ -31,6 +29,7 @@ uint32_t full = 0;
  * causing too many collisions. This seems to work better.
  */
 uint64_t hash(uint64_t key, uint64_t modulus) {
+
     key = key ^ key >> 4;
     key *= 0xBF58476D1CE4E5B9;
     key ^= (key >> 31);
@@ -54,6 +53,7 @@ uint64_t hash(uint64_t key, uint64_t modulus) {
  *Init all of the lists
  */
 void hash_table_init(struct hash_table* table, uint64_t size) {
+
     if (table == NULL) {
         panic("hash_table_init: table is NULL");
     }

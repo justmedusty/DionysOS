@@ -307,18 +307,14 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     fs->superblock->magic = TEMPFS_MAGIC;
     fs->superblock->version = TEMPFS_VERSION;
     fs->superblock->block_size = fs->superblock->block_size;
-    fs->superblock->num_blocks = ((sizeof(fs->superblock->block_bitmap_pointers) / 8) * fs->superblock->block_size) * 8;
-    fs->superblock->num_inodes = ((sizeof(fs->superblock->inode_bitmap_pointers) / 8) * fs->superblock->block_size) * 8;
+    fs->superblock->num_blocks = TEMPFS_NUM_BLOCKS;
+    fs->superblock->num_inodes = TEMPFS_NUM_INODES;
     fs->superblock->inode_start_pointer = TEMPFS_START_INODES;
     fs->superblock->block_start_pointer = TEMPFS_START_BLOCKS;
-
-    for (uint64_t i = 0; i < TEMPFS_NUM_INODE_POINTER_BLOCKS; i++) {
-        fs->superblock->inode_bitmap_pointers[i] = TEMPFS_START_INODE_BITMAP + i;
-    }
-
-    for (uint64_t i = 0; i < TEMPFS_NUM_BLOCK_POINTER_BLOCKS; i++) {
-        fs->superblock->block_bitmap_pointers[i] = TEMPFS_START_BLOCK_BITMAP + i;
-    }
+    fs->superblock->inode_bitmap_pointers_start = TEMPFS_START_INODE_BITMAP;
+    fs->superblock->block_bitmap_pointers_start = TEMPFS_START_BLOCK_BITMAP;
+    fs->superblock->block_bitmap_size = TEMPFS_NUM_BLOCK_POINTER_BLOCKS;
+    fs->superblock->inode_bitmap_size = TEMPFS_NUM_INODE_POINTER_BLOCKS;
 
     fs->superblock->total_size = DEFAULT_TEMPFS_SIZE;
     fs->ramdisk_id = ramdisk_id;
@@ -355,7 +351,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
                   fs->superblock->block_size, ramdisk_id);
 
     kfree(buffer);
-    serial_printf("Tempfs empty filesystem initialized\n");
+    serial_printf("Tempfs empty filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
 }
 
 
@@ -585,12 +581,12 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
     uint64_t block;
 
     if (type == BITMAP_TYPE_BLOCK) {
-        block_to_read = fs->superblock->block_bitmap_pointers[number / (fs->superblock->block_size * 8)];
-        block = fs->superblock->block_bitmap_pointers[block_to_read];
+        block_to_read = fs->superblock->block_bitmap_pointers_start + number / (fs->superblock->block_size * 8);
+        block = fs->superblock->block_bitmap_pointers_start + block_to_read;
     }
     else {
-        block_to_read = fs->superblock->inode_bitmap_pointers[number / (fs->superblock->block_size * 8)];
-        block = fs->superblock->inode_bitmap_pointers[block_to_read];
+        block_to_read = fs->superblock->inode_bitmap_pointers_start + number / (fs->superblock->block_size * 8);
+        block = fs->superblock->inode_bitmap_pointers_start + block_to_read;
     }
 
     uint64_t byte_in_block = number / 8;
@@ -630,7 +626,7 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
  */
 static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
                                                       struct tempfs_inode* inode_to_be_filled) {
-    uint64_t buffer_size = PAGE_SIZE * 2;
+    uint64_t buffer_size = PAGE_SIZE * 8;
     uint8_t* buffer = kalloc(buffer_size);
     uint64_t block = 0;
     uint64_t byte = 0;
@@ -638,7 +634,7 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
     uint64_t inode_number;
 
 
-    uint64_t ret = ramdisk_read(buffer, fs->superblock->inode_bitmap_pointers[0], 0,
+    uint64_t ret = ramdisk_read(buffer, fs->superblock->inode_bitmap_pointers_start, 0,
                                 fs->superblock->block_size * TEMPFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
                                 fs->ramdisk_id);
 
@@ -672,7 +668,7 @@ static uint64_t tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* 
 
 
 found_free:
-    tempfs_write_block_by_number(fs->superblock->inode_bitmap_pointers[block], &buffer[block], fs, 0,
+    tempfs_write_block_by_number(fs->superblock->inode_bitmap_pointers_start + block, &buffer[block], fs, 0,
                                  fs->superblock->block_size);
     kfree(buffer);
 
@@ -718,7 +714,7 @@ retry:
      *many blocks here so we will work with ramdisk functions directly.
      *
      */
-    uint64_t ret = ramdisk_read(buffer, fs->superblock->block_bitmap_pointers[offset], 0, buffer_size, buffer_size,
+    uint64_t ret = ramdisk_read(buffer, fs->superblock->block_bitmap_pointers_start + offset, 0, buffer_size, buffer_size,
                                 fs->ramdisk_id);
 
     if (ret != SUCCESS) {
@@ -763,7 +759,7 @@ retry:
 
 
 found_free:
-    ret = ramdisk_write(&buffer[block * fs->superblock->block_size], fs->superblock->block_bitmap_pointers[block], 0,
+    ret = ramdisk_write(&buffer[block * fs->superblock->block_size], fs->superblock->block_bitmap_pointers_start + block, 0,
                         fs->superblock->block_size,
                         buffer_size - (block * fs->superblock->block_size), fs->ramdisk_id);
 

@@ -14,7 +14,7 @@
 #define MAX_LEVEL_INDIRECTIONS 3
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 
-#define DEFAULT_TEMPFS_SIZE (19705 * TEMPFS_BLOCKSIZE)
+#define DEFAULT_TEMPFS_SIZE (TEMPFS_BLOCKSIZE /* super block */ + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCK_POINTER_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_INODES  * TEMPFS_BLOCKSIZE))
 #define MAX_BLOCKS_IN_INODE (((((TEMPFS_NUM_BLOCK_POINTERS_PER_INODE) * TEMPFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
 #define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(uint64_t)))
@@ -23,8 +23,11 @@
 #define TEMPFS_REG_FILE 1
 #define TEMPFS_SYMLINK 2
 
-#define TEMPFS_NUM_INODE_POINTER_BLOCKS 6
-#define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 114
+#define TEMPFS_NUM_INODE_POINTER_BLOCKS 16
+#define TEMPFS_NUM_BLOCK_POINTER_BLOCKS 128
+
+#define TEMPFS_NUM_BLOCKS (TEMPFS_NUM_BLOCK_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8)
+#define TEMPFS_NUM_INODES (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8)
 
 #define NUM_INODES_PER_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_inode)))
 #define TEMPFS_INODES_PER_BLOCK (TEMPFS_BLOCKSIZE / TEMPFS_INODE_SIZE)
@@ -69,7 +72,7 @@
 #define TEMPFS_START_INODE_BITMAP 1
 #define TEMPFS_START_BLOCK_BITMAP (TEMPFS_START_INODE_BITMAP + TEMPFS_NUM_INODE_POINTER_BLOCKS)
 #define TEMPFS_START_INODES (TEMPFS_START_BLOCK_BITMAP + TEMPFS_NUM_BLOCK_POINTER_BLOCKS)
-#define TEMPFS_START_BLOCKS (TEMPFS_START_INODES + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8))
+#define TEMPFS_START_BLOCKS (TEMPFS_START_INODES + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE * 8) / NUM_INODES_PER_BLOCK)
 
 #define TEMPFS_GET_BLOCK_NUMBER_OF_INODE(inode_number)
 extern struct vnode_operations tempfs_vnode_ops;
@@ -82,10 +85,13 @@ struct tempfs_superblock {
     uint64_t num_inodes;
     uint64_t total_size;
     /* Both bitmap entries hold n block pointers */
-    uint64_t inode_bitmap_pointers[TEMPFS_NUM_INODE_POINTER_BLOCKS]; /* Can hold 50k inodes assuming 1024 size */
-    uint64_t block_bitmap_pointers[TEMPFS_NUM_BLOCK_POINTER_BLOCKS]; /* Can hold approx 1 mil blocks */
+    uint64_t inode_bitmap_size;
+    uint64_t block_bitmap_size;
+    uint64_t inode_bitmap_pointers_start; /* Can hold 50k inodes assuming 1024 size */
+    uint64_t block_bitmap_pointers_start; /* Can hold approx 1 mil blocks */
     uint64_t inode_start_pointer; /* Where inodes start */
     uint64_t block_start_pointer; /* Where blocks start */
+    uint64_t reserved[116]; // just to keep the size nice, we can do something with this space later if we so choose
 };
 
 _Static_assert(sizeof(struct tempfs_superblock) == TEMPFS_BLOCKSIZE, "Tempfs Superblock not the proper size");

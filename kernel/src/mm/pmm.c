@@ -275,7 +275,6 @@ uint64_t next_power_of_two(uint64_t x) {
    if(x == 0) {
        return 1;
    }
-    serial_printf("x start value is %i\n",x);
     x--;
     x |= x >> 1;
     x |= x >> 2;
@@ -284,7 +283,6 @@ uint64_t next_power_of_two(uint64_t x) {
     x |= x >> 16;
     x |= x >> 32;
 
-    serial_printf("x end value is %i\n",x+1);
     return x + 1;
 }
 
