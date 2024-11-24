@@ -116,9 +116,67 @@ void tempfs_init(uint64_t filesystem_id) {
         return;
     }
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
-    ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs");
+    ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs",TEMPFS_BLOCKSIZE);
     tempfs_mkfs(filesystem_id, &tempfs_filesystem[filesystem_id]);
 };
+
+/*
+ * This will be the function that spins up an empty tempfs filesystem and then fill with a root directory and a few basic directories and files.
+ *
+ * Takes a ramdisk ID to specify which ramdisk to operate on
+ */
+void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
+    uint8_t* buffer = kalloc(PAGE_SIZE);
+    fs->superblock->magic = TEMPFS_MAGIC;
+    fs->superblock->version = TEMPFS_VERSION;
+    fs->superblock->block_size = fs->superblock->block_size;
+    fs->superblock->num_blocks = TEMPFS_NUM_BLOCKS;
+    fs->superblock->num_inodes = TEMPFS_NUM_INODES;
+    fs->superblock->inode_start_pointer = TEMPFS_START_INODES;
+    fs->superblock->block_start_pointer = TEMPFS_START_BLOCKS;
+    fs->superblock->inode_bitmap_pointers_start = TEMPFS_START_INODE_BITMAP;
+    fs->superblock->block_bitmap_pointers_start = TEMPFS_START_BLOCK_BITMAP;
+    fs->superblock->block_bitmap_size = TEMPFS_NUM_BLOCK_POINTER_BLOCKS;
+    fs->superblock->inode_bitmap_size = TEMPFS_NUM_INODE_POINTER_BLOCKS;
+
+    fs->superblock->total_size = DEFAULT_TEMPFS_SIZE;
+    fs->ramdisk_id = ramdisk_id;
+
+    //copy the contents into our buffer
+    memcpy(buffer, &tempfs_superblock, sizeof(struct tempfs_superblock));
+
+    //Write the new superblock to the ramdisk
+    ramdisk_write(buffer,TEMPFS_SUPERBLOCK, 0, fs->superblock->block_size,PAGE_SIZE, ramdisk_id);
+
+    memset(buffer, 0,PAGE_SIZE);
+
+    /*
+     * Fill in inode bitmap with zeros blocks
+     */
+    ramdisk_write(buffer,TEMPFS_START_INODE_BITMAP, 0,TEMPFS_NUM_INODE_POINTER_BLOCKS * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
+
+    /*
+     * Fill in block bitmap with zerod blocks
+     */
+    ramdisk_write(buffer,TEMPFS_START_BLOCK_BITMAP, 0,TEMPFS_NUM_BLOCK_POINTER_BLOCKS * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
+
+    /*
+     *Write zerod blocks for the inode blocks
+     */
+    ramdisk_write(buffer,TEMPFS_START_INODES, 0,TEMPFS_NUM_INODES * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
+    /*
+     *Write zerod blocks for the blocks
+     */
+    ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * fs->superblock->block_size,
+                  fs->superblock->block_size, ramdisk_id);
+
+    kfree(buffer);
+
+    serial_printf("Tempfs empty filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
+}
 
 /*
  * TODO this does not handle removing it from the parent directory
@@ -157,7 +215,6 @@ uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uin
 uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-
 
     release_spinlock(fs->lock);
 }
@@ -296,62 +353,7 @@ void tempfs_unlink(struct vnode* vnode) {
     }
 }
 
-/*
- * This will be the function that spins up an empty tempfs filesystem and then fill with a root directory and a few basic directories and files.
- *
- * Takes a ramdisk ID to specify which ramdisk to operate on
- */
-void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
-    uint8_t* buffer = kalloc(PAGE_SIZE);
-    fs->superblock->magic = TEMPFS_MAGIC;
-    fs->superblock->version = TEMPFS_VERSION;
-    fs->superblock->block_size = fs->superblock->block_size;
-    fs->superblock->num_blocks = TEMPFS_NUM_BLOCKS;
-    fs->superblock->num_inodes = TEMPFS_NUM_INODES;
-    fs->superblock->inode_start_pointer = TEMPFS_START_INODES;
-    fs->superblock->block_start_pointer = TEMPFS_START_BLOCKS;
-    fs->superblock->inode_bitmap_pointers_start = TEMPFS_START_INODE_BITMAP;
-    fs->superblock->block_bitmap_pointers_start = TEMPFS_START_BLOCK_BITMAP;
-    fs->superblock->block_bitmap_size = TEMPFS_NUM_BLOCK_POINTER_BLOCKS;
-    fs->superblock->inode_bitmap_size = TEMPFS_NUM_INODE_POINTER_BLOCKS;
 
-    fs->superblock->total_size = DEFAULT_TEMPFS_SIZE;
-    fs->ramdisk_id = ramdisk_id;
-
-    //copy the contents into our buffer
-    memcpy(buffer, &tempfs_superblock, sizeof(struct tempfs_superblock));
-
-    //Write the new superblock to the ramdisk
-    ramdisk_write(buffer,TEMPFS_SUPERBLOCK, 0, fs->superblock->block_size,PAGE_SIZE, ramdisk_id);
-
-    memset(buffer, 0,PAGE_SIZE);
-
-    /*
-     * Fill in inode bitmap with zeros blocks
-     */
-    ramdisk_write(buffer,TEMPFS_START_INODE_BITMAP, 0,TEMPFS_NUM_INODE_POINTER_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
-
-    /*
-     * Fill in block bitmap with zerod blocks
-     */
-    ramdisk_write(buffer,TEMPFS_START_BLOCK_BITMAP, 0,TEMPFS_NUM_BLOCK_POINTER_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
-
-    /*
-     *Write zerod blocks for the inode blocks
-     */
-    ramdisk_write(buffer,TEMPFS_START_INODES, 0,TEMPFS_NUM_INODES * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
-    /*
-     *Write zerod blocks for the blocks
-     */
-    ramdisk_write(buffer,TEMPFS_START_BLOCKS, 0, TEMPFS_NUM_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
-
-    kfree(buffer);
-    serial_printf("Tempfs empty filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
-}
 
 
 /*

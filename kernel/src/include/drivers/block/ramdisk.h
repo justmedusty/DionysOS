@@ -59,7 +59,7 @@ struct ramdisk {
 };
 
 
-void ramdisk_init(const uint64_t size_bytes, const uint64_t ramdisk_id, char* name);
+void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name,uint64_t block_size);
 uint64_t ramdisk_mkfs(const int8_t* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id);
 void ramdisk_destroy(const uint64_t ramdisk_id);
 uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
