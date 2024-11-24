@@ -160,9 +160,7 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = (void*)(contiguous_pages[i].start_address + (j * (PAGE_SIZE))
-                & ~
-                0xFFF);
+            buddy_block_static_pool[index].start_address = (void*)(contiguous_pages[i].start_address + (j * (PAGE_SIZE))& ~0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -187,9 +185,10 @@ int phys_init() {
         buddy_block_static_pool[i].is_free = FREE;
         buddy_block_static_pool[i].zone = 0xFFFF;
         buddy_block_static_pool[i].next = NULL;
-        buddy_block_static_pool[i].zone = 0xFFFFFFFF;
+        buddy_block_static_pool[i].zone = UNUSED;
         buddy_block_static_pool[i].start_address = 0;
         buddy_block_static_pool[i].flags = STATIC_POOL_FLAG;
+        buddy_block_static_pool[i].order = UNUSED;
 
         singly_linked_list_insert_head(&unused_buddy_blocks_list, &buddy_block_static_pool[i]);
     }
@@ -222,16 +221,15 @@ int phys_init() {
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
 void* phys_alloc(uint64_t pages) {
+    acquire_spinlock(&pmm_lock);
     struct buddy_block* block = buddy_alloc(pages);
-
-    void* return_value;
-
+    release_spinlock(&pmm_lock);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
     }
     block->is_free = USED;
     total_allocated += 1 << block->order;
-    return_value = (void*)block->start_address;
+    void* return_value = (void*)block->start_address;
 
     return return_value;
 }
@@ -240,8 +238,9 @@ void* phys_alloc(uint64_t pages) {
  * The phys_dealloc simply calls buddy_free.
  */
 void phys_dealloc(void* address) {
-
+    acquire_spinlock(&pmm_lock);
     buddy_free(address);
+    release_spinlock(&pmm_lock);
 }
 
 
@@ -287,11 +286,47 @@ uint64_t next_power_of_two(uint64_t x) {
 }
 
 static struct buddy_block* buddy_alloc(uint64_t pages) {
+
     if (pages > (1 << MAX_ORDER)) {
-        serial_printf("pages %i \n", pages);
-        panic("UNIMPLEMENTED TALL ORDER");
-        //TODO Handle tall orders
+
+        uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
+        struct buddy_block* block;
+    start:
+        uint64_t current_blocks = 1;
+        block  = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+        struct buddy_block* pointer = block;
+
+        if(block->order != MAX_ORDER) {
+            while(block && block->order != MAX_ORDER) {
+                serial_printf("order %i addr %x.64\n",block->order,block);
+                block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+            }
+        }
+
+        while (pointer->next->order == MAX_ORDER && current_blocks < max_blocks && pointer->zone == pointer->next->zone) {
+            pointer = pointer->next;
+            current_blocks++;
+        }
+
+        if (current_blocks < max_blocks) {
+            insert_tree_node(&buddy_free_list_zone[zone_pointer], block, block->order);
+            /* Since it will be inserted at the tail we can do this and it wont keep grabbing the same block*/
+            goto start;
+        }
+        block->buddy_chain_length = max_blocks;
+        block->flags &= ~IN_TREE_FLAG;
+        current_blocks = 2;
+        pointer = block->next;
+        while (current_blocks <= max_blocks) {
+            remove_tree_node(&buddy_free_list_zone[0], pointer->order, pointer,NULL);
+            pointer->is_free = USED;
+            pointer = pointer->next;
+            current_blocks++;
+        }
+
+        return block;
     }
+
 
     if(!is_power_of_two(pages)) {
         pages = next_power_of_two(pages);
@@ -306,6 +341,9 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                 index++;
                 while (index <= MAX_ORDER) {
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
+                    if(block) {
+                        serial_printf("ASKED ORDER == %i GOT ORDER = %i\n",1<<i,block->order);
+                    }
 
 
                     if (block != NULL && block->order >= index) {
@@ -320,7 +358,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                         hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
                         return block;
                     }
-                    //TODO find out where pointers are being manipulated so I can take this out
+                    //find out where pointers are being manipulated so I can take this out
                     /*
                      * Note : there is only one
                      */
@@ -351,8 +389,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
  * Once it is found, buddy_coalesce is called, the function returns.
  */
 static void buddy_free(void* address) {
-    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,
-                                                            hash((uint64_t)address, BUDDY_HASH_TABLE_SIZE));
+    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,hash((uint64_t)address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
         panic("Buddy Dealloc: Buddy hash table not found");
@@ -516,8 +553,7 @@ static void buddy_coalesce(struct buddy_block* block) {
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
 
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone
-        == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone== block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block

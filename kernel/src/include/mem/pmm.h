@@ -22,7 +22,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
-#define UNUSED 0x4
+#define UNUSED 0xFFFFFFFFFFFFFFFF
 
 #define BUDDY_HASH_TABLE_SIZE 300
 
@@ -45,8 +45,11 @@ struct buddy_block {
     struct buddy_block *next;
     uint8_t zone;
     void* start_address;
-    uint8_t flags;
+    uint64_t flags;
     uint8_t order;
     uint8_t is_free;
+    uint64_t buddy_chain_length;
+    uint64_t reserved;
+    uint64_t reserved_2;
 };
 

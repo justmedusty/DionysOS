@@ -267,7 +267,7 @@ void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag
                     panic("[ERROR] Binary tree node doesn't exists\n");
                 }
                 return_value = current->data.head->data;
-                remove_tree_node(tree, key, current->data.head, current);
+                remove_tree_node(tree, key, current->data.head->data, current);
             }
 
             return return_value;
@@ -335,7 +335,11 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
     }
 
     if (key == tree->root->key) {
-        singly_linked_list_remove_node_by_address(&current->data, address);
+        uint64_t ret = singly_linked_list_remove_node_by_address(&current->data, address);
+        if(ret == NODE_NOT_FOUND) {
+            serial_printf("ADDRESS %x.64\n",address);
+            panic("Here");
+        }
         release_spinlock(&tree->lock);
         return SUCCESS;
     }

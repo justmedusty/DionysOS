@@ -19,18 +19,18 @@ uint64_t ramdisk_count = RAMDISK_COUNT;
  * This function initializes a ramdisk of size bytes converted to pages, ramdisk id which is just the index into the array, and a string which could be useful at some point.
  * It initializes the lock, page count, allocates memory yada yada yada
  */
-void ramdisk_init(const uint64_t size_bytes, const uint64_t ramdisk_id, char* name) {
+void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name) {
         if (ramdisk_id > ramdisk_count) {
                 serial_printf("ramdisk id is out of range\n");
                 return;
         }
-        uint64_t pages = size_bytes / PAGE_SIZE;
-        if (pages == 0) {
-                pages = DEFAULT_RAMDISK_SIZE;
+        if (size_bytes == 0) {
+                size_bytes = DEFAULT_RAMDISK_SIZE;
         }
-        ramdisk[ramdisk_id].ramdisk_start = kalloc(pages);
-        ramdisk[ramdisk_id].ramdisk_size_pages = pages;
-        ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (pages * PAGE_SIZE);
+
+        ramdisk[ramdisk_id].ramdisk_start = kalloc(size_bytes);
+        ramdisk[ramdisk_id].ramdisk_size_pages = size_bytes / PAGE_SIZE;
+        ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (  ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE);
         ramdisk[ramdisk_id].block_size = TEMPFS_BLOCKSIZE;
         safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
         initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);

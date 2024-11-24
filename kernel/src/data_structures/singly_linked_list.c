@@ -223,5 +223,6 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
         node = node->next;
         prev = prev->next;
     }
+
     return NODE_NOT_FOUND;
 }
