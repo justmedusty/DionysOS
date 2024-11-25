@@ -213,8 +213,10 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("New Inode Number %i name %s parent name\n",root.inode_number,root.name);
 
     tempfs_read_inode(fs,&root,root.parent_inode_number);
+    memset(buffer,0,PAGE_SIZE);
     tempfs_read_block_by_number(root.blocks[0],buffer,fs,0,TEMPFS_BLOCKSIZE);
-    serial_printf("Parent Size Blocks name %i %i %i %s\n",root.parent_inode_number,root.size,root.block_count,&root.name);
+    struct tempfs_directory_entry *entry = (struct tempfs_directory_entry *)buffer;
+    serial_printf("Parent Size Blocks name %i %i %i %s\n",entry->parent_inode_number,entry->size,entry->type,&entry->name);
     kfree(buffer);
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
@@ -1070,7 +1072,7 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
 
     tempfs_read_block_by_number(inode->blocks[block], read_buffer, fs, 0,fs->superblock->block_size);
 
-    tempfs_directory_entries[entry_in_block] = *entry;
+    tempfs_directory_entries[entry_in_block - 1] = *entry;
     inode->size++;
 
     tempfs_write_block_by_number(inode->blocks[block], read_buffer, fs, 0,fs->superblock->block_size);
