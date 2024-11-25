@@ -352,6 +352,7 @@ struct vnode* tempfs_lookup(struct vnode* parent, char* name) {
     parent->is_cached = TRUE;
 
 done:
+    kfree(buffer);
     return child;
 }
 /*
@@ -1292,12 +1293,11 @@ level_two:
     }
 
 level_three:
-    num_allocated = inode->block_count - NUM_BLOCKS_DIRECT - NUM_BLOCKS_IN_INDIRECTION_BLOCK -
-        NUM_BLOCKS_DOUBLE_INDIRECTION - NUM_BLOCKS_TRIPLE_INDIRECTION;
+    num_allocated = inode->block_count - NUM_BLOCKS_DIRECT - NUM_BLOCKS_IN_INDIRECTION_BLOCK - NUM_BLOCKS_DOUBLE_INDIRECTION;
     num_in_indirect = num_blocks_to_allocate + num_allocated > NUM_BLOCKS_TRIPLE_INDIRECTION
-                          ? NUM_BLOCKS_DOUBLE_INDIRECTION - num_allocated
+                          ? NUM_BLOCKS_TRIPLE_INDIRECTION - num_allocated
                           : num_blocks_to_allocate;
-    tempfs_allocate_double_indirect_block(fs, inode, num_allocated, num_in_indirect);
+    tempfs_allocate_triple_indirect_block(fs, inode, num_allocated, num_in_indirect);
     inode->block_count += num_in_indirect;
     num_blocks_to_allocate -= num_in_indirect;
 
