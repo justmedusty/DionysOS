@@ -11,8 +11,6 @@
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/mem/mem.h"
-#include "include/definitions/math.h"
-#include "include/arch/arch_timer.h"
 
 /*
  * We need to ensure that for each filesystem we have a separate lock
@@ -60,10 +58,10 @@ static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* i
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode);
-static uint64_t tempfs_read_blocks(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
+static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block, uint64_t read_size_bytes);
-static uint64_t tempfs_write_blocks(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
+static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block, uint64_t write_size_bytes);
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode);
@@ -90,7 +88,6 @@ struct vnode_operations tempfs_vnode_ops = {
     .link = tempfs_link,
     .unlink = tempfs_unlink,
 };
-
 
 /*
  *  I have opted to go with this general flow.
@@ -246,6 +243,7 @@ void tempfs_rename(struct vnode* vnode, char* new_name) {
     safe_strcpy(inode.name, new_name,MAX_FILENAME_LENGTH);
     tempfs_write_inode(fs, &inode);
     release_spinlock(fs->lock);
+
 }
 
 uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
@@ -253,6 +251,7 @@ uint64_t tempfs_read(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint
     acquire_spinlock(fs->lock);
     tempfs_get_bytes_from_inode(fs, buffer, bytes, vnode->vnode_inode_number, offset, bytes);
     release_spinlock(fs->lock);
+    return SUCCESS;
 }
 
 uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
@@ -260,13 +259,15 @@ uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uin
     acquire_spinlock(fs->lock);
 
     release_spinlock(fs->lock);
+    return SUCCESS;
 }
 
-uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
+uint64_t tempfs_stat(const struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint64_t bytes) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
     release_spinlock(fs->lock);
+    return SUCCESS;
 }
 
 /*
@@ -425,6 +426,7 @@ uint64_t tempfs_open(struct vnode* vnode) {
 
 
     release_spinlock(fs->lock);
+    return SUCCESS;
 }
 
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
@@ -433,6 +435,7 @@ struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
 
 
     release_spinlock(fs->lock);
+
 }
 
 void tempfs_unlink(struct vnode* vnode) {
@@ -927,13 +930,13 @@ static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, 
 }
 
 /*
- * Unimplemented until tempfs_read_blocks is complete
+ * Unimplemented until tempfs_read_bytes_from_inode is complete
  */
 static uint64_t tempfs_get_bytes_from_inode(struct tempfs_filesystem* fs, uint8_t* buffer, uint64_t buffer_size,
                                             uint64_t inode_number, uint64_t byte_start, uint64_t size_to_read) {
     struct tempfs_inode inode;
     tempfs_read_inode(fs, &inode, inode_number);
-    return tempfs_read_blocks(fs, &inode, size_to_read, buffer, buffer_size, byte_start % fs->superblock->block_size,
+    return tempfs_read_bytes_from_inode(fs, &inode, size_to_read, buffer, buffer_size, byte_start % fs->superblock->block_size,
                                  fs->superblock->block_size, size_to_read);
 }
 
@@ -999,7 +1002,7 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
  *
  * Took locks out since this will be called from a function that is locked.
  */
-static uint64_t tempfs_read_blocks(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
+static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block,
                                       uint64_t read_size_bytes) {
@@ -1011,7 +1014,7 @@ static uint64_t tempfs_read_blocks(struct tempfs_filesystem* fs, struct tempfs_i
     }
 
     if (offset > fs->superblock->block_size) {
-        panic("tempfs_read_blocks bad offset"); /* Should never happen, panic for visibility  */
+        panic("tempfs_read_bytes_from_inode bad offset"); /* Should never happen, panic for visibility  */
     }
 
     /*
@@ -1089,7 +1092,7 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
 }
 
 
-static uint64_t tempfs_write_blocks(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
+static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                       uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset, uint64_t start_block,
                                       uint64_t write_size_bytes) {
@@ -1101,7 +1104,7 @@ static uint64_t tempfs_write_blocks(struct tempfs_filesystem* fs, struct tempfs_
     }
 
     if (offset > fs->superblock->block_size) {
-        panic("tempfs_read_blocks bad offset"); /* Should never happen, panic for visibility  */
+        panic("tempfs_read_bytes_from_inode bad offset"); /* Should never happen, panic for visibility  */
     }
 
     /*
@@ -1421,13 +1424,12 @@ static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, 
 }
 
 /*
- * This function will start at block offset and go to num_blocks in order to free as many blocks as requested, afterwards it will shift blocks if the
- * freeing left space on the end of the file.
+ * This function will start at block offset and go to num_blocks in order to free as many blocks as requested
  */
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode) {
-    uint64_t total_blocks = inode->block_count;
+
     uint64_t block_number = block_start;
     uint64_t indirection_block;
     uint64_t double_indirection_block;

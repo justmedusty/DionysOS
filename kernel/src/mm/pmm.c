@@ -304,12 +304,19 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
         block  = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
         struct buddy_block* pointer = block;
 
+        if (!block) {
+            goto start;
+        }
+
         if(block->order != MAX_ORDER) {
-            while(block && block->order != MAX_ORDER) {
+            while(block != NULL && block->order != MAX_ORDER) {
                 block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
             }
         }
 
+        if (!block) {
+            goto start;
+        }
         while (pointer->next->order == MAX_ORDER && current_blocks < max_blocks && pointer->zone == pointer->next->zone) {
             pointer = pointer->next;
             current_blocks++;
