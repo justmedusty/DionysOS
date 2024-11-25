@@ -202,6 +202,9 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vfs_root.vnode_children = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_TEMPFS;
 
+
+    /*               START                   TESTING                              */
+
     struct vnode *new = tempfs_create(&vfs_root,"file.txt",TEMPFS_REG_FILE);
     serial_printf("Parent Size Blocks name %i %i %i %s\n",root.parent_inode_number,root.size,root.block_count,&root.name);
     tempfs_read_inode(fs,&root,new->vnode_inode_number);
@@ -216,7 +219,10 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     memset(buffer,0,PAGE_SIZE);
     tempfs_read_block_by_number(root.blocks[0],buffer,fs,0,TEMPFS_BLOCKSIZE);
     struct tempfs_directory_entry *entry = (struct tempfs_directory_entry *)buffer;
-    serial_printf("Parent Size Blocks name %i %i %i %s\n",entry->parent_inode_number,entry->size,entry->type,&entry->name);
+    serial_printf("Parent Size type name %i %i %i %s\n",entry->parent_inode_number,entry->size,entry->type,&entry->name);
+
+    /*               END                   TESTING                              */
+
     kfree(buffer);
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
