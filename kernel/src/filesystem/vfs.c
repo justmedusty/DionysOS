@@ -317,8 +317,7 @@ uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8
  */
 static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
-    struct vnode* current_vnode = vnode_alloc();
-    current_vnode = &vfs_root;
+    struct vnode* current_vnode = &vfs_root;
 
     char* current_token = kalloc(VFS_MAX_NAME_LENGTH);
 
@@ -336,6 +335,7 @@ static struct vnode* __parse_path(char* path) {
     while (last_token != LAST_TOKEN) {
         last_token = strtok(path, '/', current_token, index);
         index++;
+
         current_vnode = find_vnode_child(current_vnode, current_token);
 
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc

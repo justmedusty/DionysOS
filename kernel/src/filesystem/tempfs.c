@@ -202,7 +202,10 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     struct vnode *new = tempfs_create(&vfs_root,"file.txt",TEMPFS_REG_FILE);
 
-    serial_printf("New Inode Number %i name %s parent name\n",new->vnode_inode_number,new->vnode_name);
+    tempfs_read_inode(fs,&root,new->vnode_inode_number);
+
+
+    serial_printf("New Inode Number %i name %s parent name\n",root.inode_number,root.name);
 
     kfree(buffer);
 
@@ -363,6 +366,7 @@ struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type
     new_vnode->vnode_children = NULL;
     new_vnode->vnode_device_id = parent->vnode_device_id;
     new_vnode->vnode_ops = &tempfs_vnode_ops;
+    new_vnode->vnode_parent = parent;
     safe_strcpy(new_vnode->vnode_name, name, MAX_FILENAME_LENGTH);
 
 
