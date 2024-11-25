@@ -11,7 +11,6 @@
 #define TEMPFS_BLOCKSIZE 1024
 #define TEMPFS_MAGIC 0x7777777777777777
 #define TEMPFS_VERSION 1
-#define MAX_LEVEL_INDIRECTIONS 3
 #define MAX_FILENAME_LENGTH 128 /* This number is here so we can fit 2 inodes in 1 2048 block */
 
 #define DEFAULT_TEMPFS_SIZE (TEMPFS_BLOCKSIZE /* super block */ + (TEMPFS_NUM_INODE_POINTER_BLOCKS * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCK_POINTER_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_BLOCKS  * TEMPFS_BLOCKSIZE) + (TEMPFS_NUM_INODES  * TEMPFS_BLOCKSIZE))
@@ -57,8 +56,8 @@
 #define SUCCESS 0
 #define NOT_FOUND 1
 
-#define TEMPFS_MAX_FILES_IN_DIRENT_BLOCK ((TEMPFS_BLOCKSIZE / sizeof(struct tempfs_directory_entry)))
-#define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * TEMPFS_BLOCKSIZE) / sizeof(struct tempfs_directory_entry))
+#define TEMPFS_MAX_FILES_IN_DIRENT_BLOCK ((fs->superblock->block_size / sizeof(struct tempfs_directory_entry)))
+#define TEMPFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * fs->superblock->block_size) / sizeof(struct tempfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by tempfs_init by just modifying values of
  *  TEMPFS_NUM_INODE_POINTER_BLOCKS and TEMPFS_NUM_BLOCK_POINTER_BLOCKS
