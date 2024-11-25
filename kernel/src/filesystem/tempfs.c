@@ -134,7 +134,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     uint8_t* buffer = kalloc(PAGE_SIZE);
     fs->superblock->magic = TEMPFS_MAGIC;
     fs->superblock->version = TEMPFS_VERSION;
-    fs->superblock->block_size = fs->superblock->block_size;
+    fs->superblock->block_size = TEMPFS_BLOCKSIZE;
     fs->superblock->num_blocks = TEMPFS_NUM_BLOCKS;
     fs->superblock->num_inodes = TEMPFS_NUM_INODES;
     fs->superblock->inode_start_pointer = TEMPFS_START_INODES;
@@ -153,7 +153,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     //Write the new superblock to the ramdisk
     ramdisk_write(buffer,TEMPFS_SUPERBLOCK, 0, fs->superblock->block_size,PAGE_SIZE, ramdisk_id);
 
-    memset(buffer, 0,PAGE_SIZE);
+    memset(buffer, '0',PAGE_SIZE);
 
     /*
      * Fill in inode bitmap with zeros blocks
@@ -183,14 +183,14 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
 
 
+
     root.type = TEMPFS_DIRECTORY;
     strcpy((char *) &root.name,"root");
     root.parent_inode_number = root.inode_number;
     tempfs_write_inode(fs,&root);
 
-    struct vnode *new = tempfs_create(&vfs_root,"file.txt",TEMPFS_REG_FILE);
-
     memset(&vfs_root,0,sizeof(struct vnode));
+    strcpy((char *) vfs_root.vnode_name,"root");
     vfs_root.filesystem_object = fs;
     vfs_root.vnode_inode_number = root.inode_number;
     vfs_root.vnode_type = TEMPFS_DIRECTORY;
@@ -198,15 +198,18 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vfs_root.vnode_refcount = 1;
     vfs_root.vnode_parent = NULL;
     vfs_root.vnode_children = NULL;
+    vfs_root.vnode_filesystem_id = VNODE_FS_TEMPFS;
+
+    struct vnode *new = tempfs_create(&vfs_root,"file.txt",TEMPFS_REG_FILE);
+
+    serial_printf("New Inode Number %i name %s parent name\n",new->vnode_inode_number,new->vnode_name);
 
     kfree(buffer);
 
     serial_printf("Tempfs empty filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
 }
 
-/*
- * TODO this does not handle removing it from the parent directory
- */
+
 void tempfs_remove(struct vnode* vnode) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
@@ -269,10 +272,10 @@ uint64_t tempfs_stat(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uint
  *
  * Finally, return child
  */
-struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
-    struct tempfs_filesystem* fs = vnode->filesystem_object;
+struct vnode* tempfs_lookup(struct vnode* parent, char* name) {
+    struct tempfs_filesystem* fs = parent->filesystem_object;
 
-    if (vnode->vnode_filesystem_id != VNODE_FS_TEMPFS || vnode->vnode_type != VNODE_DIRECTORY) {
+    if (parent->vnode_filesystem_id != VNODE_FS_TEMPFS || parent->vnode_type != VNODE_DIRECTORY) {
         return NULL;
     }
 
@@ -280,7 +283,7 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
 
     uint8_t* buffer = kalloc(fs->superblock->block_size * NUM_BLOCKS_DIRECT);
 
-    uint64_t ret = tempfs_get_directory_entries(fs, (struct tempfs_directory_entry**)&buffer, vnode->vnode_inode_number,
+    uint64_t ret = tempfs_get_directory_entries(fs, (struct tempfs_directory_entry**)&buffer, parent->vnode_inode_number,
                                                 buffer_size);
 
     if (ret != SUCCESS) {
@@ -290,41 +293,41 @@ struct vnode* tempfs_lookup(struct vnode* vnode, char* name) {
 
     uint64_t fill_vnode = 0;
 
-    if (!vnode->is_cached) {
+    if (!parent->is_cached) {
         fill_vnode = 1;
     }
 
 
-    if (fill_vnode && !(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
-        vnode_directory_alloc_children(vnode);
+    if (fill_vnode && !(parent->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
+        vnode_directory_alloc_children(parent);
     }
 
     struct vnode* child = NULL;
 
-    uint8_t max_directories = vnode->vnode_size / sizeof(struct tempfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES
+    uint8_t max_directories = parent->vnode_size / sizeof(struct tempfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES
                                   ? VNODE_MAX_DIRECTORY_ENTRIES
-                                  : vnode->vnode_size / sizeof(struct tempfs_directory_entry);
+                                  : parent->vnode_size / sizeof(struct tempfs_directory_entry);
 
     for (uint64_t i = 0; i < max_directories; i++) {
         struct tempfs_directory_entry* entry = (struct tempfs_directory_entry*)&buffer[i];
         if (fill_vnode) {
-            vnode->vnode_children[i] = tempfs_directory_entry_to_vnode(vnode, entry, fs);
+            parent->vnode_children[i] = tempfs_directory_entry_to_vnode(parent, entry, fs);
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
          */
         if (child == NULL && safe_strcmp(name, entry->name,VFS_MAX_NAME_LENGTH)) {
-            child = tempfs_directory_entry_to_vnode(vnode, entry, fs);
+            child = tempfs_directory_entry_to_vnode(parent, entry, fs);
             if (!fill_vnode) {
                 goto done;
             }
         }
 
         if (i == max_directories) {
-            memset(vnode->vnode_children[i + 1], 0, sizeof(struct vnode));
+            memset(parent->vnode_children[i + 1], 0, sizeof(struct vnode));
         }
     }
-    vnode->is_cached = TRUE;
+    parent->is_cached = TRUE;
 
 done:
     return child;
@@ -348,6 +351,7 @@ struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type
     acquire_spinlock(fs->lock);
 
     struct vnode *new_vnode = vnode_alloc();
+    struct tempfs_inode parent_inode;
     struct tempfs_inode inode;
     tempfs_get_free_inode_and_mark_bitmap(parent->filesystem_object,&inode);
 
@@ -359,6 +363,7 @@ struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type
     new_vnode->vnode_children = NULL;
     new_vnode->vnode_device_id = parent->vnode_device_id;
     new_vnode->vnode_ops = &tempfs_vnode_ops;
+    safe_strcpy(new_vnode->vnode_name, name, MAX_FILENAME_LENGTH);
 
 
     inode.type = vnode_type;
@@ -366,9 +371,18 @@ struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type
     inode.parent_inode_number = parent->vnode_inode_number;
     safe_strcpy((char *) &inode.name, name, MAX_FILENAME_LENGTH);
     inode.uid = 0;
-
-
     tempfs_write_inode(parent->filesystem_object, &inode);
+
+
+    tempfs_read_inode(parent->filesystem_object,&parent_inode,0);
+    parent_inode.size++;
+
+    if(parent_inode.size % TEMPFS_MAX_FILES_IN_DIRECTORY == 1) {
+        tempfs_inode_allocate_new_blocks(parent->filesystem_object,&parent_inode,1);
+        parent_inode.block_count++;
+    }
+
+    tempfs_write_inode(parent->filesystem_object,&parent_inode);
 
     release_spinlock(fs->lock);
 
@@ -732,8 +746,15 @@ static void tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
 found_free:
     memset(inode_to_be_filled, 0, sizeof(struct tempfs_inode));
     inode_to_be_filled->inode_number = inode_number;
-    tempfs_write_block_by_number(fs->superblock->inode_bitmap_pointers_start + block, &buffer[block], fs, 0,
-                                 fs->superblock->block_size);
+
+    ret = ramdisk_write(buffer, fs->superblock->inode_bitmap_pointers_start, 0,
+                              fs->superblock->block_size * TEMPFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
+                              fs->ramdisk_id);
+
+    if (ret != SUCCESS) {
+        HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap");
+        panic("tempfs_get_free_inode_and_mark_bitmap ramdisk read failed");
+    }
     kfree(buffer);
 }
 

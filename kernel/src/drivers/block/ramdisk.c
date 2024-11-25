@@ -109,6 +109,7 @@ uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t
 uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t write_size,
                        uint64_t buffer_size,
                        uint64_t ramdisk_id) {
+
         if (ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
         }
@@ -126,21 +127,21 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
          */
         if (write_size > buffer_size && write_size % buffer_size == 0) {
                 uint64_t index = 0;
-                uint64_t total_transfered = 0;
+                uint64_t total_transferred = 0;
 
                 uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) +
                         offset;
 
-                while (total_transfered < write_size) {
+                while (total_transferred < write_size) {
                         read_start[index] = buffer[index];
-                        total_transfered++;
+                        total_transferred++;
 
                         if (index == buffer_size) {
                                 index = 0;
                         }
 
                         index++;
-                        total_transfered++;
+                        total_transferred++;
                 }
                 return SUCCESS;
         }
@@ -150,7 +151,9 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
         }
 
 
-        uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
+        uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + ((block * ramdisk[ramdisk_id].block_size) + offset);
+
+
 
         uint64_t index = 0;
 
