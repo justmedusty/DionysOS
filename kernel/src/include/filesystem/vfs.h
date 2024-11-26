@@ -43,8 +43,6 @@ extern struct vnode vfs_root;
 #define VNODE_FS_EXT2 0x10
 
 /* Vnode flags */
-#define VNODE_SYMLINK 1 << 0
-#define VNODE_HARDLINK 1 << 1
 #define VNODE_STATIC_POOL 1<<63
 #define VNODE_CHILD_MEMORY_ALLOCATED (1 << 62)
 

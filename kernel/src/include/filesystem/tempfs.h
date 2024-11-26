@@ -51,6 +51,9 @@
 #define TEMPFS_BUFFER_TOO_SMALL 0x1
 #define TEMPFS_NOT_A_DIRECTORY 0x2
 #define TEMPFS_CANT_ALLOCATE_BLOCKS_FOR_DIR 0x3
+#define CANNOT_WRITE_DIRECTORY 0x4
+#define BAD_SYMLINK 0x5
+#define UNEXPECTED_SYMLINK_TYPE 0x6
 
 #define TEMPFS_ERROR 0x6
 #define SUCCESS 0
@@ -140,6 +143,10 @@ struct tempfs_filesystem {
     uint64_t ramdisk_id;
 };
 
+
+struct tempfs_symlink {
+    char path[MAX_FILENAME_LENGTH * 8];
+};
 _Static_assert(sizeof(struct tempfs_inode) % 256 == 0, "Tempfs inode not the proper size");
 
 

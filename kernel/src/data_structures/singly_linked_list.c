@@ -192,7 +192,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         return return_value;
     }
     if(list->head->next == NULL && list->node_count > 1) {
-        panic("HERE");
+        list->node_count = 1;
     }
     struct singly_linked_list_node* new_head = list->head->next;
 

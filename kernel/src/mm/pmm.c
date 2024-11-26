@@ -361,7 +361,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                 while (index <= MAX_ORDER) {
                     block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
 
-                    if (block != NULL && block->order >= index) {
+                    if (block != NULL && block->start_address && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
                             block = buddy_split(block);
