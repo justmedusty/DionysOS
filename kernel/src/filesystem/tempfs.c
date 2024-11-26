@@ -60,9 +60,8 @@ static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* i
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode);
-static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                      uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
-                                      uint64_t offset, uint64_t start_block, uint64_t read_size_bytes);
+static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint8_t* buffer, uint64_t buffer_size,
+                                      uint64_t offset,uint64_t read_size_bytes);
 static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,uint8_t* buffer, uint64_t buffer_size,
                                       uint64_t offset,
                                       uint64_t write_size_bytes);
@@ -217,11 +216,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("New Inode Number %i name %s parent name\n",root.inode_number,root.name);
 
     tempfs_read_inode(fs,&root,root.parent_inode_number);
-    memset(buffer,0,PAGE_SIZE);
-    tempfs_read_block_by_number(root.blocks[0],buffer,fs,0,TEMPFS_BLOCKSIZE);
-    struct tempfs_directory_entry *entry = (struct tempfs_directory_entry *)buffer;
-    tempfs_read_inode(fs,&root,1);
-    serial_printf("Parent Size type name %i %i %i %s\n",entry->parent_inode_number,entry->size,entry->type,&entry->name);
+
 
     uint8_t buffer2[TEMPFS_BLOCKSIZE] = {0};
     char *test = "This is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er bud";
@@ -230,21 +225,22 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
     memset(buffer2,0,TEMPFS_BLOCKSIZE);
-    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,len);
+    tempfs_read_bytes_from_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
     serial_printf("data : %s root size : %i root blocks %i\n",buffer2,root.size,root.block_count);
     uint8_t *buffer3 = kalloc(PAGE_SIZE * 16);
-    for(int i=0;i<6;i++) {
+    for(int i=0;i<30;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,len * i,len);
     }
 
-    tempfs_read_bytes_from_inode(fs,&root,1,buffer3,fs->superblock->block_size,0,0,len * 6);
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,len * 30);
     serial_printf("%s\n",buffer3);
     test = "OVERWRITE OVERWRITE OVERWRITE OVERWRITE OVERWRITE";
     len = strlen(test);
     strcpy(buffer2,test);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len - 1);
-    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,root.size);
-    serial_printf("%s ROOT SIZE %i\n",buffer2,root.size);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
+    tempfs_read_inode(fs,&root,root.inode_number);
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
+    serial_printf("%s ROOT SIZE %i blocks %i\n",buffer3,root.size,root.blocks);
 
     /*               END                   TESTING                              */
 
@@ -1029,8 +1025,7 @@ static uint64_t tempfs_get_bytes_from_inode(struct tempfs_filesystem* fs, uint8_
                                             uint64_t inode_number, uint64_t byte_start, uint64_t size_to_read) {
     struct tempfs_inode inode;
     tempfs_read_inode(fs, &inode, inode_number);
-    return tempfs_read_bytes_from_inode(fs, &inode, size_to_read, buffer, buffer_size, byte_start % fs->superblock->block_size,
-                                 fs->superblock->block_size, size_to_read);
+    return tempfs_read_bytes_from_inode(fs, &inode, buffer, buffer_size, byte_start % fs->superblock->block_size, size_to_read);
 }
 
 /*
@@ -1095,10 +1090,12 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
  *
  * Took locks out since this will be called from a function that is locked.
  */
-static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                      uint64_t num_blocks_to_read, uint8_t* buffer, uint64_t buffer_size,
-                                      uint64_t offset, uint64_t start_block,
-                                      uint64_t read_size_bytes) {
+static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint8_t* buffer, uint64_t buffer_size,
+                                      uint64_t offset,uint64_t read_size_bytes) {
+    uint64_t num_blocks_to_read =  read_size_bytes / fs->superblock->block_size;
+
+
+
     if (buffer_size < fs->superblock->block_size || buffer_size < fs->superblock->block_size * num_blocks_to_read) {
         /*
          * I'll set a sensible minimum buffer size
@@ -1106,17 +1103,14 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
         return TEMPFS_BUFFER_TOO_SMALL;
     }
 
+    uint64_t start_block = offset / fs->superblock->block_size;
+
     if (offset > fs->superblock->block_size) {
         panic("tempfs_read_bytes_from_inode bad offset"); /* Should never happen, panic for visibility  */
     }
 
-    /*
- *  If 0 is passed, try to read everything
- */
-    uint64_t bytes_to_read = read_size_bytes == 0
-                                 ? inode->size - (start_block * fs->superblock->block_size)
-                                 : read_size_bytes;
-    if (read_size_bytes > inode->size) {
+
+    if ((read_size_bytes + offset) > inode->size) {
         read_size_bytes = inode->size - (start_block * fs->superblock->block_size);
     }
 
@@ -1130,7 +1124,7 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
 
     uint64_t bytes_read = 0;
 
-    for (uint64_t i = start_block; i < end_block; i++) {
+    for (uint64_t i = start_block; i <= end_block; i++) {
         current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
 
         tempfs_read_block_by_number(current_block_number, buffer, fs, offset, fs->superblock->block_size - offset);
@@ -1144,7 +1138,7 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
             offset = 0;
         }
 
-        if (i + 2 == end_block) {
+        if (i + 1 == end_block) {
             offset = end_offset;
         }
     }
@@ -1244,10 +1238,8 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
             offset = end_offset;
         }
     }
-    if(end_block * fs->superblock->block_size + end_offset > inode->size) {
-        inode->size = end_block * fs->superblock->block_size + end_offset;
-    }
 
+    inode->size += bytes_written;
     tempfs_write_inode(fs,inode);
     return SUCCESS;
 }
