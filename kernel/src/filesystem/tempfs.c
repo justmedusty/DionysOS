@@ -228,12 +228,20 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
     tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
-    uint8_t buffer3[TEMPFS_BLOCKSIZE] = {0};
-    tempfs_read_bytes_from_inode(fs,&root,1,buffer3,fs->superblock->block_size,0,0,len);
+    uint8_t *buffer3 = kalloc(PAGE_SIZE * 16);
+
+    for(int i=0;i<6;i++) {
+        tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,len * i,len);
+    }
+
+    tempfs_read_bytes_from_inode(fs,&root,1,buffer3,fs->superblock->block_size,0,0,len * 6);
     serial_printf("%s\n",buffer3);
-
-
-
+    test = "OVERWRITE OVERWRITE OVERWRITE OVERWRITE OVERWRITE";
+    len = strlen(test);
+    strcpy(buffer2,test);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
+    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,len * 6);
+    serial_printf("%s\n",buffer2);
 
     /*               END                   TESTING                              */
 
@@ -1211,7 +1219,7 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
 
     if(start_block + (end_block - start_block) > inode->block_count){
        tempfs_inode_allocate_new_blocks(fs,inode,start_block + (end_block - start_block));
-        tempfs_read_inode(fs,inode,0);
+        tempfs_read_inode(fs,inode,inode->inode_number);
     }
 
     /*
