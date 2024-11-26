@@ -224,12 +224,15 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("Parent Size type name %i %i %i %s\n",entry->parent_inode_number,entry->size,entry->type,&entry->name);
 
     uint8_t buffer2[TEMPFS_BLOCKSIZE] = {0};
-    char *test = "This is some random file data we can write some shit here and see what the hell happens. Send er bud";
+    char *test = "This is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er bud";
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
-    uint8_t *buffer3 = kalloc(PAGE_SIZE * 16);
 
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
+    memset(buffer2,0,TEMPFS_BLOCKSIZE);
+    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,len);
+    serial_printf("data : %s root size : %i root blocks %i\n",buffer2,root.size,root.block_count);
+    uint8_t *buffer3 = kalloc(PAGE_SIZE * 16);
     for(int i=0;i<6;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,len * i,len);
     }
@@ -239,9 +242,9 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     test = "OVERWRITE OVERWRITE OVERWRITE OVERWRITE OVERWRITE";
     len = strlen(test);
     strcpy(buffer2,test);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
-    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,len * 6);
-    serial_printf("%s\n",buffer2);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len - 1);
+    tempfs_read_bytes_from_inode(fs,&root,1,buffer2,fs->superblock->block_size,0,0,root.size);
+    serial_printf("%s ROOT SIZE %i\n",buffer2,root.size);
 
     /*               END                   TESTING                              */
 
@@ -1201,16 +1204,9 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
         panic("tempfs_read_bytes_from_inode bad offset"); /* Should never happen, panic for visibility  */
     }
 
-    /*
- *  If 0 is passed, try to read everything
- */
-    uint64_t bytes_to_write= write_size_bytes == 0
-                                 ? inode->size - (start_block * fs->superblock->block_size)
-                                 : write_size_bytes;
-
-
-    if (write_size_bytes > inode->size) {
-        write_size_bytes = inode->size - (start_block * fs->superblock->block_size);
+    if (inode->size == 0) {
+        inode->block_count+= 1;
+        inode->blocks[0] = tempfs_get_free_block_and_mark_bitmap(fs);
     }
 
     uint64_t current_block_number = 0;
@@ -1229,12 +1225,15 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
     uint64_t bytes_written= 0;
     offset = start_offset;
     for (uint64_t i = start_block; i <= end_block; i++) {
+
+        uint64_t byte_size = write_size_bytes % (fs->superblock->block_size - offset);
         current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
 
-        tempfs_write_block_by_number(current_block_number,buffer,fs,offset,fs->superblock->block_size - offset);
 
-        bytes_written += (fs->superblock->block_size - offset);
+        tempfs_write_block_by_number(current_block_number,buffer,fs,offset,byte_size);
 
+
+        bytes_written += byte_size;
         buffer+= bytes_written;
 
         if (offset) {
@@ -1249,6 +1248,7 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
         inode->size = end_block * fs->superblock->block_size + end_offset;
     }
 
+    tempfs_write_inode(fs,inode);
     return SUCCESS;
 }
 
@@ -1489,8 +1489,15 @@ static void tempfs_write_block_by_number(uint64_t block_number, uint8_t* buffer,
     if (offset >= fs->superblock->block_size) {
         offset = 0;
     }
+    if (write_size == 0) {
+        serial_printf("HERE");
+    }
 
-    uint64_t ret = ramdisk_write(buffer, block_number, offset, write_size - offset, write_size, fs->ramdisk_id);
+    uint64_t write_size_bytes = write_size;
+    if (write_size_bytes + offset > fs->superblock->block_size) {
+        write_size_bytes = fs->superblock->block_size - offset;
+    }
+    uint64_t ret = ramdisk_write(buffer, block_number, offset, write_size_bytes, write_size, fs->ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_write_block_by_number");

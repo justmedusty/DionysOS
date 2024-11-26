@@ -193,7 +193,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         return return_value;
     }
     if(list->head->next == NULL && list->node_count > 1) {
-        serial_printf("Fucked up shit happens in call %i\n",counter);
+        serial_printf("Fucked up shit happens in call %i node_count %i\n",counter,list->node_count);
         list->node_count = 1;
     }
     struct singly_linked_list_node* new_head = list->head->next;
@@ -219,6 +219,7 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
         if(node->data == data) {
             prev->next = node->next;
             singly_linked_list_node_free(node);
+            list->node_count--;
             return SUCCESS;
         }
 
