@@ -45,7 +45,15 @@ int heap_init() {
  * kalloc tries to allocate from the cached slab memory wherever it can, otherwise it just invokes
  * physalloc. When physalloc is invoked, the start of the memory is changed to the proper HHDM value.
  */
+
+/*
+ *TODO fix nested dependency issue rendering the allocator not lockable
+ *Possible fix is an even higher level wrapper function, a check to see if this
+ *thread of control is holding the lock and allowing them through, having per cpu
+ *buddy pools etc.
+ */
 void *kalloc(uint64_t size) {
+
     if(size < PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
         if (slab != NULL) {

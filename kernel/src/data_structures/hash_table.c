@@ -25,8 +25,8 @@ uint32_t full = 0;
  * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
  * we get wrap-around.
  *
- * Multiply by large primes and xor to try and get the most diffusion, was having problems with the previous hash function
- * causing too many collisions. This seems to work better.
+ * Multiply by large primes and xor to *try* and get the most diffusion we can since some of these values are very close to each other,
+ * was having problems with the previous hash function causing too many collisions. This seems to work better.
  */
 uint64_t hash(uint64_t key, uint64_t modulus) {
 

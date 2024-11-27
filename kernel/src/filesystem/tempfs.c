@@ -230,7 +230,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
 
-    uint8_t *buffer3 =kalloc(PAGE_SIZE);
+    uint8_t *buffer3 =kalloc(PAGE_SIZE * 16);
 
     for(uint64_t i=0;i<14;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
