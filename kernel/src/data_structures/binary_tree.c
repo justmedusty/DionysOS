@@ -47,7 +47,7 @@ static struct binary_tree_node* node_alloc() {
         }
     }
     pool_full = 1;
-    return NULL;
+    return kalloc(sizeof(struct binary_tree_node));
 }
 /*
  * Free a node, just invoke kfree it not part of the static pool,

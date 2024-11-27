@@ -220,9 +220,7 @@ int phys_init() {
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
 
-uint64_t counter2 = 0;
 void* phys_alloc(uint64_t pages) {
-    serial_printf("counter %i \n",counter2++);
     struct buddy_block* block = buddy_alloc(pages);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
@@ -363,7 +361,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                         block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
                             if (block-> order > MAX_ORDER) {
-                                serial_printf("STARTING HERE CALL %i\n", counter2);
+                                panic("order higher than max order in buddy_alloc");
                             }
                             block = buddy_split(block);
                             if (block == NULL) {

@@ -225,12 +225,12 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     tempfs_read_inode(fs,&root,root.inode_number);
 
 
-    uint8_t buffer2[TEMPFS_BLOCKSIZE] = {0};
+    uint8_t *buffer2 = kalloc(PAGE_SIZE);
     char *test = "This is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er bud";
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
 
-    uint8_t buffer3 [2048] ={0};
+    uint8_t *buffer3 =kalloc(PAGE_SIZE);
 
     for(uint64_t i=0;i<14;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
@@ -248,7 +248,8 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
     /*               END                   TESTING                              */
-
+    kfree(buffer2);
+    kfree(buffer3);
     kfree(buffer);
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE, TEMPFS_BLOCKSIZE);
@@ -897,8 +898,10 @@ found_free:
  *the first free bit.
  *
  */
+
 static uint64_t tempfs_get_free_block_and_mark_bitmap(struct tempfs_filesystem* fs) {
-    uint64_t buffer_size = PAGE_SIZE * 8;
+
+    uint64_t buffer_size = PAGE_SIZE * 32;
     uint8_t* buffer = kalloc(buffer_size);
     uint64_t block = 0;
     uint64_t byte = 0;
@@ -963,7 +966,7 @@ found_free:
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
         panic("tempfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
     }
-    serial_printf("%x.64\n",buffer);
+
     kfree(buffer);
     /* Free the buffer, all other control paths lead to panic so until that changes this is the only place it is required */
 
