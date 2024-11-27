@@ -122,13 +122,6 @@ void tempfs_init(uint64_t filesystem_id) {
     if (filesystem_id >= NUM_FILESYSTEM_OBJECTS) {
         return;
     }
-
-    uint64_t counter = 0;
-    /*
-    for (uint64_t i = 0; i < 3000; i++) {
-       kmalloc(PAGE_SIZE * 16);
-    }
-    */
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs",TEMPFS_BLOCKSIZE);
     tempfs_mkfs(filesystem_id, &tempfs_filesystem[filesystem_id]);
