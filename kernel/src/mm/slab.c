@@ -23,9 +23,9 @@ void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
     slab->first_free = P2V(phys_alloc(pages));
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
-    slab->end_address = (slab->first_free + (pages * (PAGE_SIZE - 1)));
+    slab->end_address = (slab->first_free + (pages * (PAGE_SIZE)));
 
-    uint64_t header_offset = (sizeof(header) + (entry_size - 1)) / entry_size * entry_size;
+    uint64_t header_offset = (sizeof(header) + (entry_size)) / entry_size * entry_size;
     uint64_t available_size = PAGE_SIZE - header_offset;
     header *slab_pointer = (header *) slab->first_free;
 
@@ -47,7 +47,7 @@ void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
 
 void *heap_allocate_from_slab(slab_t *slab) {
     if (slab->first_free == NULL) {
-        heap_create_slab(slab, slab->entry_size,(slab->end_address - slab->start_address - (PAGE_SIZE - 1)));
+        heap_create_slab(slab, slab->entry_size,(PAGE_SIZE * 2));
     }
     void **old_free = slab->first_free;
     slab->first_free = *old_free;

@@ -122,6 +122,13 @@ void tempfs_init(uint64_t filesystem_id) {
     if (filesystem_id >= NUM_FILESYSTEM_OBJECTS) {
         return;
     }
+
+    uint64_t counter = 0;
+    /*
+    for (uint64_t i = 0; i < 3000; i++) {
+        kalloc(PAGE_SIZE * 16);
+    }
+    */
     initlock(tempfs_filesystem[filesystem_id].lock,TEMPFS_LOCK);
     ramdisk_init(DEFAULT_TEMPFS_SIZE, tempfs_filesystem[filesystem_id].ramdisk_id, "initramfs",TEMPFS_BLOCKSIZE);
     tempfs_mkfs(filesystem_id, &tempfs_filesystem[filesystem_id]);
@@ -225,7 +232,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     uint8_t buffer3 [2048] ={0};
 
-    for(uint64_t i=0;i<4;i++) {
+    for(uint64_t i=0;i<14;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
     }
     tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
@@ -891,7 +898,7 @@ found_free:
  *
  */
 static uint64_t tempfs_get_free_block_and_mark_bitmap(struct tempfs_filesystem* fs) {
-    uint64_t buffer_size = PAGE_SIZE * 16;
+    uint64_t buffer_size = PAGE_SIZE * 8;
     uint8_t* buffer = kalloc(buffer_size);
     uint64_t block = 0;
     uint64_t byte = 0;
@@ -956,7 +963,7 @@ found_free:
         HANDLE_RAMDISK_ERROR(ret, "tempfs_get_free_inode_and_mark_bitmap ramdisk_write call")
         panic("tempfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
     }
-
+    serial_printf("%x.64\n",buffer);
     kfree(buffer);
     /* Free the buffer, all other control paths lead to panic so until that changes this is the only place it is required */
 

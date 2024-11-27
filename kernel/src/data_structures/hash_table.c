@@ -90,7 +90,7 @@ void hash_table_destroy(struct hash_table* table) {
  */
 void hash_table_insert(struct hash_table* table, uint64_t key, void* data) {
     uint64_t hash_key = hash(key, table->size);
-    singly_linked_list_insert_tail(&table->table[hash_key], data);
+    singly_linked_list_insert_head(&table->table[hash_key], data);
 }
 /*
  * Retrieve a hash bucket based on a key passed

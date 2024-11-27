@@ -4,17 +4,21 @@
 #include "include/types.h"
 #include "include/mem/pmm.h"
 #include "include/mem/kalloc.h"
+
+#include <include/data_structures/spinlock.h>
+
 #include "include/mem/slab.h"
 #include "include/drivers/serial/uart.h"
 #include "include/mem/mem.h"
 #include "include/arch/arch_paging.h"
 
-
+struct spinlock alloc_lock;
 /*
  * Init Memory for Kernel Heap.
  * Because 32 bytes is a common needed size so far in this kernel, I have allocated a metric fuckload of slab memory for it (comparatively)
  */
 int heap_init() {
+    initlock(&alloc_lock, ALLOC_LOCK);
     int size = 8;
     for (uint64_t i = 0; i < 9 ; i++) {
 
@@ -23,7 +27,7 @@ int heap_init() {
             continue;
         }
         if(size == 64) {
-            heap_create_slab(&slabs[i],size,256);
+            heap_create_slab(&slabs[i],size,512);
         }else {
             heap_create_slab(&slabs[i],size,1);
         }
@@ -32,9 +36,6 @@ int heap_init() {
 
     }
 
-    for(int i = 0; i < 9; i++) {
-
-    }
 
     serial_printf("Kernel Heap Initialized\n");
     return 0;
@@ -45,8 +46,6 @@ int heap_init() {
  * physalloc. When physalloc is invoked, the start of the memory is changed to the proper HHDM value.
  */
 void *kalloc(uint64_t size) {
-
-
     if(size < PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
         if (slab != NULL) {
@@ -60,7 +59,6 @@ void *kalloc(uint64_t size) {
     if (return_value == NULL) {
         return NULL;
     }
-
     return return_value;
 }
 /*
@@ -70,6 +68,7 @@ void *kalloc(uint64_t size) {
  * that needs to be kept in mind and it is best to avoid realloc and to use malloc and zero yourself.
  */
 void *krealloc(void *address, uint64_t new_size) {
+    acquire_spinlock(&alloc_lock);
     if (address == NULL) {
         return kalloc(new_size);
     }

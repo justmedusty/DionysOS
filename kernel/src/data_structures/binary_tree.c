@@ -359,6 +359,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                     release_spinlock(&tree->lock);
                     return SUCCESS;
                 }
+                panic("here");
                 release_spinlock(&tree->lock);
                 return VALUE_NOT_FOUND;
             }

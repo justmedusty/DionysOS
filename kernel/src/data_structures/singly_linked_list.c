@@ -131,7 +131,6 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
         }
 
     }
-
 }
 
 
@@ -157,17 +156,17 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     }
 
     struct singly_linked_list_node* node = list->head;
-    singly_linked_list_node_free(list->tail);
-    list->tail = NULL;
-
+    struct singly_linked_list_node* tail = list->tail;
     while (node != NULL) {
-        if(node->next == NULL) {
+        if(node->next == list->tail) {
             list->tail = node;
+            node->next = NULL;
         }
         node = node->next;
     }
 
     list->node_count--;
+    singly_linked_list_node_free(tail);
     return return_value;
 
 }
@@ -227,5 +226,6 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
         prev = prev->next;
     }
 
+    serial_printf("NOT FOUND\n");
     return NODE_NOT_FOUND;
 }

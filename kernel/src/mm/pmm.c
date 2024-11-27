@@ -219,17 +219,17 @@ int phys_init() {
  * The phys_alloc function calls buddy_alloc which attempts to find a buddy block of an appropriate size to the request in pages. It panics on failure. The block
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
+
+uint64_t counter2 = 0;
 void* phys_alloc(uint64_t pages) {
-    acquire_spinlock(&pmm_lock);
+    serial_printf("counter %i \n",counter2++);
     struct buddy_block* block = buddy_alloc(pages);
-    release_spinlock(&pmm_lock);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
     }
     block->is_free = USED;
     total_allocated += 1 << block->order;
     void* return_value = (void*)block->start_address;
-
     return return_value;
 }
 
@@ -237,9 +237,7 @@ void* phys_alloc(uint64_t pages) {
  * The phys_dealloc simply calls buddy_free.
  */
 void phys_dealloc(void* address) {
-    acquire_spinlock(&pmm_lock);
     buddy_free(address);
-    release_spinlock(&pmm_lock);
 }
 
 
@@ -283,7 +281,6 @@ uint64_t next_power_of_two(uint64_t x) {
 
     return x + 1;
 }
-
 static struct buddy_block* buddy_alloc(uint64_t pages) {
 
     /*
@@ -295,6 +292,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
      *
      * Freeing will just require an iterative approach to free everything and add it to the binary search tree
      */
+
     if (pages > (1 << MAX_ORDER)) {
 
         uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
@@ -364,6 +362,9 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                     if (block != NULL && block->start_address && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
+                            if (block-> order > MAX_ORDER) {
+                                serial_printf("STARTING HERE CALL %i\n", counter2);
+                            }
                             block = buddy_split(block);
                             if (block == NULL) {
                                 panic("buddy_alloc cannot split block");
@@ -421,7 +422,10 @@ static void buddy_free(void* address) {
         struct buddy_block* block = node->data;
 
         if ((uint64_t)block->start_address == (uint64_t)address) {
-            singly_linked_list_remove_node_by_address(bucket, address);
+            uint64_t ret = singly_linked_list_remove_node_by_address(bucket, block);
+            if (ret == NODE_NOT_FOUND) {
+                panic("Buddy Dealloc: Address not found");
+            }
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;
             total_allocated  -= 1 << block->order;
@@ -453,7 +457,9 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
         remove_tree_node(&buddy_free_list_zone[zone_pointer], block->order, block,NULL);
         block->flags &= ~IN_TREE_FLAG;
     }
-
+    if (block->order > MAX_ORDER) {
+        panic("Buddy Split : Illegal Block order");
+    }
     if (block->order == 0) {
         panic("Buddy Split: Trying to split 0");
         return NULL; /* Can't split a zero order */
@@ -483,6 +489,8 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
     if (ret == SUCCESS) {
         return block;
+    }else {
+        panic("NULL");
     }
 
     return NULL;
@@ -519,6 +527,7 @@ static void buddy_block_free(struct buddy_block* block) {
         block->start_address = 0;
         block->next = NULL;
         block->flags = STATIC_POOL_FLAG;
+        block->buddy_chain_length = 0;
         singly_linked_list_insert_head(&unused_buddy_blocks_list, block);
         return;
     }
