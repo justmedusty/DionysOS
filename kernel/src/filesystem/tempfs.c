@@ -226,7 +226,6 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     uint8_t *buffer3 = kalloc(PAGE_SIZE * 16);
 
     for(uint64_t i=0;i<4;i++) {
-       serial_printf("Size %i\n",len);
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
     }
     strcpy(buffer2,"BLOCK_LINE");
@@ -238,9 +237,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     test = "OVERWRITE OVERWRITE OVERWRITE OVERWRITE OVERWRITE";
     len = strlen(test);
     strcpy(buffer2,test);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,0,len);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size,500,len);
-    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,1024 + (len * 2));
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
     serial_printf("START %s ROOT SIZE %i blocks %i\n",buffer3,root.size,root.blocks);
 
     /*               END                   TESTING                              */
@@ -1193,7 +1190,11 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
     if (inode->type != TEMPFS_REG_FILE) {
         panic("tempfs_write_bytes_to_inode bad type");
     }
-    serial_printf("offset %i inode size %i\n",offset,inode->size);
+
+    if (offset == 900) {
+        serial_printf("offset %i inode size %i\n",offset,inode->size);
+    }
+
 
     uint64_t num_blocks_to_write = write_size_bytes / fs->superblock->block_size;
     uint64_t start_block = offset / fs->superblock->block_size;
@@ -1214,7 +1215,6 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
     }
 
     if (offset + write_size_bytes > inode->size) {
-        //TODO fix this it doesnt account for the new size only being met after X bytes
         new_size = true;
         new_size_bytes = (offset + write_size_bytes) - inode->size;
     }
@@ -1230,14 +1230,11 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
 
     uint64_t current_block_number = 0;
     uint64_t end_block = start_block + num_blocks_to_write;
-    uint64_t end_offset = (write_size_bytes - offset) % fs->superblock->block_size;
+    uint64_t end_offset = offset + write_size_bytes > fs->superblock->block_size ? (offset + write_size_bytes) % fs->superblock->block_size: 0;
 
     if(end_block + 1 > inode->block_count){
         tempfs_inode_allocate_new_blocks(fs,inode,(end_block + 1) - inode->block_count);
         inode->block_count+= ((end_block + 1) - inode->block_count);
-
-        tempfs_write_inode(fs,inode);
-        tempfs_read_inode(fs,inode,inode->inode_number);
     }
 
     /*
@@ -1249,6 +1246,7 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
 
     for (uint64_t i = start_block; i <= end_block; i++) {
         uint64_t byte_size;
+
         if (fs->superblock->block_size - start_offset < bytes_left) {
             byte_size = fs->superblock->block_size - start_offset;
         }else {
@@ -1267,10 +1265,9 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
         if (start_offset) {
             start_offset = 0;
         }
-        if (i + 1 == end_block) {
-            start_offset = end_offset;
-        }
+
     }
+
     if (new_size == true) {
         inode->size += new_size_bytes;
     }
