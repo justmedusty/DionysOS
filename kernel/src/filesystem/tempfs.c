@@ -229,15 +229,14 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
     }
     tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
-    serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
     tempfs_read_inode(fs,&root,root.inode_number);
-    strcpy(buffer2,"START");
+    strcpy(buffer2,"START ");
     len = strlen(buffer2);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,0,len -1);
-    strcpy(buffer2,"END");
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,0,len);
+    strcpy(buffer2," END");
     len = strlen(buffer2);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,root.size -1,len -1);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,root.size,len + 1);
     tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
     serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
@@ -1128,7 +1127,7 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
         }
         current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
 
-        tempfs_read_block_by_number(current_block_number, buffer, fs, start_offset, byte_size);
+        tempfs_read_block_by_number(current_block_number, buffer + bytes_read, fs, start_offset, byte_size);
 
         bytes_read += byte_size;
         bytes_to_read -= byte_size;
