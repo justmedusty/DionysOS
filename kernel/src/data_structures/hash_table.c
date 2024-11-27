@@ -70,7 +70,7 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
         return;
     }
 
-    table = kalloc(sizeof(struct singly_linked_list) * table->size);
+    table =_kalloc(sizeof(struct singly_linked_list) * table->size);
     for (uint64_t i = 0; i < size; i++) {
         singly_linked_list_init(&table->table[i],0);
     }
@@ -82,8 +82,8 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
  * Free the tables buckets and the entire table
  */
 void hash_table_destroy(struct hash_table* table) {
-    kfree(table->table);
-    kfree(table);
+    _kfree(table->table);
+    _kfree(table);
 }
 /*
  * Hashes the passed value, and inserts into the list at the hash index

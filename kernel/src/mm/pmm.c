@@ -501,7 +501,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 static struct buddy_block* buddy_block_get() {
     struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
     if (block == NULL) {
-        struct buddy_block* ret = kalloc(sizeof(struct buddy_block));
+        struct buddy_block* ret =_kalloc(sizeof(struct buddy_block));
         return ret;
     }
     return block;
@@ -512,7 +512,7 @@ static struct buddy_block* buddy_block_get() {
  *
  *If the block has the static pool flag, all values are set to 0 / NULL / UNUSED accordingly and inserted into the free list of static blocks
  *
- * If not, kfree is invoked.
+ * If not, _kfree( is invoked.
  */
 static void buddy_block_free(struct buddy_block* block) {
     if (block->flags & IN_TREE_FLAG) {
@@ -529,7 +529,7 @@ static void buddy_block_free(struct buddy_block* block) {
         singly_linked_list_insert_head(&unused_buddy_blocks_list, block);
         return;
     }
-    kfree(block);
+    _kfree(block);
 }
 
 /*

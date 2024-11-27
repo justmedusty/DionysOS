@@ -28,7 +28,7 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name, ui
                 size_bytes = DEFAULT_RAMDISK_SIZE;
         }
 
-        ramdisk[ramdisk_id].ramdisk_start = kalloc(size_bytes);
+        ramdisk[ramdisk_id].ramdisk_start =_kalloc(size_bytes);
         ramdisk[ramdisk_id].ramdisk_size_pages = size_bytes / PAGE_SIZE;
         ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages *
                 PAGE_SIZE);
@@ -60,7 +60,7 @@ void ramdisk_destroy(const uint64_t ramdisk_id) {
                 serial_printf("ramdisk id is out of range\n");
                 return;
         }
-        kfree(ramdisk[ramdisk_id].ramdisk_start);
+        _kfree(ramdisk[ramdisk_id].ramdisk_start);
         ramdisk[ramdisk_id].ramdisk_start = NULL;
         ramdisk[ramdisk_id].ramdisk_size_pages = 0;
         ramdisk[ramdisk_id].ramdisk_end = NULL;

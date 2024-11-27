@@ -72,7 +72,7 @@ void enqueue(struct queue* queue_head, void* data_toenqueue, uint8_t priority) {
         panic("Null head");
     }
 
-    struct queue_node* new_node = kalloc(sizeof(struct queue_node));
+    struct queue_node* new_node =_kalloc(sizeof(struct queue_node));
     queue_node_init(new_node, data_toenqueue, priority);
 
 
@@ -146,7 +146,7 @@ static void enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) 
 
     if (new_node->data == NULL) {
         panic("Null data enqueue fifo");
-        kfree(new_node);
+        _kfree(new_node);
         return;
     }
 
@@ -185,7 +185,7 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) 
 
     if (new_node->data == NULL) {
         panic("Null head in enqueue lifo");
-        kfree(queue_head);
+        _kfree(queue_head);
         return;
     }
 
@@ -208,7 +208,7 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) 
 static void enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     if (new_node->data == NULL) {
         panic("Null head in enqueue priority");
-        kfree(queue_head);
+        _kfree(queue_head);
         return;
     }
 
@@ -300,7 +300,7 @@ static void dequeue_fifo(struct queue* queue_head) {
         queue_head->tail = queue_head->head;
     }
 
-    kfree(pointer);
+    _kfree(pointer);
 }
 
 /*
@@ -315,7 +315,7 @@ static void dequeue_lifo(struct queue* queue_head) {
     }
 
     if (queue_head->node_count == 1) {
-        kfree(pointer);
+        _kfree(pointer);
         queue_head->head = NULL;
         queue_head->tail = NULL;
         queue_head->node_count--;
@@ -326,7 +326,7 @@ static void dequeue_lifo(struct queue* queue_head) {
     queue_head->head = pointer->next;
     queue_head->node_count--;
 
-    kfree(pointer);
+    _kfree(pointer);
 }
 /*
  *  Dequeue for priority. This one always just copies the normal queue behaviour since it was written
@@ -347,5 +347,5 @@ static void dequeue_priority(struct queue* queue_head) {
         queue_head->tail = queue_head->head;
     }
 
-    kfree(pointer);
+    _kfree(pointer);
 }

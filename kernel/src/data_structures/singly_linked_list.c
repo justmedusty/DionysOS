@@ -54,7 +54,7 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
 
 
     if(new_node == NULL) {
-        new_node = kalloc(sizeof(struct  singly_linked_list_node));
+        new_node =_kalloc(sizeof(struct  singly_linked_list_node));
     }
     new_node->flags &= ~STATIC_POOL_FREE_NODE;
     new_node->data = NULL;
@@ -72,7 +72,7 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
         return;
     }
 
-    kfree(node);
+    _kfree(node);
 }
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
 

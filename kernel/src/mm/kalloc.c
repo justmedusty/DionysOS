@@ -52,7 +52,17 @@ int heap_init() {
  *thread of control is holding the lock and allowing them through, having per cpu
  *buddy pools etc.
  */
-void *kalloc(uint64_t size) {
+
+// Going to entertain a higher level wrapper function for locking for the time being. If this works fine I will leave it otherwise I will
+// revisit for a more robust locking scheme
+void *kmalloc(uint64_t size) {
+    acquire_spinlock(&alloc_lock);
+    void *ret = _kalloc(size);
+    release_spinlock(&alloc_lock);
+    return ret;
+}
+
+void *_kalloc(uint64_t size) {
 
     if(size < PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
@@ -78,7 +88,7 @@ void *kalloc(uint64_t size) {
 void *krealloc(void *address, uint64_t new_size) {
     acquire_spinlock(&alloc_lock);
     if (address == NULL) {
-        return kalloc(new_size);
+        return _kalloc(new_size);
     }
 
     if (((uint64_t) address & 0xFFF) == 0) {
@@ -88,7 +98,7 @@ void *krealloc(void *address, uint64_t new_size) {
             return address;
         }
 
-        void *new_address = kalloc(new_size);
+        void *new_address =_kalloc(new_size);
         if (new_address == NULL) {
             return NULL;
         }
@@ -99,7 +109,7 @@ void *krealloc(void *address, uint64_t new_size) {
             memcpy(new_address, address, metadata->size);
         }
 
-        kfree(address);
+        _kfree(address);
         return new_address;
     }
 
@@ -107,7 +117,7 @@ void *krealloc(void *address, uint64_t new_size) {
     slab_t *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
-        void *new_address = kalloc(new_size);
+        void *new_address =_kalloc(new_size);
         if (new_address == NULL) {
             return NULL;
         }
@@ -120,9 +130,9 @@ void *krealloc(void *address, uint64_t new_size) {
     return address;
 }
 /*
- * Kfree frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
+ * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
  */
-void kfree(void *address) {
+void _kfree(void *address) {
     if (address == NULL) {
         return;
     }
@@ -136,4 +146,8 @@ void kfree(void *address) {
     heap_free_in_slab(slab_header->slab, address);
 }
 
-
+void kfree(void *address) {
+    acquire_spinlock(&alloc_lock);
+    _kfree(address);
+    release_spinlock(&alloc_lock);
+}

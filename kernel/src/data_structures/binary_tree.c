@@ -36,7 +36,7 @@ static uint8_t static_pool_init = 0;
  */
 static struct binary_tree_node* node_alloc() {
     if (pool_full) {
-        return kalloc(sizeof(struct binary_tree_node));
+        return _kalloc(sizeof(struct binary_tree_node));
     }
 
     for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
@@ -47,15 +47,15 @@ static struct binary_tree_node* node_alloc() {
         }
     }
     pool_full = 1;
-    return kalloc(sizeof(struct binary_tree_node));
+    return _kalloc(sizeof(struct binary_tree_node));
 }
 /*
- * Free a node, just invoke kfree it not part of the static pool,
+ * Free a node, just invoke _kfree( it not part of the static pool,
  * other wise clear it and return it to the pool
  */
 static void node_free(struct binary_tree_node* node) {
     if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
-        kfree(node);
+        _kfree(node);
         return;
     }
 
@@ -139,7 +139,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
     struct binary_tree_node* parent = tree->root;
 
     if (current == NULL) {
-        kfree(tree);
+        _kfree(tree);
         return SUCCESS;
     }
     while (tree->node_count != 0) {
@@ -170,7 +170,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
         }
     }
 
-    kfree(tree);
+    _kfree(tree);
     return SUCCESS;
 }
 /*

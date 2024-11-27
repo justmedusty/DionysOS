@@ -54,7 +54,7 @@ struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
 
     if (vnode_static_pool.head == NULL) {
-        struct vnode* new_node = kalloc(sizeof(struct vnode));
+        struct vnode* new_node =_kalloc(sizeof(struct vnode));
         release_spinlock(&vfs_lock);
         return new_node;
     }
@@ -66,7 +66,7 @@ struct vnode* vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode* vnode) {
-    vnode->vnode_children = kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+    vnode->vnode_children =_kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 }
 /*
@@ -98,7 +98,7 @@ void vnode_free(struct vnode* vnode) {
     }
 
     if(vnode->vnode_type == VNODE_DIRECTORY) {
-        kfree(vnode->vnode_children);
+        _kfree(vnode->vnode_children);
     }
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
@@ -114,10 +114,10 @@ void vnode_free(struct vnode* vnode) {
     }
 
     if(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
-        kfree(vnode->vnode_children);
+        _kfree(vnode->vnode_children);
     }
 
-    kfree(vnode);
+    _kfree(vnode);
     release_spinlock(&vfs_lock);
 }
 
@@ -319,7 +319,7 @@ static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = &vfs_root;
 
-    char* current_token = kalloc(VFS_MAX_NAME_LENGTH);
+    char* current_token =_kalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
         /* This isn't implemented yet so it will be garbage until I finish it up */
@@ -340,14 +340,14 @@ static struct vnode* __parse_path(char* path) {
 
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
-            kfree(current_token);
+            _kfree(current_token);
             return NULL;
         }
 
         //Clear the token to be filled again next go round, this is important
         memset(current_token, 0, VFS_MAX_NAME_LENGTH);
     }
-    kfree(current_token);
+    _kfree(current_token);
     return current_vnode;
 }
 

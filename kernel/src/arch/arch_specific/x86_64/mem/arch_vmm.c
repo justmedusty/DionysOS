@@ -26,9 +26,9 @@ void arch_switch_page_table(p4d_t* page_dir){
 }
 
 void arch_init_vmm(){
-    kernel_pg_map = kalloc(PAGE_SIZE);
+    kernel_pg_map =_kalloc(PAGE_SIZE);
     kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
-    kernel_pg_map->vm_region_head = kalloc(PAGE_SIZE);
+    kernel_pg_map->vm_region_head =_kalloc(PAGE_SIZE);
     kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
     kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
