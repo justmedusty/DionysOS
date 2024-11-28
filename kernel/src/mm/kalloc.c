@@ -143,6 +143,10 @@ void _kfree(void *address) {
     }
 
     header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
+    if (slab_header->slab == NULL) {
+        serial_printf("NULL Slab Found Aborting Free. Leaked Memory.\n");
+        return;
+    }
     heap_free_in_slab(slab_header->slab, address);
 }
 

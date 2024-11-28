@@ -576,7 +576,7 @@ static void buddy_coalesce(struct buddy_block* block) {
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
 
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone== block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
         struct buddy_block* next = block->next;
         /*
          * Reflect new order and new next block
