@@ -63,7 +63,6 @@ void *kmalloc(uint64_t size) {
 }
 
 void *_kalloc(uint64_t size) {
-
     if(size < PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
         if (slab != NULL) {
@@ -143,10 +142,7 @@ void _kfree(void *address) {
     }
 
     header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
-    if (slab_header->slab == NULL) {
-        serial_printf("NULL Slab Found Aborting Free. Leaked Memory.\n");
-        return;
-    }
+
     heap_free_in_slab(slab_header->slab, address);
 }
 
