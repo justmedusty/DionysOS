@@ -22,20 +22,15 @@ int heap_init() {
     int size = 8;
     for (uint64_t i = 0; i < 9 ; i++) {
 
-        if(size >= PAGE_SIZE){
-            serial_printf("Entry too large , skipping slab alloc.\n");
-            continue;
-        }
         if(size == 64) {
-            heap_create_slab(&slabs[i],size,1024);
+            heap_create_slab(&slabs[i],size,64);
         }else {
-            heap_create_slab(&slabs[i],size,8);
+            heap_create_slab(&slabs[i],size,64);
         }
 
         size <<= 1;
 
     }
-
 
     serial_printf("Kernel Heap Initialized\n");
     return 0;

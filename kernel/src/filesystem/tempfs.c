@@ -227,11 +227,6 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     uint8_t *buffer3 = kmalloc(PAGE_SIZE * 16);
 
     for(uint64_t i=0;i<80;i++) {
-
-        serial_printf("%i\n",i);
-        if (i == 34) {
-            serial_printf("%i\n",i);
-        }
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
     }
     tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);

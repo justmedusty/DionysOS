@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#include <include/drivers/serial/uart.h>
+
 #include "include/types.h"
 #include "include/definitions.h"
 

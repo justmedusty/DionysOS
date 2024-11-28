@@ -42,7 +42,7 @@ struct binary_tree_node {
     struct binary_tree_node* parent;
     struct binary_tree_node* left;
     struct binary_tree_node* right;
-    uint64_t key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
+    uint32_t key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
     struct singly_linked_list data;
     uint16_t color; /* Only for RB tree */
     uint16_t flags;
