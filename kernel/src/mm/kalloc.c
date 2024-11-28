@@ -29,10 +29,10 @@ int heap_init() {
         if(size == 64) {
             heap_create_slab(&slabs[i],size,512);
         }else {
-            heap_create_slab(&slabs[i],size,1);
+            heap_create_slab(&slabs[i],size,8);
         }
 
-        size = (size << 1);
+        size <<= 1;
 
     }
 

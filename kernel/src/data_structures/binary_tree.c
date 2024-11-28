@@ -262,10 +262,6 @@ void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag
         if (key == current->key) {
             void* return_value = 0;
             if (remove) {
-                //TODO investigate possible race condition here.
-                if (current->parent && current->parent->key == 0xFF) {
-                    panic("[ERROR] Binary tree node doesn't exists\n");
-                }
                 return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head->data, current);
             }
@@ -359,7 +355,6 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                     release_spinlock(&tree->lock);
                     return SUCCESS;
                 }
-                panic("here");
                 release_spinlock(&tree->lock);
                 return VALUE_NOT_FOUND;
             }

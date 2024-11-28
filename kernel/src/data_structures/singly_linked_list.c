@@ -4,6 +4,7 @@
 
 #include "include/data_structures/singly_linked_list.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <include/arch/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
@@ -89,8 +90,8 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 
     new_node->data = data;
 
-    if(list->tail == NULL) {
-        list->head = new_node;
+    if(list->tail == NULL && list->node_count == 1) {
+        list->head->next = new_node;
         list->tail = new_node;
         list->node_count++;
         return;
@@ -104,6 +105,7 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
 
 void singly_linked_list_insert_head(struct singly_linked_list* list, void* data) {
 
+
     struct singly_linked_list_node *new_head;
 
     if(list->flags & LIST_FLAG_FREE_NODES) {
@@ -111,8 +113,28 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     }else {
         new_head = singly_linked_list_node_alloc();
     }
+
     if(new_head == NULL) {
         panic("singly_linked_list_insert_tail : Allocation Failure");
+    }
+    new_head->data = data;
+
+    if (list->node_count == 0) {
+        list->head = new_head;
+        new_head->next = NULL;
+        list->tail = NULL;
+        list->node_count++;
+        return;
+    }
+
+    if (list->node_count == 1) {
+        list->node_count++;
+        new_head->data = data;
+        new_head->next = list->head;
+        list->head = new_head;
+        list->tail = new_head->next;
+        list->tail->next = NULL;
+        return;
     }
 
     list->node_count++;
@@ -120,17 +142,6 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     new_head->next = list->head;
     list->head = new_head;
 
-    struct singly_linked_list_node* pointer = list->head;
-    if(list->tail == NULL && (list->node_count > 1)) {
-        while(pointer != NULL) {
-            if(pointer->next == NULL) {
-                list->tail = pointer;
-                return;
-            }
-            pointer = pointer->next;
-        }
-
-    }
 }
 
 
@@ -170,9 +181,8 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     return return_value;
 
 }
-uint64_t counter = 0;
+
 void *singly_linked_list_remove_head(struct singly_linked_list* list) {
-    counter++;
     if (list->node_count == 0) {
         return NULL;
     }
@@ -191,9 +201,21 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         list->node_count--;
         return return_value;
     }
+
+    if (list->node_count == 2) {
+        struct singly_linked_list_node* node = list->head;
+        list->head = list->tail;
+        list->head->next = NULL;
+        list->tail = NULL;
+        list->node_count--;
+        singly_linked_list_node_free(node);
+        return return_value;
+    }
     if(list->head->next == NULL && list->node_count > 1) {
-        serial_printf("Fucked up shit happens in call %i node_count %i\n",counter,list->node_count);
+        serial_printf("Fucked up shit happens in call %i node_count %i\n",list->node_count);
         list->node_count = 1;
+        list->tail = list->head;
+        list->head->next = list->tail;
     }
     struct singly_linked_list_node* new_head = list->head->next;
 
@@ -207,6 +229,9 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
     struct singly_linked_list_node* prev = list->head;
     struct singly_linked_list_node* node = list->head;
 
+    if (data == NULL) {
+        serial_printf("singly_linked_list_remove_node_by_address : data is NULL\n");
+    }
     if(node->data == data) {
         singly_linked_list_remove_head(list);
         return SUCCESS;

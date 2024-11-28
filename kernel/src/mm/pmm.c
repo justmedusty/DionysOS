@@ -361,6 +361,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                         block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
                             if (block-> order > MAX_ORDER) {
+                                serial_printf("block->order = %i block addr = %x.64 block start addr = %x.64\n", block->order,block,block->start_address);
                                 panic("order higher than max order in buddy_alloc");
                             }
                             block = buddy_split(block);
