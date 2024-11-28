@@ -136,7 +136,7 @@ void _kfree(void *address) {
         return;
     }
 
-    header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
+    header *slab_header = (header *) ((uint64_t) address & ~0x3FFFF);
 
     heap_free_in_slab(slab_header->slab, address);
 }
