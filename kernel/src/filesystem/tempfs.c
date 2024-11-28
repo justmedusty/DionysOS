@@ -224,21 +224,21 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
 
-    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 16);
+    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 256);
 
-    for(uint64_t i=0;i<200;i++) {
+    for(uint64_t i=0;i<1024;i++) {
+        if (i == 907) {
+            serial_printf("Writing to file %i\n",root.inode_number);
+        }
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
     }
-    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
-
-    tempfs_read_inode(fs,&root,root.inode_number);
     strcpy((char *)buffer2,"START ");
     len = strlen((char *)buffer2);
     tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,0,len);
     strcpy((char *)buffer2," END");
     len = strlen((char *)buffer2);
     tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,root.size,len + 1);
-    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 16,0,root.size);
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 256,0,root.size);
     serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
     /*               END                   TESTING                              */
@@ -1663,7 +1663,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
     uint64_t* block_array = (uint64_t*)buffer;
     uint64_t index;
     uint64_t allocated;
-    uint64_t triple_indirect = inode->triple_indirect == TEMPFS_BLOCK_UNALLOCATED
+    uint64_t triple_indirect = inode->triple_indirect == 0
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->triple_indirect;
     inode->triple_indirect = triple_indirect; // could be more elegant but this is fine
@@ -1703,7 +1703,7 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
     uint64_t index;
     uint64_t allocated;
     uint8_t* buffer =kmalloc(PAGE_SIZE);
-    uint64_t double_indirect = inode->double_indirect == TEMPFS_BLOCK_UNALLOCATED
+    uint64_t double_indirect = inode->double_indirect == 0
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->double_indirect;
     inode->double_indirect = double_indirect; // could be more elegant but this is fine
