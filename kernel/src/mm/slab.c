@@ -70,7 +70,7 @@ void *heap_allocate_from_slab(slab_t *slab) {
  */
 
 void heap_free_in_slab(slab_t *slab, void *address) {
-    if (slab == NULL) {
+    if (slab == NULL || (uint64_t) slab < 0x1000) {
         serial_printf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64\n",address);
         return;
     }

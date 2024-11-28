@@ -27,7 +27,7 @@ int heap_init() {
             continue;
         }
         if(size == 64) {
-            heap_create_slab(&slabs[i],size,512);
+            heap_create_slab(&slabs[i],size,1024);
         }else {
             heap_create_slab(&slabs[i],size,8);
         }
@@ -70,7 +70,7 @@ void *_kalloc(uint64_t size) {
         }
     }
 
-    uint64_t page_count = (size + (PAGE_SIZE - 1)) / PAGE_SIZE;
+    uint64_t page_count = (size + (PAGE_SIZE)) / PAGE_SIZE;
     void *return_value = P2V(phys_alloc(page_count));
 
     if (return_value == NULL) {
