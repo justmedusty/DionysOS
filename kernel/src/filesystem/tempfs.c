@@ -1754,9 +1754,8 @@ static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* 
     tempfs_read_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
     /* We can probably just write over the memory which makes these reads redundant, just a note for now */
     uint64_t* block_array = (uint64_t*)buffer;
-    for (uint64_t i = num_allocated; i < num_to_allocate; i++) {
+    for (uint64_t i = num_allocated; i < num_to_allocate + num_allocated; i++) {
         block_array[i] = tempfs_get_free_block_and_mark_bitmap(fs);
-        serial_printf("new block %i\n",block_array[i]);
     }
     tempfs_write_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
     kfree(buffer);
