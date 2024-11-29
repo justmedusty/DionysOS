@@ -49,9 +49,9 @@ static void tempfs_write_block_by_number(uint64_t block_number, uint8_t* buffer,
 static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, struct tempfs_filesystem* fs,
                                         uint64_t offset, uint64_t read_size);
 static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                                      uint64_t num_allocated, uint64_t num_to_allocate);
+                                                      uint64_t num_allocated, uint64_t num_to_allocate, bool higher_order, uint64_t block_number);
 static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                                      uint64_t num_allocated, uint64_t num_to_allocate);
+                                                      uint64_t num_allocated, uint64_t num_to_allocate, bool higher_order, uint64_t block_number);
 static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate);
 static void tempfs_read_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t inode_number);
@@ -226,10 +226,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     uint8_t *buffer3 = kmalloc(PAGE_SIZE * 128);
 
-    for(uint64_t i=0;i<1024;i++) {
-        if (i == 907) {
-            serial_printf("Writing to file %i\n",root.inode_number);
-        }
+    for(uint64_t i=0;i<512;i++) {
         tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 128,(len * i),len);
     }
     strcpy((char *)buffer2,"START ");
@@ -967,7 +964,6 @@ found_free:
     /*
      * It will be very important that this return value not be wasted because it will leave a block marked and not used.
      */
-    serial_printf("BLOCK NUMBER %i\n",block_number);
     return block_number;
 }
 
@@ -1301,13 +1297,11 @@ static uint64_t tempfs_get_relative_block_number_from_file(struct tempfs_inode* 
 
         tempfs_read_block_by_number(inode->single_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = indirection_block[indices.first_level_block_number];
-        serial_printf("param %i current_block_number %i indices %i indirection block %i\n",current_block,current_block_number,indices.first_level_block_number,inode->single_indirect);
         goto done;
 
     case 2:
 
         tempfs_read_block_by_number(inode->double_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
-        serial_printf("current block number is %i\n", current_block_number);
         current_block_number = indirection_block[indices.second_level_block_number];
         tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = indirection_block[indices.first_level_block_number];
@@ -1364,6 +1358,9 @@ uint64_t tempfs_inode_allocate_new_blocks(struct tempfs_filesystem* fs, struct t
         result = tempfs_indirection_indices_for_block_number((inode->size / fs->superblock->block_size) + 1);
     }
 
+    bool higher_order;
+    uint64_t block_number = 0;
+
     switch (result.levels_indirection) {
     case 0:
         goto level_zero;
@@ -1392,7 +1389,7 @@ level_one:
     uint64_t num_in_indirect = num_blocks_to_allocate + num_allocated > NUM_BLOCKS_IN_INDIRECTION_BLOCK
                                    ? NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated
                                    : num_blocks_to_allocate;
-    tempfs_allocate_single_indirect_block(fs, inode, num_allocated, num_in_indirect);
+    tempfs_allocate_single_indirect_block(fs, inode, num_allocated, num_in_indirect,false,0);
     inode->block_count += num_in_indirect;
     num_blocks_to_allocate -= num_in_indirect;
     if (num_blocks_to_allocate == 0) {
@@ -1404,7 +1401,7 @@ level_two:
     num_in_indirect = num_blocks_to_allocate + num_allocated > NUM_BLOCKS_DOUBLE_INDIRECTION
                           ? NUM_BLOCKS_DOUBLE_INDIRECTION - num_allocated
                           : num_blocks_to_allocate;
-    tempfs_allocate_double_indirect_block(fs, inode, num_allocated, num_in_indirect);
+    tempfs_allocate_double_indirect_block(fs, inode, num_allocated, num_in_indirect,false,0);
     inode->block_count += num_in_indirect;
     num_blocks_to_allocate -= num_in_indirect;
     if (num_blocks_to_allocate == 0) {
@@ -1431,7 +1428,7 @@ done:
 
 /*
  * A much simpler index derivation function for getting a tempfs index based off a block number given. Could be for reading a block at an arbitrary offset or finding the end
- * of the file to allocate or write.
+ * of the file to allocate or write.BL
  *
  * It is fairly simple.
  *
@@ -1685,11 +1682,13 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
         allocated = num_allocated % NUM_BLOCKS_DOUBLE_INDIRECTION;
     }
 
+
+
     while (num_to_allocate > 0) {
         uint64_t amount = num_to_allocate < NUM_BLOCKS_DOUBLE_INDIRECTION
                               ? num_to_allocate
                               : NUM_BLOCKS_DOUBLE_INDIRECTION;
-        block_array[index++] = tempfs_allocate_double_indirect_block(fs, inode, allocated, amount);
+        block_array[index++] = tempfs_allocate_double_indirect_block(fs, inode, allocated, amount,true,0);
 
         allocated = 0; // reset after the first allocation round
         num_to_allocate -= amount;
@@ -1701,7 +1700,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
 }
 
 static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                                      uint64_t num_allocated, uint64_t num_to_allocate) {
+                                                      uint64_t num_allocated, uint64_t num_to_allocate, bool higher_order,uint64_t block_number) {
     if (num_allocated + num_to_allocate > NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
         num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated;
     }
@@ -1709,10 +1708,21 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
     uint64_t index;
     uint64_t allocated;
     uint8_t* buffer =kmalloc(PAGE_SIZE);
-    uint64_t double_indirect = inode->double_indirect == 0
+    uint64_t double_indirect;
+
+    if (higher_order && block_number == 0) {
+
+        double_indirect = tempfs_get_free_block_and_mark_bitmap(fs);
+
+    }else if (!higher_order && block_number == 0) {
+
+        double_indirect = inode->double_indirect == 0
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->double_indirect;
-    inode->double_indirect = double_indirect; // could be more elegant but this is fine
+        inode->double_indirect = double_indirect;
+    }else {
+        double_indirect = block_number;
+    }
 
     tempfs_read_block_by_number(double_indirect, buffer, fs, 0, fs->superblock->block_size);
     uint64_t* block_array = (uint64_t*)buffer;
@@ -1725,32 +1735,53 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
         index = num_allocated / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         allocated = num_allocated % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
     }
+    uint64_t block;
+    if (num_allocated > 0) {
+        block = block_array[index];
+    }else {
+        block = 0;
+    }
 
     while (num_to_allocate > 0) {
         uint64_t amount = num_to_allocate < NUM_BLOCKS_IN_INDIRECTION_BLOCK
                               ? num_to_allocate
                               : NUM_BLOCKS_IN_INDIRECTION_BLOCK;
-        block_array[index++] = tempfs_allocate_single_indirect_block(fs, inode, allocated, amount);
+
+        block_array[index++] = tempfs_allocate_single_indirect_block(fs, inode, allocated, amount,true,block);
+        serial_printf("block array %i\n",block_array[index - 1]);
         allocated = 0; // reset after the first allocation round
         num_to_allocate -= amount;
     }
     tempfs_write_block_by_number(double_indirect, buffer, fs, 0, fs->superblock->block_size);
+    tempfs_write_inode(fs,inode);
     kfree(buffer);
     return double_indirect;
 }
 
 
 static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
-                                                      uint64_t num_allocated, uint64_t num_to_allocate) {
+                                                      uint64_t num_allocated, uint64_t num_to_allocate,bool higher_order, uint64_t block_number) {
     if (num_allocated + num_to_allocate > NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
         num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated - 1;
     }
 
     uint8_t* buffer = kmalloc(PAGE_SIZE);
-    uint64_t single_indirect = inode->single_indirect == 0
+    uint64_t single_indirect = block_number;
+
+    if (higher_order && block_number == 0) {
+
+        single_indirect = tempfs_get_free_block_and_mark_bitmap(fs);
+
+    }else if (!higher_order && block_number == 0) {
+
+        single_indirect = inode->single_indirect == 0
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->single_indirect;
-    inode->single_indirect = single_indirect; // could be more elegant but this is fine
+        inode->single_indirect = single_indirect;
+    }else {
+        single_indirect = block_number;
+    }
+
     tempfs_read_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
     /* We can probably just write over the memory which makes these reads redundant, just a note for now */
     uint64_t* block_array = (uint64_t*)buffer;
@@ -1758,6 +1789,7 @@ static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* 
         block_array[i] = tempfs_get_free_block_and_mark_bitmap(fs);
     }
     tempfs_write_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
+    tempfs_write_inode(fs,inode);
     kfree(buffer);
     return single_indirect;
 }
