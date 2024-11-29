@@ -8,6 +8,7 @@
 #include "include/filesystem/tempfs.h"
 
 #include <math.h>
+#include <strings.h>
 #include <include/definitions/string.h>
 #include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
@@ -224,18 +225,18 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
 
-    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 128);
+    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 256);
 
-    for(uint64_t i=0;i<512;i++) {
-        tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 128,(len * i),len);
+    for(uint64_t i=0;i<2048;i++) {
+        tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 256,(len * i),len);
     }
     strcpy((char *)buffer2,"START ");
     len = strlen((char *)buffer2);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 128,0,len);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 256,0,len);
     strcpy((char *)buffer2," END");
     len = strlen((char *)buffer2);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,root.size,len + 1);
-    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 128,0,root.size);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 256,root.size,len + 1);
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 256,0,root.size);
     serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
     /*               END                   TESTING                              */
@@ -1225,6 +1226,7 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
     if(end_block + 1 > inode->block_count){
         tempfs_inode_allocate_new_blocks(fs,inode,(end_block + 1) - inode->block_count);
         inode->block_count+= ((end_block + 1) - inode->block_count);
+
     }
 
     /*
@@ -1242,8 +1244,8 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
         }else {
             byte_size = bytes_left;
         }
-        current_block_number = tempfs_get_relative_block_number_from_file(inode, i, fs);
 
+        current_block_number = tempfs_get_relative_block_number_from_file(inode, i, fs);
 
         tempfs_write_block_by_number(current_block_number,buffer,fs,start_offset,byte_size);
 
@@ -1520,7 +1522,8 @@ static void tempfs_write_block_by_number(uint64_t block_number, uint8_t* buffer,
     if (write_size_bytes + offset > fs->superblock->block_size) {
         write_size_bytes = fs->superblock->block_size - offset;
     }
-    uint64_t ret = ramdisk_write(buffer, block_number + TEMPFS_START_BLOCKS, offset, write_size_bytes, write_size, fs->ramdisk_id);
+
+    uint64_t ret = ramdisk_write(buffer, block_number + TEMPFS_START_BLOCKS, offset, write_size_bytes, fs->superblock->block_size, fs->ramdisk_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "tempfs_write_block_by_number");
@@ -1701,9 +1704,7 @@ static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* 
 
 static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate, bool higher_order,uint64_t block_number) {
-    if (num_allocated + num_to_allocate > NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
-        num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated;
-    }
+
 
     uint64_t index;
     uint64_t allocated;
@@ -1711,18 +1712,14 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
     uint64_t double_indirect;
 
     if (higher_order && block_number == 0) {
-
         double_indirect = tempfs_get_free_block_and_mark_bitmap(fs);
-
     }else if (!higher_order && block_number == 0) {
-
-        double_indirect = inode->double_indirect == 0
-                                   ? tempfs_get_free_block_and_mark_bitmap(fs)
-                                   : inode->double_indirect;
+        double_indirect = inode->double_indirect == 0? tempfs_get_free_block_and_mark_bitmap(fs) : inode->double_indirect;
         inode->double_indirect = double_indirect;
     }else {
         double_indirect = block_number;
     }
+
 
     tempfs_read_block_by_number(double_indirect, buffer, fs, 0, fs->superblock->block_size);
     uint64_t* block_array = (uint64_t*)buffer;
@@ -1743,14 +1740,17 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
     }
 
     while (num_to_allocate > 0) {
+
+
         uint64_t amount = num_to_allocate < NUM_BLOCKS_IN_INDIRECTION_BLOCK
                               ? num_to_allocate
                               : NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        block_array[index] = tempfs_allocate_single_indirect_block(fs, inode, allocated, amount,true, block);
 
-        block_array[index++] = tempfs_allocate_single_indirect_block(fs, inode, allocated, amount,true,block);
-        serial_printf("block array %i\n",block_array[index - 1]);
         allocated = 0; // reset after the first allocation round
         num_to_allocate -= amount;
+        index++;
+        block = block_array[index];
     }
     tempfs_write_block_by_number(double_indirect, buffer, fs, 0, fs->superblock->block_size);
     tempfs_write_inode(fs,inode);
@@ -1761,8 +1761,8 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
 
 static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,bool higher_order, uint64_t block_number) {
-    if (num_allocated + num_to_allocate > NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
-        num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated - 1;
+    if (num_allocated + num_to_allocate >= NUM_BLOCKS_IN_INDIRECTION_BLOCK) {
+        num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated ;
     }
 
     uint8_t* buffer = kmalloc(PAGE_SIZE);
