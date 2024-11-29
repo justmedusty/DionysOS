@@ -55,7 +55,7 @@ static uint64_t tempfs_allocate_double_indirect_block(struct tempfs_filesystem* 
 static uint64_t tempfs_allocate_triple_indirect_block(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate);
 static void tempfs_read_inode(struct tempfs_filesystem* fs, struct tempfs_inode* inode, uint64_t inode_number);
-static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* inode, uint64_t current_block,
+static uint64_t tempfs_get_relative_block_number_from_file(struct tempfs_inode* inode, uint64_t current_block,
                                                           struct tempfs_filesystem* fs);
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
@@ -224,21 +224,21 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(buffer2,test);
     uint64_t len = strlen(test);
 
-    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 256);
+    uint8_t *buffer3 = kmalloc(PAGE_SIZE * 128);
 
     for(uint64_t i=0;i<1024;i++) {
         if (i == 907) {
             serial_printf("Writing to file %i\n",root.inode_number);
         }
-        tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,(len * i),len);
+        tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 128,(len * i),len);
     }
     strcpy((char *)buffer2,"START ");
     len = strlen((char *)buffer2);
-    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,0,len);
+    tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 128,0,len);
     strcpy((char *)buffer2," END");
     len = strlen((char *)buffer2);
     tempfs_write_bytes_to_inode(fs,&root,buffer2,fs->superblock->block_size * 16,root.size,len + 1);
-    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 256,0,root.size);
+    tempfs_read_bytes_from_inode(fs,&root,buffer3,PAGE_SIZE * 128,0,root.size);
     serial_printf("|%s| ROOT SIZE %i blocks %i\n",buffer3,root.size,root.block_count);
 
     /*               END                   TESTING                              */
@@ -967,6 +967,7 @@ found_free:
     /*
      * It will be very important that this return value not be wasted because it will leave a block marked and not used.
      */
+    serial_printf("BLOCK NUMBER %i\n",block_number);
     return block_number;
 }
 
@@ -1129,7 +1130,7 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
         }else {
             byte_size = bytes_to_read;
         }
-        current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
+        current_block_number = tempfs_get_relative_block_number_from_file(inode, i, fs);
 
         tempfs_read_block_by_number(current_block_number, buffer + bytes_read, fs, start_offset, byte_size);
 
@@ -1245,7 +1246,7 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
         }else {
             byte_size = bytes_left;
         }
-        current_block_number = tempfs_get_logical_block_number_from_file(inode, i, fs);
+        current_block_number = tempfs_get_relative_block_number_from_file(inode, i, fs);
 
 
         tempfs_write_block_by_number(current_block_number,buffer,fs,start_offset,byte_size);
@@ -1283,33 +1284,34 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
  *
  * The switch statement just separates what level the requested block is, and then the indices to get the block from there.
  */
-static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* inode, uint64_t current_block,
+static uint64_t tempfs_get_relative_block_number_from_file(struct tempfs_inode* inode, uint64_t current_block,
                                                           struct tempfs_filesystem* fs) {
-    uint8_t* temp_buffer =kmalloc(PAGE_SIZE);
+
+    uint8_t* temp_buffer = kmalloc(PAGE_SIZE);
     const struct tempfs_byte_offset_indices indices = tempfs_indirection_indices_for_block_number(current_block);
     uint64_t current_block_number = 0;
     uint64_t* indirection_block = (uint64_t*)temp_buffer;
+
     switch (indices.levels_indirection) {
     case 0:
         current_block_number = inode->blocks[indices.direct_block_number];
-        kfree(temp_buffer);
-        return current_block_number;
+        goto done;
 
     case 1:
 
         tempfs_read_block_by_number(inode->single_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = indirection_block[indices.first_level_block_number];
-        kfree(temp_buffer);
-        return current_block_number;
+        serial_printf("param %i current_block_number %i indices %i indirection block %i\n",current_block,current_block_number,indices.first_level_block_number,inode->single_indirect);
+        goto done;
 
     case 2:
 
         tempfs_read_block_by_number(inode->double_indirect, temp_buffer, fs, 0, fs->superblock->block_size);
+        serial_printf("current block number is %i\n", current_block_number);
         current_block_number = indirection_block[indices.second_level_block_number];
         tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = indirection_block[indices.first_level_block_number];
-        kfree(temp_buffer);
-        return current_block_number;
+        goto done;
 
     case 3:
 
@@ -1319,13 +1321,17 @@ static uint64_t tempfs_get_logical_block_number_from_file(struct tempfs_inode* i
         current_block_number = indirection_block[indices.second_level_block_number];
         tempfs_read_block_by_number(current_block_number, temp_buffer, fs, 0, fs->superblock->block_size);
         current_block_number = indirection_block[indices.first_level_block_number];
-        kfree(temp_buffer);
-        return current_block_number;
+        goto done;
 
     default:
         panic("tempfs_get_next_logical_block_from_file: unknown indirection");
         return 0; /* Just to shut up the linter, this is unreachable */
     }
+
+done:
+
+    kfree(temp_buffer);
+    return current_block_number;
 }
 
 /*
@@ -1435,7 +1441,7 @@ done:
  */
 
 static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64_t block_number) {
-    struct tempfs_byte_offset_indices byte_offset_indices = {};
+    struct tempfs_byte_offset_indices byte_offset_indices = {0};
 
     if (block_number < NUM_BLOCKS_DIRECT) {
         byte_offset_indices.direct_block_number = block_number;
@@ -1447,7 +1453,7 @@ static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_nu
         block_number -= (NUM_BLOCKS_DIRECT);
         byte_offset_indices.levels_indirection = 1;
         byte_offset_indices.direct_block_number = 0;
-        byte_offset_indices.first_level_block_number = block_number / NUM_BLOCKS_IN_INDIRECTION_BLOCK;
+        byte_offset_indices.first_level_block_number = block_number % NUM_BLOCKS_IN_INDIRECTION_BLOCK;
         return byte_offset_indices;
     }
 
@@ -1740,7 +1746,7 @@ static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* 
         num_to_allocate = NUM_BLOCKS_IN_INDIRECTION_BLOCK - num_allocated - 1;
     }
 
-    uint8_t* buffer =kmalloc(PAGE_SIZE);
+    uint8_t* buffer = kmalloc(PAGE_SIZE);
     uint64_t single_indirect = inode->single_indirect == 0
                                    ? tempfs_get_free_block_and_mark_bitmap(fs)
                                    : inode->single_indirect;
@@ -1750,6 +1756,7 @@ static uint64_t tempfs_allocate_single_indirect_block(struct tempfs_filesystem* 
     uint64_t* block_array = (uint64_t*)buffer;
     for (uint64_t i = num_allocated; i < num_to_allocate; i++) {
         block_array[i] = tempfs_get_free_block_and_mark_bitmap(fs);
+        serial_printf("new block %i\n",block_array[i]);
     }
     tempfs_write_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
     kfree(buffer);

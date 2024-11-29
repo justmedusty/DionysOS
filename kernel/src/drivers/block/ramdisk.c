@@ -110,6 +110,7 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
                        uint64_t buffer_size,
                        uint64_t ramdisk_id) {
 
+
         if (ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
         }
@@ -118,6 +119,7 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
                 return RAMDISK_OFFSET_OUT_OF_RANGE;
         }
  if (block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
+         serial_printf("Block too large %i %i\n",block,buffer_size);
                 return BLOCK_OUT_OF_RANGE;
         }
 
