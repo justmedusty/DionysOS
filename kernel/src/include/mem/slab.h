@@ -8,7 +8,7 @@
 #include "include/types.h"
 #include "include/definitions.h"
 
-#define SLAB_HASH_SIZE 300
+#define NUM_SLABS 10
 extern struct hash_table slab_hash;
 
 typedef struct {

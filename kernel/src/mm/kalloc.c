@@ -21,7 +21,7 @@ struct spinlock alloc_lock;
 int heap_init() {
     initlock(&alloc_lock, ALLOC_LOCK);
     int size = 8;
-    for (uint64_t i = 0; i < 10 ; i++) {
+    for (uint64_t i = 0; i < NUM_SLABS; i++) {
             heap_create_slab(&slabs[i],size,64);
         size <<= 1;
     }
@@ -132,7 +132,7 @@ void _kfree(void* address) {
         goto slab;
     }
 
-    for (uint64_t i = 0; i < 10; i++) {
+    for (uint64_t i = 0; i < NUM_SLABS; i++) {
         header* slab_header = (header*)((uint64_t)address & ~0x3FFFF);
         if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
             goto slab;

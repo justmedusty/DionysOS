@@ -242,14 +242,10 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, 0, other_len);
     strcpy((char*)buffer2, " END");
     uint64_t new_len = strlen((char*)buffer2);
-    tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, root.size, new_len + 1);
+    tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, root.size - new_len, new_len);
     for (uint64_t i = 0; i < 4096; i++) {
-        serial_printf("%i\n",i);
-        if (i == 489) {
-            serial_printf("here");
-        }
         tempfs_read_bytes_from_inode(fs, &root, buffer3,PAGE_SIZE * 128, len * i, len);
-      //  buffer3[len * i] = '';
+        buffer3[len] = '\0';
         serial_printf("%s", buffer3);
     }
 
