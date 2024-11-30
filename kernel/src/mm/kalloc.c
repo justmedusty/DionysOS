@@ -5,6 +5,7 @@
 #include "include/mem/pmm.h"
 #include "include/mem/kalloc.h"
 
+#include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
 
 #include "include/mem/slab.h"
@@ -19,14 +20,10 @@ struct spinlock alloc_lock;
  */
 int heap_init() {
     initlock(&alloc_lock, ALLOC_LOCK);
+    hash_table_init(&slab_hash,50);
     int size = 8;
     for (uint64_t i = 0; i < 9 ; i++) {
-
-        if(size == 64) {
             heap_create_slab(&slabs[i],size,64);
-        }else {
-            heap_create_slab(&slabs[i],size,64);
-        }
 
         size <<= 1;
 
@@ -123,6 +120,7 @@ void *krealloc(void *address, uint64_t new_size) {
 
     return address;
 }
+
 /*
  * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
  */

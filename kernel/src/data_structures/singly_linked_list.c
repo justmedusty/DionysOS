@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include <include/arch/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
 
@@ -72,7 +73,7 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
         singly_linked_list_insert_tail(&free_nodes, node);
         return;
     }
-
+    memset(node, 0, sizeof(struct singly_linked_list_node));
     _kfree(node);
 }
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
@@ -89,6 +90,7 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
     }
 
     new_node->data = data;
+    new_node->next = NULL;
 
     if(list->tail == NULL && list->node_count == 1) {
         list->head->next = new_node;
@@ -159,6 +161,7 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
 
     if(list->node_count == 1) {
         return_value = list->head->data;
+        list->head->next = NULL;
         singly_linked_list_node_free(list->head);
         list->head = NULL;
         list->tail = NULL;
@@ -177,15 +180,17 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     }
 
     list->node_count--;
+    tail->next = NULL;
     singly_linked_list_node_free(tail);
     return return_value;
 
 }
 
 void *singly_linked_list_remove_head(struct singly_linked_list* list) {
-    if (list->node_count == 0) {
+    if (list->node_count == 0 || list->head == NULL) {
         return NULL;
     }
+
     void *return_value = list->head->data;
 
     if(list->flags & LIST_FLAG_FREE_NODES) {
@@ -201,22 +206,20 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         list->node_count--;
         return return_value;
     }
-
+    if(list->head->next == NULL && list->node_count > 1) {
+        serial_printf("Fucked up shit happens in call %i node_count %i\n",list->node_count);
+    }
     if (list->node_count == 2) {
         struct singly_linked_list_node* node = list->head;
         list->head = list->tail;
         list->head->next = NULL;
         list->tail = NULL;
         list->node_count--;
+        node->next = NULL;
         singly_linked_list_node_free(node);
         return return_value;
     }
-    if(list->head->next == NULL && list->node_count > 1) {
-        serial_printf("Fucked up shit happens in call %i node_count %i\n",list->node_count);
-        list->node_count = 1;
-        list->tail = list->head;
-        list->head->next = list->tail;
-    }
+
     struct singly_linked_list_node* new_head = list->head->next;
 
     singly_linked_list_node_free(list->head);

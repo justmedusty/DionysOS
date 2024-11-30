@@ -8,6 +8,8 @@
 #include "include/types.h"
 #include "include/definitions.h"
 
+
+extern struct hash_table slab_hash;
 typedef struct {
     void **first_free;
     uint64_t entry_size;

@@ -245,7 +245,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, root.size, new_len + 1);
     for (uint64_t i = 0; i < 4096; i++) {
         serial_printf("%i\n",i);
-        if (i == 364) {
+        if (i == 489) {
             serial_printf("here");
         }
         tempfs_read_bytes_from_inode(fs, &root, buffer3,PAGE_SIZE * 128, len * i, len);
