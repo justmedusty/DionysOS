@@ -26,6 +26,7 @@ void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE)));
 
+    serial_printf("Slab created at %x.64\n",slab->first_free);
     uint64_t header_offset = (sizeof(header) + (entry_size)) / entry_size * entry_size;
     uint64_t available_size = (pages * PAGE_SIZE) - header_offset;
     header *slab_pointer = (header *) slab->first_free;

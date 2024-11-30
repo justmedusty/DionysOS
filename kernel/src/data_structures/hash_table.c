@@ -19,9 +19,7 @@
  */
 
 struct singly_linked_list hash_bucket_static_pool[300];
-
 uint32_t full = 0;
-uint32_t used = 0;
 /*
  * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
  * we get wrap-around.
@@ -61,17 +59,13 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
 
     table->size = size;
 
-    if(!full && used + size <= HASH_TABLE_STATIC_POOL_SIZE) {
+    if(!full) {
 
         for (uint64_t i = 0; i < size; i++) {
-            table->table[i] = hash_bucket_static_pool[ used + i];
+            table->table[i] = hash_bucket_static_pool[i];
             singly_linked_list_init(&table->table[i],0);
         }
-        used += size;
-        if (used == HASH_TABLE_STATIC_POOL_SIZE) {
-            full = 1;
-        }
-
+        full = 1;
         return;
     }
 

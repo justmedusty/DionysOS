@@ -20,13 +20,10 @@ struct spinlock alloc_lock;
  */
 int heap_init() {
     initlock(&alloc_lock, ALLOC_LOCK);
-    hash_table_init(&slab_hash,50);
     int size = 8;
-    for (uint64_t i = 0; i < 9 ; i++) {
+    for (uint64_t i = 0; i < 10 ; i++) {
             heap_create_slab(&slabs[i],size,64);
-
         size <<= 1;
-
     }
 
     serial_printf("Kernel Heap Initialized\n");
@@ -55,12 +52,14 @@ void *kmalloc(uint64_t size) {
 }
 
 void *_kalloc(uint64_t size) {
+
     if(size < PAGE_SIZE) {
         slab_t *slab = heap_slab_for(size);
         if (slab != NULL) {
             return heap_allocate_from_slab(slab);
         }
     }
+
 
     uint64_t page_count = (size + (PAGE_SIZE)) / PAGE_SIZE;
     void *return_value = P2V(phys_alloc(page_count));
@@ -124,17 +123,29 @@ void *krealloc(void *address, uint64_t new_size) {
 /*
  * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
  */
-void _kfree(void *address) {
+void _kfree(void* address) {
     if (address == NULL) {
         return;
     }
 
-    if (((uint64_t) address & 0xFFF) == 0) {
-        phys_dealloc(V2P(address));
-        return;
+    if ((uint64_t)address & 0xFFF) {
+        goto slab;
     }
 
-    header *slab_header = (header *) ((uint64_t) address & ~0x3FFFF);
+    for (uint64_t i = 0; i < 10; i++) {
+        header* slab_header = (header*)((uint64_t)address & ~0x3FFFF);
+        if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
+            goto slab;
+        }
+    }
+
+    phys_dealloc(V2P(address));
+    return;
+
+
+slab:
+
+    header* slab_header = (header*)((uint64_t)address & ~0x3FFFF);
 
     heap_free_in_slab(slab_header->slab, address);
 }
