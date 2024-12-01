@@ -31,7 +31,7 @@ struct tempfs_filesystem tempfs_filesystem[10] = {
     }
 };
 
-static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number, uint8_t action);
+static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number);
 static void tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
                                                   struct tempfs_inode* inode_to_be_filled);
 static uint64_t tempfs_get_free_block_and_mark_bitmap(struct tempfs_filesystem* fs);
@@ -245,11 +245,20 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, root.size - new_len, new_len);
     for (uint64_t i = 0; i < 4096; i++) {
         tempfs_read_bytes_from_inode(fs, &root, buffer3,PAGE_SIZE * 128, len * i, len);
-        buffer3[len] = '\0';
         serial_printf("%s", buffer3);
     }
+    strcpy(root.name, "file-updated.txt");
+    tempfs_write_inode(fs,&root);
+    tempfs_read_inode(fs, &root, root.inode_number);
+    serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, root.size, root.block_count,root.name);
 
-    serial_printf("|%s| ROOT SIZE %i blocks %i\n", buffer3, root.size, root.block_count);
+    tempfs_remove_file(fs, &root);
+    tempfs_get_free_inode_and_mark_bitmap(fs,&root);
+    tempfs_write_inode(fs,&root);
+    tempfs_read_inode(fs,&root, root.inode_number);
+
+    serial_printf("|%s| ROOT SIZE %i blocks %i name %s next block %i next inode %i\n", buffer3, root.size, root.block_count,root.name,tempfs_get_free_block_and_mark_bitmap(fs),&root.inode_number);
+
 
     /*               END                   TESTING                              */
     kfree(buffer2);
@@ -763,16 +772,16 @@ static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode
 }
 
 
-static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number, uint8_t action) {
+static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number) {
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
-        panic("Unknown type tempfs_modify_bitmap");
+        panic("Unknown type tempfs_clear_bitmap");
     }
 
     uint64_t block_to_read;
     uint64_t block;
 
     if (type == BITMAP_TYPE_BLOCK) {
-        block_to_read = fs->superblock->block_bitmap_pointers_start + number / (fs->superblock->block_size * 8);
+        block_to_read = fs->superblock->block_bitmap_pointers_start + (number / (fs->superblock->block_size * 8));
         block = fs->superblock->block_bitmap_pointers_start + block_to_read;
     }
     else {
@@ -785,15 +794,16 @@ static void tempfs_modify_bitmap(struct tempfs_filesystem* fs, uint8_t type, uin
     uint64_t bit = number % 8;
 
     uint8_t* buffer = kmalloc(PAGE_SIZE);
+    memset(buffer, 0, PAGE_SIZE);
 
     tempfs_read_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
-
+    serial_printf("BLOCK NO %i\n",block);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
 
-    buffer[byte_in_block] = buffer[byte_in_block] & (action << bit);
+    buffer[byte_in_block] = buffer[byte_in_block] & (0 << bit);
     tempfs_write_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
     kfree(buffer);
 }
@@ -989,7 +999,7 @@ static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, 
 
     tempfs_write_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
 
-    tempfs_modify_bitmap(fs,BITMAP_TYPE_BLOCK, block_number,BITMAP_ACTION_CLEAR);
+    tempfs_clear_bitmap(fs,BITMAP_TYPE_BLOCK, block_number);
 
     kfree(buffer);
     return SUCCESS;
@@ -1012,7 +1022,7 @@ static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, 
     tempfs_write_block_by_number(fs->superblock->inode_start_pointer + inode_number_block, buffer, fs, offset,
                                  TEMPFS_INODE_SIZE);
 
-    tempfs_modify_bitmap(fs,BITMAP_TYPE_INODE, inode_number,BITMAP_ACTION_CLEAR);
+    tempfs_clear_bitmap(fs,BITMAP_TYPE_INODE, inode_number);
 
     kfree(buffer);
     return SUCCESS;
