@@ -249,15 +249,13 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     }
     strcpy(root.name, "file-updated.txt");
     tempfs_write_inode(fs,&root);
-    tempfs_read_inode(fs, &root, root.inode_number);
     serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, root.size, root.block_count,root.name);
 
     tempfs_remove_file(fs, &root);
     tempfs_get_free_inode_and_mark_bitmap(fs,&root);
-    tempfs_write_inode(fs,&root);
     tempfs_read_inode(fs,&root, root.inode_number);
 
-    serial_printf("|%s| ROOT SIZE %i blocks %i name %s next block %i next inode %i\n", buffer3, root.size, root.block_count,root.name,tempfs_get_free_block_and_mark_bitmap(fs),&root.inode_number);
+    serial_printf("ROOT SIZE %i blocks %i name %s next inode %i\n", root.size, root.block_count,root.name,root.inode_number);
 
 
     /*               END                   TESTING                              */
@@ -781,11 +779,11 @@ static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint
     uint64_t block;
 
     if (type == BITMAP_TYPE_BLOCK) {
-        block_to_read = fs->superblock->block_bitmap_pointers_start + (number / (fs->superblock->block_size * 8));
+        block_to_read = (number / (fs->superblock->block_size * 8));
         block = fs->superblock->block_bitmap_pointers_start + block_to_read;
     }
     else {
-        block_to_read = fs->superblock->inode_bitmap_pointers_start + number / (fs->superblock->block_size * 8);
+        block_to_read = number / (fs->superblock->block_size * 8);
         block = fs->superblock->inode_bitmap_pointers_start + block_to_read;
     }
 
@@ -796,15 +794,13 @@ static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint
     uint8_t* buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
 
-    tempfs_read_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
-    serial_printf("BLOCK NO %i\n",block);
+    ramdisk_read(buffer,block,0,fs->superblock->block_size,PAGE_SIZE,fs->ramdisk_id);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
-
-    buffer[byte_in_block] = buffer[byte_in_block] & (0 << bit);
-    tempfs_write_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
+    buffer[byte_in_block] &= ~(1 << bit);
+    ramdisk_write(buffer,block,0,fs->superblock->block_size,PAGE_SIZE,fs->ramdisk_id);
     kfree(buffer);
 }
 
@@ -908,7 +904,7 @@ found_free:
  */
 
 static uint64_t tempfs_get_free_block_and_mark_bitmap(struct tempfs_filesystem* fs) {
-    uint64_t buffer_size = PAGE_SIZE * 32;
+    uint64_t buffer_size = PAGE_SIZE * 128;
     uint8_t* buffer = kmalloc(buffer_size);
     uint64_t block = 0;
     uint64_t byte = 0;
@@ -928,7 +924,7 @@ retry:
      */
 
     uint64_t ret = ramdisk_read(buffer, fs->superblock->block_bitmap_pointers_start, 0,
-                                fs->superblock->block_size * TEMPFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
+                                fs->superblock->block_size * TEMPFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
                                 fs->ramdisk_id);
 
 
@@ -966,7 +962,7 @@ retry:
 
 
 found_free:
-    ret = ramdisk_write(buffer, fs->superblock->block_bitmap_pointers_start, 0,
+    ret = ramdisk_write(buffer, fs->superblock->block_bitmap_pointers_start , 0,
                         fs->superblock->block_size * TEMPFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
                         fs->ramdisk_id);
 
@@ -995,9 +991,8 @@ found_free:
 static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t block_number) {
     uint8_t* buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, fs->superblock->block_size);
-    uint64_t block = fs->superblock->block_start_pointer + block_number;
 
-    tempfs_write_block_by_number(block, buffer, fs, 0, fs->superblock->block_size);
+    tempfs_write_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
 
     tempfs_clear_bitmap(fs,BITMAP_TYPE_BLOCK, block_number);
 
