@@ -111,10 +111,10 @@ struct tempfs_inode {
 
 /*
  * As a note, we will NOT allow indirect blocks with directories for this filesystem,
- * because 50-70 dirents in one inode is more than enough for us. We want to kill things
+ * because 50-70 dirents in one inode is more than enough for us. We want to keep things
  * simple after all.
  *
- * As it stands right now, 7 tempfs_dir entries will fit into a block, * 13 means
+ * As it stands right now, 7 tempfs_dir entries will fit into a block, * 10 means
  * that a directory can hold 91 entries. More than enough.
  */
 struct tempfs_directory_entry {
@@ -126,7 +126,9 @@ struct tempfs_directory_entry {
     uint32_t size;
 };
 
-
+/*
+ * Returned for a calculation of indices for a given relative block number
+ */
 struct tempfs_byte_offset_indices {
     uint16_t direct_block_number;
     uint16_t third_level_block_number;

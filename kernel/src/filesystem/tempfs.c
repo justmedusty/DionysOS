@@ -252,8 +252,9 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, root.size, root.block_count,root.name);
 
     tempfs_remove_file(fs, &root);
-    tempfs_get_free_inode_and_mark_bitmap(fs,&root);
-    tempfs_read_inode(fs,&root, root.inode_number);
+    tempfs_read_inode(fs,&root, 0);
+
+    struct vnode* new2 = tempfs_create(new, "home",TEMPFS_DIRECTORY);
 
     serial_printf("ROOT SIZE %i blocks %i name %s next inode %i\n", root.size, root.block_count,root.name,root.inode_number);
 
