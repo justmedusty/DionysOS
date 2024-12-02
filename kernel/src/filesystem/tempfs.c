@@ -471,7 +471,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     entry.size = 0;
     safe_strcpy((char*)&entry.name, name, MAX_FILENAME_LENGTH);
     entry.parent_inode_number = inode.parent_inode_number;
-    entry.device_number = 0;
+    entry.device_number = fs->ramdisk_id;
     entry.type = inode.type;
     uint64_t ret = tempfs_write_dirent(fs, &parent_inode, &entry);
     tempfs_write_inode(fs, &parent_inode);
