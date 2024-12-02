@@ -235,29 +235,17 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     uint64_t len = strlen(test);
 
     uint8_t* buffer3 = kmalloc(PAGE_SIZE * 128);
-    panic("");
-    for (uint64_t i = 0; i < 4096; i++) {
-        tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, (len * i), len);
-    }
-    strcpy((char*)buffer2, "START ");
-    uint64_t other_len = strlen((char*)buffer2);
-    tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, 0, other_len);
-    strcpy((char*)buffer2, " END");
-    uint64_t new_len = strlen((char*)buffer2);
-    tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, child.size - new_len, new_len);
-    for (uint64_t i = 0; i < 4096; i++) {
-        tempfs_read_bytes_from_inode(fs, &child, buffer3,PAGE_SIZE * 128, len * i, len);
-        serial_printf("%s", buffer3);
-    }
+
     strcpy(child.name, "file-updated.txt");
     tempfs_write_inode(fs,&child);
     tempfs_directory_entry_free(fs,NULL,&child);
-    serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, child.size, child.block_count,child.name);
     tempfs_read_inode(fs,&child, 0);
+    struct vnode* new2 = tempfs_create(&vfs_root, "home",TEMPFS_DIRECTORY);
+    struct tempfs_inode home;
+    tempfs_read_inode(fs,&home,new2->vnode_inode_number);
+    tempfs_read_inode(fs,&root,root.inode_number);
 
-    struct vnode* new2 = tempfs_create(new, "home",TEMPFS_DIRECTORY);
-
-    serial_printf("ROOT SIZE %i blocks %i name %s inode %i\n", child.size, child.block_count,child.name,child.inode_number);
+    serial_printf("ROOT SIZE %i blocks %i child name %s inode %i\n", root.size, root.block_count,home.name,home.inode_number);
 
 
     /*               END                   TESTING                              */
@@ -1591,6 +1579,10 @@ static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, 
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode) {
+
+    if (inode->block_count == 0) {
+        return;
+    }
     uint64_t block_number = block_start;
     uint64_t indirection_block;
     uint64_t double_indirection_block;
