@@ -188,6 +188,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
                   fs->superblock->block_size, ramdisk_id);
 
     struct tempfs_inode root;
+    struct tempfs_inode child;
     tempfs_get_free_inode_and_mark_bitmap(fs, &root);
 
 
@@ -211,52 +212,52 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     /*               START                   TESTING                              */
 
     struct vnode* new = tempfs_create(&vfs_root, "file.txt",TEMPFS_REG_FILE);
+
+
     serial_printf("Parent Size Blocks name %i %i %i %s\n", root.parent_inode_number, root.size, root.block_count,
                   &root.name);
-    tempfs_read_inode(fs, &root, new->vnode_inode_number);
+    tempfs_read_inode(fs, &root, new->vnode_parent->vnode_inode_number);
+    tempfs_write_inode(fs, &root);
+    tempfs_read_inode(fs, &child, new->vnode_inode_number);
 
-    struct tempfs_directory_entry* entries = kmalloc(
-        sizeof(struct tempfs_directory_entry) * TEMPFS_MAX_FILES_IN_DIRECTORY);
+    struct tempfs_directory_entry* entries = kmalloc(sizeof(struct tempfs_directory_entry) * TEMPFS_MAX_FILES_IN_DIRECTORY);
+    serial_printf("SIZE %i\n",root.size);
+    tempfs_get_directory_entries(fs, entries, 0,TEMPFS_MAX_FILES_IN_DIRECTORY * sizeof(struct tempfs_directory_entry));
 
-    tempfs_get_directory_entries(fs, entries, root.inode_number,
-                                 TEMPFS_MAX_FILES_IN_DIRECTORY * sizeof(struct tempfs_directory_entry));
-
-    serial_printf("New Inode Number %i name %s parent name\n", root.inode_number, root.name);
+    serial_printf("ENTRY NUMBER %i ENTRY NAME %s\n", entries[0].inode_number, entries[0].name);
 
     tempfs_read_inode(fs, &root, root.inode_number);
 
 
     uint8_t* buffer2 = kmalloc(PAGE_SIZE);
-    char* test =
-        "This is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er bud";
+    char* test ="This is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er budThis is some random file data we can write some shit here and see what the hell happens. Send er bud";
     strcpy(buffer2, test);
     uint64_t len = strlen(test);
 
     uint8_t* buffer3 = kmalloc(PAGE_SIZE * 128);
-
+    panic("");
     for (uint64_t i = 0; i < 4096; i++) {
-        tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, (len * i), len);
+        tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, (len * i), len);
     }
     strcpy((char*)buffer2, "START ");
     uint64_t other_len = strlen((char*)buffer2);
-    tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, 0, other_len);
+    tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, 0, other_len);
     strcpy((char*)buffer2, " END");
     uint64_t new_len = strlen((char*)buffer2);
-    tempfs_write_bytes_to_inode(fs, &root, buffer2, fs->superblock->block_size * 128, root.size - new_len, new_len);
+    tempfs_write_bytes_to_inode(fs, &child, buffer2, fs->superblock->block_size * 128, child.size - new_len, new_len);
     for (uint64_t i = 0; i < 4096; i++) {
-        tempfs_read_bytes_from_inode(fs, &root, buffer3,PAGE_SIZE * 128, len * i, len);
+        tempfs_read_bytes_from_inode(fs, &child, buffer3,PAGE_SIZE * 128, len * i, len);
         serial_printf("%s", buffer3);
     }
-    strcpy(root.name, "file-updated.txt");
-    tempfs_write_inode(fs,&root);
-    serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, root.size, root.block_count,root.name);
-
-    tempfs_remove_file(fs, &root);
-    tempfs_read_inode(fs,&root, 0);
+    strcpy(child.name, "file-updated.txt");
+    tempfs_write_inode(fs,&child);
+    tempfs_directory_entry_free(fs,NULL,&child);
+    serial_printf("|%s| ROOT SIZE %i blocks %i name %s\n\n\n\n\n\n\n\n\n\n\n", buffer3, child.size, child.block_count,child.name);
+    tempfs_read_inode(fs,&child, 0);
 
     struct vnode* new2 = tempfs_create(new, "home",TEMPFS_DIRECTORY);
 
-    serial_printf("ROOT SIZE %i blocks %i name %s next inode %i\n", root.size, root.block_count,root.name,root.inode_number);
+    serial_printf("ROOT SIZE %i blocks %i name %s inode %i\n", child.size, child.block_count,child.name,child.inode_number);
 
 
     /*               END                   TESTING                              */
@@ -473,6 +474,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     entry.device_number = 0;
     entry.type = inode.type;
     uint64_t ret = tempfs_write_dirent(fs, &parent_inode, &entry);
+    tempfs_write_inode(fs, &parent_inode);
     release_spinlock(fs->lock);
 
     if (ret != SUCCESS) {
@@ -763,14 +765,23 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
     kfree(buffer);
 }
 
+/*
+ *Remove regular file, free all blocks, clear the inode out, free the inode
+ *
+ *TESTED
+ */
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
-    memset(inode, 0, sizeof(struct tempfs_inode));
+    memset(inode->name,0,MAX_FILENAME_LENGTH);
     tempfs_write_inode(fs, inode);
     tempfs_free_inode_and_mark_bitmap(fs, inode->inode_number);
 }
 
-
+/*
+ * Clear a block or inode bitmap entry
+ *
+ * TESTED
+ */
 static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number) {
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         panic("Unknown type tempfs_clear_bitmap");
@@ -1058,6 +1069,7 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
                                              uint64_t children_size) {
     uint64_t buffer_size = PAGE_SIZE;
     uint8_t* buffer = kmalloc(buffer_size);
+    struct tempfs_directory_entry* directory_entries = (struct tempfs_directory_entry*)buffer;
     struct tempfs_inode inode;
     uint64_t directory_entries_read = 0;
     uint64_t directory_block = 0;
@@ -1070,24 +1082,30 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
         return TEMPFS_NOT_A_DIRECTORY;
     }
 
-
-    while (directory_entries_read <= (children_size / sizeof(struct tempfs_directory_entry)) && directory_entries_read <
-        (inode.size / sizeof(struct tempfs_directory_entry))) {
-        block_number = inode.blocks[directory_block++];
-        /*Should be okay to leave this unrestrained since we check children size and inode size */
-
-        tempfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
-
-        for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct tempfs_directory_entry)); i++) {
-            if (directory_entries_read >= inode.size / sizeof(struct tempfs_directory_entry) || directory_entries_read
-                >= children_size / sizeof(struct tempfs_directory_entry)) {
-                break;
-            }
-            children[directory_entries_read++] = *(struct tempfs_directory_entry*)buffer[i * sizeof(struct
-                tempfs_directory_entry)];
-        }
+    if (children_size < inode.block_count * fs->superblock->block_size) {
+        return TEMPFS_BUFFER_TOO_SMALL;
     }
 
+
+ while (1) {
+     block_number = inode.blocks[directory_block++];
+     /*Should be okay to leave this unrestrained since we check children size and inode size */
+
+     tempfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
+
+     for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct tempfs_directory_entry)); i++) {
+         if (directory_entries_read == inode.size) {
+             goto done;
+         }
+         if (directory_entries_read == inode.size) {
+             goto done;
+         }
+         children[directory_entries_read++] = directory_entries[i];
+     }
+ }
+
+
+    done:
     kfree(buffer);
     return SUCCESS;
 }
@@ -1167,10 +1185,10 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
 
     uint64_t block = inode->size / TEMPFS_MAX_FILES_IN_DIRECTORY;
 
-    uint64_t entry_in_block = (inode->size % TEMPFS_MAX_FILES_IN_DIRECTORY) + 1;
+    uint64_t entry_in_block = (inode->size % TEMPFS_MAX_FILES_IN_DIRECTORY);
 
     //allocate a new block when needed
-    if (entry_in_block - 1 == 0) {
+    if (entry_in_block == 0) {
         inode->blocks[block] = tempfs_get_free_block_and_mark_bitmap(fs);
         inode->block_count++;
     }
@@ -1180,11 +1198,12 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
 
     tempfs_read_block_by_number(inode->blocks[block], read_buffer, fs, 0, fs->superblock->block_size);
 
-    tempfs_directory_entries[entry_in_block - 1] = *entry;
+    memcpy(&tempfs_directory_entries[entry_in_block], entry, sizeof(struct tempfs_directory_entry));
     inode->size++;
 
     tempfs_write_block_by_number(inode->blocks[block], read_buffer, fs, 0, fs->superblock->block_size);
     tempfs_write_inode(fs, inode);
+
     kfree(read_buffer);
     return SUCCESS;
 }
