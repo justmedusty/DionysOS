@@ -243,7 +243,7 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     struct vnode* new2 = tempfs_create(&vfs_root, "home",TEMPFS_DIRECTORY);
     struct tempfs_inode home;
     tempfs_read_inode(fs,&home,new2->vnode_inode_number);
-    tempfs_read_inode(fs,&root,root.inode_number);
+    tempfs_read_inode(fs,&root,0);
 
     serial_printf("ROOT SIZE %i blocks %i child name %s inode %i\n", root.size, root.block_count,home.name,home.inode_number);
 
@@ -679,7 +679,7 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
                         fs, parent_inode.blocks[parent_inode.size / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK]);
                     parent_inode.block_count--;
                 }
-                parent_inode.size -= 1;
+
                 //write the new block with the dirent taken out
                 tempfs_write_block_by_number(parent_inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0,
                                              fs->superblock->block_size);
@@ -691,6 +691,8 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
             tempfs_write_block_by_number(parent_inode.blocks[i / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK], buffer, fs, 0,
                                          fs->superblock->block_size);
 
+            parent_inode.size -= 1;
+            tempfs_write_inode(fs, &parent_inode);
             kfree(buffer);
 
             kfree(shift_buffer);
@@ -1171,12 +1173,12 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
         return TEMPFS_CANT_ALLOCATE_BLOCKS_FOR_DIR;
     }
 
-    uint64_t block = inode->size / TEMPFS_MAX_FILES_IN_DIRECTORY;
-
-    uint64_t entry_in_block = (inode->size % TEMPFS_MAX_FILES_IN_DIRECTORY);
+    tempfs_read_inode(fs, inode, inode->inode_number);
+    uint64_t block = inode->size / TEMPFS_MAX_FILES_IN_DIRENT_BLOCK;
+    uint64_t entry_in_block = (inode->size % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK);
 
     //allocate a new block when needed
-    if (entry_in_block == 0) {
+    if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0 ) {
         inode->blocks[block] = tempfs_get_free_block_and_mark_bitmap(fs);
         inode->block_count++;
     }
