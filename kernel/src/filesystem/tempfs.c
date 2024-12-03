@@ -239,17 +239,24 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     strcpy(child.name, "file-updated.txt");
     tempfs_write_inode(fs,&child);
 
-
+    struct tempfs_inode inode;
+    uint64_t block = tempfs_get_free_block_and_mark_bitmap(fs);
+    tempfs_get_free_inode_and_mark_bitmap(fs,&inode);
+    serial_printf("NEXT_BLOCK %i NEXT INODE %i\n",block,inode.inode_number);
     struct vnode* new2 = tempfs_create(&vfs_root, "home",TEMPFS_DIRECTORY);
     struct vnode* new3 = tempfs_create(new2, "home2",TEMPFS_DIRECTORY);
     struct vnode* new4 = tempfs_create(new3, "home3",TEMPFS_DIRECTORY);
     struct vnode* new5 = tempfs_create(new4, "home4",TEMPFS_DIRECTORY);
      tempfs_read_inode(fs,&child, new2->vnode_inode_number);
-    uint64_t block = tempfs_get_free_block_and_mark_bitmap(fs);
-    struct tempfs_inode inode;
+    block = tempfs_get_free_block_and_mark_bitmap(fs);
     tempfs_get_free_inode_and_mark_bitmap(fs,&inode);
     serial_printf("NEXT_BLOCK %i NEXT INODE %i\n",block,inode.inode_number);
     tempfs_directory_entry_free(fs,NULL,&child);
+    block = tempfs_get_free_block_and_mark_bitmap(fs);
+    struct tempfs_inode inode2;
+    tempfs_get_free_inode_and_mark_bitmap(fs,&inode2);
+    serial_printf("NEXT_BLOCK %i NEXT INODE %i\n",block,inode2.inode_number);
+    panic("");
     struct tempfs_inode home;
     tempfs_read_inode(fs,&home,new2->vnode_inode_number);
     tempfs_read_inode(fs,&root,0);
@@ -444,7 +451,9 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     struct tempfs_inode parent_inode;
     struct tempfs_inode inode;
     tempfs_get_free_inode_and_mark_bitmap(parent->filesystem_object, &inode);
-
+    tempfs_read_inode(parent->filesystem_object, &parent_inode, parent->vnode_inode_number);
+    parent->vnode_size++;
+    parent_inode.size++;
     new_vnode->is_cached = false;
     new_vnode->vnode_type = vnode_type;
     new_vnode->vnode_inode_number = inode.inode_number;
@@ -464,7 +473,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     safe_strcpy((char*)&inode.name, name, MAX_FILENAME_LENGTH);
     inode.uid = 0;
     tempfs_write_inode(parent->filesystem_object, &inode);
-    tempfs_read_inode(parent->filesystem_object, &parent_inode, 0);
+
     struct tempfs_directory_entry entry = {0};
     entry.inode_number = inode.inode_number;
     entry.size = 0;
@@ -834,7 +843,7 @@ static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint
  */
 static void tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
                                                   struct tempfs_inode* inode_to_be_filled) {
-    uint64_t buffer_size = PAGE_SIZE * 8;
+    uint64_t buffer_size = PAGE_SIZE * 16;
     uint8_t* buffer = kmalloc(buffer_size);
     uint64_t block = 0;
     uint64_t byte = 0;
@@ -873,7 +882,12 @@ static void tempfs_get_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs,
             }
         }
         else {
+            byte++;
+        }
+
+        if (byte == fs->superblock->block_size) {
             block++;
+            byte = 0;
         }
     }
 
@@ -1000,6 +1014,7 @@ found_free:
  * I don't think I need locks on frees, I will find out one way or another if this is true
  */
 static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t block_number) {
+    serial_printf("HERE BLOCK\n");
     uint8_t* buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, fs->superblock->block_size);
 
@@ -1015,6 +1030,7 @@ static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, 
  * I don't think I need locks on frees, I will find out one way or another if this is true
  */
 static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t inode_number) {
+    serial_printf("HERE\n");
     struct tempfs_inode inode;
     tempfs_read_inode(fs, &inode, inode_number);
     memset(&inode, 0, sizeof(struct tempfs_inode));
@@ -1192,6 +1208,7 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
     //allocate a new block when needed
     if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0 ) {
         inode->blocks[block] = tempfs_get_free_block_and_mark_bitmap(fs);
+        serial_printf("BLOCK NO %i\n",  inode->blocks[block]);
         inode->block_count++;
     }
 
