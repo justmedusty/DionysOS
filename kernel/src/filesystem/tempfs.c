@@ -238,9 +238,18 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
     strcpy(child.name, "file-updated.txt");
     tempfs_write_inode(fs,&child);
-    tempfs_directory_entry_free(fs,NULL,&child);
-    tempfs_read_inode(fs,&child, 0);
+
+
     struct vnode* new2 = tempfs_create(&vfs_root, "home",TEMPFS_DIRECTORY);
+    struct vnode* new3 = tempfs_create(new2, "home2",TEMPFS_DIRECTORY);
+    struct vnode* new4 = tempfs_create(new3, "home3",TEMPFS_DIRECTORY);
+    struct vnode* new5 = tempfs_create(new4, "home4",TEMPFS_DIRECTORY);
+     tempfs_read_inode(fs,&child, new2->vnode_inode_number);
+    uint64_t block = tempfs_get_free_block_and_mark_bitmap(fs);
+    struct tempfs_inode inode;
+    tempfs_get_free_inode_and_mark_bitmap(fs,&inode);
+    serial_printf("NEXT_BLOCK %i NEXT INODE %i\n",block,inode.inode_number);
+    tempfs_directory_entry_free(fs,NULL,&child);
     struct tempfs_inode home;
     tempfs_read_inode(fs,&home,new2->vnode_inode_number);
     tempfs_read_inode(fs,&root,0);
@@ -757,8 +766,6 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
 
 /*
  *Remove regular file, free all blocks, clear the inode out, free the inode
- *
- *TESTED
  */
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
@@ -768,9 +775,8 @@ static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode
 }
 
 /*
- * Clear a block or inode bitmap entry
- *
- * TESTED
+ * Clear a block or inode bitmap entry , essentially the same thing reversed but I do not read the entire bitmap section in because we know which block we need
+ * since we're given a number.
  */
 static void tempfs_clear_bitmap(struct tempfs_filesystem* fs, uint8_t type, uint64_t number) {
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
@@ -1167,6 +1173,9 @@ static uint64_t tempfs_read_bytes_from_inode(struct tempfs_filesystem* fs, struc
     return SUCCESS;
 }
 
+/*
+ * Write a directory entry into a directory and handle block allocation, size changes accordingly
+ */
 static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_inode* inode,
                                     struct tempfs_directory_entry* entry) {
     if (inode->size == TEMPFS_MAX_FILES_IN_DIRECTORY) {
