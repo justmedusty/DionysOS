@@ -429,16 +429,17 @@ done:
  */
 struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type) {
     if (parent->vnode_filesystem_id != VNODE_FS_TEMPFS) {
+        serial_printf("tempfS_create parent filesystem ID doesn't match\n");
         return NULL;
     }
     if (parent->vnode_type != VNODE_DIRECTORY) {
+        serial_printf("tempfS_create parent not directory\n");
         return NULL;
     }
 
     struct tempfs_filesystem* fs = parent->filesystem_object;
 
     acquire_spinlock(fs->lock);
-
     struct vnode* new_vnode = vnode_alloc();
     struct tempfs_inode parent_inode;
     struct tempfs_inode inode;
@@ -453,6 +454,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     new_vnode->vnode_device_id = parent->vnode_device_id;
     new_vnode->vnode_ops = &tempfs_vnode_ops;
     new_vnode->vnode_parent = parent;
+    new_vnode->vnode_filesystem_id = parent->vnode_filesystem_id;
     safe_strcpy(new_vnode->vnode_name, name, MAX_FILENAME_LENGTH);
 
 
@@ -466,7 +468,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     struct tempfs_directory_entry entry = {0};
     entry.inode_number = inode.inode_number;
     entry.size = 0;
-    safe_strcpy((char*)&entry.name, name, MAX_FILENAME_LENGTH);
+    safe_strcpy(entry.name, name, MAX_FILENAME_LENGTH);
     entry.parent_inode_number = inode.parent_inode_number;
     entry.device_number = fs->ramdisk_id;
     entry.type = inode.type;
@@ -475,6 +477,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, uint8_t vnode_type
     release_spinlock(fs->lock);
 
     if (ret != SUCCESS) {
+        panic("");
         return NULL;
     }
     return new_vnode;
