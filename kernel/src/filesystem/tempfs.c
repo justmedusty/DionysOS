@@ -212,14 +212,6 @@ void tempfs_mkfs(uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vfs_root.vnode_filesystem_id = VNODE_FS_TEMPFS;
 
 
-    /*               START                   TESTING                              */
-
-    struct vnode* new = tempfs_create(&vfs_root, "file.txt",TEMPFS_REG_FILE);
-
-    struct vnode* test = tempfs_lookup(&vfs_root,"file.txt");
-    serial_printf("LOOKUP %s\n",test->vnode_name);
-
-
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE,
                   TEMPFS_BLOCKSIZE);
 }

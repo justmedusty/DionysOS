@@ -97,9 +97,6 @@ void vnode_free(struct vnode* vnode) {
         return;
     }
 
-    if(vnode->vnode_type == VNODE_DIRECTORY) {
-        _kfree(vnode->vnode_children);
-    }
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
