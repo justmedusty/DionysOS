@@ -80,7 +80,7 @@ struct date_time {
 struct vnode_stat {
     struct vnode* vnode;
     uint64_t vnode_size;
-
+    uint64_t block_count;
 };
 
 struct virtual_handle {
@@ -88,7 +88,6 @@ struct virtual_handle {
     struct process *process;
     struct vnode *vnode;
     uint64_t offset; // for lseek or equivalent
-
 };
 
 
