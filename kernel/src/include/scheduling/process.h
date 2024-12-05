@@ -26,7 +26,7 @@
 #define USER_PROCESS 2
 
 //4 pages
-#define DEFAULT_STACK_SIZE 0x15000
+#define DEFAULT_STACK_SIZE 0x8000
 
 struct process {
 
@@ -41,7 +41,7 @@ struct process {
     uint64_t process_type;
     uint16_t file_descriptors[16];
     void *sleep_channel;
-    void* kernel_stack;
+    struct virtual_handle_list *handle_list;
     struct page_map* page_map;
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
     struct gpr_state* current_gpr_state;

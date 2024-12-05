@@ -3,7 +3,8 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "spinlock.h"
+
 
 struct doubly_linked_list_node{
     void* data;
@@ -12,6 +13,7 @@ struct doubly_linked_list_node{
 };
 
 struct doubly_linked_list {
+    struct spinlock lock;
     struct doubly_linked_list_node* head;
     struct doubly_linked_list_node* tail;
     uint64_t node_count;

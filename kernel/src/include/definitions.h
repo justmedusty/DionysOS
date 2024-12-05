@@ -21,3 +21,4 @@
 #define BUDDY_LOCK 7
 #define RAMDISK_LOCK 8
 #define ALLOC_LOCK 9
+#define DOUBLY_LINKED_LIST_LOCK 10

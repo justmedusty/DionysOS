@@ -90,6 +90,10 @@ struct virtual_handle {
     uint64_t offset; // for lseek or equivalent
 };
 
+struct virtual_handle_list {
+    struct doubly_linked_list *handle_list;
+    uint64_t num_handles;
+};
 
 struct vnode_operations {
     struct vnode* (*lookup)(struct vnode* vnode, char* name);
@@ -98,10 +102,10 @@ struct vnode_operations {
     void (*rename)(const struct vnode* vnode, char* new_name);
     uint64_t (*write)(struct vnode* vnode,uint64_t offset,uint8_t *buffer,uint64_t bytes);
     uint64_t (*read)(struct vnode* vnode,uint64_t offset,uint8_t *buffer,uint64_t bytes);
-    struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode);
+    struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
     void (*unlink)(struct vnode* vnode);
     uint64_t (*open)(struct vnode* vnode);
-    void (*close)(struct vnode* vnode);
+    void (*close)(struct vnode* vnode,uint64_t handle);
 };
 
 void vnode_directory_alloc_children(struct vnode* vnode);

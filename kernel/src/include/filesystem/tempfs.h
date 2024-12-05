@@ -159,8 +159,8 @@ uint64_t tempfs_write(struct vnode* vnode, uint64_t offset, uint8_t* buffer, uin
 uint64_t tempfs_stat(const struct vnode* vnode);
 struct vnode* tempfs_lookup(struct vnode* parent, char* name);
 struct vnode* tempfs_create(struct vnode* parent, char *name, uint8_t vnode_type);
-void tempfs_close(struct vnode* vnode);
-struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode);
+void tempfs_close(struct vnode* vnode,uint64_t handle);
+struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
 void tempfs_unlink(struct vnode* vnode);
 void tempfs_remove(const struct vnode* vnode);
 void tempfs_rename(const struct vnode* vnode, char* new_name);

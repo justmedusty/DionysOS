@@ -394,7 +394,6 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, const uint8_t vnod
     }
 
     struct tempfs_filesystem* fs = parent->filesystem_object;
-
     acquire_spinlock(fs->lock);
     struct vnode* new_vnode = vnode_alloc();
     struct tempfs_inode parent_inode;
@@ -441,7 +440,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, const uint8_t vnod
     return new_vnode;
 }
 
-void tempfs_close(struct vnode* vnode) {
+void tempfs_close(struct vnode* vnode,uint64_t handle) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -458,7 +457,7 @@ uint64_t tempfs_open(struct vnode* vnode) {
     return SUCCESS;
 }
 
-struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode) {
+struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
