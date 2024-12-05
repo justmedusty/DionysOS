@@ -440,20 +440,16 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, const uint8_t vnod
     return new_vnode;
 }
 
+/*
+ * Unimplemented for tempfs as I see no use for it. It may be useful for disk filesystems for block cache flushing and other kinds of
+ * state teardown but for tempfs it is not required.
+ */
 void tempfs_close(struct vnode* vnode,uint64_t handle) {
-    struct tempfs_filesystem* fs = vnode->filesystem_object;
-    acquire_spinlock(fs->lock);
-
-
-    release_spinlock(fs->lock);
+    asm("nop");
 }
 
 uint64_t tempfs_open(struct vnode* vnode) {
-    struct tempfs_filesystem* fs = vnode->filesystem_object;
-    acquire_spinlock(fs->lock);
-
-
-    release_spinlock(fs->lock);
+    asm("nop");
     return SUCCESS;
 }
 

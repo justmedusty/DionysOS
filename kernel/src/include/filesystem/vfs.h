@@ -42,6 +42,7 @@ extern struct vnode vfs_root;
 #define VNODE_FS_TEMPFS 0xF
 #define VNODE_FS_EXT2 0x10
 
+#define NUM_HANDLES 32
 /* Vnode flags */
 #define VNODE_STATIC_POOL 1<<63
 #define VNODE_CHILD_MEMORY_ALLOCATED (1 << 62)
@@ -84,6 +85,7 @@ struct vnode_stat {
 };
 
 struct virtual_handle {
+    uint32_t handle_id_bitmap;
     uint64_t handle_id;
     struct process *process;
     struct vnode *vnode;
