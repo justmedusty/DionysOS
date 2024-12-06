@@ -2,6 +2,8 @@
 // Created by dustyn on 9/14/24.
 //
 #include "include/filesystem/vfs.h"
+
+#include <include/data_structures/doubly_linked_list.h>
 #include <include/definitions/string.h>
 #include <include/data_structures/singly_linked_list.h>
 #include <include/drivers/serial/uart.h>
@@ -139,11 +141,11 @@ struct vnode* vnode_lookup(char* path) {
     return target;
 }
 
-struct vnode* vnode_link() {
+struct vnode* vnode_link(struct vnode* directory, char*) {
 
 }
 
-struct vnode* vnode_unlink() {
+struct vnode* vnode_unlink(struct vnode* directory, char*) {
 
 }
 /*
@@ -171,6 +173,8 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
 
 /*
  *This simply invokes the remove function pointer which is filesystem specific, afterward invokes vnode_free
+ *
+ *TODO decide what to do about active references. Should it be zero? Can we clear all active references to root? probably best to wait until they are at 0
  */
 int32_t vnode_remove(struct vnode* vnode,char *path) {
     struct vnode *target;
@@ -205,7 +209,7 @@ int8_t vnode_open(char* path) {
 
     struct process *process = my_cpu()->running_process;
 
-    struct virtual_handle_list *list = process->handle_list;
+    struct virtual_handle_list *list = process->handle_list; /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
     int8_t ret = get_file_handle(list);
 
@@ -216,22 +220,45 @@ int8_t vnode_open(char* path) {
     struct vnode* vnode = vnode_lookup(path);
 
     if (vnode == NULL) {
-        return -1;
+        return INVALID_PATH;
     }
 
     if (vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
 
+    struct virtual_handle *new_handle = _kalloc(sizeof(struct virtual_handle));
+    memset(new_handle, 0, sizeof(struct virtual_handle));
+    new_handle->vnode = vnode;
+    new_handle->process = process;
+    new_handle->offset = 0;
+    new_handle->handle_id = (uint64_t) ret;
 
+    doubly_linked_list_insert_head(list->handle_list, new_handle);
+    list->num_handles++;
 
     return ret;
 }
 
 /*
- * Not yet implemented
+ * TODO remember this may need to make some sort of write flush once I have non-ram filesystems going
  */
 void vnode_close(uint64_t handle) {
+
+    struct process *process = my_cpu()->running_process;
+    struct virtual_handle_list *list = process->handle_list;
+    struct doubly_linked_list_node *node = list->handle_list->head;
+
+    while (node != NULL) {
+        struct virtual_handle *virtual_handle = (struct virtual_handle *) node->data;
+        if (virtual_handle->handle_id == handle) {
+            _kfree(virtual_handle);
+            doubly_linked_list_remove_node_by_address(list->handle_list,node);
+            return;
+        }
+    }
+    panic("vnode_close invalid handle identifier");
+
 }
 
 /*
@@ -354,16 +381,20 @@ char* vnode_get_canonical_path(struct vnode* vnode) {
         pointer = pointer->vnode_parent;
     }
 
-    size_t token_length = strtok_count(buffer, '/');
+    const size_t token_length = strtok_count(buffer, '/');
+
+    char *temp = _kalloc(PAGE_SIZE);
+    memset(temp, 0, PAGE_SIZE);
 
     for (size_t i = token_length; i > 0; i--) {
-        char temp[1024];
         strtok(buffer, '/', temp, i);
         strcat(final_buffer, "/");
         strcat(final_buffer, temp);
+        memset(temp, 0, PAGE_SIZE); // bit heavy? I will leave it for now Id rather this then the 1024 byte stack allocs since that is a risky move
     }
 
-    kfree(buffer);
+    _kfree(buffer);
+    _kfree(temp);
     return final_buffer;
 }
 

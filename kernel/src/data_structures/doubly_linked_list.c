@@ -3,6 +3,9 @@
 //
 
 #include "include/data_structures/doubly_linked_list.h"
+
+#include <string.h>
+
 #include "include/types.h"
 #include <include/mem/kalloc.h>
 #include "include/definitions.h"
@@ -118,4 +121,22 @@ void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     list->node_count--;
     release_spinlock(&list->lock);
     return;
+}
+
+void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,struct doubly_linked_list_node* node) {
+    if (node->next == NULL && node->prev == NULL) {
+
+    }
+
+    if (node->next == NULL) {
+
+    }
+
+    if (node->prev == NULL) {
+
+    }
+
+
+
+
 }

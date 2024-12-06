@@ -22,6 +22,7 @@ extern struct vnode vfs_root;
 #define NO_ACCESS 4
 #define NOT_MOUNTED 5
 #define MAX_HANDLES_REACHED 0xFFFF
+#define INVALID_PATH (-1)
 
 /* Device Types */
 #define VNODE_DEV_TEMP 0

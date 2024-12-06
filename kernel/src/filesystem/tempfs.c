@@ -6,7 +6,6 @@
 #include "include/definitions.h"
 #include "include/filesystem/vfs.h"
 #include "include/filesystem/tempfs.h"
-
 #include <math.h>
 #include <strings.h>
 #include <include/definitions/string.h>
@@ -48,7 +47,8 @@ static struct vnode* tempfs_directory_entry_to_vnode(struct vnode* parent, struc
                                                      struct tempfs_filesystem* fs);
 static struct tempfs_byte_offset_indices tempfs_indirection_indices_for_block_number(uint64_t block_number);
 static void tempfs_write_inode(const struct tempfs_filesystem* fs, struct tempfs_inode* inode);
-static void tempfs_write_block_by_number(uint64_t block_number, const uint8_t* buffer, const struct tempfs_filesystem* fs,
+static void tempfs_write_block_by_number(uint64_t block_number, const uint8_t* buffer,
+                                         const struct tempfs_filesystem* fs,
                                          uint64_t offset, uint64_t write_size);
 static void tempfs_read_block_by_number(uint64_t block_number, uint8_t* buffer, const struct tempfs_filesystem* fs,
                                         uint64_t offset, uint64_t read_size);
@@ -324,7 +324,7 @@ struct vnode* tempfs_lookup(struct vnode* parent, char* name) {
     uint64_t buffer_size = fs->superblock->block_size * NUM_BLOCKS_DIRECT;
 
     uint8_t* buffer = kmalloc(fs->superblock->block_size * NUM_BLOCKS_DIRECT);\
-    struct tempfs_directory_entry *entries = (struct tempfs_directory_entry*)buffer;
+    struct tempfs_directory_entry* entries = (struct tempfs_directory_entry*)buffer;
 
     uint64_t ret = tempfs_get_directory_entries(fs, (struct tempfs_directory_entry*)buffer, parent->vnode_inode_number,
                                                 buffer_size);
@@ -352,7 +352,7 @@ struct vnode* tempfs_lookup(struct vnode* parent, char* name) {
                                   : parent->vnode_size / sizeof(struct tempfs_directory_entry);
 
     for (uint64_t i = 0; i <= max_directories; i++) {
-        struct tempfs_directory_entry *entry = &entries[i];
+        struct tempfs_directory_entry* entry = &entries[i];
         if (fill_vnode) {
             parent->vnode_children[i] = tempfs_directory_entry_to_vnode(parent, entry, fs);
         }
@@ -444,7 +444,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, const uint8_t vnod
  * Unimplemented for tempfs as I see no use for it. It may be useful for disk filesystems for block cache flushing and other kinds of
  * state teardown but for tempfs it is not required.
  */
-void tempfs_close(struct vnode* vnode,uint64_t handle) {
+void tempfs_close(struct vnode* vnode, uint64_t handle) {
     asm("nop");
 }
 
@@ -453,7 +453,7 @@ uint64_t tempfs_open(struct vnode* vnode) {
     return SUCCESS;
 }
 
-struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type) {
+struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode, uint8_t type) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     switch (type) {
@@ -680,7 +680,8 @@ static uint64_t tempfs_directory_entry_free(struct tempfs_filesystem* fs, struct
  * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
  */
 static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
-                                                  const struct tempfs_directory_entry* entry, const uint64_t inode_number) {
+                                                  const struct tempfs_directory_entry* entry,
+                                                  const uint64_t inode_number) {
     struct tempfs_inode inode;
 
     if (entry != NULL) {
@@ -733,7 +734,7 @@ static void tempfs_recursive_directory_entry_free(struct tempfs_filesystem* fs,
  */
 static void tempfs_remove_file(struct tempfs_filesystem* fs, struct tempfs_inode* inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
-    memset(inode->name,0,MAX_FILENAME_LENGTH);
+    memset(inode->name, 0,MAX_FILENAME_LENGTH);
     tempfs_write_inode(fs, inode);
     tempfs_free_inode_and_mark_bitmap(fs, inode->inode_number);
 }
@@ -766,13 +767,13 @@ static void tempfs_clear_bitmap(const struct tempfs_filesystem* fs, const uint8_
     uint8_t* buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
 
-    ramdisk_read(buffer,block,0,fs->superblock->block_size,PAGE_SIZE,fs->ramdisk_id);
+    ramdisk_read(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->ramdisk_id);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
     buffer[byte_in_block] &= ~(1 << bit);
-    ramdisk_write(buffer,block,0,fs->superblock->block_size,PAGE_SIZE,fs->ramdisk_id);
+    ramdisk_write(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->ramdisk_id);
     kfree(buffer);
 }
 
@@ -939,7 +940,7 @@ retry:
 
 
 found_free:
-    ret = ramdisk_write(buffer, fs->superblock->block_bitmap_pointers_start , 0,
+    ret = ramdisk_write(buffer, fs->superblock->block_bitmap_pointers_start, 0,
                         fs->superblock->block_size * TEMPFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
                         fs->ramdisk_id);
 
@@ -1004,7 +1005,8 @@ static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, 
  * Unimplemented until tempfs_read_bytes_from_inode is complete
  */
 static uint64_t tempfs_get_bytes_from_inode(struct tempfs_filesystem* fs, uint8_t* buffer, const uint64_t buffer_size,
-                                            const uint64_t inode_number, uint64_t byte_start, const uint64_t size_to_read) {
+                                            const uint64_t inode_number, uint64_t byte_start,
+                                            const uint64_t size_to_read) {
     struct tempfs_inode inode;
     tempfs_read_inode(fs, &inode, inode_number);
     return tempfs_read_bytes_from_inode(fs, &inode, buffer, buffer_size, byte_start % fs->superblock->block_size,
@@ -1052,25 +1054,25 @@ static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs,
     }
 
 
- while (1) {
-     block_number = inode.blocks[directory_block++];
-     /*Should be okay to leave this unrestrained since we check children size and inode size */
+    while (1) {
+        block_number = inode.blocks[directory_block++];
+        /*Should be okay to leave this unrestrained since we check children size and inode size */
 
-     tempfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
+        tempfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
 
-     for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct tempfs_directory_entry)); i++) {
-         if (directory_entries_read == inode.size) {
-             goto done;
-         }
-         if (directory_entries_read == inode.size) {
-             goto done;
-         }
-         children[directory_entries_read++] = directory_entries[i];
-     }
- }
+        for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct tempfs_directory_entry)); i++) {
+            if (directory_entries_read == inode.size) {
+                goto done;
+            }
+            if (directory_entries_read == inode.size) {
+                goto done;
+            }
+            children[directory_entries_read++] = directory_entries[i];
+        }
+    }
 
 
-    done:
+done:
     kfree(buffer);
     return SUCCESS;
 }
@@ -1156,7 +1158,7 @@ static uint64_t tempfs_write_dirent(struct tempfs_filesystem* fs, struct tempfs_
     uint64_t entry_in_block = (inode->size % TEMPFS_MAX_FILES_IN_DIRENT_BLOCK);
 
     //allocate a new block when needed
-    if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0 ) {
+    if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0) {
         inode->blocks[block] = tempfs_get_free_block_and_mark_bitmap(fs);
         inode->block_count++;
     }
@@ -1279,7 +1281,8 @@ static uint64_t tempfs_write_bytes_to_inode(struct tempfs_filesystem* fs, struct
  *
  * The switch statement just separates what level the requested block is, and then the indices to get the block from there.
  */
-static uint64_t tempfs_get_relative_block_number_from_file(const struct tempfs_inode* inode, const uint64_t current_block,
+static uint64_t tempfs_get_relative_block_number_from_file(const struct tempfs_inode* inode,
+                                                           const uint64_t current_block,
                                                            struct tempfs_filesystem* fs) {
     uint8_t* temp_buffer = kmalloc(PAGE_SIZE);
     const struct tempfs_byte_offset_indices indices = tempfs_indirection_indices_for_block_number(current_block);
@@ -1500,7 +1503,8 @@ static void tempfs_read_inode(const struct tempfs_filesystem* fs, struct tempfs_
     }
 }
 
-static void tempfs_write_block_by_number(const uint64_t block_number, const uint8_t* buffer, const struct tempfs_filesystem* fs,
+static void tempfs_write_block_by_number(const uint64_t block_number, const uint8_t* buffer,
+                                         const struct tempfs_filesystem* fs,
                                          uint64_t offset, uint64_t write_size) {
     if (write_size > fs->superblock->block_size) {
         write_size = fs->superblock->block_size;
@@ -1526,7 +1530,8 @@ static void tempfs_write_block_by_number(const uint64_t block_number, const uint
     }
 }
 
-static void tempfs_read_block_by_number(const uint64_t block_number, uint8_t* buffer, const struct tempfs_filesystem* fs,
+static void tempfs_read_block_by_number(const uint64_t block_number, uint8_t* buffer,
+                                        const struct tempfs_filesystem* fs,
                                         uint64_t offset, uint64_t read_size) {
     if (read_size > fs->superblock->block_size) {
         read_size = fs->superblock->block_size - offset;
@@ -1541,7 +1546,8 @@ static void tempfs_read_block_by_number(const uint64_t block_number, uint8_t* bu
         read_size_bytes = fs->superblock->block_size - offset;
     }
 
-    uint64_t ret = ramdisk_read(buffer, block_number + TEMPFS_START_BLOCKS, offset, read_size_bytes, fs->superblock->block_size,
+    uint64_t ret = ramdisk_read(buffer, block_number + TEMPFS_START_BLOCKS, offset, read_size_bytes,
+                                fs->superblock->block_size,
                                 fs->ramdisk_id);
 
     if (ret != SUCCESS) {
@@ -1556,7 +1562,6 @@ static void tempfs_read_block_by_number(const uint64_t block_number, uint8_t* bu
 static void free_blocks_from_inode(struct tempfs_filesystem* fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct tempfs_inode* inode) {
-
     if (inode->block_count == 0) {
         return;
     }
