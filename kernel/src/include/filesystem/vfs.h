@@ -21,6 +21,7 @@ extern struct vnode vfs_root;
 #define ALREADY_OPENED 3
 #define NO_ACCESS 4
 #define NOT_MOUNTED 5
+#define MAX_HANDLES_REACHED 0xFFFF
 
 /* Device Types */
 #define VNODE_DEV_TEMP 0
@@ -31,13 +32,13 @@ extern struct vnode vfs_root;
 /* Node types */
 #define VNODE_DIRECTORY 0
 #define VNODE_FILE 1
-#define VNODE_LINK 2
+#define VNODE_HARD_LINK 2
 #define VNODE_BLOCKDEV 3
 #define VNODE_CHARDEV 4
 #define VNODE_NETDEV 5
 #define VNODE_SPECIAL 6
 #define VNODE_SPECIAL_FILE 7
-
+#define VNODE_SYM_LINK 8
 /* FS Types */
 #define VNODE_FS_TEMPFS 0xF
 #define VNODE_FS_EXT2 0x10
@@ -85,7 +86,6 @@ struct vnode_stat {
 };
 
 struct virtual_handle {
-    uint32_t handle_id_bitmap;
     uint64_t handle_id;
     struct process *process;
     struct vnode *vnode;
@@ -95,6 +95,7 @@ struct virtual_handle {
 struct virtual_handle_list {
     struct doubly_linked_list *handle_list;
     uint64_t num_handles;
+    uint32_t handle_id_bitmap;
 };
 
 struct vnode_operations {
@@ -121,7 +122,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 void vnode_remove(struct vnode* vnode);
 struct vnode* vnode_lookup(char* path);
 void vfs_init();
-
+char* vnode_get_canonical_path(struct vnode* vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
 /* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */
 struct vnode* vnode_alloc();
 void vnode_free(struct vnode* vnode);

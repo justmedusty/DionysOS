@@ -27,7 +27,7 @@ void safe_strcpy(char* dest, char* src, uint64_t dest_size) {
 }
 
 /*
- * Your run of the mill concat string function, adds to the end of a string. This function is pretty dangerous so I may write a safe one later.
+ * Your run-of-the-mill concat string function, adds to the end of a string. This function is pretty dangerous so I may write a safe one later.
  */
 void strcat(char* str1, char* str2) {
     while (*str1 != '\0') {
@@ -125,7 +125,7 @@ uint64_t strtok_count(char* str, char delimiter) {
     uint64_t last_token = NEXT_TOKEN;
     while (last_token != LAST_TOKEN) {
         //probably should bt smaller but this is fine for now
-        char temp_string[4096];
+        char temp_string[1024];
         last_token = strtok(str, delimiter, temp_string, uint64_t_MAX);
         count++;
     }

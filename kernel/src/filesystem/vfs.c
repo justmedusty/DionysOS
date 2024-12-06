@@ -25,7 +25,7 @@ struct spinlock vfs_lock;
 
 //static prototype
 static struct vnode* __parse_path(char* path);
-
+static int8_t get_file_handle(struct virtual_handle_list *list);
 /*
  *The vfs_init function simply initializes a linked list of all of the vnode static pool
  *and marks each of them with a VNODE_STATIC_POOL flag
@@ -45,7 +45,6 @@ void vfs_init() {
     serial_printf("VFS initialized\n");
 }
 
-
 /*
  *  vnode_alloc is required with the static pool so that nodes may be taken from the pool if any are free,
  *  otherwise kalloc is invoked.
@@ -54,7 +53,7 @@ struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
 
     if (vnode_static_pool.head == NULL) {
-        struct vnode* new_node =_kalloc(sizeof(struct vnode));
+        struct vnode* new_node = _kalloc(sizeof(struct vnode));
         release_spinlock(&vfs_lock);
         return new_node;
     }
@@ -66,9 +65,10 @@ struct vnode* vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode* vnode) {
-    vnode->vnode_children =_kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+    vnode->vnode_children = _kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 }
+
 /*
  * Same as above except for freeing
  *
@@ -110,7 +110,7 @@ void vnode_free(struct vnode* vnode) {
         return;
     }
 
-    if(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+    if (vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
         _kfree(vnode->vnode_children);
     }
 
@@ -135,11 +135,17 @@ struct vnode* vnode_lookup(char* path) {
     return target;
 }
 
+struct vnode* vnode_link() {
 
+}
+
+struct vnode* vnode_unlink() {
+
+}
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
-struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name) {
+struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode* parent_directory = vnode_lookup(path);
@@ -148,7 +154,7 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name) {
         return NULL;
     }
 
-    if(!parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+    if (!parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
         vnode_directory_alloc_children(parent_directory);
     }
 
@@ -178,24 +184,35 @@ void vnode_remove(struct vnode* vnode) {
  *
  *  This will need to return a handle at some point.
  */
-struct vnode* vnode_open(char* path) {
+int8_t vnode_open(char* path) {
+
+    struct process *process = my_cpu()->running_process;
+
+    struct virtual_handle_list *list = process->handle_list;
+
+    int8_t ret = get_file_handle(list);
+
+    if (ret == -1) {
+        return MAX_HANDLES_REACHED;
+    }
+
     struct vnode* vnode = vnode_lookup(path);
 
     if (vnode == NULL) {
-        return NULL;
+        return -1;
     }
 
     if (vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
-    //should probably return an FD but sticking a pin in it for now
-    return vnode;
+
+    return ret;
 }
 
 /*
  * Not yet implemented
  */
-void vnode_close(struct vnode* vnode) {
+void vnode_close(uint64_t handle) {
 }
 
 /*
@@ -210,7 +227,6 @@ void vnode_close(struct vnode* vnode) {
  *  It iterates through the children in the vnode until it finds the child or the end of the children.
  */
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
-
     if (vnode->vnode_type != VNODE_DIRECTORY) {
         vnode_free(vnode);
         return NULL;
@@ -254,13 +270,16 @@ uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
         return WRONG_TYPE;
     }
 
+
     //can you mount a mount point? I will say no for now that seems silly
     if (mounted_vnode->is_mount_point) {
         return ALREADY_MOUNTED;
     }
 
+    mounted_vnode->vnode_parent = mount_point->vnode_parent;
     mount_point->is_mount_point = TRUE;
     mount_point->mounted_vnode = mounted_vnode;
+
     return SUCCESS;
 }
 
@@ -271,7 +290,8 @@ uint64_t vnode_unmount(struct vnode* vnode) {
     if (!vnode->is_mount_point) {
         return NOT_MOUNTED;
     }
-
+    //only going to allow mounting of whole filesystems so this works
+    vnode->mounted_vnode->vnode_parent = NULL;
     vnode->is_mount_point = FALSE;
     // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
     vnode->mounted_vnode = NULL;
@@ -283,20 +303,49 @@ uint64_t vnode_unmount(struct vnode* vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t *buffer) {
+uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t* buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->read(vnode->mounted_vnode, offset,buffer, bytes);
+        return vnode->vnode_ops->read(vnode->mounted_vnode, offset, buffer, bytes);
     }
     //Let the specific impl handle this
-    return vnode->vnode_ops->read(vnode, offset,buffer, bytes);
+    return vnode->vnode_ops->read(vnode, offset, buffer, bytes);
 }
 
 
 uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t* buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
+        return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
     }
-    return vnode->vnode_ops->write(vnode->mounted_vnode, offset,buffer, bytes);
+    return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
+}
+
+/*
+ * Gets a canonical path, whether it be for a symlink or something else
+ */
+char* vnode_get_canonical_path(struct vnode* vnode) {
+    char* buffer = _kalloc(PAGE_SIZE);
+    char* final_buffer = _kalloc(PAGE_SIZE);
+    struct vnode* pointer = vnode;
+    struct vnode* pointer2 = &vfs_root;
+
+
+    while (pointer && pointer != &vfs_root) {
+        strcat(buffer, "/");
+        strcat(buffer, pointer->vnode_name);
+        pointer = pointer->vnode_parent;
+    }
+
+    size_t token_length = strtok_count(buffer, '/');
+
+    for (size_t i = token_length; i > 0; i--) {
+        char temp[1024];
+        strtok(buffer, '/', temp, i);
+        strcat(final_buffer, "/");
+        strcat(final_buffer, temp);
+    }
+
+    kfree(buffer);
+    return final_buffer;
 }
 
 /*
@@ -316,7 +365,7 @@ static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = &vfs_root;
 
-    char* current_token =_kalloc(VFS_MAX_NAME_LENGTH);
+    char* current_token = _kalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
         /* This isn't implemented yet so it will be garbage until I finish it up */
@@ -348,4 +397,13 @@ static struct vnode* __parse_path(char* path) {
     return current_vnode;
 }
 
-
+//simple iteration
+static int8_t get_file_handle(struct virtual_handle_list *list) {
+    for (size_t i = 0; i <NUM_HANDLES; i++) {
+        if (!(list->handle_id_bitmap & (1 << i))) {
+            list->handle_id_bitmap |= (1 << i);
+            return (int8_t) i;
+        }
+    }
+    return -1;
+}

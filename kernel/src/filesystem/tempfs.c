@@ -242,7 +242,7 @@ uint64_t tempfs_read(struct vnode* vnode, const uint64_t offset, uint8_t* buffer
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
-    if (vnode->vnode_type == VNODE_LINK) {
+    if (vnode->vnode_type == VNODE_HARD_LINK) {
         if (tempfs_symlink_check(fs, vnode,TEMPFS_REG_FILE) != SUCCESS) {
             return UNEXPECTED_SYMLINK_TYPE;
         }
@@ -456,7 +456,13 @@ uint64_t tempfs_open(struct vnode* vnode) {
 struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
+    switch (type) {
+    case VNODE_HARD_LINK:
+        break;
 
+    case VNODE_SYM_LINK:
+        break;
+    }
 
     release_spinlock(fs->lock);
 }
