@@ -25,6 +25,7 @@ struct spinlock vfs_lock;
 
 //static prototype
 static struct vnode* __parse_path(char* path);
+static uint64_t vnode_update_children_array(struct vnode* vnode);
 static int8_t get_file_handle(struct virtual_handle_list *list);
 /*
  *The vfs_init function simply initializes a linked list of all of the vnode static pool
@@ -67,6 +68,10 @@ struct vnode* vnode_alloc() {
 void vnode_directory_alloc_children(struct vnode* vnode) {
     vnode->vnode_children = _kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
+
+    for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
+        vnode->vnode_children[i] = NULL;
+    }
 }
 
 /*
@@ -128,7 +133,6 @@ struct vnode* vnode_lookup(char* path) {
 
     if (target == NULL) {
         vnode_free(target);
-        //sort of redundant isn't it, I will probably change this later
         return NULL;
     }
 
@@ -160,6 +164,7 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
 
     struct vnode* new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
     parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
+    parent_directory->num_children++;
 
     return new_vnode;
 }
@@ -167,20 +172,32 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
 /*
  *This simply invokes the remove function pointer which is filesystem specific, afterward invokes vnode_free
  */
-void vnode_remove(struct vnode* vnode) {
-    if (vnode->is_mount_point) {
+int32_t vnode_remove(struct vnode* vnode,char *path) {
+    struct vnode *target;
+    if (vnode == NULL) {
+        target = vnode_lookup(path);
+
+        if (target == NULL) {
+            return NODE_NOT_FOUND;
+        }
+    }else {
+        target = vnode;
+    }
+
+    if (target->is_mount_point) {
         //should I make it a requirement to unmount before removing ?
     }
-    //Probably want to be expressive with return codes so I will stick a proverbial pin in it
-    //Should I free the memory here or in the specific function? Not sure yet
-    vnode->vnode_ops->remove(vnode);
-    vnode_free(vnode);
+
+    target->vnode_ops->remove(target);
+    vnode_update_children_array(target);
+    vnode_free(target);
+    return SUCCESS;
 }
 
 /*
  *  Open invokes vnode_open and checks for mounts in the target.
  *
- *  It then returns the vnode.
+ *  It then returns the vnode handle tied to the calling process.
  *
  *  This will need to return a handle at some point.
  */
@@ -205,6 +222,8 @@ int8_t vnode_open(char* path) {
     if (vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
+
+
 
     return ret;
 }
@@ -242,7 +261,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
         return child;
     }
 
-    uint32_t index = 0;
+    size_t index = 0;
 
     struct vnode* child = vnode->vnode_children[index];
 
@@ -406,4 +425,20 @@ static int8_t get_file_handle(struct virtual_handle_list *list) {
         }
     }
     return -1;
+}
+
+
+static uint64_t vnode_update_children_array(struct vnode* vnode) {
+    struct vnode *parent = vnode->vnode_parent;
+    int32_t index = 0;
+    uint64_t size = parent->num_children;
+    for (index = 0; index < size; index++) {
+        if (parent->vnode_children[index] == vnode) {
+            parent->vnode_children[index] = NULL; /* This just ensures that if its the last entry it will be zerod still*/
+            parent->vnode_children[index] = parent->vnode_children[size];
+            parent->num_children--;
+            return SUCCESS;
+        }
+    }
+    panic("Vnode does not exist");
 }

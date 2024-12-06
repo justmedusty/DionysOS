@@ -119,7 +119,7 @@ uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_
 uint64_t vnode_unmount(struct vnode* vnode);
 uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
-void vnode_remove(struct vnode* vnode);
+int32_t vnode_remove(struct vnode* vnode,char *path);
 struct vnode* vnode_lookup(char* path);
 void vfs_init();
 char* vnode_get_canonical_path(struct vnode* vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
