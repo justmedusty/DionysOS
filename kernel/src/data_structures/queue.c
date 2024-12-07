@@ -293,6 +293,13 @@ static void dequeue_fifo(struct queue* queue_head) {
     }
 
     queue_head->head = pointer->next;
+
+    if (queue_head->head == NULL) {
+        queue_head->node_count--;
+        _kfree(pointer);
+        return;
+    }
+
     queue_head->head->prev = NULL;
     queue_head->node_count--;
 

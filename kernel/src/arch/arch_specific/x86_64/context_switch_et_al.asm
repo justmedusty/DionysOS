@@ -44,4 +44,4 @@ restore_execution ;pointer should be in RDI
     mov r13, [rdi + 112]      ; r13 = gpr_state.r13
     mov r14, [rdi + 120]      ; r14 = gpr_state.r14
     mov r15, [rdi + 128]      ; r15 = gpr_state.r15
-    jmp [rax]
+    jmp rax
