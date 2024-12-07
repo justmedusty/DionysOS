@@ -6,7 +6,7 @@
 #include "include/types.h"
 #include <include/arch/arch_cpu.h>
 // Mutual exclusion lock.
-//Making this 256 bits, trying to force power of 2 alignment will make things easier later
+//Making this 256 bytes, trying to force power of 2 alignment will make things easier later
 struct spinlock{
     uint64_t locked;
     uint64_t id;

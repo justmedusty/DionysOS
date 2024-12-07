@@ -3,9 +3,10 @@
 //
 
 #pragma once
+#include "include/arch/arch_cpu.h"
 #include "include/types.h"
 #include "include/arch/arch_vmm.h"
-#include "include/arch/arch_cpu.h"
+
 #include "include/scheduling/process.h"
 
 /*
@@ -28,8 +29,9 @@
 //4 pages
 #define DEFAULT_STACK_SIZE 0x8000
 
-struct process {
 
+
+struct process {
     uint8_t current_state;
     uint8_t priority;
     uint16_t process_id;
@@ -46,7 +48,6 @@ struct process {
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
     struct gpr_state* current_gpr_state;
     struct vnode* current_working_dir;
-
 };
 
 #ifdef __x86_64__
