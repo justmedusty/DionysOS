@@ -13,8 +13,10 @@
 #include "include/scheduling/process.h"
 
 void kthread_init(){
+
   struct process *proc = _kalloc(sizeof(struct process));
   memset(proc, 0, sizeof(struct process));
+
   proc->current_cpu = my_cpu();
   proc->current_working_dir = &vfs_root;
   vfs_root.vnode_active_references++;
@@ -27,11 +29,13 @@ void kthread_init(){
   proc->current_gpr_state = _kalloc(sizeof(struct gpr_state));
   get_gpr_state(proc->current_gpr_state);
   proc->current_gpr_state->rip = (uint64_t) kthread_main; // it's grabbing a junk value if not called from an interrupt so overwriting rip with kthread main
-  enqueue(proc->current_cpu->local_run_queue,proc,URGENT);
+  proc->current_gpr_state->rsp = (uint64_t) _kalloc(PAGE_SIZE * 2); /* Allocate a private stack */
+  proc->current_gpr_state->rbp = proc->current_gpr_state->rsp; /* Set base pointer to the new stack pointer */
 
+  enqueue(proc->current_cpu->local_run_queue,proc,MEDIUM);
 }
 
 void kthread_main() {
-  serial_printf("kthread_main\n");
+  serial_printf("kthread_main %i\n",i[0]);
   panic("kthread_main");
 }
