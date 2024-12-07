@@ -7,6 +7,7 @@
 #include <string.h>
 #include <include/arch/arch_asm_functions.h>
 #include <include/filesystem/vfs.h>
+#include <include/scheduling/dfs.h>
 
 #include "include/mem/kalloc.h"
 #include "include/scheduling/process.h"
@@ -25,5 +26,12 @@ void kthread_init(){
   proc->process_type = KERNEL_THREAD;
   proc->current_gpr_state = _kalloc(sizeof(struct gpr_state));
   get_gpr_state(proc->current_gpr_state);
+  proc->current_gpr_state->rip = (uint64_t) kthread_main; // it's grabbing a junk value if not called from an interrupt so overwriting rip with kthread main
+  enqueue(proc->current_cpu->local_run_queue,proc,URGENT);
 
+}
+
+void kthread_main() {
+  serial_printf("kthread_main\n");
+  panic("kthread_main");
 }

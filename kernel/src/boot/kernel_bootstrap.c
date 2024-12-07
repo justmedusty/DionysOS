@@ -2,6 +2,8 @@
 // Created by dustyn on 6/17/24.
 //
 #include <include/arch/x86_64/idt.h>
+#include <include/scheduling/kthread.h>
+
 #include "include/filesystem/vfs.h"
 #include "include/arch/arch_memory_init.h"
 #include "include/drivers/serial/uart.h"
@@ -39,6 +41,8 @@ void kernel_bootstrap() {
     arch_timer_init();
     dfs_init();
     serial_printf("Total Pages Allocated %i\n",total_allocated);
+    kthread_init();
+    dfs_run();
 
     for (;;) {
         asm volatile("nop");

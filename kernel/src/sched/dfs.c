@@ -36,18 +36,31 @@ void dfs_init() {
 
 
 void dfs_yield() {
-
+  struct process *process = my_cpu()->running_process;
+  get_regs(process->current_gpr_state);
+  enqueue(my_cpu()->local_run_queue,process,process->priority);
+  dfs_run();
 }
 
 void dfs_run() {
+  struct cpu *cpu = my_cpu();
+  if (cpu->running_process == NULL) {
+    //handle empty queue
+  }
+  cpu->running_process = cpu->local_run_queue->head->data;
 
+  dequeue(cpu->local_run_queue);
+
+  restore_execution(cpu->running_process->current_gpr_state);
 }
 
 
 void dfs_preempt() {
-
+  struct process *process = my_cpu()->running_process;
+  get_regs(process->current_gpr_state);
+  enqueue(my_cpu()->local_run_queue,process,process->priority);
+  dfs_run();
 }
-
 
 void dfs_claim_process() {
 }
