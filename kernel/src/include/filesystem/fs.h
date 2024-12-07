@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/types.h"
-#include "scheduling/process.h"
+#include "include/scheduling/process.h"
 #include "include/filesystem/tempfs.h"
 #include "include/filesystem/ext2.h"
 #include "include/filesystem/vfs.h"

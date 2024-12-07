@@ -1,12 +1,13 @@
 //
 // Created by dustyn on 6/16/24.
 //
-
 #pragma once
+#ifdef __x86_64__
 #include <include/drivers/serial/uart.h>
 
 #include "include/types.h"
 // Routines to let C code use special x86 instructions.
+
 
 // Reads a byte from the specified I/O port.
 static inline uint8_t inb(uint16_t port) {
@@ -195,3 +196,4 @@ struct trapframe {
     uint16_t ss;
     uint16_t padding6;
 };
+#endif

@@ -4,9 +4,7 @@
 
 #pragma once
 #include "include/arch/arch_cpu.h"
-#include "include/types.h"
 #include "include/arch/arch_vmm.h"
-
 #include "include/scheduling/process.h"
 
 /*
@@ -44,7 +42,7 @@ struct process {
     uint16_t file_descriptors[16];
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
-    struct page_map* page_map;
+    struct virt_map* page_map;
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
     struct gpr_state* current_gpr_state;
     struct vnode* current_working_dir;

@@ -41,7 +41,7 @@ typedef struct cpu_state {
 } cpu_state;
 
 
-typedef struct {
+struct cpu{
     uint8_t cpu_number;
     uint32_t lapic_id;
     uint64_t lapic_timer_frequency;
@@ -50,7 +50,7 @@ typedef struct {
     struct virt_map* page_map;
     struct process* running_process;
     struct queue* local_run_queue;
-} cpu;
+};
 
 
 
@@ -63,11 +63,11 @@ typedef struct {
 
 extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
-extern cpu cpu_list[16];
+extern struct cpu cpu_list[16];
 extern struct queue local_run_queues[16];
 
 void panic(const char* str);
-cpu* my_cpu();
+struct cpu* my_cpu();
 struct process* current_process();
 void arch_initialise_cpu(struct limine_smp_info* smp_info);
 // For other processors panicking the next PIT interrupt

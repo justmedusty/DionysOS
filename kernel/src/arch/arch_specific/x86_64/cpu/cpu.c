@@ -18,7 +18,7 @@
 #include "limine.h"
 
 uint8_t panicked = 0;
-cpu cpu_list[16];
+struct cpu cpu_list[16];
 struct queue local_run_queues[16];
 
 struct spinlock bootstrap_lock;
@@ -34,7 +34,7 @@ void panic(const char* str) {
     }
 }
 
-cpu* my_cpu() {
+struct cpu* my_cpu() {
     return &cpu_list[get_lapid_id()];
 }
 

@@ -10,7 +10,7 @@
 struct spinlock{
     uint64_t locked;
     uint64_t id;
-    cpu *cpu;
+    struct cpu *cpu;
     uint64_t program_counters[10];
 };
 

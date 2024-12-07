@@ -154,5 +154,5 @@ inline void tss_write(uint16_t tss_segment_index) {
 /**
  * Write the kernel stack pointer (rsp0) to return to after an interrupt.
  */
-void tss_set_kernel_stack(void *rsp0,cpu *cpu);
+void tss_set_kernel_stack(void *rsp0,struct cpu *cpu);
 
