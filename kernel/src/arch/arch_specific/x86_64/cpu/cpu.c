@@ -11,12 +11,16 @@
 #include <include/arch/arch_vmm.h>
 #include <include/arch/x86_64/asm_functions.h>
 #include <include/data_structures/spinlock.h>
+#include <include/definitions/string.h>
+#include <include/mem/kalloc.h>
+#include <include/scheduling/dfs.h>
+#include <include/scheduling/kthread.h>
 
 #include "include/types.h"
 #include "include/drivers/serial/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "limine.h"
-
+extern int32_t ready;
 uint8_t panicked = 0;
 struct cpu cpu_list[16];
 struct queue local_run_queues[16];
@@ -56,8 +60,14 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     my_cpu()->page_map = kernel_pg_map;
     release_spinlock(&bootstrap_lock);
     cpus_online++;
-    for(;;) {
-        asm volatile("nop");
+    while ((volatile uint8_t)cpus_online != cpu_count && !ready) {
+    }
+
+    kthread_init();
+    dfs_run();
+
+    while ((volatile uint8_t)cpus_online != 100) {
+
     }
 
 }

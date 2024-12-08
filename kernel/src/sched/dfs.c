@@ -45,7 +45,10 @@ void dfs_yield() {
 void dfs_run() {
   struct cpu *cpu = my_cpu();
   if (cpu->running_process == NULL) {
-    //handle empty queue
+    serial_printf("NOTHING\n");
+    for (;;) {
+      asm volatile("nop");
+    }
   }
   cpu->running_process = cpu->local_run_queue->head->data;
 

@@ -23,6 +23,7 @@
 /*
  *  BSP boostrapping.
  */
+int32_t ready = 0;
 void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
@@ -42,6 +43,7 @@ void kernel_bootstrap() {
     dfs_init();
     serial_printf("Total Pages Allocated %i\n",total_allocated);
     kthread_init();
+    ready = 1;
     dfs_run();
 
     for (;;) {
