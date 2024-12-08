@@ -64,7 +64,6 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     cpus_online++;
     while ((volatile uint8_t)cpus_online != cpu_count && !ready) {
     }
-    serial_printf("%x.64\n",rcr3());
     kthread_init();
     dfs_run();
 
