@@ -11,7 +11,9 @@
 
 #include "include/mem/kalloc.h"
 #include "include/scheduling/process.h"
-
+/*
+ * Initialize a kthread and add it to the local run-queue
+ */
 void kthread_init() {
   struct process* proc = kmalloc(sizeof(struct process));
   memset(proc, 0, sizeof(struct process));
@@ -34,13 +36,14 @@ void kthread_init() {
   if (proc->current_cpu->local_run_queue == NULL) {
     proc->current_cpu->local_run_queue = kmalloc(sizeof(struct queue));
   }
+
   enqueue(proc->current_cpu->local_run_queue, proc, MEDIUM);
 }
 /*
  * For the time being, this function can't return
  */
 void kthread_main() {
-  serial_printf("kthread_main on cpu %i\n", my_cpu()->cpu_number);
+  serial_printf("kthread active on cpu %i\n", my_cpu()->cpu_number);
   for (;;) {
     asm volatile("nop");
   }
