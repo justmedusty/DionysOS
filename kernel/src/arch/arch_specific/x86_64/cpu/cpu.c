@@ -20,7 +20,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "limine.h"
-extern int32_t ready;
+extern volatile int32_t ready;
 uint8_t panicked = 0;
 struct cpu cpu_list[16];
 struct queue local_run_queues[16];
@@ -54,16 +54,15 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     arch_reload_vmm();
     lapic_init();
     serial_printf("CPU %x.8  online, LAPIC ID %x.8 \n",smp_info->processor_id,get_lapid_id());
+
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }
     my_cpu()->page_map = kernel_pg_map;
 
-
     release_spinlock(&bootstrap_lock);
     cpus_online++;
-    while ((volatile uint8_t)cpus_online != cpu_count && !ready) {
-    }
+    while (!ready){} /* Just to make entry print message cleaner and grouped together */
     kthread_init();
     dfs_run();
 

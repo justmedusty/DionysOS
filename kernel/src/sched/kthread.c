@@ -31,9 +31,14 @@ void kthread_init() {
   proc->current_gpr_state->rsp = (uint64_t)kmalloc(PAGE_SIZE * 2); /* Allocate a private stack */
   proc->current_gpr_state->rbp = proc->current_gpr_state->rsp; /* Set base pointer to the new stack pointer */
 
+  if (proc->current_cpu->local_run_queue == NULL) {
+    proc->current_cpu->local_run_queue = kmalloc(sizeof(struct queue));
+  }
   enqueue(proc->current_cpu->local_run_queue, proc, MEDIUM);
 }
-
+/*
+ * For the time being, this function can't return
+ */
 void kthread_main() {
   serial_printf("kthread_main on cpu %i\n", my_cpu()->cpu_number);
   for (;;) {
