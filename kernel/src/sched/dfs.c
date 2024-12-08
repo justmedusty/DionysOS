@@ -61,12 +61,14 @@ void sched_yield() {
 
 void sched_run() {
   struct cpu *cpu = my_cpu();
+
   if (cpu->local_run_queue->head == NULL) {
     serial_printf("Do busy work, poach processes etc\n");
     for (;;) {
       asm volatile("nop");
     }
   }
+
   cpu->running_process = cpu->local_run_queue->head->data;
 
   dequeue(cpu->local_run_queue);

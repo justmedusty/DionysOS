@@ -72,7 +72,7 @@ void enqueue(struct queue* queue_head, void* data_to_enqueue, const uint8_t prio
         panic("Null head");
     }
 
-    struct queue_node* new_node =_kalloc(sizeof(struct queue_node));
+    struct queue_node* new_node =kmalloc(sizeof(struct queue_node));
     queue_node_init(new_node, data_to_enqueue, priority);
 
 
@@ -146,7 +146,7 @@ static void enqueue_fifo(struct queue* queue_head, struct queue_node* new_node) 
 
     if (new_node->data == NULL) {
         panic("Null data enqueue fifo");
-        _kfree(new_node);
+        kfree(new_node);
         return;
     }
 
@@ -185,7 +185,7 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) 
 
     if (new_node->data == NULL) {
         panic("Null head in enqueue lifo");
-        _kfree(queue_head);
+        kfree(queue_head);
         return;
     }
 
@@ -208,7 +208,7 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node) 
 static void enqueue_priority(struct queue* queue_head, struct queue_node* new_node) {
     if (new_node->data == NULL) {
         panic("Null head in enqueue priority");
-        _kfree(queue_head);
+        kfree(queue_head);
         return;
     }
 
@@ -296,7 +296,7 @@ static void dequeue_fifo(struct queue* queue_head) {
 
     if (queue_head->head == NULL) {
         queue_head->node_count--;
-        _kfree(pointer);
+        kfree(pointer);
         return;
     }
 
@@ -307,7 +307,7 @@ static void dequeue_fifo(struct queue* queue_head) {
         queue_head->tail = queue_head->head;
     }
 
-    _kfree(pointer);
+    kfree(pointer);
 }
 
 /*
@@ -322,7 +322,7 @@ static void dequeue_lifo(struct queue* queue_head) {
     }
 
     if (queue_head->node_count == 1) {
-        _kfree(pointer);
+        kfree(pointer);
         queue_head->head = NULL;
         queue_head->tail = NULL;
         queue_head->node_count--;
@@ -333,7 +333,7 @@ static void dequeue_lifo(struct queue* queue_head) {
     queue_head->head = pointer->next;
     queue_head->node_count--;
 
-    _kfree(pointer);
+    kfree(pointer);
 }
 /*
  *  Dequeue for priority. This one always just copies the normal queue behaviour since it was written
@@ -354,5 +354,5 @@ static void dequeue_priority(struct queue* queue_head) {
         queue_head->tail = queue_head->head;
     }
 
-    _kfree(pointer);
+    kfree(pointer);
 }
