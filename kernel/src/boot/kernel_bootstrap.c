@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 6/17/24.
 //
+#include <include/arch/x86_64/asm_functions.h>
 #include <include/arch/x86_64/idt.h>
 #include <include/scheduling/kthread.h>
 
@@ -38,9 +39,10 @@ void kernel_bootstrap() {
     lapic_init();
     vfs_init();
     tempfs_init(0);
+    dfs_init();
+    serial_printf("%x.64\n",rcr3());
     smp_init();
     arch_timer_init();
-    dfs_init();
     serial_printf("Total Pages Allocated %i\n",total_allocated);
     kthread_init();
     ready = 1;

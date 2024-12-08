@@ -14,7 +14,8 @@
 
 void kthread_init() {
   serial_printf("HERE\n");
-  struct process* proc = _kalloc(sizeof(struct process));
+  struct process* proc = kmalloc(sizeof(struct process));
+  serial_printf("%x.64\n",proc);
   serial_printf("THERE\n");
   memset(proc, 0, sizeof(struct process));
   serial_printf("1\n");

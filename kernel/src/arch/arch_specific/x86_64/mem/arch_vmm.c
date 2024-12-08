@@ -18,7 +18,7 @@
 #include "include/arch//arch_vmm.h"
 #include "include/arch/x86_64/asm_functions.h"
 
-
+#ifdef __x86_64__
 p4d_t* global_pg_dir = 0;
 
 void arch_switch_page_table(p4d_t* page_dir){
@@ -39,6 +39,7 @@ void arch_init_vmm(){
 
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
+    arch_switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized\n");
 }
 
@@ -65,9 +66,9 @@ void arch_map_kernel_address_space(p4d_t* pgdir){
         panic("Mapping data!");
     }
     /*
-     * Map the first 4gb to the higher va space for the kernel, for the hhdm mapping
+     * Map the first 8gb to the higher va space for the kernel, for the hhdm mapping
      */
-    if (arch_map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x100000000) == -1){
+    if (arch_map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x200000000) == -1){
         panic("Mapping first 4gb!");
     }
 
@@ -209,5 +210,6 @@ void arch_dealloc_va_range(p4d_t* pgdir, uint64_t address, uint64_t size){
     }
 }
 
+#endif
 
 
