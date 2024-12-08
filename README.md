@@ -39,9 +39,9 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 
 🟢Implement a ramdisk driver to facilitate the tempsfs filesystem. 
 
-🟡Implement a scheduler to schedule threads in order make multitasking possible.
+🟢Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
 
-🟡Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
+🟡Implement a scheduler to schedule threads in order make multitasking possible.
 
 🔴Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
