@@ -2,15 +2,15 @@
 // Created by dustyn on 6/16/24.
 //
 
-#include "include/types.h"
+
 #include "include/arch/x86_64/gdt.h"
-
 #include <include/arch/arch_cpu.h>
-
-#include "include/arch/x86_64/asm_functions.h"
 #include "include/drivers/serial/uart.h"
 #include "include/mem/mem.h"
 #include "stdbool.h"
+
+#define KERNEL_PRIV 0
+#define USER_PRIV 3
 
 static struct gdt_segment_desc _gdt[7];
 static const struct gdt_desc _gdt_desc = {
@@ -99,10 +99,10 @@ __attribute__((naked)) static void _gdt_init_jmp() {
 void gdt_init(void) {
     // Fill in GDT descriptors.
     memset(&_gdt[GDT_SEGMENT_NULL], 0, sizeof _gdt[GDT_SEGMENT_NULL]);
-    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_CODE], true, 0);
-    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_DATA], false, 0);
-    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING3_CODE], true, 3);
-    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING3_DATA], false, 3);
+    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_CODE], true, KERNEL_PRIV);
+    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING0_DATA], false, KERNEL_PRIV);
+    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING3_CODE], true, USER_PRIV);
+    _gdt_init_long_mode_entry(&_gdt[GDT_SEGMENT_RING3_DATA], false, USER_PRIV);
     _gdt_init_long_mode_tss_entry(&_gdt[GDT_SEGMENT_TSS]);
 
     // Update the GDT and TSS descriptor to point at our new GDT/TSS.
