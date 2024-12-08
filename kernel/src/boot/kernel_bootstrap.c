@@ -18,7 +18,7 @@
 #include "include/arch/x86_64/acpi.h"
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
-#include "include/scheduling/dfs.h"
+#include "include/scheduling/sched.h"
 #include "include/filesystem/tempfs.h"
 
 /*
@@ -39,14 +39,14 @@ void kernel_bootstrap() {
     lapic_init();
     vfs_init();
     tempfs_init(0);
-    dfs_init();
+    sched_init();
     serial_printf("%x.64\n",rcr3());
     smp_init();
     arch_timer_init();
     serial_printf("Total Pages Allocated %i\n",total_allocated);
     kthread_init();
     ready = 1;
-    dfs_run();
+    sched_run();
 
     for (;;) {
         asm volatile("nop");

@@ -2,7 +2,10 @@
 // Created by dustyn on 9/14/24.
 //
 
-#pragma once
+#ifndef _PROCESS_H_
+#define _PROCESS_H_
+#include "include/filesystem/vfs.h"
+#include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
 #include "include/arch/arch_vmm.h"
 #include "include/scheduling/process.h"
@@ -25,7 +28,7 @@
 #define USER_PROCESS 2
 
 //4 pages
-#define DEFAULT_STACK_SIZE 0x8000
+#define DEFAULT_STACK_SIZE 0x16000
 
 
 
@@ -70,4 +73,5 @@ struct gpr_state {
     uint64_t r15;
 };
 
+#endif
 #endif

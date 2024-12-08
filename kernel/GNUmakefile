@@ -59,6 +59,7 @@ override KCFLAGS += \
     -mno-sse2 \
     -mno-red-zone \
    	-g \
+   	-D _DFS_ \
    	-fanalyzer \
    	-Wno-unused-variable \
    	-Wno-unused-function \

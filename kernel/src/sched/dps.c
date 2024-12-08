@@ -4,4 +4,6 @@
 /*
 	Dustyn's Priority Scheduler
  */
+#ifdef _DPS_
 #include "include/scheduling/dps.h"
+#endif

@@ -13,7 +13,7 @@
 #include <include/data_structures/spinlock.h>
 #include <include/definitions/string.h>
 #include <include/mem/kalloc.h>
-#include <include/scheduling/dfs.h>
+#include <include/scheduling/sched.h>
 #include <include/scheduling/kthread.h>
 
 #include "include/types.h"
@@ -64,7 +64,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     cpus_online++;
     while (!ready){} /* Just to make entry print message cleaner and grouped together */
     kthread_init();
-    dfs_run();
+    sched_run();
 
     while ((volatile uint8_t)cpus_online != 100) {
 

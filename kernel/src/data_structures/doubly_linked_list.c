@@ -24,7 +24,7 @@ void doubly_linked_list_init(struct doubly_linked_list *list) {
 
 void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data) {
     acquire_spinlock(&list->lock);
-    struct doubly_linked_list_node* new_node =_kalloc(sizeof(struct doubly_linked_list_node));;
+    struct doubly_linked_list_node* new_node =kmalloc(sizeof(struct doubly_linked_list_node));;
     new_node->data = data;
 
     if(list->node_count == 0) {
@@ -54,7 +54,7 @@ void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data)
 
 void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data) {
     acquire_spinlock(&list->lock);
-    struct doubly_linked_list_node* new_head =_kalloc(sizeof(struct doubly_linked_list_node));
+    struct doubly_linked_list_node* new_head =kmalloc(sizeof(struct doubly_linked_list_node));
     new_head->data = data;
 
     if(list->node_count == 0) {
@@ -83,7 +83,7 @@ void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {
     }
 
     if(list->node_count == 1) {
-      _kfree(list->head);
+      kfree(list->head);
       list->head = NULL;
       list->tail = NULL;
       list->node_count--;
@@ -92,7 +92,7 @@ void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {
     }
 
      list->tail = list->tail->prev;
-     _kfree(list->tail->next);
+     kfree(list->tail->next);
      list->tail->next = NULL;
      list->node_count--;
     release_spinlock(&list->lock);
@@ -107,7 +107,7 @@ void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     }
 
     if(list->node_count == 1) {
-        _kfree(list->head);
+        kfree(list->head);
         list->head = NULL;
         list->tail = NULL;
         list->node_count--;
@@ -116,7 +116,7 @@ void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     }
 
     list->head = list->head->next;
-    _kfree(list->head->prev);
+    kfree(list->head->prev);
     list->head->prev = NULL;
     list->node_count--;
     release_spinlock(&list->lock);
@@ -154,4 +154,17 @@ void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,s
     list->node_count--;
     release_spinlock(&list->lock);
     return;
+}
+
+void doubly_linked_list_destroy(struct doubly_linked_list* list) {
+    acquire_spinlock(&list->lock);
+    struct doubly_linked_list_node* current = list->head;
+    while (current != NULL) {
+        struct doubly_linked_list_node* next = current->next;
+        kfree(current->data);
+        kfree(current);
+        current = next;
+    }
+    release_spinlock(&list->lock);
+    kfree(list);
 }

@@ -96,7 +96,7 @@ void arch_map_kernel_address_space(p4d_t* pgdir){
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
  */
 
-static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int flags){
+static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
     if (pgdir == 0){
         panic("page dir zero");
     }
@@ -155,7 +155,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, int flags){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, uint64_t perms, uint64_t size){
+int arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size){
     pte_t* pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
@@ -202,12 +202,16 @@ uint64_t arch_dealloc_va(p4d_t* pgdir, uint64_t address){
     return 0;
 }
 
-void arch_dealloc_va_range(p4d_t* pgdir, uint64_t address, uint64_t size){
+void arch_dealloc_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size){
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE){
         arch_dealloc_va(pgdir, address + i);
     }
+}
+
+void arch_dealloc_page_table(p4d_t* pgdir) {
+    arch_dealloc_va_range(pgdir,0,0xFFFFFFFFFFFFFFFF & ~0x1000);
 }
 
 #endif

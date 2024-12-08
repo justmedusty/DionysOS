@@ -38,3 +38,4 @@ void vmm_init();
 struct vm_region* create_region();
 void attatch_region(struct virt_map *);
 void detatch_region(struct virt_map *);
+void arch_dealloc_page_table(p4d_t* pgdir);

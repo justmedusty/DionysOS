@@ -18,10 +18,10 @@ void vmm_init(){
 struct vm_region* create_region(){
 }
 
-void attatch_region(struct virt_map *){
+void attach_region(struct virt_map *){
 
 }
 
-void detatch_region(struct virt_map *){
+void detach_region(struct virt_map *){
 
 }
