@@ -28,7 +28,7 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name, ui
                 size_bytes = DEFAULT_RAMDISK_SIZE;
         }
 
-        ramdisk[ramdisk_id].ramdisk_start =_kalloc(size_bytes);
+        ramdisk[ramdisk_id].ramdisk_start =kmalloc(size_bytes);
         ramdisk[ramdisk_id].ramdisk_size_pages = size_bytes / PAGE_SIZE;
         ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages *
                 PAGE_SIZE);

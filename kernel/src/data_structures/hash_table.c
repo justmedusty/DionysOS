@@ -69,7 +69,7 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
         return;
     }
 
-    table =_kalloc(sizeof(struct singly_linked_list) * table->size);
+    table =kmalloc(sizeof(struct singly_linked_list) * table->size);
     for (uint64_t i = 0; i < size; i++) {
         singly_linked_list_init(&table->table[i],0);
     }

@@ -66,9 +66,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     kthread_init();
     sched_run();
 
-    while ((volatile uint8_t)cpus_online != 100) {
-
-    }
+    while ((volatile uint8_t)cpus_online != 100);
 
 }
 #endif

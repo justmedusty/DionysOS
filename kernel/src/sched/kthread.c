@@ -16,12 +16,13 @@
  * Initialize a kthread and add it to the local run-queue
  */
 void kthread_init() {
+
   struct process* proc = kmalloc(sizeof(struct process));
   memset(proc, 0, sizeof(struct process));
   proc->current_cpu = my_cpu();
   proc->current_working_dir = &vfs_root;
   vfs_root.vnode_active_references++;
-  proc->handle_list = kmalloc(sizeof(struct virtual_handle_list*));
+  proc->handle_list = kmalloc(sizeof(struct virtual_handle_list));
   proc->handle_list->handle_list = kmalloc(sizeof(struct doubly_linked_list));
   doubly_linked_list_init(proc->handle_list->handle_list);
   proc->handle_list->handle_id_bitmap = 0;

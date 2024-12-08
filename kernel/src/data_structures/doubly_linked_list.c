@@ -157,6 +157,7 @@ void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,s
 }
 
 void doubly_linked_list_destroy(struct doubly_linked_list* list) {
+    if (list == NULL) return;
     acquire_spinlock(&list->lock);
     struct doubly_linked_list_node* current = list->head;
     while (current != NULL) {

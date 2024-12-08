@@ -56,7 +56,7 @@ struct vnode* vnode_alloc() {
     acquire_spinlock(&vfs_lock);
 
     if (vnode_static_pool.head == NULL) {
-        struct vnode* new_node = _kalloc(sizeof(struct vnode));
+        struct vnode* new_node = kmalloc(sizeof(struct vnode));
         release_spinlock(&vfs_lock);
         return new_node;
     }
@@ -68,7 +68,7 @@ struct vnode* vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode* vnode) {
-    vnode->vnode_children = _kalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+    vnode->vnode_children = kmalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 
     for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
@@ -227,7 +227,7 @@ int8_t vnode_open(char* path) {
         vnode = vnode->mounted_vnode;
     }
 
-    struct virtual_handle *new_handle = _kalloc(sizeof(struct virtual_handle));
+    struct virtual_handle *new_handle = kmalloc(sizeof(struct virtual_handle));
     memset(new_handle, 0, sizeof(struct virtual_handle));
     new_handle->vnode = vnode;
     new_handle->process = process;
@@ -369,8 +369,8 @@ uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8
  * Gets a canonical path, whether it be for a symlink or something else
  */
 char* vnode_get_canonical_path(struct vnode* vnode) {
-    char* buffer = _kalloc(PAGE_SIZE);
-    char* final_buffer = _kalloc(PAGE_SIZE);
+    char* buffer = kmalloc(PAGE_SIZE);
+    char* final_buffer = kmalloc(PAGE_SIZE);
     struct vnode* pointer = vnode;
     struct vnode* pointer2 = &vfs_root;
 
@@ -383,7 +383,7 @@ char* vnode_get_canonical_path(struct vnode* vnode) {
 
     const size_t token_length = strtok_count(buffer, '/');
 
-    char *temp = _kalloc(PAGE_SIZE);
+    char *temp = kmalloc(PAGE_SIZE);
     memset(temp, 0, PAGE_SIZE);
 
     for (size_t i = token_length; i > 0; i--) {
@@ -415,7 +415,7 @@ static struct vnode* __parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = &vfs_root;
 
-    char* current_token = _kalloc(VFS_MAX_NAME_LENGTH);
+    char* current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
         /* This isn't implemented yet so it will be garbage until I finish it up */

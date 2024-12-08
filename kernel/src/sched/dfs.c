@@ -5,7 +5,7 @@
 /*
 	Dustyn's fair scheduler
  */
-#define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated
+#define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 
 #include <include/data_structures/doubly_linked_list.h>
 #ifdef _DFS_
@@ -29,14 +29,17 @@ struct spinlock sched_global_lock;
 
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
+
   kfree((void *)process->current_gpr_state->rsp - DEFAULT_STACK_SIZE);
+
   kfree(process->current_gpr_state);
   doubly_linked_list_destroy(process->handle_list->handle_list);
+
   kfree(process->handle_list);
 
   if (process->page_map != kernel_pg_map) {
     arch_dealloc_page_table(process->page_map->top_level);
-    phys_dealloc(process->page_map->top_level);
+    kfree(V2P(process->page_map->top_level));
     kfree(process->page_map);
   }
 }
@@ -70,7 +73,6 @@ void sched_run() {
   }
 
   cpu->running_process = cpu->local_run_queue->head->data;
-
   dequeue(cpu->local_run_queue);
 
   restore_execution(cpu->running_process->current_gpr_state);
