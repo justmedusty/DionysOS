@@ -280,7 +280,7 @@ uint64_t tempfs_write(struct vnode* vnode, const uint64_t offset, uint8_t* buffe
 }
 
 /*
- * Unimplmented for now given there isn't really any extra data in the inode that isn't in the vnode I will sit on this
+ * Unimplemented for now given there isn't really any extra data in the inode that isn't in the vnode I will sit on this
  */
 uint64_t tempfs_stat(const struct vnode* vnode) {
     const struct tempfs_filesystem* fs = vnode->filesystem_object;
@@ -334,10 +334,10 @@ struct vnode* tempfs_lookup(struct vnode* parent, char* name) {
         return NULL;
     }
 
-    uint64_t fill_vnode = 0;
+    uint64_t fill_vnode = false;
 
     if (!parent->is_cached) {
-        fill_vnode = 1;
+        fill_vnode = true;
     }
 
 
@@ -453,15 +453,17 @@ uint64_t tempfs_open(struct vnode* vnode) {
     return SUCCESS;
 }
 
-struct vnode* tempfs_link(struct vnode* vnode, struct vnode* new_vnode, uint8_t type) {
-    struct tempfs_filesystem* fs = vnode->filesystem_object;
+struct vnode* tempfs_link(struct vnode* parent, struct vnode* vnode_to_link, uint8_t type) {
+    struct tempfs_filesystem* fs = parent->filesystem_object;
     acquire_spinlock(fs->lock);
     switch (type) {
     case VNODE_HARD_LINK:
+        panic("unimplemented hard link tempfs");
         break;
 
     case VNODE_SYM_LINK:
-        break;
+        return tempfs_create(parent, vnode_get_canonical_path(vnode_to_link),VNODE_SYM_LINK);
+    default: ;
     }
 
     release_spinlock(fs->lock);
@@ -471,6 +473,11 @@ void tempfs_unlink(struct vnode* vnode) {
     struct tempfs_inode inode;
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     tempfs_read_inode(fs, &inode, vnode->vnode_inode_number);
+
+    if (inode.type == TEMPFS_SYMLINK) {
+        tempfs_remove_file(fs, &inode);
+        vnode_free(vnode);
+    }
     if (inode.refcount <= 1) {
         tempfs_remove(vnode);
     }

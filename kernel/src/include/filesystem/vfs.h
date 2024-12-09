@@ -15,31 +15,41 @@ extern struct vnode vfs_root;
 
 
 /* Error responses */
-#define SUCCESS 0
-#define WRONG_TYPE 1
-#define ALREADY_MOUNTED 2
-#define ALREADY_OPENED 3
-#define NO_ACCESS 4
-#define NOT_MOUNTED 5
-#define MAX_HANDLES_REACHED 0xFFFF
-#define INVALID_PATH (-1)
+enum vnode_error_codes {
+    WRONG_TYPE = 1,
+    ALREADY_MOUNTED = 2,
+    ALREADY_OPENED = 3,
+    NO_ACCESS = 4,
+    NOT_MOUNTED = 5,
+    MAX_HANDLES_REACHED = 0xFFFF,
+    INVALID_PATH = (-1)
+};
+
 
 /* Device Types */
-#define VNODE_DEV_TEMP 0
-#define VNODE_DEV_IDE 1
-#define VNODE_DEV_NVME 2
+enum vnode_device_types {
+    VNODE_DEV_TEMP = 0,
+    VNODE_DEV_IDE = 1,
+    VNODE_DEV_NVME = 2,
+    VNODE_DEV_SATA = 3,
+};
+
 #define VNODE_DEV_SATA 3
 
 /* Node types */
-#define VNODE_DIRECTORY 0
-#define VNODE_FILE 1
-#define VNODE_HARD_LINK 2
-#define VNODE_BLOCKDEV 3
-#define VNODE_CHARDEV 4
-#define VNODE_NETDEV 5
-#define VNODE_SPECIAL 6
-#define VNODE_SPECIAL_FILE 7
-#define VNODE_SYM_LINK 8
+
+enum vnode_types {
+    VNODE_DIRECTORY = 0,
+    VNODE_FILE = 1,
+    VNODE_HARD_LINK = 2,
+    VNODE_BLOCKDEV = 3,
+    VNODE_CHARDEV = 4,
+    VNODE_NETDEV = 5,
+    VNODE_SPECIAL = 6,
+    VNODE_SPECIAL_FILE = 7,
+    VNODE_SYM_LINK = 8,
+};
+
 /* FS Types */
 #define VNODE_FS_TEMPFS 0xF
 #define VNODE_FS_EXT2 0x10
@@ -122,6 +132,8 @@ uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 int32_t vnode_remove(struct vnode* vnode,char *path);
 struct vnode* vnode_lookup(char* path);
+uint64_t vnode_unlink(struct vnode* link);
+struct vnode* vnode_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
 void vfs_init();
 char* vnode_get_canonical_path(struct vnode* vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
 /* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */

@@ -141,11 +141,30 @@ struct vnode* vnode_lookup(char* path) {
     return target;
 }
 
-struct vnode* vnode_link(struct vnode* directory, char*) {
+struct vnode* vnode_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type){
+    if (vnode->vnode_type != VNODE_DIRECTORY) {
+        return NULL;
+    }
+
+    if (new_vnode->vnode_type == VNODE_HARD_LINK || new_vnode->vnode_type == VNODE_SYM_LINK) {
+        return NULL; // no links to other links
+    }
+
+    if (type != VNODE_HARD_LINK && type != VNODE_SYM_LINK) {
+        return NULL;
+    }
+
+    return vnode->vnode_ops->create(vnode,new_vnode->vnode_name,type);
 
 }
 
-struct vnode* vnode_unlink(struct vnode* directory, char*) {
+uint64_t vnode_unlink(struct vnode* link) {
+    if (link->vnode_type != VNODE_SYM_LINK && link->vnode_type != VNODE_HARD_LINK) {
+        return WRONG_TYPE;
+    }
+
+    link->vnode_ops->unlink(link);
+    return SUCCESS;
 
 }
 /*
