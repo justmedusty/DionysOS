@@ -4,6 +4,7 @@
 
 #ifndef PIT_H
 #define PIT_H
+#include <stdint.h>
 #define PIT_FREQ 1193182
 #define CHANNEL0_DATA 0x40
 #define CHANNEL1_DATA 0x41

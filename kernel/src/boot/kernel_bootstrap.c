@@ -40,9 +40,8 @@ void kernel_bootstrap() {
     vfs_init();
     tempfs_init(0);
     sched_init();
-    serial_printf("%x.64\n",rcr3());
     smp_init();
-    arch_timer_init();
+    timer_init();
     serial_printf("Total Pages Allocated %i\n",total_allocated);
     kthread_init();
     ready = 1;

@@ -2,13 +2,11 @@
 // Created by dustyn on 6/21/24.
 //
 
-#pragma once
-#include "include/arch/x86_64/pit.h"
-
-static inline void arch_timer_init(){
-    pit_init();
-}
-
-static inline uint64_t arch_timer_get_ticks() {
-    return get_pit_ticks();
-}
+#ifndef ARCH_TIMER_H
+#define ARCH_TIMER_H
+uint16_t timer_get_current_count();
+void timer_set_frequency_hz(uint64_t freq);
+void timer_init();
+void timer_set_reload_value(uint16_t value);
+void timer_sleep(uint16_t millis);
+#endif

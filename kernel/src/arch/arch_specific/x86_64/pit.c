@@ -6,11 +6,7 @@
 #include "include/arch/generic_asm_functions.h"
 #include "include/arch/x86_64/idt.h"
 #include "include/arch/x86_64/pit.h"
-#include <include/arch/arch_cpu.h>
-#include <include/arch/arch_global_interrupt_controller.h>
-
 #include "include/drivers/serial/uart.h"
-#include "include/arch/arch_smp.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 
 static uint64_t pit_ticks = 0;
