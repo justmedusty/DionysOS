@@ -7,6 +7,7 @@
 #include <include/definitions/string.h>
 #include <include/data_structures/singly_linked_list.h>
 #include <include/drivers/serial/uart.h>
+#include <include/filesystem/tempfs.h>
 #include <include/mem/kalloc.h>
 #include "include/arch/arch_cpu.h"
 #include "include/mem/mem.h"
@@ -280,6 +281,14 @@ void vnode_close(uint64_t handle) {
 
 }
 
+void vnode_rename(struct vnode* vnode, char* new_name) {
+    tempfs_rename(vnode, new_name);
+    safe_strcpy(vnode->vnode_name,new_name,VFS_MAX_NAME_LENGTH);
+    if (strlen(new_name) > VFS_MAX_NAME_LENGTH) {
+        vnode->vnode_name[VFS_MAX_NAME_LENGTH-1] = '\0';
+    }
+    return;
+}
 /*
  *  This function is for finding directory entries and following a path, only a fraction of the path is passed as the token parameter.
  *

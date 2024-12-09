@@ -3,13 +3,6 @@
 //
 
 #pragma once
-#define NULL (void *) 0
-
-#define uint8_t_MAX 0xFF
-#define uint16_t_MAX 0xFFFF
-#define uint32_t_MAX 0xFFFFFFFF
-#define uint64_t_MAX 0xFFFFFFFFFFFFFFFF
-
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
 #define SERIAL_LOCK 0
 #define SMP_BOOSTRAP_LOCK 1

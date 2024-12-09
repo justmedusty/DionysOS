@@ -124,9 +124,8 @@ uint64_t strtok_count(char* str, char delimiter) {
     uint64_t count = 0;
     uint64_t last_token = NEXT_TOKEN;
     while (last_token != LAST_TOKEN) {
-        //probably should bt smaller but this is fine for now
-        char temp_string[1024];
-        last_token = strtok(str, delimiter, temp_string, uint64_t_MAX);
+        char temp_string[128];
+        last_token = strtok(str, delimiter, temp_string, UINT64_MAX);
         count++;
     }
     return count;
