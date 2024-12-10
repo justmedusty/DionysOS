@@ -32,6 +32,7 @@ volatile struct limine_memmap_request memmap_request = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0,
 };
+
 __attribute__((used, section(".requests")))
 volatile struct limine_hhdm_request hhdm_request = {
     .id = LIMINE_HHDM_REQUEST,
@@ -134,8 +135,8 @@ int phys_init() {
         for (int i = 0; i < page_range_index - 1; i++) {
             if (contiguous_pages[i].pages < contiguous_pages[i + 1].pages) {
                 struct contiguous_page_range placeholder = contiguous_pages[i];
-                memcpy(&contiguous_pages[i], &contiguous_pages[i + 1], sizeof(struct contiguous_page_range));
-                memcpy(&contiguous_pages[i + 1], &placeholder, sizeof(struct contiguous_page_range));
+                memmove(&contiguous_pages[i], &contiguous_pages[i + 1], sizeof(struct contiguous_page_range));
+                memmove(&contiguous_pages[i + 1], &placeholder, sizeof(struct contiguous_page_range));
                 local_changes++;
             }
         }
@@ -158,7 +159,7 @@ int phys_init() {
     int index = 0; /* Index into the static buddy block pool */
 
     for (int i = 0; i < page_range_index; i++) {
-        for (int j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
+        for (uint64_t j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
             buddy_block_static_pool[index].start_address = (void*)(contiguous_pages[i].start_address + (j * (PAGE_SIZE))& ~0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;

@@ -58,13 +58,17 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }
+
+    if (my_cpu()->scheduler_state == NULL) {
+     my_cpu()->scheduler_state = kmalloc(sizeof(struct gpr_state));
+    }
     my_cpu()->page_map = kernel_pg_map;
 
     release_spinlock(&bootstrap_lock);
     cpus_online++;
     while (!ready){} /* Just to make entry print message cleaner and grouped together */
     kthread_init();
-    sched_run();
+    scheduler_main();
 
     while ((volatile uint8_t)cpus_online != 100);
 

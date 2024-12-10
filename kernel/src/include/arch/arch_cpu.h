@@ -46,6 +46,7 @@ struct cpu{
     uint32_t lapic_id;
     uint64_t lapic_timer_frequency;
     cpu_state* cpu_state;
+    struct gpr_state *scheduler_state;
     struct tss* tss;
     struct virt_map* page_map;
     struct process* running_process;

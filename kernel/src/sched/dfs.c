@@ -26,7 +26,7 @@
 struct queue sched_global_queue;
 struct spinlock sched_global_lock;
 
-
+extern void context_switch(struct gpr_state *old,struct gpr_state *new);
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
 
@@ -54,12 +54,18 @@ void sched_init() {
   serial_printf("DFS: Local CPU RQs Initialized \n");
 }
 
+void scheduler_main(void) {
+  for (;;) {
+    sched_run();
+  }
+
+}
 
 void sched_yield() {
   struct process *process = my_cpu()->running_process;
   get_regs(process->current_gpr_state);
   enqueue(my_cpu()->local_run_queue,process,process->priority);
-  sched_run();
+  context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
 
 void sched_run() {
@@ -67,15 +73,15 @@ void sched_run() {
 
   if (cpu->local_run_queue->head == NULL) {
     serial_printf("Do busy work, poach processes etc\n");
-    for (;;) {
-      asm volatile("nop");
-    }
+    return;
   }
 
   cpu->running_process = cpu->local_run_queue->head->data;
+  cpu->running_process->current_state = PROCESS_RUNNING;
   dequeue(cpu->local_run_queue);
 
-  restore_execution(cpu->running_process->current_gpr_state);
+  context_switch(my_cpu()->scheduler_state,cpu->running_process->current_gpr_state);
+  cpu->running_process->current_state = PROCESS_READY;
 }
 
 
@@ -83,7 +89,7 @@ void sched_preempt() {
   struct process *process = my_cpu()->running_process;
   get_regs(process->current_gpr_state);
   enqueue(my_cpu()->local_run_queue,process,process->priority);
-  sched_run();
+  context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
 
 void sched_claim_process() {
@@ -93,6 +99,6 @@ void sched_exit() {
   struct process *process = my_cpu()->running_process;
   my_cpu()->running_process = NULL;
   free_process(process);
-  sched_run();
+  context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
 #endif

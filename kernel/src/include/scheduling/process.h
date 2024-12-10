@@ -14,10 +14,14 @@
  *	Process states
  */
 
-#define RUNNING_STATE 0
-#define READY_STATE 1
-#define SLEEPING_STATE 2
-#define DEBUG_STATE 3
+enum process_state {
+    PROCESS_RUNNING,
+    PROCESS_SLEEPING,
+    PROCESS_DEAD,
+    DEBUG_STATE,
+    PROCESS_READY
+};
+
 
 /*
  *  Process types

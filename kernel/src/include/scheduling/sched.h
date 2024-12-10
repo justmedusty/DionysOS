@@ -21,10 +21,11 @@ enum task_priority {
 };
 
 
-void sched_init();
-void sched__yield();
-void sched_run();
-void sched_preempt();
-void sched_claim_process();
-void sched_exit();
+void sched_init(void);
+void sched__yield(void);
+void sched_run(void);
+void sched_preempt(void);
+void sched_claim_process(void);
+void sched_exit(void);
+void scheduler_main(void);
 #endif
