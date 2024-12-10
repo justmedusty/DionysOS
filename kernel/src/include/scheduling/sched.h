@@ -5,9 +5,6 @@
 #ifndef _SCHED_H_
 #define _SCHED_H_
 
-extern void restore_execution();
-extern void get_regs();
-
 #define BASE_QUANTUM 50 /* Base Time Quantum,  can be multiplied by task prio not sure how I'll do that yet */
 
 enum task_priority {

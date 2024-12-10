@@ -8,6 +8,7 @@
 #define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 
 #include <include/data_structures/doubly_linked_list.h>
+#include <include/data_structures/singly_linked_list.h>
 #ifdef _DFS_
 
 
@@ -25,7 +26,7 @@
 
 struct queue sched_global_queue;
 struct spinlock sched_global_lock;
-
+struct singly_linked_list dead_processes;
 extern void context_switch(struct gpr_state *old,struct gpr_state *new);
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
@@ -45,6 +46,7 @@ static void free_process(struct process *process) {
 }
 
 void sched_init() {
+  singly_linked_list_init(&dead_processes,0);
   initlock(&sched_global_lock, sched_LOCK);
   queue_init(&sched_global_queue,QUEUE_MODE_FIFO,"sched_global");
   for(uint32_t i = 0; i < cpu_count; i++) {
@@ -63,7 +65,6 @@ void scheduler_main(void) {
 
 void sched_yield() {
   struct process *process = my_cpu()->running_process;
-  get_regs(process->current_gpr_state);
   enqueue(my_cpu()->local_run_queue,process,process->priority);
   context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
@@ -73,7 +74,7 @@ void sched_run() {
   struct cpu *cpu = my_cpu();
 
   if (cpu->local_run_queue->head == NULL) {
-    serial_printf("Do busy work, poach processes etc\n");
+    panic("Do busy work, poach processes etc\n");
     return;
   }
 
@@ -90,7 +91,6 @@ void sched_run() {
 
 void sched_preempt() {
   struct process *process = my_cpu()->running_process;
-  get_regs(process->current_gpr_state);
   enqueue(my_cpu()->local_run_queue,process,process->priority);
   context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
@@ -102,6 +102,7 @@ void sched_exit() {
   struct cpu *cpu = my_cpu();
   struct process *process = cpu->running_process;
   process->current_state = PROCESS_DEAD;
+  singly_linked_list_insert_head(&dead_processes,process);
   my_cpu()->running_process = NULL;
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }

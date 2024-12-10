@@ -31,7 +31,7 @@ void kthread_init() {
   proc->parent_process_id = 0;
   proc->process_type = KERNEL_THREAD;
   proc->current_gpr_state = kmalloc(sizeof(struct gpr_state));
-  get_gpr_state(proc->current_gpr_state);
+  memset(proc->current_gpr_state, 0, sizeof(struct gpr_state));
   proc->current_gpr_state->rip = (uint64_t)kthread_main; // it's grabbing a junk value if not called from an interrupt so overwriting rip with kthread main
   proc->current_gpr_state->rsp = (uint64_t)kmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE; /* Allocate a private stack */
   proc->current_gpr_state->rbp = proc->current_gpr_state->rsp - 8; /* Set base pointer to the new stack pointer, -8 for return address*/
