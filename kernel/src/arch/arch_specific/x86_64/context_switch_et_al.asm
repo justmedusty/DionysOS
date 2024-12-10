@@ -58,7 +58,7 @@ context_switch
         mov [rdi + 40], rsi       ; gpr_state.rsi = rsi
         mov [rdi + 48], rbp       ; gpr_state.rbp = rbp
         mov [rdi + 56], rsp   ; gpr_state.rsp = rsp
-        mov rax,  [rbp]
+        mov rax,  [rbp + 8]
         mov [rdi + 64], rax  ; gpr_state.rip = the start of the stack frame (interrupt only)
         mov [rdi + 72], r8        ; gpr_state.r8 = r8
         mov [rdi + 80], r9        ; gpr_state.r9 = r9
@@ -69,17 +69,16 @@ context_switch
         mov [rdi + 120], r14      ; gpr_state.r14 = r14
         mov [rdi + 128], r15      ; gpr_state.r15 = r15
         
-        mov rax, [rsi + 0]        ; rax = gpr_state.rax
+
         mov rbx, [rsi + 8]        ; rbx = gpr_state.rbx
         mov rcx, [rsi + 16]       ; rcx = gpr_state.rcx
         mov rdx, [rsi + 24]       ; rdx = gpr_state.rdx
         mov rdi, [rsi + 32]       ; rsi = gpr_state.rsi
         mov rbp, [rsi + 48]       ; rbp = gpr_state.rbp
         mov rsp, [rsi + 56]       ; rsp = gpr_state.rsp
-        push rax
         mov rax, [rsi + 64]
-        mov [rbp], rax   ; rax = gpr_state.rip (from saved stack frame)
-        pop rax
+        mov [rbp + 8], rax   ; rax = gpr_state.rip (from saved stack frame)
+        mov rax, [rsi + 0]        ; rax = gpr_state.rax
         mov r8, [rsi + 72]        ; r8 = gpr_state.r8
         mov r9, [rsi + 80]        ; r9 = gpr_state.r9
         mov r10, [rsi + 88]       ; r10 = gpr_state.r10

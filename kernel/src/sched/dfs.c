@@ -96,9 +96,11 @@ void sched_claim_process() {
 }
 
 void sched_exit() {
-  struct process *process = my_cpu()->running_process;
+  struct cpu *cpu = my_cpu();
+  struct process *process = cpu->running_process;
   my_cpu()->running_process = NULL;
   free_process(process);
-  context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
+  serial_printf("RIP %x.64\n",cpu->scheduler_state->rip);
+  restore_execution(cpu->scheduler_state);
 }
 #endif

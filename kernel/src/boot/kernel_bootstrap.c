@@ -45,7 +45,7 @@ void kernel_bootstrap() {
     serial_printf("Total Pages Allocated %i\n",total_allocated);
     kthread_init();
     ready = 1;
-    sched_run();
+    scheduler_main();
 
     for (;;) {
         asm volatile("nop");
