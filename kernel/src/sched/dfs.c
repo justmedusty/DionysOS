@@ -69,6 +69,7 @@ void sched_yield() {
 }
 
 void sched_run() {
+  serial_printf("SCHED RUN CPU %i\n",my_cpu()->cpu_number);
   struct cpu *cpu = my_cpu();
 
   if (cpu->local_run_queue->head == NULL) {
@@ -81,7 +82,9 @@ void sched_run() {
   dequeue(cpu->local_run_queue);
 
   context_switch(my_cpu()->scheduler_state,cpu->running_process->current_gpr_state);
-  cpu->running_process->current_state = PROCESS_READY;
+  if (cpu->running_process != NULL) {
+    cpu->running_process->current_state = PROCESS_READY;
+  }
 }
 
 
@@ -98,9 +101,8 @@ void sched_claim_process() {
 void sched_exit() {
   struct cpu *cpu = my_cpu();
   struct process *process = cpu->running_process;
+  process->current_state = PROCESS_DEAD;
   my_cpu()->running_process = NULL;
-  free_process(process);
-  serial_printf("RIP %x.64\n",cpu->scheduler_state->rip);
-  restore_execution(cpu->scheduler_state);
+  context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }
 #endif
