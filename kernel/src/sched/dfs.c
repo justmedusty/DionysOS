@@ -36,6 +36,10 @@ static void purge_dead_processes();
 static void look_for_process();
 extern void context_switch(struct gpr_state *old,struct gpr_state *new);
 
+/*
+ * This function frees all the internal datastructures and does other housekeeping for after a process has
+ * terminated and we need to remove its struct from memory
+ */
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
 
@@ -52,7 +56,9 @@ static void free_process(struct process *process) {
     kfree(process->page_map);
   }
 }
-
+/*
+ * Simple init function that sets up data structures for us
+ */
 void sched_init() {
   singly_linked_list_init(&dead_processes,0);
   initlock(&sched_global_lock, sched_LOCK);
@@ -66,7 +72,9 @@ void sched_init() {
   }
   serial_printf("DFS: Local CPU RQs Initialized \n");
 }
-
+/*
+ * Infinite loop so when we jump back into the scheduler from a task exit or preempt, it will continually attempt to run tasks over and over again
+ */
 void scheduler_main(void) {
   for (;;) {
     sched_run();
@@ -74,8 +82,9 @@ void scheduler_main(void) {
 
 }
 
-
-
+/*
+ * Yield the scheduler , swap registers and jump back into the mouth of the scheduler
+ */
 void sched_yield() {
   struct process *process = my_cpu()->running_process;
   process->current_state = PROCESS_READY;
@@ -83,6 +92,14 @@ void sched_yield() {
   context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
 
+/*
+ * Scheduler run function. If there is an active process waiting in the local run queue,
+ * run it. Set the cpu running process and state and then jump into the process context.
+ *
+ * If there is nothing to run, purge dead processes from the dead process queue (this prevents any sort of posix wait() functionality but is fine for now)
+ * It also will call look_for_process which will peruse the global run queue for any spare processes that are still homeless. Will take the poor process under its wing and
+ * give it some sweet sweet cpu time.
+ */
 void sched_run() {
   struct cpu *cpu = my_cpu();
 
@@ -100,7 +117,10 @@ void sched_run() {
   context_switch(cpu->scheduler_state,cpu->running_process->current_gpr_state);
 }
 
-
+/*
+ * Preempt simply puts the running process in the queue again and then places it back into the queue and jumps back
+ * into scheduler context
+ */
 void sched_preempt() {
   struct cpu* cpu = my_cpu();
   struct process *process = cpu->running_process;
@@ -109,17 +129,23 @@ void sched_preempt() {
   context_switch(my_cpu()->running_process->current_gpr_state,cpu->scheduler_state);
 }
 
-
+/*
+ * Under construction
+ */
 void sched_sleep(void *sleep_channel) {
   struct cpu* cpu = my_cpu();
   struct process *process = cpu->running_process;
 
 }
-
+/*
+ * Under construction
+ */
 void sched_claim_process() {
 
 }
-
+/*
+ * Exit  for when a process is finished execution. The process will be added to the dead list, and we jump back into scheduler context
+ */
 void sched_exit() {
   struct cpu *cpu = my_cpu();
   struct process *process = cpu->running_process;
@@ -128,7 +154,9 @@ void sched_exit() {
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }
 
-
+/*
+ * Purge dead processes from the dead list, this will not be kept if I decide to add the posix wait() functionality
+ */
 static void purge_dead_processes() {
   if (dead_processes.node_count == 0) {
     return;
@@ -144,6 +172,10 @@ static void purge_dead_processes() {
   release_spinlock(&purge_lock);
 }
 
+/*
+ * Attempt to grab a process from the global queue for the local CPU
+ * queue
+ */
 static void look_for_process() {
   struct cpu *cpu = my_cpu();
   acquire_spinlock(&sched_global_lock);
