@@ -93,8 +93,7 @@ void sched_run() {
   cpu->running_process = cpu->local_run_queue->head->data;
   cpu->running_process->current_state = PROCESS_RUNNING;
   dequeue(cpu->local_run_queue);
-  try_change_interrupt_flag(cpu->running_process->current_gpr_state->interrupts_enabled);
-  context_switch(my_cpu()->scheduler_state,cpu->running_process->current_gpr_state);
+  context_switch(cpu->scheduler_state,cpu->running_process->current_gpr_state);
 }
 
 
@@ -103,7 +102,6 @@ void sched_preempt() {
   struct process *process = cpu->running_process;
   enqueue(my_cpu()->local_run_queue,process,process->priority);
   process->current_state = PROCESS_READY;
-  try_change_interrupt_flag(cpu->scheduler_state->interrupts_enabled);
   context_switch(my_cpu()->running_process->current_gpr_state,cpu->scheduler_state);
 }
 
@@ -115,7 +113,6 @@ void sched_exit() {
   struct process *process = cpu->running_process;
   singly_linked_list_insert_head(&dead_processes,process);
   my_cpu()->running_process = NULL;
-  try_change_interrupt_flag(cpu->scheduler_state->interrupts_enabled);
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }
 

@@ -45,6 +45,30 @@ context_switch
         mov r13, [rsi + 112]      ; r13 = gpr_state.r13
         mov r14, [rsi + 120]      ; r14 = gpr_state.r14
         mov r15, [rsi + 128]      ; r15 = gpr_state.r15
-        mov rsi, [rsi + 40]   ; rsi = gpr_state.rsi
+
+
+        ; restore the interrupt flag
+        pushfq
+        pop rax
+        shl rax, 9 ; bring flag bit over
+        and rax, 1 ; isolate flag bit
+        cmp rax, [rsi + 136] ; check if current flag bit matches
+        je done ;if so jmp to done and finish context save by writing over rsi
+        jg off ; if rax is greater, jump to turn interrupts off
+        jmp on ; else turn them on
+
+
+        off:
+        cli
+        jmp done
+
+        on:
+        sti
+        jmp done ; just for consisentency its not needed
+
+
+
+        done:
+        mov rsi, [rsi + 40]   ; rsi = gpr_state.rsi this has to be done last to preserve the pointer argument for flag restoration
         ret
         
