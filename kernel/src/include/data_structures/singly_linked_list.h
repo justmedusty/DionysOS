@@ -1,8 +1,9 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#pragma once
-#include <include/types.h>
+#ifndef SINGLY_LINKED_LIST_H
+#define SINGLY_LINKED_LIST_H
+#include "spinlock.h"
 
 #define SUCCESS 0
 #define NODE_NOT_FOUND 1
@@ -21,6 +22,7 @@ struct singly_linked_list_node{
 };
 
 struct singly_linked_list {
+  struct spinlock lock;
   struct singly_linked_list_node* head;
   //I will keep tail now anyway but you cannot really use it to skip the line since you cant update its predecessors pointer without a walk. It may be useful in the case we need to insert something at the end however.
   struct singly_linked_list_node* tail;
@@ -35,3 +37,4 @@ void singly_linked_list_insert_head(struct singly_linked_list *list, void *data)
 void *singly_linked_list_remove_tail(struct singly_linked_list *list);
 void *singly_linked_list_remove_head(struct singly_linked_list *list);
 uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data);
+#endif

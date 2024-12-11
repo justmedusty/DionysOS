@@ -18,7 +18,7 @@
  *  Generic Implementation of a singly linked list with some functions to operate on them.
  *  I will leave out things like sorts since I am trying to make this as generic as possible and I can't sort without knowing the type the data pointer leads to.
  */
-
+struct spinlock sll_lock;
 uint8_t static_pool_setup = 0;
 uint8_t pool_full = 0;
 struct singly_linked_list free_nodes;
@@ -29,7 +29,7 @@ void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
     if(list == NULL) {
         panic("singly linked list memory allocation failed");
     }
-
+    initlock(&list->lock,SINGLE_LINKED_LIST_LOCK);
     if(static_pool_setup == 0) {
         static_pool_setup = 1;
         free_nodes.flags = LIST_FLAG_FREE_NODES;
@@ -40,18 +40,20 @@ void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_NODE;
             singly_linked_list_node_static_pool[i].flags |= STATIC_POOL_FREE_NODE;
             singly_linked_list_insert_head(&free_nodes, &singly_linked_list_node_static_pool[i]);
+
         }
+
     }
+
     list->flags = flags;
     list->head = NULL;
     list->tail = NULL;
     list->node_count = 0;
 
-
 }
 
 static struct singly_linked_list_node *singly_linked_list_node_alloc() {
-
+    acquire_spinlock(&sll_lock);
     struct singly_linked_list_node* new_node = singly_linked_list_remove_head(&free_nodes);
 
 
@@ -60,24 +62,26 @@ static struct singly_linked_list_node *singly_linked_list_node_alloc() {
     }
     new_node->flags &= ~STATIC_POOL_FREE_NODE;
     new_node->data = NULL;
-
+    release_spinlock(&sll_lock);
     return new_node;
 }
 
 static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
-
+    acquire_spinlock(&sll_lock);
     if(node->flags & STATIC_POOL_NODE) {
         node->flags &= ~STATIC_POOL_FREE_NODE;
         node->data = NULL;
         node->next = NULL;
         singly_linked_list_insert_tail(&free_nodes, node);
+        release_spinlock(&sll_lock);
         return;
     }
     memset(node, 0, sizeof(struct singly_linked_list_node));
     _kfree(node);
+    release_spinlock(&sll_lock);
 }
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
-
+    acquire_spinlock(&list->lock);
     struct singly_linked_list_node *new_node;
     if(list->flags & LIST_FLAG_FREE_NODES) {
         new_node = data;
@@ -96,18 +100,19 @@ void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data)
         list->head->next = new_node;
         list->tail = new_node;
         list->node_count++;
+        release_spinlock(&list->lock);
         return;
     }
 
     list->tail->next = new_node;
     list->tail = new_node;
     list->node_count++;
+    release_spinlock(&list->lock);
 
 }
 
 void singly_linked_list_insert_head(struct singly_linked_list* list, void* data) {
-
-
+    acquire_spinlock(&list->lock);
     struct singly_linked_list_node *new_head;
 
     if(list->flags & LIST_FLAG_FREE_NODES) {
@@ -126,6 +131,7 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
         new_head->next = NULL;
         list->tail = NULL;
         list->node_count++;
+        release_spinlock(&list->lock);
         return;
     }
 
@@ -136,6 +142,7 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
         list->head = new_head;
         list->tail = new_head->next;
         list->tail->next = NULL;
+        release_spinlock(&list->lock);
         return;
     }
 
@@ -143,13 +150,15 @@ void singly_linked_list_insert_head(struct singly_linked_list* list, void* data)
     new_head->data = data;
     new_head->next = list->head;
     list->head = new_head;
+    release_spinlock(&list->lock);
 
 }
 
 
 void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
-
+    acquire_spinlock(&list->lock);
     if(list->node_count == 0) {
+        release_spinlock(&list->lock);
         return NULL;
     }
 
@@ -166,6 +175,7 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
         list->head = NULL;
         list->tail = NULL;
         list->node_count--;
+        release_spinlock(&list->lock);
         return return_value;
     }
 
@@ -182,12 +192,15 @@ void *singly_linked_list_remove_tail(struct singly_linked_list* list) {
     list->node_count--;
     tail->next = NULL;
     singly_linked_list_node_free(tail);
+    release_spinlock(&list->lock);
     return return_value;
 
 }
 
 void *singly_linked_list_remove_head(struct singly_linked_list* list) {
+    acquire_spinlock(&list->lock);
     if (list->node_count == 0 || list->head == NULL) {
+        release_spinlock(&list->lock);
         return NULL;
     }
 
@@ -196,6 +209,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     if(list->flags & LIST_FLAG_FREE_NODES) {
         list->head = list->head->next;
         list->node_count--;
+        release_spinlock(&list->lock);
         return return_value;
     }
 
@@ -204,10 +218,8 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         list->head = NULL;
         list->tail = NULL;
         list->node_count--;
+        release_spinlock(&list->lock);
         return return_value;
-    }
-    if(list->head->next == NULL && list->node_count > 1) {
-        serial_printf("Fucked up shit happens in call %i node_count %i\n",list->node_count);
     }
     if (list->node_count == 2) {
         struct singly_linked_list_node* node = list->head;
@@ -217,6 +229,7 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
         list->node_count--;
         node->next = NULL;
         singly_linked_list_node_free(node);
+        release_spinlock(&list->lock);
         return return_value;
     }
 
@@ -225,10 +238,12 @@ void *singly_linked_list_remove_head(struct singly_linked_list* list) {
     singly_linked_list_node_free(list->head);
     list->head = new_head;
     list->node_count--;
+    release_spinlock(&list->lock);
     return return_value;
 }
 
 uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data) {
+    acquire_spinlock(&list->lock);
     struct singly_linked_list_node* prev = list->head;
     struct singly_linked_list_node* node = list->head;
 
@@ -236,6 +251,7 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
         serial_printf("singly_linked_list_remove_node_by_address : data is NULL\n");
     }
     if(node->data == data) {
+        release_spinlock(&list->lock);
         singly_linked_list_remove_head(list);
         return SUCCESS;
     }
@@ -247,13 +263,13 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
             prev->next = node->next;
             singly_linked_list_node_free(node);
             list->node_count--;
+            release_spinlock(&list->lock);
             return SUCCESS;
         }
 
         node = node->next;
         prev = prev->next;
     }
-
-    serial_printf("NOT FOUND\n");
+    release_spinlock(&list->lock);
     return NODE_NOT_FOUND;
 }

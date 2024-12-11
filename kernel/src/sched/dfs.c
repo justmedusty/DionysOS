@@ -7,6 +7,7 @@
  */
 #define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 
+#include <include/arch/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/data_structures/singly_linked_list.h>
 #ifdef _DFS_
@@ -27,6 +28,7 @@
 struct queue sched_global_queue;
 struct spinlock sched_global_lock;
 struct singly_linked_list dead_processes;
+static void purge_dead_processes();
 extern void context_switch(struct gpr_state *old,struct gpr_state *new);
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
@@ -70,11 +72,12 @@ void sched_yield() {
 }
 
 void sched_run() {
-  serial_printf("SCHED RUN CPU %i\n",my_cpu()->cpu_number);
   struct cpu *cpu = my_cpu();
 
   if (cpu->local_run_queue->head == NULL) {
-    panic("Do busy work, poach processes etc\n");
+    timer_sleep(1000);
+    serial_printf("DFS: Local Run Queue is Empty \n");
+    purge_dead_processes();
     return;
   }
 
@@ -106,4 +109,16 @@ void sched_exit() {
   my_cpu()->running_process = NULL;
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }
+
+
+static void purge_dead_processes() {
+  struct singly_linked_list_node *node = dead_processes.head;
+
+  while (node != NULL) {
+    free_process(node->data);
+    singly_linked_list_remove_head(&dead_processes);
+    node = dead_processes.head;
+  }
+}
+
 #endif

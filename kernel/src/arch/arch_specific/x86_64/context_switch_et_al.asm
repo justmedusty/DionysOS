@@ -42,4 +42,3 @@ context_switch
         mov rsi, [rsi + 40]   ; rsi = gpr_state.rsi
         ret
         
-        
