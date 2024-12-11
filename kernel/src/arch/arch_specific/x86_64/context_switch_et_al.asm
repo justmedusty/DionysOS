@@ -34,9 +34,8 @@ context_switch
         mov rdi, [rsi + 32]       ; rsi = gpr_state.rsi
         mov rbp, [rsi + 48]       ; rbp = gpr_state.rbp
         mov rsp, [rsi + 56]       ; rsp = gpr_state.rsp
-        mov rax, [rsi + 64]
+        mov rax, [rsi + 64] ; it is fine to overwrite this below because
         push rax
-        mov rax, [rsi + 0]        ; rax = gpr_state.rax
         mov r8, [rsi + 72]        ; r8 = gpr_state.r8
         mov r9, [rsi + 80]        ; r9 = gpr_state.r9
         mov r10, [rsi + 88]       ; r10 = gpr_state.r10
@@ -69,6 +68,8 @@ context_switch
 
 
         done:
+        mov rax, [rsi + 0]        ; rax = gpr_state.rax; since we use rax for IF shenanigans above,restore it after
         mov rsi, [rsi + 40]   ; rsi = gpr_state.rsi this has to be done last to preserve the pointer argument for flag restoration
+
         ret
         
