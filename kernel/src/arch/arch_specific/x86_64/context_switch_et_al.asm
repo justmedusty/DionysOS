@@ -46,7 +46,7 @@ context_switch
         mov r14, [rsi + 120]      ; r14 = gpr_state.r14
         mov r15, [rsi + 128]      ; r15 = gpr_state.r15
 
-
+        ;we can probably speed this up with lahf instruction but for now I don't care this is fine
         ; restore the interrupt flag
         pushfq
         pop rax
