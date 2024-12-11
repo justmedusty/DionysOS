@@ -4,8 +4,8 @@
 
 #ifndef KERNEL_KALLOC_H
 #define KERNEL_KALLOC_H
+#include <stdint.h>
 #include <stddef.h>
-
 void *kmalloc(uint64_t size);
 void *_kalloc(uint64_t size);
 void *krealloc(void *address, uint64_t new_size);

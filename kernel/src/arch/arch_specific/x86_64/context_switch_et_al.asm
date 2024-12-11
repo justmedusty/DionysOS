@@ -1,4 +1,5 @@
 
+
 global context_switch ; This will likely not work as is will need to modify it. context_switch(struct gpr_state *old, struct gpr_state *new)
 context_switch
         mov [rdi + 0], rax        ; gpr_state.rax = rax
@@ -19,7 +20,13 @@ context_switch
         mov [rdi + 112], r13      ; gpr_state.r13 = r13
         mov [rdi + 120], r14      ; gpr_state.r14 = r14
         mov [rdi + 128], r15      ; gpr_state.r15 = r15
-        
+
+        ; save the interrupt flag
+        pushfq
+        pop rax
+        shl rax, 9 ; bring flag bit over
+        and rax, 1 ; isolate flag bit
+        mov [rdi + 136], rax
 
         mov rbx, [rsi + 8]        ; rbx = gpr_state.rbx
         mov rcx, [rsi + 16]       ; rcx = gpr_state.rcx

@@ -7,6 +7,7 @@
  */
 #define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 
+#include <include/arch/arch_asm_functions.h>
 #include <include/arch/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/data_structures/singly_linked_list.h>
@@ -92,15 +93,18 @@ void sched_run() {
   cpu->running_process = cpu->local_run_queue->head->data;
   cpu->running_process->current_state = PROCESS_RUNNING;
   dequeue(cpu->local_run_queue);
+  try_change_interrupt_flag(cpu->running_process->current_gpr_state->interrupts_enabled);
   context_switch(my_cpu()->scheduler_state,cpu->running_process->current_gpr_state);
 }
 
 
 void sched_preempt() {
-  struct process *process = my_cpu()->running_process;
+  struct cpu* cpu = my_cpu();
+  struct process *process = cpu->running_process;
   enqueue(my_cpu()->local_run_queue,process,process->priority);
   process->current_state = PROCESS_READY;
-  context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
+  try_change_interrupt_flag(cpu->scheduler_state->interrupts_enabled);
+  context_switch(my_cpu()->running_process->current_gpr_state,cpu->scheduler_state);
 }
 
 void sched_claim_process() {
@@ -111,6 +115,7 @@ void sched_exit() {
   struct process *process = cpu->running_process;
   singly_linked_list_insert_head(&dead_processes,process);
   my_cpu()->running_process = NULL;
+  try_change_interrupt_flag(cpu->scheduler_state->interrupts_enabled);
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
 }
 

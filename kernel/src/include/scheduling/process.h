@@ -31,7 +31,7 @@ enum process_state {
 #define USER_THREAD 1
 #define USER_PROCESS 2
 
-//4 pages
+//16 pages
 #define DEFAULT_STACK_SIZE 0x16000
 
 
@@ -46,7 +46,7 @@ struct process {
     uint64_t time_quantum;
     uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
     uint64_t process_type;
-    uint16_t file_descriptors[16];
+    uint8_t file_descriptors[16];
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
     struct virt_map* page_map;
@@ -75,6 +75,7 @@ struct gpr_state {
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
+    bool interrupts_enabled;
 };
 
 #endif

@@ -156,7 +156,7 @@ static inline uint64_t interrupts_enabled() {
           :                  // No input operands
           : "memory"         // Memory is modified
       );
-    return flags;
+    return ((flags & 1 << 9) > 0);
 }
 
 //PAGEBREAK: 36
