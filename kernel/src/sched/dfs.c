@@ -26,10 +26,14 @@
 
 
 struct queue sched_global_queue;
+struct queue global_sleep_queue;
+
 struct spinlock sched_global_lock;
+struct spinlock purge_lock;
 struct singly_linked_list dead_processes;
 static void purge_dead_processes();
 extern void context_switch(struct gpr_state *old,struct gpr_state *new);
+
 static void free_process(struct process *process) {
   process->current_working_dir->vnode_active_references--;
 
@@ -50,6 +54,7 @@ static void free_process(struct process *process) {
 void sched_init() {
   singly_linked_list_init(&dead_processes,0);
   initlock(&sched_global_lock, sched_LOCK);
+  initlock(&purge_lock, sched_LOCK);
   queue_init(&sched_global_queue,QUEUE_MODE_FIFO,"sched_global");
   for(uint32_t i = 0; i < cpu_count; i++) {
     queue_init(&local_run_queues[i],QUEUE_MODE_FIFO,"dfs");
@@ -65,8 +70,11 @@ void scheduler_main(void) {
 
 }
 
+
+
 void sched_yield() {
   struct process *process = my_cpu()->running_process;
+  process->current_state = PROCESS_READY;
   enqueue(my_cpu()->local_run_queue,process,process->priority);
   context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
@@ -84,17 +92,14 @@ void sched_run() {
   cpu->running_process = cpu->local_run_queue->head->data;
   cpu->running_process->current_state = PROCESS_RUNNING;
   dequeue(cpu->local_run_queue);
-
   context_switch(my_cpu()->scheduler_state,cpu->running_process->current_gpr_state);
-  if (cpu->running_process != NULL) {
-    cpu->running_process->current_state = PROCESS_READY;
-  }
 }
 
 
 void sched_preempt() {
   struct process *process = my_cpu()->running_process;
   enqueue(my_cpu()->local_run_queue,process,process->priority);
+  process->current_state = PROCESS_READY;
   context_switch(my_cpu()->running_process->current_gpr_state,my_cpu()->scheduler_state);
 }
 
@@ -104,7 +109,6 @@ void sched_claim_process() {
 void sched_exit() {
   struct cpu *cpu = my_cpu();
   struct process *process = cpu->running_process;
-  process->current_state = PROCESS_DEAD;
   singly_linked_list_insert_head(&dead_processes,process);
   my_cpu()->running_process = NULL;
   context_switch(process->current_gpr_state,my_cpu()->scheduler_state);
@@ -112,13 +116,18 @@ void sched_exit() {
 
 
 static void purge_dead_processes() {
-  struct singly_linked_list_node *node = dead_processes.head;
+  if (dead_processes.node_count == 0) {
+    return;
+  }
+  acquire_spinlock(&purge_lock);
+  const struct singly_linked_list_node *node = dead_processes.head;
 
   while (node != NULL) {
     free_process(node->data);
     singly_linked_list_remove_head(&dead_processes);
     node = dead_processes.head;
   }
+  release_spinlock(&purge_lock);
 }
 
 #endif

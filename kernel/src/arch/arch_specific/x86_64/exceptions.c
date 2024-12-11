@@ -87,7 +87,8 @@ void general_protection_fault(int32_t error_code) {
 // Exception 14: Page Fault
 void page_fault() {
     uint64_t faulting_address = rcr2();
-    serial_printf("Page Fault Occurred With Access %x.64\n", faulting_address);
+    uint64_t cpu_no = my_cpu()->cpu_number;
+    serial_printf("Page Fault Occurred With Access %x.64 on CPU %i\n", faulting_address,cpu_no);
     panic("Page Fault!");
 }
 
