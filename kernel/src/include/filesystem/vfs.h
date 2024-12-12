@@ -56,8 +56,8 @@ enum vnode_types {
 
 #define NUM_HANDLES 32
 /* Vnode flags */
-#define VNODE_STATIC_POOL 1<<63
-#define VNODE_CHILD_MEMORY_ALLOCATED (1 << 62)
+#define VNODE_STATIC_POOL 2
+#define VNODE_CHILD_MEMORY_ALLOCATED 1
 
 /* Vnode limits */
 #define VNODE_MAX_DIRECTORY_ENTRIES 64 // 4 pages

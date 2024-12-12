@@ -451,6 +451,10 @@ static struct vnode* parse_path(char* path) {
     else {
         path++;
     }
+
+    if (!*path) {
+        return current_vnode;
+    }
     //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the lasty. It is part of the altered design choice I chose
     uint64_t last_token = 1;
     uint64_t index = 1;
