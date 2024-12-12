@@ -16,9 +16,9 @@ static void write_string_serial(const char *str);
 static void write_hex_serial(uint64_t num,int8_t size);
 static char get_hex_char(uint8_t nibble);
 
-//The serial port and the init serial will need to be IF_DEF'd for multi-arch support later
+#ifdef __x86_64__
 #define COM1 0x3F8   // COM1 base port
-
+#endif
 char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 struct spinlock serial_lock;

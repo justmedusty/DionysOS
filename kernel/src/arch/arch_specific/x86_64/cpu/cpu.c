@@ -69,8 +69,5 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     while (!ready){} /* Just to make entry print message cleaner and grouped together */
     kthread_init();
     scheduler_main();
-
-    while ((volatile uint8_t)cpus_online != 100);
-
 }
 #endif

@@ -196,7 +196,7 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
 
 
     root.type = TEMPFS_DIRECTORY;
-    strcpy((char*)&root.name, "root");
+    strcpy((char*)&root.name, "/");
     root.parent_inode_number = root.inode_number;
     tempfs_write_inode(fs, &root);
 
@@ -210,6 +210,13 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vfs_root.vnode_parent = NULL;
     vfs_root.vnode_children = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_TEMPFS;
+
+    tempfs_create(&vfs_root,"etc", VNODE_DIRECTORY);
+    tempfs_create(&vfs_root,"dev", VNODE_DIRECTORY);
+    tempfs_create(&vfs_root,"mnt", VNODE_DIRECTORY);
+    tempfs_create(&vfs_root,"var", VNODE_DIRECTORY);
+    tempfs_create(&vfs_root,"bin", VNODE_DIRECTORY);
+    tempfs_create(&vfs_root,"root", VNODE_DIRECTORY);
 
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE,
@@ -434,7 +441,7 @@ struct vnode* tempfs_create(struct vnode* parent, char* name, const uint8_t vnod
     release_spinlock(fs->lock);
 
     if (ret != SUCCESS) {
-        panic("");
+        panic("Could not write dirent");
         return NULL;
     }
     return new_vnode;

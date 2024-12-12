@@ -27,9 +27,9 @@ struct vnode vfs_root;
 struct spinlock vfs_lock;
 
 //static prototype
-static struct vnode* __parse_path(char* path);
+static struct vnode* parse_path(char* path);
 static uint64_t vnode_update_children_array(struct vnode* vnode);
-static int8_t get_file_handle(struct virtual_handle_list *list);
+static int8_t get_new_file_handle(struct virtual_handle_list *list);
 /*
  *The vfs_init function simply initializes a linked list of all of the vnode static pool
  *and marks each of them with a VNODE_STATIC_POOL flag
@@ -127,12 +127,12 @@ void vnode_free(struct vnode* vnode) {
 }
 
 /*
- *This is the public facing function that makes use of the internal __parse_path function
+ *This is the public facing function that makes use of the internal parse_path function
  *Takes a string path and returns the final vnode, if it is a valid path. Can take
  *absolute or relative path.
  */
 struct vnode* vnode_lookup(char* path) {
-    struct vnode* target = __parse_path(path);
+    struct vnode* target = parse_path(path);
 
     if (target == NULL) {
         vnode_free(target);
@@ -231,7 +231,7 @@ int8_t vnode_open(char* path) {
 
     struct virtual_handle_list *list = process->handle_list; /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
-    int8_t ret = get_file_handle(list);
+    int8_t ret = get_new_file_handle(list);
 
     if (ret == -1) {
         return MAX_HANDLES_REACHED;
@@ -439,7 +439,7 @@ char* vnode_get_canonical_path(struct vnode* vnode) {
  * Returns target node.
  *
  */
-static struct vnode* __parse_path(char* path) {
+static struct vnode* parse_path(char* path) {
     //Assign to the root node by default
     struct vnode* current_vnode = &vfs_root;
 
@@ -476,7 +476,7 @@ static struct vnode* __parse_path(char* path) {
 }
 
 //simple iteration
-static int8_t get_file_handle(struct virtual_handle_list *list) {
+static int8_t get_new_file_handle(struct virtual_handle_list *list) {
     for (size_t i = 0; i <NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & (1 << i))) {
             list->handle_id_bitmap |= (1 << i);

@@ -7,7 +7,7 @@
  */
 #define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 
-#ifdef _DFS_
+#ifdef _DFS_ // the type of scheduler used will be defined in the gcc flags at compile time.
 #include <include/arch/arch_asm_functions.h>
 #include <include/arch/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
@@ -188,7 +188,6 @@ static void look_for_process() {
   dequeue(&sched_global_queue);
   enqueue(cpu->local_run_queue,process,process->priority);
   release_spinlock(&sched_global_lock);
-  return;
 }
 
 #endif

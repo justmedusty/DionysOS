@@ -36,7 +36,7 @@ static uint8_t static_pool_init = 0;
  */
 static struct binary_tree_node* node_alloc() {
     if (pool_full) {
-        return kmalloc(sizeof(struct binary_tree_node));
+        return _kalloc(sizeof(struct binary_tree_node));
     }
 
     for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
@@ -47,7 +47,7 @@ static struct binary_tree_node* node_alloc() {
         }
     }
     pool_full = 1;
-    return kmalloc(sizeof(struct binary_tree_node));
+    return _kalloc(sizeof(struct binary_tree_node)); // TODO PUTTING THIS BACK TO INTERNAL FUNC BECAUSE OF DEADLOCK THIS CAN CAUSE PROBLEMS LATER SO STICKING A PIN
 }
 /*
  * Free a node, just invoke _kfree( it not part of the static pool,

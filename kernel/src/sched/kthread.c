@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <include/arch/arch_asm_functions.h>
+#include <include/arch/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/filesystem/vfs.h>
 #include <include/scheduling/sched.h>
@@ -48,7 +49,7 @@ void kthread_init() {
  */
 void kthread_main() {
   serial_printf("kthread active on cpu %i\n", my_cpu()->cpu_number);
-  serial_printf("do stuff\n");
+  serial_printf("Timer ticks %i\n",timer_get_current_count());
   sched_exit();
 }
 

@@ -1,6 +1,7 @@
 //
 // Created by dustyn on 8/30/24.
 //
+#pragma once
 
 #include <include/mem/kalloc.h>
 #ifdef __x86_64__
