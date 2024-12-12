@@ -217,6 +217,11 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vnode_create("/","var", VNODE_DIRECTORY);
     vnode_create("/","bin", VNODE_DIRECTORY);
     vnode_create("/","root", VNODE_DIRECTORY);
+    vnode_create("/","home", VNODE_DIRECTORY);
+    vnode_create("/","proc", VNODE_DIRECTORY);
+
+    vnode_create("/etc","passwd", VNODE_FILE);
+    vnode_create("/etc","config.txt", VNODE_FILE);
 
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE,
