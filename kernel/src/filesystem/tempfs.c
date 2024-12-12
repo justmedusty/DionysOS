@@ -201,7 +201,7 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     tempfs_write_inode(fs, &root);
 
     memset(&vfs_root, 0, sizeof(struct vnode));
-    strcpy((char*)vfs_root.vnode_name, "root");
+    strcpy((char*)vfs_root.vnode_name, "/");
     vfs_root.filesystem_object = fs;
     vfs_root.vnode_inode_number = root.inode_number;
     vfs_root.vnode_type = TEMPFS_DIRECTORY;
@@ -211,12 +211,12 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vfs_root.vnode_children = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_TEMPFS;
 
-    tempfs_create(&vfs_root,"etc", VNODE_DIRECTORY);
-    tempfs_create(&vfs_root,"dev", VNODE_DIRECTORY);
-    tempfs_create(&vfs_root,"mnt", VNODE_DIRECTORY);
-    tempfs_create(&vfs_root,"var", VNODE_DIRECTORY);
-    tempfs_create(&vfs_root,"bin", VNODE_DIRECTORY);
-    tempfs_create(&vfs_root,"root", VNODE_DIRECTORY);
+    vnode_create("/","etc", VNODE_DIRECTORY);
+    vnode_create("/","dev", VNODE_DIRECTORY);
+    vnode_create("/","mnt", VNODE_DIRECTORY);
+    vnode_create("/","var", VNODE_DIRECTORY);
+    vnode_create("/","bin", VNODE_DIRECTORY);
+    vnode_create("/","root", VNODE_DIRECTORY);
 
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE,

@@ -123,7 +123,7 @@ struct vnode_operations {
 };
 
 void vnode_directory_alloc_children(struct vnode* vnode);
-struct vnode* vnode_create(char* path, uint8_t vnode_type, char *name);
+struct vnode* vnode_create(char* path,  char* name, uint8_t vnode_type);
 struct vnode* find_vnode_child(struct vnode* vnode, char* token);
 uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes,uint8_t *buffer);
 uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t *buffer);

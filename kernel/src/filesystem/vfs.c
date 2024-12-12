@@ -171,7 +171,7 @@ uint64_t vnode_unlink(struct vnode* link) {
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
-struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
+struct vnode* vnode_create(char* path,  char* name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode* parent_directory = vnode_lookup(path);
@@ -180,13 +180,12 @@ struct vnode* vnode_create(char* path, uint8_t vnode_type, char* name) {
         return NULL;
     }
 
-    if (!parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+    if (!(parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
         vnode_directory_alloc_children(parent_directory);
     }
 
     struct vnode* new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
     parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
-    parent_directory->num_children++;
 
     return new_vnode;
 }
