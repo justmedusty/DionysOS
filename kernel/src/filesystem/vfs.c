@@ -69,7 +69,7 @@ struct vnode* vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode* vnode) {
-    vnode->vnode_children = kmalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+    vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 
     for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
@@ -119,10 +119,10 @@ void vnode_free(struct vnode* vnode) {
     }
 
     if (vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
-        _kfree(vnode->vnode_children);
+        kfree(vnode->vnode_children);
     }
 
-    _kfree(vnode);
+    kfree(vnode);
     release_spinlock(&vfs_lock);
 }
 
@@ -301,7 +301,6 @@ void vnode_rename(struct vnode* vnode, char* new_name) {
  */
 struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     if (vnode->vnode_type != VNODE_DIRECTORY) {
-        vnode_free(vnode);
         return NULL;
     }
 
@@ -320,12 +319,18 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     struct vnode* child = vnode->vnode_children[index];
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
-    while (child && !safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH)) {
+    while (index < vnode->num_children) {
+        if (child != NULL && safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH)) {
+            return child;
+        }
+        if (child) {
+            serial_printf("CHILD NAME %s index %i\n",child->vnode_name,index);
+        }
+
         child = vnode->vnode_children[index++];
     }
 
-    /* Pending the validity of my concern in the comment above being taken care of, this should automatically return NULL should the end be reached so no explicit NULL return needed */
-    return child;
+    return NULL;;
 }
 
 
@@ -467,14 +472,14 @@ static struct vnode* parse_path(char* path) {
 
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
-            _kfree(current_token);
+            kfree(current_token);
             return NULL;
         }
 
         //Clear the token to be filled again next go round, this is important
         memset(current_token, 0, VFS_MAX_NAME_LENGTH);
     }
-    _kfree(current_token);
+    kfree(current_token);
     return current_vnode;
 }
 

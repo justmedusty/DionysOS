@@ -13,6 +13,7 @@
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/mem/mem.h"
+#include "include/filesystem/vfs.h"
 
 /*
  * We need to ensure that for each filesystem we have a separate lock
@@ -218,10 +219,15 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     vnode_create("/","bin", VNODE_DIRECTORY);
     vnode_create("/","root", VNODE_DIRECTORY);
     vnode_create("/","home", VNODE_DIRECTORY);
-    vnode_create("/","proc", VNODE_DIRECTORY);
+    vnode_create("/","proc", VNODE_DIRECTORY); // TODO find out why this fucks up the child array but all previous entries are inserted as expected
 
     vnode_create("/etc","passwd", VNODE_FILE);
     vnode_create("/etc","config.txt", VNODE_FILE);
+
+    struct vnode *v = vnode_lookup("/etc/passwd");
+
+
+
 
 
     serial_printf("Tempfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_TEMPFS_SIZE / TEMPFS_BLOCKSIZE,
