@@ -1,6 +1,5 @@
 # DionysOS. 
-![360_F_559263530_RS0cHCkD13iVZOnKILaPnJuYe4mZJBOQ-2027576610](https://github.com/user-attachments/assets/c7af6a1d-bdf4-410f-a3ba-5f04eb4d40c3)
-
+![16-Famous-Figure-Art-Dionysus-3840957333](https://github.com/user-attachments/assets/9f1f5c38-cb21-47d1-ae0f-2370e6af3c8c)
 # The Birth of Dionysos
 ![the-rise-of-the-god-dionysus-280226335](https://github.com/user-attachments/assets/41cbf10d-5ae5-446a-8672-13c407152561)
 
