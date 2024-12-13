@@ -11,6 +11,9 @@ I may add a posix compliant layer at some point but for the time being I think I
 
 Starting 10/26/2024 I am going to make the effort to comment my thoughts about every function, to save myself some headache down the line.
 
+# Unique Features
+Diosfs : I wrote a custom filesystem to be used for my operating system, it is non journaling and has similiarties to ext2 albeit a little bit simpler.
+
 # Overall Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
 
 🟢Serial
