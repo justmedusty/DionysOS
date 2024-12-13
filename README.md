@@ -38,7 +38,7 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟢Implement a ramdisk driver to facilitate the tempsfs filesystem. 
 
-🟢Implement a simple virtual file system like a memory-only tmpfs to avoid crippling the design of your VFS too much while implementing it alongside real storage filesystems.
+🟢Implement a simple file system
 
 🟢Implement a scheduler to schedule threads in order make multitasking possible.
 
