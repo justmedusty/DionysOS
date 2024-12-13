@@ -71,6 +71,7 @@ struct vnode* vnode_alloc() {
 void vnode_directory_alloc_children(struct vnode* vnode) {
     vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
+    vnode->is_cached = true;
 
     for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
         vnode->vnode_children[i] = NULL;
@@ -133,11 +134,6 @@ void vnode_free(struct vnode* vnode) {
  */
 struct vnode* vnode_lookup(char* path) {
     struct vnode* target = parse_path(path);
-
-    if (target == NULL) {
-        vnode_free(target);
-        return NULL;
-    }
 
     return target;
 }
@@ -381,7 +377,7 @@ uint64_t vnode_unmount(struct vnode* vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t* buffer) {
+uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset, buffer, bytes);
     }
@@ -390,11 +386,11 @@ uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_
 }
 
 
-uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, uint8_t* buffer) {
+uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
     }
-    return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
+    return vnode->vnode_ops->write(vnode, offset, buffer, bytes);
 }
 
 /*
