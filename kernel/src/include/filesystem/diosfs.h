@@ -153,7 +153,7 @@ _Static_assert(sizeof(struct diosfs_inode) % 256 == 0, "Tempfs inode not the pro
 
 
 void diosfs_init(uint64_t filesystem_id);
-void diosfs_mkfs(uint64_t ramdisk_id, struct diosfs_filesystem* fs);
+void dios_mkramfs(uint64_t ramdisk_id, struct diosfs_filesystem* fs);
 uint64_t diosfs_read(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
 uint64_t diosfs_write(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
 uint64_t diosfs_stat(const struct vnode* vnode);

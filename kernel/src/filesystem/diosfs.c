@@ -131,15 +131,15 @@ void diosfs_init(uint64_t filesystem_id) {
     }
     initlock(diosfs_filesystem[filesystem_id].lock,DIOSFS_LOCK);
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem[filesystem_id].ramdisk_id, "initramfs",DIOSFS_BLOCKSIZE);
-    diosfs_mkfs(filesystem_id, &diosfs_filesystem[filesystem_id]);
+    dios_mkramfs(filesystem_id, &diosfs_filesystem[filesystem_id]);
 };
 
 /*
- * This will be the function that spins up an empty diosfs filesystem and then fill with a root directory and a few basic directories and files.
+ * This will be the function that spins up an empty diosfs ram filesystem and then fill with a root directory and a few basic directories and files.
  *
  * Takes a ramdisk ID to specify which ramdisk to operate on
  */
-void diosfs_mkfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
+void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
     char* buffer = kmalloc(PAGE_SIZE);
     fs->superblock->magic = DIOSFS_MAGIC;
     fs->superblock->version = DIOSFS_VERSION;
@@ -217,8 +217,8 @@ void diosfs_mkfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
     struct vnode* vnode5  = vnode_create("/","bin", VNODE_DIRECTORY);
     struct vnode* vnode6  = vnode_create("/","root", VNODE_DIRECTORY);
     struct vnode* vnode7  = vnode_create("/","home", VNODE_DIRECTORY);
-    struct vnode* vnode8  = vnode_create("/","proc", VNODE_DIRECTORY); // TODO find out why this fucks up the child array but all previous entries are inserted as expected
-    asm(""::: "memory");
+    struct vnode* vnode8  = vnode_create("/","proc", VNODE_DIRECTORY);
+
     struct vnode* vnode9 = vnode_create("/etc","passwd", VNODE_FILE);
     serial_printf("NAME %s PARENT NAME %s\n",vnode9->vnode_name,vnode9->vnode_parent->vnode_name);
     struct vnode* vnode10  = vnode_create("/etc","config.txt", VNODE_FILE);
