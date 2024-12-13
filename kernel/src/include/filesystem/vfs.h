@@ -51,7 +51,7 @@ enum vnode_types {
 };
 
 /* FS Types */
-#define VNODE_FS_TEMPFS 0xF
+#define VNODE_FS_DIOSFS 0xF
 #define VNODE_FS_EXT2 0x10
 
 #define NUM_HANDLES 32

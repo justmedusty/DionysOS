@@ -5,7 +5,7 @@
 #include "include/drivers/block/ramdisk.h"
 #include <include/types.h>
 #include <include/drivers/serial/uart.h>
-#include <include/filesystem/tempfs.h>
+#include <include/filesystem/diosfs.h>
 #include <include/mem/kalloc.h>
 #include "include/mem/mem.h"
 #include "include/mem/pmm.h"
@@ -67,7 +67,7 @@ void ramdisk_destroy(const uint64_t ramdisk_id) {
 }
 
 /*
- * We will just assume tempfs for now, but we can add support for other file systems in the future
+ * We will just assume diosfs for now, but we can add support for other file systems in the future
  * This function will just read a block, offset, into buffer of buffer size until either read_size or buffer_size is hit.
  *
  * We will act as though the buffer is always empty.
@@ -103,7 +103,7 @@ uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t
 }
 
 /*
- * We will just assume tempfs for now, but we can add support for other file systems in the future
+ * We will just assume diosfs for now, but we can add support for other file systems in the future
  * This function will just write a block, offset, from buffer of buffer size until either write_size or buffer_size is hit.
  */
 uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t write_size,

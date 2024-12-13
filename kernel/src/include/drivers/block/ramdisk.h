@@ -17,7 +17,7 @@
 #define BLOCK_OUT_OF_RANGE 0x40
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
-#define RAMDISK_TEMPFS_ID 0x1
+#define RAMDISK_DIOSFS_ID 0x1
 #define RAMDISK_EXT2_ID 0x2
 /*
  * ramdisk_read error handling very simple just prints a message

@@ -19,7 +19,7 @@
 #include "include/arch/arch_timer.h"
 #include "include/arch/arch_local_interrupt_controller.h"
 #include "include/scheduling/sched.h"
-#include "include/filesystem/tempfs.h"
+#include "include/filesystem/diosfs.h"
 
 /*
  *  BSP boostrapping.
@@ -38,7 +38,7 @@ void kernel_bootstrap() {
     acpi_init();
     lapic_init();
     vfs_init();
-    tempfs_init(0);
+    diosfs_init(0);
     sched_init();
     smp_init();
     timer_init();
