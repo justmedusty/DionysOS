@@ -40,8 +40,6 @@ static void tempfs_get_free_inode_and_mark_bitmap(const struct tempfs_filesystem
 static uint64_t tempfs_get_free_block_and_mark_bitmap(const struct tempfs_filesystem* fs);
 static uint64_t tempfs_free_block_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t block_number);
 static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, uint64_t inode_number);
-static uint64_t tempfs_get_bytes_from_inode(struct tempfs_filesystem* fs, char* buffer, uint64_t buffer_size,
-                                            uint64_t inode_number, uint64_t byte_start, uint64_t size_to_read);
 static uint64_t tempfs_get_directory_entries(struct tempfs_filesystem* fs, struct tempfs_directory_entry* children,
                                              uint64_t inode_number, uint64_t children_size);
 static struct vnode* tempfs_directory_entry_to_vnode(struct vnode* parent, struct tempfs_directory_entry* entry,
@@ -227,11 +225,6 @@ void tempfs_mkfs(const uint64_t ramdisk_id, struct tempfs_filesystem* fs) {
     serial_printf("NAME %s PARENT NAME %s\n",vnode10->vnode_name,vnode10->vnode_parent->vnode_name);
 
     vnode_write(vnode9,0,sizeof("dustyn password"),"dustyn password");
-    struct tempfs_inode inode;
-    tempfs_read_inode(fs,&inode,vnode9->vnode_inode_number);
-    tempfs_read_bytes_from_inode(fs,&inode,buffer,PAGE_SIZE,0,vnode9->vnode_size);
-    serial_printf("BUFFER %s\n",buffer);
-    memset(buffer,0,PAGE_SIZE);
     vnode_read(vnode9,0,vnode9->vnode_size,buffer);
     serial_printf("BUFFER %s\n",buffer);
 
@@ -267,7 +260,7 @@ void tempfs_rename(const struct vnode* vnode, char* new_name) {
     release_spinlock(fs->lock);
 }
 
-uint64_t tempfs_read(struct vnode* vnode, const uint64_t offset, char* buffer, const uint64_t bytes) {
+uint64_t tempfs_read(struct vnode* vnode, const uint64_t offset, char* buffer,const uint64_t bytes) {
     struct tempfs_filesystem* fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -276,9 +269,13 @@ uint64_t tempfs_read(struct vnode* vnode, const uint64_t offset, char* buffer, c
             return UNEXPECTED_SYMLINK_TYPE;
         }
     }
-    tempfs_get_bytes_from_inode(fs, buffer, bytes, vnode->vnode_inode_number, offset, bytes);
+
+    struct tempfs_inode inode;
+    tempfs_read_inode(fs, &inode, vnode->vnode_inode_number);
+    //TODO decide what I wish to do with this buffer size constraint when dealing with userspace. This works for now
+    uint64_t ret = tempfs_read_bytes_from_inode(fs, &inode, buffer, PGROUNDUP(bytes), offset % fs->superblock->block_size,bytes);
     release_spinlock(fs->lock);
-    return SUCCESS;
+    return ret;
 }
 
 uint64_t tempfs_write(struct vnode* vnode, const uint64_t offset, char* buffer, const uint64_t bytes) {
@@ -1039,18 +1036,6 @@ static uint64_t tempfs_free_inode_and_mark_bitmap(struct tempfs_filesystem* fs, 
 
     kfree(buffer);
     return SUCCESS;
-}
-
-/*
- * Unimplemented until tempfs_read_bytes_from_inode is complete
- */
-static uint64_t tempfs_get_bytes_from_inode(struct tempfs_filesystem* fs, char* buffer, const uint64_t buffer_size,
-                                            const uint64_t inode_number, uint64_t byte_start,
-                                            const uint64_t size_to_read) {
-    struct tempfs_inode inode;
-    tempfs_read_inode(fs, &inode, inode_number);
-    return tempfs_read_bytes_from_inode(fs, &inode, buffer, buffer_size, byte_start % fs->superblock->block_size,
-                                        size_to_read);
 }
 
 /*

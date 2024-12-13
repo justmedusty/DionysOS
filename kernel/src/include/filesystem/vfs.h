@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include "include/types.h"
 #include "include/data_structures/spinlock.h"
+#include <stddef.h>
 #include "include/definitions.h"
 
 #define VFS_MAX_NAME_LENGTH 128
