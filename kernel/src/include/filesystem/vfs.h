@@ -8,8 +8,12 @@
 #include "include/definitions.h"
 
 #define VFS_MAX_NAME_LENGTH 128
-
 #define VFS_STATIC_POOL_SIZE 100
+
+#define ROOT_INODE 0
+#define CURRENT_DIRECTORY_NAME "."
+#define PARENT_DIRECTORY_NAME ".."
+#define ROOT_DIRECTORY_NAME "/"
 
 extern struct vnode vfs_root;
 
@@ -21,8 +25,9 @@ enum vnode_error_codes {
     ALREADY_OPENED = 3,
     NO_ACCESS = 4,
     NOT_MOUNTED = 5,
+    BUSY = 6,
     MAX_HANDLES_REACHED = 0xFFFF,
-    INVALID_PATH = (-1)
+    INVALID_PATH = (-1),
 };
 
 

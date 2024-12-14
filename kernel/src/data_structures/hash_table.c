@@ -81,8 +81,8 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
  * Free the tables buckets and the entire table
  */
 void hash_table_destroy(struct hash_table* table) {
-    _kfree(table->table);
-    _kfree(table);
+    kfree(table->table);
+    kfree(table);
 }
 /*
  * Hashes the passed value, and inserts into the list at the hash index

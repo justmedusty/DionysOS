@@ -60,7 +60,7 @@ void ramdisk_destroy(const uint64_t ramdisk_id) {
                 serial_printf("ramdisk id is out of range\n");
                 return;
         }
-        _kfree(ramdisk[ramdisk_id].ramdisk_start);
+        kfree(ramdisk[ramdisk_id].ramdisk_start);
         ramdisk[ramdisk_id].ramdisk_start = NULL;
         ramdisk[ramdisk_id].ramdisk_size_pages = 0;
         ramdisk[ramdisk_id].ramdisk_end = NULL;

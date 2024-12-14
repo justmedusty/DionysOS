@@ -170,7 +170,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
         }
     }
 
-    _kfree(tree);
+    kfree(tree);
     return SUCCESS;
 }
 /*
