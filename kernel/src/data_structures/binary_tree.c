@@ -426,7 +426,6 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
              *  Handle neither child is non-null
              *  Bring the right sub-tree min value up (ie all lefts until a final right)
              */
-            serial_printf("BINARY TREE REMOVAL : TWO CHILDREN");
             parent = current->parent;
             struct binary_tree_node* right_min = current;
 

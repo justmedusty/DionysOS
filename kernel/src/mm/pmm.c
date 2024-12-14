@@ -280,66 +280,70 @@ uint64_t next_power_of_two(uint64_t x) {
 
     return x + 1;
 }
-static struct buddy_block* buddy_alloc(uint64_t pages) {
 
-    /*
-     * My approach for tall orders is as follows :
-     *
-     * Alloc MAX_ORDER buddy block, and iterate through all of its MAX_ORDER blocks in the chain until there is enough to satisfy the order.
-     *
-     * The number of max order blocks is stored in the start block's buddy_chain_length field
-     *
-     * Freeing will just require an iterative approach to free everything and add it to the binary search tree
-     */
+/*
+ * My approach for tall orders is as follows :
+ *
+ * Alloc MAX_ORDER buddy block, and iterate through all of its MAX_ORDER blocks in the chain until there is enough to satisfy the order.
+ *
+ * The number of max order blocks is stored in the start block's buddy_chain_length field
+ *
+ * Freeing will just require an iterative approach to free everything and add it to the binary search tree
+ */
 
-    if (pages > (1 << MAX_ORDER)) {
+static struct buddy_block* buddy_alloc_large_range(uint64_t pages) {
 
-        uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
-        struct buddy_block* block;
-    start:
+    uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
+    struct buddy_block* block = NULL;
+    retry:
         uint64_t current_blocks = 1;
-        block  = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
-        struct buddy_block* pointer = block;
+    block  = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+    struct buddy_block* pointer = block;
 
-        if (!block) {
-            goto start;
-        }
-
-        if(block->order != MAX_ORDER) {
-            while(block != NULL && block->order != MAX_ORDER) {
-                block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
-            }
-        }
-
-        if (!block) {
-            goto start;
-        }
-        while (pointer->next->order == MAX_ORDER && current_blocks < max_blocks && pointer->zone == pointer->next->zone) {
-            pointer = pointer->next;
-            current_blocks++;
-        }
-
-        if (current_blocks < max_blocks) {
-            insert_tree_node(&buddy_free_list_zone[zone_pointer], block, block->order);
-            /* Since it will be inserted at the tail we can do this and it wont keep grabbing the same block*/
-            goto start;
-        }
-        block->buddy_chain_length = max_blocks;
-        block->flags &= ~IN_TREE_FLAG;
-        current_blocks = 2;
-        pointer = block->next;
-        while (current_blocks <= max_blocks) {
-            remove_tree_node(&buddy_free_list_zone[0], pointer->order, pointer,NULL);
-            pointer->is_free = USED;
-            pointer = pointer->next;
-            current_blocks++;
-        }
-
-        total_allocated += (1 << MAX_ORDER) * block->buddy_chain_length;
-
-        return block;
+    if (!block) {
+        goto retry;
     }
 
+    if(block->order != MAX_ORDER) {
+        while(block != NULL && block->order != MAX_ORDER) {
+            block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+        }
+    }
+
+    if (!block) {
+        goto retry;
+    }
+    while (pointer->next->order == MAX_ORDER && current_blocks < max_blocks && pointer->zone == pointer->next->zone) {
+        pointer = pointer->next;
+        current_blocks++;
+    }
+
+    if (current_blocks < max_blocks) {
+        insert_tree_node(&buddy_free_list_zone[zone_pointer], block, block->order);
+        /* Since it will be inserted at the tail we can do this and it wont keep grabbing the same block*/
+        goto retry;
+    }
+    block->buddy_chain_length = max_blocks;
+    block->flags &= ~IN_TREE_FLAG;
+    current_blocks = 2;
+    pointer = block->next;
+    while (current_blocks <= max_blocks) {
+        remove_tree_node(&buddy_free_list_zone[0], pointer->order, pointer,NULL);
+        pointer->is_free = USED;
+        pointer = pointer->next;
+        current_blocks++;
+    }
+
+    total_allocated += (1 << MAX_ORDER) * block->buddy_chain_length;
+
+    return block;
+
+}
+static struct buddy_block* buddy_alloc(uint64_t pages) {
+
+    if (pages > (1 << MAX_ORDER)) {
+        return buddy_alloc_large_range(pages);
+    }
 
     if(!is_power_of_two(pages)) {
         pages = next_power_of_two(pages);

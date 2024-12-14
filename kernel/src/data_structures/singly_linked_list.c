@@ -18,6 +18,9 @@
  *  Generic Implementation of a singly linked list with some functions to operate on them.
  *  I will leave out things like sorts since I am trying to make this as generic as possible and I can't sort without knowing the type the data pointer leads to.
  */
+
+//TODO handle possible race condition using lockless alloc in node_alloc
+
 struct spinlock sll_lock;
 uint8_t static_pool_setup = 0;
 uint8_t pool_full = 0;

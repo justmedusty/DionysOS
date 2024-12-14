@@ -31,7 +31,7 @@ struct spinlock bootstrap_lock;
 void panic(const char* str) {
     cli();
     serial_printf("\nPanic! %s ",str);
-    panicked = 1;
+    panicked = 1; /* The next timer interrupt other CPUs will see this and also halt*/
     for (;;) {
         asm("hlt");
         asm("nop");

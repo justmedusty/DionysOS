@@ -5,6 +5,10 @@
 /*
  * Taking inspo from xv6 to keep things as readable and simple as possible here.
  */
+
+
+#ifdef __x86_64__
+
 #include <include/arch/arch_cpu.h>
 #include "include/mem/vmm.h"
 #include "include/types.h"
@@ -18,7 +22,7 @@
 #include "include/arch//arch_vmm.h"
 #include "include/arch/x86_64/asm_functions.h"
 
-#ifdef __x86_64__
+
 p4d_t* global_pg_dir = 0;
 
 void switch_page_table(p4d_t* page_dir){
@@ -28,9 +32,6 @@ void switch_page_table(p4d_t* page_dir){
 void init_vmm(){
     kernel_pg_map =kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
-    kernel_pg_map->vm_region_head =kmalloc(PAGE_SIZE);
-    kernel_pg_map->vm_region_head->next = kernel_pg_map->vm_region_head;
-    kernel_pg_map->vm_region_head->prev = kernel_pg_map->vm_region_head;
 
     /*
      * Map symbols in the linker script
@@ -184,19 +185,18 @@ int map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perm
 }
 
 
-uint64_t dealloc_va(p4d_t* pgdir, uint64_t address){
+uint64_t dealloc_va(p4d_t* pgdir, const uint64_t address){
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0){
-        panic("vmm");
+        panic("dealloc_va");
         return 0;
     }
     if (*entry & PTE_P){
         phys_dealloc((void*)PTE_ADDR(*entry));
         *entry = 0;
         native_flush_tlb_single(aligned_address);
-
         return 1;
     }
 
@@ -212,7 +212,7 @@ void dealloc_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size)
 }
 
 void arch_dealloc_page_table(p4d_t* pgdir) {
-    dealloc_va_range(pgdir,0,0xFFFFFFFFFFFFFFFF & ~0x1000);
+    dealloc_va_range(pgdir,0,0xFFFFFFFFFFFFFFFF & ~0xFFF);
 }
 
 #endif

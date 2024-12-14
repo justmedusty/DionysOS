@@ -239,11 +239,6 @@ void dios_mkfs(const uint64_t device_id,const uint64_t device_type, struct diosf
     vnode_write(vnode9,0,sizeof("dustyn password"),"dustyn password");
     vnode_read(vnode9,0,vnode9->vnode_size,buffer);
 
-
-
-
-
-
     kfree(buffer);
     serial_printf("Diosfs filesystem initialized of size %i , %i byte blocks\n",DEFAULT_DIOSFS_SIZE / DIOSFS_BLOCKSIZE,
                   DIOSFS_BLOCKSIZE);
