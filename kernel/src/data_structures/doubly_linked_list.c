@@ -156,6 +156,51 @@ void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,s
     return;
 }
 
+void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list *list, const void *data) {
+    acquire_spinlock(&list->lock);
+    const struct doubly_linked_list_node* node = list->head;
+
+    while (node && node->data != data) {
+        node = node->next;
+    }
+
+    if (node == NULL) {
+        release_spinlock(&list->lock);
+        return;
+    }
+
+    if (node->next == NULL && node->prev == NULL) {
+        list->head = NULL;
+        list->tail = NULL;
+        list->node_count--;
+        release_spinlock(&list->lock);
+        return;
+    }
+
+    if (node->next == NULL) {
+        list->tail = node->prev;
+        list->tail->next = NULL;
+        list->node_count--;
+        release_spinlock(&list->lock);
+        return;
+    }
+
+    if (node->prev == NULL) {
+        list->head = node->next;
+        list->head->prev = NULL;
+        list->node_count--;
+        release_spinlock(&list->lock);
+        return;
+    }
+
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    list->node_count--;
+    release_spinlock(&list->lock);
+    return;
+}
+
+
 void doubly_linked_list_destroy(struct doubly_linked_list* list) {
     if (list == NULL) return;
     acquire_spinlock(&list->lock);

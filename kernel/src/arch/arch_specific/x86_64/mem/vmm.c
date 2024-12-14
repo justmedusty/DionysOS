@@ -32,7 +32,7 @@ void switch_page_table(p4d_t* page_dir){
 void init_vmm(){
     kernel_pg_map =kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
-
+    kernel_pg_map->vm_regions = NULL;
     /*
      * Map symbols in the linker script
      */
