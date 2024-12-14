@@ -28,13 +28,12 @@ int32_t ready = 0;
 void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
-    irq_handler_init();
     arch_setup_interrupts();
     arch_paging_init();
     phys_init();
     heap_init();
     mem_bounds_init();
-    vmm_init();
+    arch_vmm_init();
     acpi_init();
     lapic_init();
     vfs_init();

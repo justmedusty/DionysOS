@@ -229,6 +229,9 @@ void dios_mkfs(const uint64_t device_id,const uint64_t device_type, struct diosf
     struct vnode* vnode6  = vnode_create("/","root", VNODE_DIRECTORY);
     struct vnode* vnode7  = vnode_create("/","home", VNODE_DIRECTORY);
     struct vnode* vnode8  = vnode_create("/","proc", VNODE_DIRECTORY);
+    struct vnode* vnode11  = vnode_create("/","dev", VNODE_DIRECTORY);
+
+    struct vnode* vnode12  = vnode_create("/dev","rd0", VNODE_BLOCK_DEV);
 
     struct vnode* vnode9 = vnode_create("/etc","passwd", VNODE_FILE);
     struct vnode* vnode10  = vnode_create("/etc","config.txt", VNODE_FILE);

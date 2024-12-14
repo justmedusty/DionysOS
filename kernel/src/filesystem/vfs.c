@@ -319,9 +319,6 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
         if (child != NULL && safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH)) {
             return child;
         }
-        if (child) {
-            serial_printf("CHILD NAME %s index %i\n",child->vnode_name,index);
-        }
 
         child = vnode->vnode_children[index++];
     }

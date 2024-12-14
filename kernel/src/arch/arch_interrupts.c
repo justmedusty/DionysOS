@@ -8,6 +8,7 @@
 #ifdef __x86_64__
 
 void arch_setup_interrupts(){
+    irq_handler_init();
     idt_init();
 }
 //will do all this later, just thinking about the HAL now

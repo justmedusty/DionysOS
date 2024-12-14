@@ -33,9 +33,9 @@ typedef struct virt_map {
 
 
 
-void kvm_init(p4d_t *pgdir);
-void vmm_init();
-struct vm_region* create_region();
-void attatch_region(struct virt_map *);
-void detatch_region(struct virt_map *);
+void arch_kvm_init(p4d_t *pgdir);
+void arch_vmm_init();
+struct vm_region* arch_create_region();
+void arch_attach_region(struct virt_map *);
+void arch_detach_region(struct virt_map *);
 void arch_dealloc_page_table(p4d_t* pgdir);

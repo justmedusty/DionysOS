@@ -9,7 +9,7 @@
 #include "include/mem/vmm.h"
 #include "include/types.h"
 #include "include/mem/mem.h"
-#include "include/arch//arch_paging.h"
+#include "include/arch/arch_paging.h"
 #include "include/mem/pmm.h"
 #include "include/mem/kalloc.h"
 #include "include/mem/mem_bounds.h"
@@ -21,11 +21,11 @@
 #ifdef __x86_64__
 p4d_t* global_pg_dir = 0;
 
-void arch_switch_page_table(p4d_t* page_dir){
+void switch_page_table(p4d_t* page_dir){
     lcr3((uint64_t)(page_dir));
 }
 
-void arch_init_vmm(){
+void init_vmm(){
     kernel_pg_map =kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
     kernel_pg_map->vm_region_head =kmalloc(PAGE_SIZE);
@@ -35,41 +35,42 @@ void arch_init_vmm(){
     /*
      * Map symbols in the linker script
      */
-    arch_map_kernel_address_space(kernel_pg_map->top_level);
+    map_kernel_address_space(kernel_pg_map->top_level);
 
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
-    arch_switch_page_table(kernel_pg_map->top_level);
+    switch_page_table(kernel_pg_map->top_level);
     serial_printf("VMM mapped and initialized\n");
 }
 
-void arch_reload_vmm() {
-    arch_switch_page_table(kernel_pg_map->top_level);
+void reload_vmm() {
+    switch_page_table(kernel_pg_map->top_level);
 }
 
-void arch_map_kernel_address_space(p4d_t* pgdir){
+void map_kernel_address_space(p4d_t* pgdir){
 
-    if (arch_map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
+    if (map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
 
 
-    if (arch_map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
+    if (map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
 
 
-    if (arch_map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
+    if (map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
     }
+
     /*
-     * Map the first 8gb to the higher va space for the kernel, for the hhdm mapping
+     * TODO fix vmm approach with a kernel page pool or something later on so we don't need to map the entirety of physical memory
      */
-    if (arch_map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x200000000) == -1){
-        panic("Mapping first 4gb!");
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x200000000) == -1){
+        panic("Mapping first 8gb!");
     }
 
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -85,7 +86,7 @@ void arch_map_kernel_address_space(p4d_t* pgdir){
             if (j < (uint64_t)0x100000000){
                 continue;
             }
-            if (arch_map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
+            if (map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
                 panic("hhdm mapping");
             }
         }
@@ -155,7 +156,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size){
+int map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size){
     pte_t* pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
@@ -183,7 +184,7 @@ int arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t
 }
 
 
-uint64_t arch_dealloc_va(p4d_t* pgdir, uint64_t address){
+uint64_t dealloc_va(p4d_t* pgdir, uint64_t address){
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
     pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
 
@@ -202,16 +203,16 @@ uint64_t arch_dealloc_va(p4d_t* pgdir, uint64_t address){
     return 0;
 }
 
-void arch_dealloc_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size){
+void dealloc_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size){
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE){
-        arch_dealloc_va(pgdir, address + i);
+        dealloc_va(pgdir, address + i);
     }
 }
 
 void arch_dealloc_page_table(p4d_t* pgdir) {
-    arch_dealloc_va_range(pgdir,0,0xFFFFFFFFFFFFFFFF & ~0x1000);
+    dealloc_va_range(pgdir,0,0xFFFFFFFFFFFFFFFF & ~0x1000);
 }
 
 #endif
