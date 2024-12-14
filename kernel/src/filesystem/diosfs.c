@@ -1,33 +1,42 @@
 //
 // Created by dustyn on 9/18/24.
 //
-
+#include "include/filesystem/diosfs.h"
+#include "include/filesystem/vfs.h"
+#include "include/drivers/block/block_dev.h"
+#include <include/definitions/string.h>
 #include "include/data_structures/spinlock.h"
 #include "include/definitions.h"
-#include "include/filesystem/vfs.h"
-#include "include/filesystem/diosfs.h"
-#include <math.h>
-#include <strings.h>
-#include <include/definitions/string.h>
 #include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/mem/mem.h"
-#include "include/filesystem/vfs.h"
 
 /*
  * We need to ensure that for each filesystem we have a separate lock
  * We'll only implement the one filesystem for now.
  */
 #define NUM_FILESYSTEM_OBJECTS 10
-struct spinlock diosfs_lock[10];
-struct diosfs_superblock diosfs_superblock[10];
+struct spinlock diosfs_lock[10] = {0};
+struct diosfs_superblock diosfs_superblock[10] = {0};
+struct block_device block_dev[10] = {
+    [0] = {
+        .device_type = BLOCK_DEV_RAMDISK,
+        .device_id = INITIAL_FILESYSTEM,
+        .block_size = DIOSFS_BLOCKSIZE
+    }
+};
+
+
+//Set up initial ramdisk filesystem
+
+
 struct diosfs_filesystem diosfs_filesystem[10] = {
     [0] = {
-        .filesystem_id = INITRAMFS,
+        .filesystem_id = INITIAL_FILESYSTEM,
         .lock = &diosfs_lock[0],
         .superblock = &diosfs_superblock[0],
-        .ramdisk_id = INITRAMFS
+        .device = &block_dev[0]
     }
 };
 
@@ -100,6 +109,9 @@ struct vnode_operations diosfs_vnode_ops = {
 };
 
 /*
+ *
+ * DIOSFS is my hand-rolled simple filesystem, it does not have any journaling and has similarities to ext2 albeit being simpler.
+ *
  *  I have opted to go with this general flow.
  *
  *  Read ramdisk structure into temporary variable.
@@ -130,8 +142,8 @@ void diosfs_init(uint64_t filesystem_id) {
         return;
     }
     initlock(diosfs_filesystem[filesystem_id].lock,DIOSFS_LOCK);
-    ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem[filesystem_id].ramdisk_id, "initramfs",DIOSFS_BLOCKSIZE);
-    dios_mkramfs(filesystem_id, &diosfs_filesystem[filesystem_id]);
+    ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem[filesystem_id].device->device_id, "initramfs",DIOSFS_BLOCKSIZE);
+    dios_mkfs(filesystem_id,diosfs_filesystem->device->device_type, &diosfs_filesystem[filesystem_id]);
 };
 
 /*
@@ -139,7 +151,7 @@ void diosfs_init(uint64_t filesystem_id) {
  *
  * Takes a ramdisk ID to specify which ramdisk to operate on
  */
-void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
+void dios_mkfs(const uint64_t device_id,const uint64_t device_type, struct diosfs_filesystem* fs) {
     char* buffer = kmalloc(PAGE_SIZE);
     fs->superblock->magic = DIOSFS_MAGIC;
     fs->superblock->version = DIOSFS_VERSION;
@@ -154,13 +166,13 @@ void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
     fs->superblock->inode_bitmap_size = DIOSFS_NUM_INODE_POINTER_BLOCKS;
 
     fs->superblock->total_size = DEFAULT_DIOSFS_SIZE;
-    fs->ramdisk_id = ramdisk_id;
+    fs->device->device_id = device_id;
 
     //copy the contents into our buffer
     memcpy(buffer, &diosfs_superblock, sizeof(struct diosfs_superblock));
 
     //Write the new superblock to the ramdisk
-    ramdisk_write(buffer,DIOSFS_SUPERBLOCK, 0, fs->superblock->block_size,PAGE_SIZE, ramdisk_id);
+    ramdisk_write(buffer,DIOSFS_SUPERBLOCK, 0, fs->superblock->block_size,PAGE_SIZE, device_id);
 
     memset(buffer, 0,PAGE_SIZE);
 
@@ -168,13 +180,13 @@ void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
      * Fill in inode bitmap with zeros blocks
      */
     ramdisk_write(buffer,DIOSFS_START_INODE_BITMAP, 0,DIOSFS_NUM_INODE_POINTER_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
+                  fs->superblock->block_size, device_id);
 
     /*
      * Fill in block bitmap with zerod blocks
      */
     ramdisk_write(buffer,DIOSFS_START_BLOCK_BITMAP, 0,DIOSFS_NUM_BLOCK_POINTER_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
+                  fs->superblock->block_size, device_id);
 
     /*
      *Write zerod blocks for the inode blocks
@@ -182,15 +194,14 @@ void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
     for (int i = 0; i < DIOSFS_NUM_INODES; i++) {
     }
     ramdisk_write(buffer,DIOSFS_START_INODES, 0,DIOSFS_NUM_INODES * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
+                  fs->superblock->block_size, device_id);
     /*
      *Write zerod blocks for the blocks
      */
     ramdisk_write(buffer,DIOSFS_START_BLOCKS, 0, DIOSFS_NUM_BLOCKS * fs->superblock->block_size,
-                  fs->superblock->block_size, ramdisk_id);
+                  fs->superblock->block_size, device_id);
 
     struct diosfs_inode root;
-    struct diosfs_inode child;
     diosfs_get_free_inode_and_mark_bitmap(fs, &root);
 
 
@@ -220,13 +231,10 @@ void dios_mkramfs(const uint64_t ramdisk_id, struct diosfs_filesystem* fs) {
     struct vnode* vnode8  = vnode_create("/","proc", VNODE_DIRECTORY);
 
     struct vnode* vnode9 = vnode_create("/etc","passwd", VNODE_FILE);
-    serial_printf("NAME %s PARENT NAME %s\n",vnode9->vnode_name,vnode9->vnode_parent->vnode_name);
     struct vnode* vnode10  = vnode_create("/etc","config.txt", VNODE_FILE);
-    serial_printf("NAME %s PARENT NAME %s\n",vnode10->vnode_name,vnode10->vnode_parent->vnode_name);
 
     vnode_write(vnode9,0,sizeof("dustyn password"),"dustyn password");
     vnode_read(vnode9,0,vnode9->vnode_size,buffer);
-    serial_printf("BUFFER %s\n",buffer);
 
 
 
@@ -457,7 +465,7 @@ struct vnode* diosfs_create(struct vnode* parent, char* name, const uint8_t vnod
     entry.size = 0;
     safe_strcpy(entry.name, name, MAX_FILENAME_LENGTH);
     entry.parent_inode_number = inode.parent_inode_number;
-    entry.device_number = fs->ramdisk_id;
+    entry.device_number = fs->device->device_id;
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(fs, &parent_inode, &entry);
     diosfs_write_inode(fs, &parent_inode);
@@ -804,13 +812,13 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem* fs, const uint8_
     char* buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
 
-    ramdisk_read(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->ramdisk_id);
+    ramdisk_read(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->device->device_id);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
     buffer[byte_in_block] &= ~(1 << bit);
-    ramdisk_write(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->ramdisk_id);
+    ramdisk_write(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->device->device_id);
     kfree(buffer);
 }
 
@@ -843,7 +851,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
 
     uint64_t ret = ramdisk_read(buffer, fs->superblock->inode_bitmap_pointers_start, 0,
                                 fs->superblock->block_size * DIOSFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
-                                fs->ramdisk_id);
+                                fs->device->device_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
@@ -888,7 +896,7 @@ found_free:
 
     ret = ramdisk_write(buffer, fs->superblock->inode_bitmap_pointers_start, 0,
                         fs->superblock->block_size * DIOSFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
-                        fs->ramdisk_id);
+                        fs->device->device_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
@@ -940,7 +948,7 @@ retry:
 
     uint64_t ret = ramdisk_read(buffer, fs->superblock->block_bitmap_pointers_start, 0,
                                 fs->superblock->block_size * DIOSFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
-                                fs->ramdisk_id);
+                                fs->device->device_id);
 
 
     if (ret != SUCCESS) {
@@ -979,7 +987,7 @@ retry:
 found_free:
     ret = ramdisk_write(buffer, fs->superblock->block_bitmap_pointers_start, 0,
                         fs->superblock->block_size * DIOSFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
-                        fs->ramdisk_id);
+                        fs->device->device_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap ramdisk_write call")
@@ -1506,7 +1514,7 @@ static void diosfs_write_inode(const struct diosfs_filesystem* fs, struct diosfs
     uint64_t inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
     uint64_t block_number = fs->superblock->inode_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
     uint64_t ret = ramdisk_write((char*)inode, block_number, sizeof(struct diosfs_inode) * inode_number_in_block,
-                                 sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->ramdisk_id);
+                                 sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->device->device_id);
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
@@ -1517,7 +1525,7 @@ static void diosfs_read_inode(const struct diosfs_filesystem* fs, struct diosfs_
     uint64_t inode_number_in_block = inode_number % NUM_INODES_PER_BLOCK;
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
     uint64_t ret = ramdisk_read((char*)inode, block_number, sizeof(struct diosfs_inode) * inode_number_in_block,
-                                sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->ramdisk_id);
+                                sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->device->device_id);
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
@@ -1541,9 +1549,8 @@ static void diosfs_write_block_by_number(const uint64_t block_number, const char
     if (write_size_bytes + offset > fs->superblock->block_size) {
         write_size_bytes = fs->superblock->block_size - offset;
     }
-
     uint64_t ret = ramdisk_write(buffer, block_number + DIOSFS_START_BLOCKS, offset, write_size_bytes,
-                                 fs->superblock->block_size, fs->ramdisk_id);
+                                 fs->superblock->block_size, fs->device->device_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_block_by_number");
@@ -1569,7 +1576,7 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char* buffe
 
     uint64_t ret = ramdisk_read(buffer, block_number + DIOSFS_START_BLOCKS, offset, read_size_bytes,
                                 fs->superblock->block_size,
-                                fs->ramdisk_id);
+                                fs->device->device_id);
 
     if (ret != SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_read_block_by_number");

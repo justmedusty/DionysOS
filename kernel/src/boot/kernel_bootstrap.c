@@ -46,8 +46,4 @@ void kernel_bootstrap() {
     kthread_init();
     ready = 1;
     scheduler_main();
-
-    for (;;) {
-        asm volatile("nop");
-    }
 }

@@ -41,7 +41,7 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name, ui
 /*
  * This function will read a filesystem image and copy it into the ramdisk memory to get the party started
  */
-uint64_t ramdisk_mkfs(const int8_t* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id) {
+uint64_t ramdisk_mkfs(const char* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id) {
         if (ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
         }
@@ -72,7 +72,7 @@ void ramdisk_destroy(const uint64_t ramdisk_id) {
  *
  * We will act as though the buffer is always empty.
  */
-uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
+uint64_t ramdisk_read(char* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
                       uint64_t ramdisk_id) {
         if (ramdisk_id > ramdisk_count) {
                 return RAMDISK_ID_OUT_OF_RANGE;
@@ -90,7 +90,7 @@ uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t
                 return BLOCK_OUT_OF_RANGE;
         }
 
-        uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
+        char* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
 
         uint64_t index = 0;
 
@@ -106,7 +106,7 @@ uint64_t ramdisk_read(uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t
  * We will just assume diosfs for now, but we can add support for other file systems in the future
  * This function will just write a block, offset, from buffer of buffer size until either write_size or buffer_size is hit.
  */
-uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, uint64_t write_size,
+uint64_t ramdisk_write(const char* buffer, uint64_t block, uint64_t offset, uint64_t write_size,
                        uint64_t buffer_size,
                        uint64_t ramdisk_id) {
 
@@ -131,7 +131,7 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
                 uint64_t index = 0;
                 uint64_t total_transferred = 0;
 
-                uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) +
+                char* read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) +
                         offset;
 
                 while (total_transferred < write_size) {
@@ -153,7 +153,7 @@ uint64_t ramdisk_write(const uint8_t* buffer, uint64_t block, uint64_t offset, u
         }
 
 
-        uint8_t* read_start = ramdisk[ramdisk_id].ramdisk_start + ((block * ramdisk[ramdisk_id].block_size) + offset);
+        char* read_start = ramdisk[ramdisk_id].ramdisk_start + ((block * ramdisk[ramdisk_id].block_size) + offset);
 
 
 
