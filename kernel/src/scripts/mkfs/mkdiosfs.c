@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "mkdiosfs.h"
-
 #include <stdbool.h>
 
-#include "../../src/include/drivers/serial/uart.h"
 
 uint64_t strtoll_wrapper(const char* arg);
 void write_block(uint64_t block_number, const char* block_buffer);
