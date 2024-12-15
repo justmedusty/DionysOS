@@ -176,14 +176,13 @@ void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, cons
     size_calculation->total_blocks = (size_bytes / block_size);
     uint64_t padding = size_calculation->total_blocks / 150;
     const uint64_t split = (size_calculation->total_blocks / 32) - padding;
-    printf("split: %lu\n", split);
+
 
     size_calculation->total_inodes = split * (block_size / sizeof(struct diosfs_inode));
     size_calculation->total_data_blocks = (size_calculation->total_blocks - split) - padding;
     size_calculation->total_block_bitmap_blocks = (size_calculation->total_data_blocks / block_size / 8);
     size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes  / block_size / 8;
     printf("total_inodes %lu total data blocks %lu total block bitmap blocks %lu, total inode bitmap blocks %lu\n",size_calculation->total_inodes,size_calculation->total_data_blocks,size_calculation->total_block_bitmap_blocks,size_calculation->total_inode_bitmap_blocks);
-    printf("Size total blocks %lu size %lu\n",size_calculation->total_blocks,size_calculation->total_block_bitmap_blocks + size_calculation->total_inode_bitmap_blocks + size_calculation->total_data_blocks + size_calculation->total_inodes / NUM_INODES_PER_BLOCK + 1);
 }
 
 uint64_t strtoll_wrapper(const char* arg) {

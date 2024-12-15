@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
+  </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="DionysOS" targetName="makefile" />
+      <config projectName="DionysOS" targetName="Makefile" />
+      <config projectName="DionysOS" targetName="GNUmakefile" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
+      <change beforePath="$PROJECT_DIR$/kernel/GNUmakefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/GNUmakefile" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/..">
+      <ProjectState />
+    </projectState>
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;justmedusty&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/justmedusty/DionysOS.git&quot;,
+    &quot;accountId&quot;: &quot;e2b1b2ad-035b-4f66-8c92-326f785b0dec&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/kernel/src/arch/smp/arch_smp.c" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/kernel/src/mm/pmm.c" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MakefileLocalSettings">
+    <option name="availableProjects">
+      <map>
+        <entry>
+          <key>
+            <ExternalProjectPojo>
+              <option name="name" value="DionysOS" />
+              <option name="path" value="$PROJECT_DIR$/.." />
+            </ExternalProjectPojo>
+          </key>
+          <value>
+            <list>
+              <ExternalProjectPojo>
+                <option name="name" value="DionysOS" />
+                <option name="path" value="$PROJECT_DIR$/.." />
+              </ExternalProjectPojo>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2024" />
+    <option name="minorVersion" value="2.0.1" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2mCHsvwoP8HCvNeN7a6J2xEKWVs" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
+    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
+    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/kernel/GNUmakefile&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/kernel/src/include/scheduling" />
+      <recent name="$PROJECT_DIR$/kernel/src/arch/arch_specific" />
+      <recent name="$PROJECT_DIR$/kernel/src/arch" />
+      <recent name="$PROJECT_DIR$/kernel/src/sys" />
+      <recent name="$PROJECT_DIR$/kernel/src/include/arch/x86_64" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Makefile Target.run">
+    <configuration name="GNUmakefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="GNUmakefile" CONFIG_NAME="GNUmakefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Makefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="Makefile" CONFIG_NAME="Makefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all-hdd" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="all-hdd" CONFIG_NAME="all-hdd" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all-hdd" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="all-hdd" CONFIG_NAME="all-hdd" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="all" CONFIG_NAME="all" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="all" CONFIG_NAME="all" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="distclean" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="distclean" CONFIG_NAME="distclean" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="distclean" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="distclean" CONFIG_NAME="distclean" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="kernel" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="kernel" CONFIG_NAME="kernel" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="kernel" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="kernel" CONFIG_NAME="kernel" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="makefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="makefile" CONFIG_NAME="makefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ovmf" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="ovmf" CONFIG_NAME="ovmf" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ovmf" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="ovmf" CONFIG_NAME="ovmf" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-gdb" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-gdb" CONFIG_NAME="run-gdb" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-gdb" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-gdb" CONFIG_NAME="run-gdb" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-hdd-uefi" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-hdd-uefi" CONFIG_NAME="run-hdd-uefi" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-hdd-uefi" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-hdd-uefi" CONFIG_NAME="run-hdd-uefi" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-hdd" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-hdd" CONFIG_NAME="run-hdd" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-hdd" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-hdd" CONFIG_NAME="run-hdd" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-uefi" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-uefi" CONFIG_NAME="run-uefi" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-uefi" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-uefi" CONFIG_NAME="run-uefi" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-x86" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-x86" CONFIG_NAME="run-x86" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-x86" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-x86" CONFIG_NAME="run-x86" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GDB Kernel" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/kernel/bin/kernel" sysroot="">
+      <debugger kind="GDB" isBundled="true" />
+      <method v="2" />
+    </configuration>
+    <configuration name="GDB Kernel" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/kernel/bin/kernel" sysroot="">
+      <debugger kind="GDB" isBundled="true" />
+      <method v="2" />
+    </configuration>
+    <configuration name="GDB Kernel" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/kernel/bin/kernel" sysroot="">
+      <debugger kind="GDB" isBundled="true" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run-gdb" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-gdb" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run-gdb" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-gdb" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run-gdb" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-gdb" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run-gdb" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-gdb" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-x86" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-x86" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+      <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-x86" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="jj" type="com.jetbrains.cidr.embedded.customgdbserver.type" factoryName="com.jetbrains.cidr.embedded.customgdbserver.factory" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="run-gdb" CONFIG_NAME="run-gdb" version="1">
+      <custom-gdb-server version="1" gdb-connect="" executable="" warmup-ms="0" download-type="UPDATED_ONLY" reset-cmd="monitor reset" reset-type="AFTER_DOWNLOAD">
+        <debugger kind="GDB" isBundled="true" />
+      </custom-gdb-server>
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Native Application.GNUmakefile" />
+      <item itemvalue="Native Application.Makefile" />
+      <item itemvalue="Native Application.all-hdd" />
+      <item itemvalue="Native Application.all" />
+      <item itemvalue="Native Application.distclean" />
+      <item itemvalue="Native Application.kernel" />
+      <item itemvalue="Native Application.makefile" />
+      <item itemvalue="Native Application.ovmf" />
+      <item itemvalue="Native Application.run-gdb" />
+      <item itemvalue="Native Application.run-hdd-uefi" />
+      <item itemvalue="Native Application.run-hdd" />
+      <item itemvalue="Native Application.run-uefi" />
+      <item itemvalue="Native Application.run-x86" />
+      <item itemvalue="Remote Debug.GDB Kernel" />
+      <item itemvalue="Makefile Target.run-gdb" />
+      <item itemvalue="Makefile Target.run" />
+      <item itemvalue="Embedded GDB Server.jj" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="" />
+      <created>1726573847853</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1726573847853</updated>
+      <workItem from="1726573848966" duration="18000" />
+      <workItem from="1726573886243" duration="3688000" />
+      <workItem from="1726599988473" duration="189000" />
+      <workItem from="1726600207057" duration="881000" />
+      <workItem from="1726602281114" duration="7000" />
+      <workItem from="1726602297259" duration="22313000" />
+      <workItem from="1726763991974" duration="1317000" />
+      <workItem from="1726782656936" duration="9793000" />
+      <workItem from="1726865215137" duration="1986000" />
+      <workItem from="1726992954328" duration="6970000" />
+      <workItem from="1727079197159" duration="9586000" />
+      <workItem from="1727130980633" duration="6953000" />
+      <workItem from="1727217268142" duration="7034000" />
+      <workItem from="1727305594597" duration="10576000" />
+      <workItem from="1727389256356" duration="3921000" />
+      <workItem from="1728205925498" duration="32203000" />
+      <workItem from="1728677034485" duration="78978000" />
+      <workItem from="1729272984819" duration="349000" />
+      <workItem from="1729273344758" duration="603000" />
+      <workItem from="1729273987035" duration="3892000" />
+      <workItem from="1729279296744" duration="13274000" />
+      <workItem from="1729333580271" duration="13553000" />
+      <workItem from="1729347472905" duration="127000" />
+      <workItem from="1729347601312" duration="92000" />
+      <workItem from="1729347695244" duration="9000" />
+      <workItem from="1729347705174" duration="81000" />
+      <workItem from="1729347810602" duration="62000" />
+      <workItem from="1729347880733" duration="31000" />
+      <workItem from="1729347919621" duration="49000" />
+      <workItem from="1729347976345" duration="76000" />
+      <workItem from="1729348060331" duration="7101000" />
+      <workItem from="1729356624461" duration="20000" />
+      <workItem from="1729356735802" duration="127000" />
+      <workItem from="1729356871324" duration="25000" />
+      <workItem from="1729356909227" duration="68539000" />
+      <workItem from="1729591831487" duration="18000" />
+      <workItem from="1729594559179" duration="79336000" />
+      <workItem from="1730117038967" duration="1000" />
+      <workItem from="1730117067497" duration="137528000" />
+      <workItem from="1731140048271" duration="76401000" />
+      <workItem from="1731529649567" duration="61667000" />
+      <workItem from="1731845140777" duration="39157000" />
+      <workItem from="1732104731610" duration="15195000" />
+      <workItem from="1732213424235" duration="20513000" />
+      <workItem from="1732304526166" duration="64392000" />
+      <workItem from="1732562021088" duration="26000" />
+      <workItem from="1732562049516" duration="22000" />
+      <workItem from="1732562091503" duration="256000" />
+      <workItem from="1732562348605" duration="171557000" />
+      <workItem from="1732982994680" duration="8146000" />
+      <workItem from="1733052090561" duration="8314000" />
+      <workItem from="1733124508263" duration="5572000" />
+      <workItem from="1733130088068" duration="3037000" />
+      <workItem from="1733136797710" duration="4918000" />
+      <workItem from="1733211578954" duration="262000" />
+      <workItem from="1733211843307" duration="2891000" />
+      <workItem from="1733214739585" duration="403000" />
+      <workItem from="1733215145477" duration="2654000" />
+      <workItem from="1733217898261" duration="1151000" />
+      <workItem from="1733221558213" duration="290000" />
+      <workItem from="1733221926798" duration="575000" />
+      <workItem from="1733222504879" duration="630000" />
+      <workItem from="1733223139548" duration="9472000" />
+      <workItem from="1733299431085" duration="36295000" />
+      <workItem from="1733562264477" duration="879000" />
+      <workItem from="1733563149141" duration="226000" />
+      <workItem from="1733563376525" duration="93000" />
+      <workItem from="1733563527544" duration="100000" />
+      <workItem from="1733563630244" duration="28000" />
+      <workItem from="1733563659037" duration="54000" />
+      <workItem from="1733563713479" duration="29000" />
+      <workItem from="1733564150700" duration="12000" />
+      <workItem from="1733730642226" duration="41000" />
+      <workItem from="1734209413047" duration="87000" />
+    </task>
+    <task id="LOCAL-00202" summary="Bunch of issues popping their heads out with some more aggressive testing , lots to do.">
+      <option name="closed" value="true" />
+      <created>1732614698997</created>
+      <option name="number" value="00202" />
+      <option name="presentableId" value="LOCAL-00202" />
+      <option name="project" value="LOCAL" />
+      <updated>1732614698997</updated>
+    </task>
+    <task id="LOCAL-00203" summary="Have yet to fully resolve the linked list issues but I fixed the bad tempfs / ramdisk writes. Can now write files properly. Will need to test multiblock files still.">
+      <option name="closed" value="true" />
+      <created>1732628622222</created>
+      <option name="number" value="00203" />
+      <option name="presentableId" value="LOCAL-00203" />
+      <option name="project" value="LOCAL" />
+      <updated>1732628622222</updated>
+    </task>
+    <task id="LOCAL-00204" summary="Bit more progress fixing bugs in read and write bytes">
+      <option name="closed" value="true" />
+      <created>1732643250927</created>
+      <option name="number" value="00204" />
+      <option name="presentableId" value="LOCAL-00204" />
+      <option name="project" value="LOCAL" />
+      <updated>1732643250927</updated>
+    </task>
+    <task id="LOCAL-00205" summary="Fixed block bitmap allocate function oopsie among some other changes. Very heavy testing going on.">
+      <option name="closed" value="true" />
+      <created>1732655226248</created>
+      <option name="number" value="00205" />
+      <option name="presentableId" value="LOCAL-00205" />
+      <option name="project" value="LOCAL" />
+      <updated>1732655226248</updated>
+    </task>
+    <task id="LOCAL-00206" summary="Still tons of bugs to fix. Fixed the issue of blocks overwriting the bitmap. Wasnt adding the offset.">
+      <option name="closed" value="true" />
+      <created>1732663348694</created>
+      <option name="number" value="00206" />
+      <option name="presentableId" value="LOCAL-00206" />
+      <option name="project" value="LOCAL" />
+      <updated>1732663348694</updated>
+    </task>
+    <task id="LOCAL-00207" summary="Identified the block dispertion bug is not caused by the ramdisk functions or structure so gunning to fix it now. Fixed a divide by zero issue elsewhere.">
+      <option name="closed" value="true" />
+      <created>1732694700308</created>
+      <option name="number" value="00207" />
+      <option name="presentableId" value="LOCAL-00207" />
+      <option name="project" value="LOCAL" />
+      <updated>1732694700308</updated>
+    </task>
+    <task id="LOCAL-00208" summary="Bad block crossing offset is fixed. Not able to print it but will investigate. The state of the ramdisk is good now.">
+      <option name="closed" value="true" />
+      <created>1732697509289</created>
+      <option name="number" value="00208" />
+      <option name="presentableId" value="LOCAL-00208" />
+      <option name="project" value="LOCAL" />
+      <updated>1732697509289</updated>
+    </task>
+    <task id="LOCAL-00209" summary="Getting closer just some minor issues in read to hammer out">
+      <option name="closed" value="true" />
+      <created>1732699739499</created>
+      <option name="number" value="00209" />
+      <option name="presentableId" value="LOCAL-00209" />
+      <option name="project" value="LOCAL" />
+      <updated>1732699739499</updated>
+    </task>
+    <task id="LOCAL-00210" summary="Read and write across multiple blocks now works">
+      <option name="closed" value="true" />
+      <created>1732703949064</created>
+      <option name="number" value="00210" />
+      <option name="presentableId" value="LOCAL-00210" />
+      <option name="project" value="LOCAL" />
+      <updated>1732703949064</updated>
+    </task>
+    <task id="LOCAL-00211" summary="Wild goose chase going on on but fixing bugs left and right.">
+      <option name="closed" value="true" />
+      <created>1732725157132</created>
+      <option name="number" value="00211" />
+      <option name="presentableId" value="LOCAL-00211" />
+      <option name="project" value="LOCAL" />
+      <updated>1732725157132</updated>
+    </task>
+    <task id="LOCAL-00212" summary="Little more cleanup and bug fixes. Everything is working as expected">
+      <option name="closed" value="true" />
+      <created>1732741081182</created>
+      <option name="number" value="00212" />
+      <option name="presentableId" value="LOCAL-00212" />
+      <option name="project" value="LOCAL" />
+      <updated>1732741081182</updated>
+    </task>
+    <task id="LOCAL-00213" summary="comments">
+      <option name="closed" value="true" />
+      <created>1732747302617</created>
+      <option name="number" value="00213" />
+      <option name="presentableId" value="LOCAL-00213" />
+      <option name="project" value="LOCAL" />
+      <updated>1732747302617</updated>
+    </task>
+    <task id="LOCAL-00214" summary="Made the global allocator lockable by putting higher order locked wrapper functions in. Appears to work. The old functions can just be used lockless for the nested dependencies that can arise when data structures need to be dynamically allocated during an allocation. All regular allocations must now use kmalloc.">
+      <option name="closed" value="true" />
+      <created>1732748321438</created>
+      <option name="number" value="00214" />
+      <option name="presentableId" value="LOCAL-00214" />
+      <option name="project" value="LOCAL" />
+      <updated>1732748321438</updated>
+    </task>
+    <task id="LOCAL-00215" summary="Removing the commented out code in tempfs_init. I ran a test allocating most of the pages in the system to ensure that the allocator can handle a beating and it can.">
+      <option name="closed" value="true" />
+      <created>1732748931856</created>
+      <option name="number" value="00215" />
+      <option name="presentableId" value="LOCAL-00215" />
+      <option name="project" value="LOCAL" />
+      <updated>1732748931856</updated>
+    </task>
+    <task id="LOCAL-00216" summary="Extensive logic bug fixes. Things are looking very good now. Just need to handle the newly discovered null slab issue but not top priority as aborting works fine for now.">
+      <option name="closed" value="true" />
+      <created>1732782882764</created>
+      <option name="number" value="00216" />
+      <option name="presentableId" value="LOCAL-00216" />
+      <option name="project" value="LOCAL" />
+      <updated>1732782882764</updated>
+    </task>
+    <task id="LOCAL-00217" summary="Moved the bug message into heap_free_in_slab">
+      <option name="closed" value="true" />
+      <created>1732784680700</created>
+      <option name="number" value="00217" />
+      <option name="presentableId" value="LOCAL-00217" />
+      <option name="project" value="LOCAL" />
+      <updated>1732784680700</updated>
+    </task>
+    <task id="LOCAL-00218" summary="Appear to have fixed  more fundamental issues in the singly_linked_list.c and bst functions and am now back to debugging what is going on in tempfs.c">
+      <option name="closed" value="true" />
+      <created>1732797942415</created>
+      <option name="number" value="00218" />
+      <option name="presentableId" value="LOCAL-00218" />
+      <option name="project" value="LOCAL" />
+      <updated>1732797942415</updated>
+    </task>
+    <task id="LOCAL-00219" summary="Put a bandaid solution in for the bad slab addresses will address it later">
+      <option name="closed" value="true" />
+      <created>1732801927437</created>
+      <option name="number" value="00219" />
+      <option name="presentableId" value="LOCAL-00219" />
+      <option name="project" value="LOCAL" />
+      <updated>1732801927437</updated>
+    </task>
+    <task id="LOCAL-00220" summary="Messing around with slab allocator. Can't figure out why the occasional bad free is happening. It doesn't seem to happen too much so it might be okay to leave as is but I may rewrite the slab allocator.">
+      <option name="closed" value="true" />
+      <created>1732829330626</created>
+      <option name="number" value="00220" />
+      <option name="presentableId" value="LOCAL-00220" />
+      <option name="project" value="LOCAL" />
+      <updated>1732829330626</updated>
+    </task>
+    <task id="LOCAL-00221" summary="Fixed the slab allocator , the mask on free was set for 1 page not 64">
+      <option name="closed" value="true" />
+      <created>1732829860177</created>
+      <option name="number" value="00221" />
+      <option name="presentableId" value="LOCAL-00221" />
+      <option name="project" value="LOCAL" />
+      <updated>1732829860177</updated>
+    </task>
+    <task id="LOCAL-00222" summary="Fixed the allocation issues in tempfs.c for second and third level indirection blocks">
+      <option name="closed" value="true" />
+      <created>1732831683421</created>
+      <option name="number" value="00222" />
+      <option name="presentableId" value="LOCAL-00222" />
+      <option name="project" value="LOCAL" />
+      <updated>1732831683421</updated>
+    </task>
+    <task id="LOCAL-00223" summary="debugging indirection allocation. Something wonky going on.">
+      <option name="closed" value="true" />
+      <created>1732868358823</created>
+      <option name="number" value="00223" />
+      <option name="presentableId" value="LOCAL-00223" />
+      <option name="project" value="LOCAL" />
+      <updated>1732868358823</updated>
+    </task>
+    <task id="LOCAL-00224" summary="fixed single indirect allocation now onto double and triple">
+      <option name="closed" value="true" />
+      <created>1732869277271</created>
+      <option name="number" value="00224" />
+      <option name="presentableId" value="LOCAL-00224" />
+      <option name="project" value="LOCAL" />
+      <updated>1732869277271</updated>
+    </task>
+    <task id="LOCAL-00225" summary="Fixed double indirect allocation.">
+      <option name="closed" value="true" />
+      <created>1732882343592</created>
+      <option name="number" value="00225" />
+      <option name="presentableId" value="LOCAL-00225" />
+      <option name="project" value="LOCAL" />
+      <updated>1732882343592</updated>
+    </task>
+    <task id="LOCAL-00226" summary="Fixed final issue with double indirect allocation. Can successfully write 600,000 byte files and edit any portion of the file etc and it works. Feels good.">
+      <option name="closed" value="true" />
+      <created>1732905188128</created>
+      <option name="number" value="00226" />
+      <option name="presentableId" value="LOCAL-00226" />
+      <option name="project" value="LOCAL" />
+      <updated>1732905188128</updated>
+    </task>
+    <task id="LOCAL-00227" summary="More stress testing and finding breaking components in the list functions going back to those.">
+      <option name="closed" value="true" />
+      <created>1732957979446</created>
+      <option name="number" value="00227" />
+      <option name="presentableId" value="LOCAL-00227" />
+      <option name="project" value="LOCAL" />
+      <updated>1732957979446</updated>
+    </task>
+    <task id="LOCAL-00228" summary="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way.">
+      <option name="closed" value="true" />
+      <created>1732968788592</created>
+      <option name="number" value="00228" />
+      <option name="presentableId" value="LOCAL-00228" />
+      <option name="project" value="LOCAL" />
+      <updated>1732968788592</updated>
+    </task>
+    <task id="LOCAL-00229" summary="Fucking fixed it, thank christ. Now slab deallocs work properly given the new 64 page slab size. Ripped the hash table out because it's unecessary for the number of slabs we have. If I ever have an obscene amount of slabs then I can think about a hash table.">
+      <option name="closed" value="true" />
+      <created>1732973402275</created>
+      <option name="number" value="00229" />
+      <option name="presentableId" value="LOCAL-00229" />
+      <option name="project" value="LOCAL" />
+      <updated>1732973402276</updated>
+    </task>
+    <task id="LOCAL-00230" summary="Testing is almost at a point where we can move on. Testing file deletion. Freeing bitmap isnt working it appears so debugging that.">
+      <option name="closed" value="true" />
+      <created>1733042797713</created>
+      <option name="number" value="00230" />
+      <option name="presentableId" value="LOCAL-00230" />
+      <option name="project" value="LOCAL" />
+      <updated>1733042797713</updated>
+    </task>
+    <task id="LOCAL-00231" summary="Fixed bitmap free issue. Almost all tempfs functions are ready to go.">
+      <option name="closed" value="true" />
+      <created>1733052848249</created>
+      <option name="number" value="00231" />
+      <option name="presentableId" value="LOCAL-00231" />
+      <option name="project" value="LOCAL" />
+      <updated>1733052848249</updated>
+    </task>
+    <task id="LOCAL-00232" summary="comments">
+      <option name="closed" value="true" />
+      <created>1733079422435</created>
+      <option name="number" value="00232" />
+      <option name="presentableId" value="LOCAL-00232" />
+      <option name="project" value="LOCAL" />
+      <updated>1733079422435</updated>
+    </task>
+    <task id="LOCAL-00233" summary="Fixed the get dir entries function it is testing properly now.">
+      <option name="closed" value="true" />
+      <created>1733131506600</created>
+      <option name="number" value="00233" />
+      <option name="presentableId" value="LOCAL-00233" />
+      <option name="project" value="LOCAL" />
+      <updated>1733131506600</updated>
+    </task>
+    <task id="LOCAL-00234" summary=" in tempfs_create">
+      <option name="closed" value="true" />
+      <created>1733132495092</created>
+      <option name="number" value="00234" />
+      <option name="presentableId" value="LOCAL-00234" />
+      <option name="project" value="LOCAL" />
+      <updated>1733132495092</updated>
+    </task>
+    <task id="LOCAL-00235" summary="more testing and minor fixes in block_free function">
+      <option name="closed" value="true" />
+      <created>1733138127754</created>
+      <option name="number" value="00235" />
+      <option name="presentableId" value="LOCAL-00235" />
+      <option name="project" value="LOCAL" />
+      <updated>1733138127754</updated>
+    </task>
+    <task id="LOCAL-00236" summary="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one.">
+      <option name="closed" value="true" />
+      <created>1733213950134</created>
+      <option name="number" value="00236" />
+      <option name="presentableId" value="LOCAL-00236" />
+      <option name="project" value="LOCAL" />
+      <updated>1733213950135</updated>
+    </task>
+    <task id="LOCAL-00237" summary="onto testing recursive directory freeing and the like">
+      <option name="closed" value="true" />
+      <created>1733215570866</created>
+      <option name="number" value="00237" />
+      <option name="presentableId" value="LOCAL-00237" />
+      <option name="project" value="LOCAL" />
+      <updated>1733215570866</updated>
+    </task>
+    <task id="LOCAL-00238" summary="Fixed tempfs_create returning a null vnode">
+      <option name="closed" value="true" />
+      <created>1733217067298</created>
+      <option name="number" value="00238" />
+      <option name="presentableId" value="LOCAL-00238" />
+      <option name="project" value="LOCAL" />
+      <updated>1733217067298</updated>
+    </task>
+    <task id="LOCAL-00239" summary="Fixed get_inode_and_mark_bitmap function it was incrementing by block not byte">
+      <option name="closed" value="true" />
+      <created>1733223371634</created>
+      <option name="number" value="00239" />
+      <option name="presentableId" value="LOCAL-00239" />
+      <option name="project" value="LOCAL" />
+      <updated>1733223371635</updated>
+    </task>
+    <task id="LOCAL-00240" summary="Fixed directory freeing now frees blocks and inodes correctly.">
+      <option name="closed" value="true" />
+      <created>1733298409217</created>
+      <option name="number" value="00240" />
+      <option name="presentableId" value="LOCAL-00240" />
+      <option name="project" value="LOCAL" />
+      <updated>1733298409217</updated>
+    </task>
+    <task id="LOCAL-00241" summary="tempfs_lookup now works properly and fills the vnode children properly.">
+      <option name="closed" value="true" />
+      <created>1733303065175</created>
+      <option name="number" value="00241" />
+      <option name="presentableId" value="LOCAL-00241" />
+      <option name="project" value="LOCAL" />
+      <updated>1733303065175</updated>
+    </task>
+    <task id="LOCAL-00242" summary="Removed testing code in tempfs_mkfs and removed redundant unsafe free in vnode_free">
+      <option name="closed" value="true" />
+      <created>1733304000206</created>
+      <option name="number" value="00242" />
+      <option name="presentableId" value="LOCAL-00242" />
+      <option name="project" value="LOCAL" />
+      <updated>1733304000206</updated>
+    </task>
+    <task id="LOCAL-00243" summary="const identifiers where needed in tempfs.c">
+      <option name="closed" value="true" />
+      <created>1733309873215</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
+      <option name="project" value="LOCAL" />
+      <updated>1733309873215</updated>
+    </task>
+    <task id="LOCAL-00244" summary="some changes going to set up the file handle table in the process structure and have a list of them.">
+      <option name="closed" value="true" />
+      <created>1733389273014</created>
+      <option name="number" value="00244" />
+      <option name="presentableId" value="LOCAL-00244" />
+      <option name="project" value="LOCAL" />
+      <updated>1733389273014</updated>
+    </task>
+    <task id="LOCAL-00245" summary="tempfs open and close , having a bitmap for handle ids">
+      <option name="closed" value="true" />
+      <created>1733391198445</created>
+      <option name="number" value="00245" />
+      <option name="presentableId" value="LOCAL-00245" />
+      <option name="project" value="LOCAL" />
+      <updated>1733391198445</updated>
+    </task>
+    <task id="LOCAL-00246" summary="Starting to flesh out more vfs functionality">
+      <option name="closed" value="true" />
+      <created>1733478343800</created>
+      <option name="number" value="00246" />
+      <option name="presentableId" value="LOCAL-00246" />
+      <option name="project" value="LOCAL" />
+      <updated>1733478343801</updated>
+    </task>
+    <task id="LOCAL-00247" summary="fleshing out more vfs functionality">
+      <option name="closed" value="true" />
+      <created>1733488366212</created>
+      <option name="number" value="00247" />
+      <option name="presentableId" value="LOCAL-00247" />
+      <option name="project" value="LOCAL" />
+      <updated>1733488366212</updated>
+    </task>
+    <task id="LOCAL-00248" summary="finished vnode close for now, need to implement the remove node by addr function in doubly_linked_list.c">
+      <option name="closed" value="true" />
+      <created>1733521425078</created>
+      <option name="number" value="00248" />
+      <option name="presentableId" value="LOCAL-00248" />
+      <option name="project" value="LOCAL" />
+      <updated>1733521425078</updated>
+    </task>
+    <task id="LOCAL-00249" summary="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs">
+      <option name="closed" value="true" />
+      <created>1733563274955</created>
+      <option name="number" value="00249" />
+      <option name="presentableId" value="LOCAL-00249" />
+      <option name="project" value="LOCAL" />
+      <updated>1733563274955</updated>
+    </task>
+    <task id="LOCAL-00250" summary="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
+      <option name="closed" value="true" />
+      <created>1733563602585</created>
+      <option name="number" value="00250" />
+      <option name="presentableId" value="LOCAL-00250" />
+      <option name="project" value="LOCAL" />
+      <updated>1733563602587</updated>
+    </task>
+    <option name="localTasksCounter" value="251" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.configurationType" implementationName="com.jetbrains.cidr.embedded.customgdbserver.type" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Fixed final issue with double indirect allocation. Can successfully write 600,000 byte files and edit any portion of the file etc and it works. Feels good." />
+    <MESSAGE value="More stress testing and finding breaking components in the list functions going back to those." />
+    <MESSAGE value="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way." />
+    <MESSAGE value="Fucking fixed it, thank christ. Now slab deallocs work properly given the new 64 page slab size. Ripped the hash table out because it's unecessary for the number of slabs we have. If I ever have an obscene amount of slabs then I can think about a hash table." />
+    <MESSAGE value="Testing is almost at a point where we can move on. Testing file deletion. Freeing bitmap isnt working it appears so debugging that." />
+    <MESSAGE value="Fixed bitmap free issue. Almost all tempfs functions are ready to go." />
+    <MESSAGE value="comments" />
+    <MESSAGE value="Fixed the get dir entries function it is testing properly now." />
+    <MESSAGE value=" in tempfs_create" />
+    <MESSAGE value="more testing and minor fixes in block_free function" />
+    <MESSAGE value="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one." />
+    <MESSAGE value="onto testing recursive directory freeing and the like" />
+    <MESSAGE value="Fixed tempfs_create returning a null vnode" />
+    <MESSAGE value="Fixed get_inode_and_mark_bitmap function it was incrementing by block not byte" />
+    <MESSAGE value="Fixed directory freeing now frees blocks and inodes correctly." />
+    <MESSAGE value="tempfs_lookup now works properly and fills the vnode children properly." />
+    <MESSAGE value="Removed testing code in tempfs_mkfs and removed redundant unsafe free in vnode_free" />
+    <MESSAGE value="const identifiers where needed in tempfs.c" />
+    <MESSAGE value="some changes going to set up the file handle table in the process structure and have a list of them." />
+    <MESSAGE value="tempfs open and close , having a bitmap for handle ids" />
+    <MESSAGE value="Starting to flesh out more vfs functionality" />
+    <MESSAGE value="fleshing out more vfs functionality" />
+    <MESSAGE value="finished vnode close for now, need to implement the remove node by addr function in doubly_linked_list.c" />
+    <MESSAGE value="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs" />
+    <MESSAGE value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/queue.c</url>
+          <line>148</line>
+          <option name="timeStamp" value="105" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/mem/arch_vmm.c</url>
+          <line>180</line>
+          <option name="timeStamp" value="157" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/include/filesystem/vfs.h</url>
+          <line>35</line>
+          <option name="timeStamp" value="158" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="6" />
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>342</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c</url>
+          <line>52</line>
+          <option name="timeStamp" value="224" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>458</line>
+          <option name="timeStamp" value="276" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="1" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>205</line>
+          <option name="timeStamp" value="302" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="1" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>204</line>
+          <option name="timeStamp" value="303" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/arch/smp/arch_smp.c</url>
+          <line>30</line>
+          <option name="timeStamp" value="306" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="0" />
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>357</line>
+          <option name="timeStamp" value="339" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c</url>
+          <line>29</line>
+          <option name="timeStamp" value="342" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>388</line>
+          <option name="timeStamp" value="344" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>333</line>
+          <option name="timeStamp" value="345" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>350</line>
+          <option name="timeStamp" value="346" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>181</line>
+          <option name="timeStamp" value="348" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>198</line>
+          <option name="timeStamp" value="350" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>200</line>
+          <option name="timeStamp" value="351" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="12" />
+          <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
+          <line>579</line>
+          <option name="timeStamp" value="360" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency id="2" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>107</line>
+          <option name="timeStamp" value="428" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency id="1" master-id="2" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
+          <line>198</line>
+          <option name="timeStamp" value="429" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency id="3" master-id="1" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
+          <line>84</line>
+          <option name="timeStamp" value="432" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="3" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
+          <line>54</line>
+          <option name="timeStamp" value="433" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency id="0" master-id="3" />
+          <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
+          <line>224</line>
+          <option name="timeStamp" value="440" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="CLion_Remote">
+        <watch expression="list" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
