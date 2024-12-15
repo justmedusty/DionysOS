@@ -60,8 +60,8 @@ enum diosfs_error {
     DIOSFS_BLOCK_UNALLOCATED = 0xFFFFFFFFFFFFFFFF // Represents an unallocated block identifier
 };
 
-#define DIOSFS_MAX_FILES_IN_DIRENT_BLOCK ((fs->superblock->block_size / sizeof(struct diosfs_directory_entry)))
-#define DIOSFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * fs->superblock->block_size) / sizeof(struct diosfs_directory_entry))
+#define DIOSFS_MAX_FILES_IN_DIRENT_BLOCK ((DIOSFS_BLOCKSIZE / sizeof(struct diosfs_directory_entry)))
+#define DIOSFS_MAX_FILES_IN_DIRECTORY ((NUM_BLOCKS_DIRECT * DIOSFS_BLOCKSIZE) / sizeof(struct diosfs_directory_entry))
 /*
  *  These macros make it easier to change the size created by diosfs_init by just modifying values of
  *  DIOSFS_NUM_INODE_POINTER_BLOCKS and DIOSFS_NUM_BLOCK_POINTER_BLOCKS
