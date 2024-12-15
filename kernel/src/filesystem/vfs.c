@@ -225,7 +225,7 @@ int32_t vnode_remove(struct vnode* vnode, char* path) {
  *
  *  This will need to return a handle at some point.
  */
-int8_t vnode_open(char* path) {
+int64_t vnode_open(char* path) {
     struct process* process = my_cpu()->running_process;
 
     struct virtual_handle_list* list = process->handle_list;

@@ -146,6 +146,25 @@ void diosfs_init(uint64_t filesystem_id) {
     dios_mkfs(filesystem_id,diosfs_filesystem->device->device_type, &diosfs_filesystem[filesystem_id]);
 };
 
+
+void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size_t gigabytes,size_t block_size) {
+    if (gigabytes == 0) {
+        return;
+    }
+
+    uint64_t size_bytes = gigabytes << 30;
+
+    size_calculation->total_blocks = size_bytes / block_size;
+
+    uint64_t split = size_calculation->total_blocks / 32;
+
+    size_calculation->total_inodes = split * (block_size / sizeof(struct diosfs_inode));
+    size_calculation->total_data_blocks = size_calculation->total_blocks - split;
+    size_calculation->total_block_bitmap_blocks = size_calculation->total_blocks / block_size / 8;
+    size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes / 8 / block_size;
+
+    size_calculation->total_blocks += 1; // superblock;
+}
 /*
  * This will be the function that spins up an empty diosfs ram filesystem and then fill with a root directory and a few basic directories and files.
  *
@@ -271,8 +290,8 @@ uint64_t diosfs_read(struct vnode* vnode, const uint64_t offset, char* buffer,co
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == VNODE_HARD_LINK) {
-        if (diosfs_symlink_check(fs, vnode,DIOSFS_REG_FILE) != SUCCESS) {
-            return UNEXPECTED_SYMLINK_TYPE;
+        if (diosfs_symlink_check(fs, vnode,DIOSFS_REG_FILE) != DIOSFS_SUCCESS) {
+            return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
     }
 
@@ -289,12 +308,12 @@ uint64_t diosfs_write(struct vnode* vnode, const uint64_t offset, char* buffer, 
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == DIOSFS_DIRECTORY) {
-        return CANNOT_WRITE_DIRECTORY;
+        return DIOSFS_CANNOT_WRITE_DIRECTORY;
     }
 
     if (vnode->vnode_type == DIOSFS_SYMLINK) {
-        if (diosfs_symlink_check(fs, vnode,DIOSFS_REG_FILE) != SUCCESS) {
-            return UNEXPECTED_SYMLINK_TYPE;
+        if (diosfs_symlink_check(fs, vnode,DIOSFS_REG_FILE) != DIOSFS_SUCCESS) {
+            return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
 
         vnode = diosfs_follow_link(fs, vnode);
@@ -303,13 +322,13 @@ uint64_t diosfs_write(struct vnode* vnode, const uint64_t offset, char* buffer, 
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
-    if (diosfs_write_bytes_to_inode(fs, &inode, buffer, bytes, offset, bytes) != SUCCESS) {
+    if (diosfs_write_bytes_to_inode(fs, &inode, buffer, bytes, offset, bytes) != DIOSFS_SUCCESS) {
         return DIOSFS_ERROR;
     }
     vnode->vnode_size+= bytes;
 
     release_spinlock(fs->lock);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -320,7 +339,7 @@ uint64_t diosfs_stat(const struct vnode* vnode) {
     acquire_spinlock(fs->lock);
 
     release_spinlock(fs->lock);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -362,7 +381,7 @@ struct vnode* diosfs_lookup(struct vnode* parent, char* name) {
     uint64_t ret = diosfs_get_directory_entries(fs, (struct diosfs_directory_entry*)buffer, parent->vnode_inode_number,
                                                 buffer_size);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         kfree(buffer);
         return NULL;
     }
@@ -469,7 +488,7 @@ struct vnode* diosfs_create(struct vnode* parent, char* name, const uint8_t vnod
     diosfs_write_inode(fs, &parent_inode);
     release_spinlock(fs->lock);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         panic("Could not write dirent");
         return NULL;
     }
@@ -486,7 +505,7 @@ void diosfs_close(struct vnode* vnode, uint64_t handle) {
 
 uint64_t diosfs_open(struct vnode* vnode) {
     asm("nop");
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 struct vnode* diosfs_link(struct vnode* parent, struct vnode* vnode_to_link, uint8_t type) {
@@ -595,15 +614,15 @@ static uint64_t diosfs_symlink_check(struct diosfs_filesystem* fs, struct vnode*
 
     if (link == NULL) {
         release_spinlock(fs->lock);
-        return BAD_SYMLINK;
+        return DIOSFS_BAD_SYMLINK;
     }
 
     if (link->vnode_type != expected_type) {
         release_spinlock(fs->lock);
-        return UNEXPECTED_SYMLINK_TYPE;
+        return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
     }
 
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 
@@ -711,12 +730,12 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem* fs, struct
 
             kfree(shift_buffer);
 
-            return SUCCESS;
+            return DIOSFS_SUCCESS;
         }
     }
 
     kfree(buffer);
-    return NOT_FOUND;
+    return DIOSFS_NOT_FOUND;
 }
 
 /*
@@ -851,7 +870,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
                                 fs->superblock->block_size * DIOSFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
                                 fs->device->device_id);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
         panic("diosfs_get_free_inode_and_mark_bitmap ramdisk read failed");
     }
@@ -896,7 +915,7 @@ found_free:
                         fs->superblock->block_size * DIOSFS_NUM_INODE_POINTER_BLOCKS, buffer_size,
                         fs->device->device_id);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
         panic("diosfs_get_free_inode_and_mark_bitmap ramdisk read failed");
     }
@@ -949,7 +968,7 @@ retry:
                                 fs->device->device_id);
 
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
         panic("diosfs_get_free_inode_and_mark_bitmap ramdisk read failed");
         /* For diagnostic purposes , shouldn't happen if it does I want to know right away */
@@ -987,7 +1006,7 @@ found_free:
                         fs->superblock->block_size * DIOSFS_NUM_BLOCK_POINTER_BLOCKS, buffer_size,
                         fs->device->device_id);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap ramdisk_write call")
         panic("diosfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
     }
@@ -1018,7 +1037,7 @@ static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem* fs, 
     diosfs_clear_bitmap(fs,BITMAP_TYPE_BLOCK, block_number);
 
     kfree(buffer);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1041,7 +1060,7 @@ static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem* fs, 
     diosfs_clear_bitmap(fs,BITMAP_TYPE_INODE, inode_number);
 
     kfree(buffer);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1101,7 +1120,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem* fs,
 
 done:
     kfree(buffer);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1168,7 +1187,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem* fs, struc
         }
     }
 
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1202,7 +1221,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_filesystem* fs, struct diosfs_
     diosfs_write_inode(fs, inode);
 
     kfree(read_buffer);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 
@@ -1294,7 +1313,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem* fs, struct
     }
 
     diosfs_write_inode(fs, inode);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1449,7 +1468,7 @@ done:
     }
     kfree(buffer);
     diosfs_write_inode(fs, inode);
-    return SUCCESS;
+    return DIOSFS_SUCCESS;
 }
 
 /*
@@ -1513,7 +1532,7 @@ static void diosfs_write_inode(const struct diosfs_filesystem* fs, struct diosfs
     uint64_t block_number = fs->superblock->inode_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
     uint64_t ret = ramdisk_write((char*)inode, block_number, sizeof(struct diosfs_inode) * inode_number_in_block,
                                  sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->device->device_id);
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
     }
@@ -1524,7 +1543,7 @@ static void diosfs_read_inode(const struct diosfs_filesystem* fs, struct diosfs_
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
     uint64_t ret = ramdisk_read((char*)inode, block_number, sizeof(struct diosfs_inode) * inode_number_in_block,
                                 sizeof(struct diosfs_inode), sizeof(struct diosfs_inode), fs->device->device_id);
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
     }
@@ -1550,7 +1569,7 @@ static void diosfs_write_block_by_number(const uint64_t block_number, const char
     uint64_t ret = ramdisk_write(buffer, block_number + DIOSFS_START_BLOCKS, offset, write_size_bytes,
                                  fs->superblock->block_size, fs->device->device_id);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_write_block_by_number");
         panic("diosfs_write_block_by_number");
     }
@@ -1576,7 +1595,7 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char* buffe
                                 fs->superblock->block_size,
                                 fs->device->device_id);
 
-    if (ret != SUCCESS) {
+    if (ret != DIOSFS_SUCCESS) {
         HANDLE_RAMDISK_ERROR(ret, "diosfs_read_block_by_number");
         panic("diosfs_read_block_by_number");
     }

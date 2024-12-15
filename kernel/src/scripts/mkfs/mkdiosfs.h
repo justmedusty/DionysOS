@@ -1,11 +1,11 @@
 //
-// Created by dustyn on 9/18/24.
+// Created by dustyn on 12/15/24.
 //
 
+#ifndef MKDIOSFS_H
+#define MKDIOSFS_H
 #pragma once
-#include "include/types.h"
 #include "stdint.h"
-#include "include/filesystem/vfs.h"
 #define INITIAL_FILESYSTEM 0 /* Just for ramdisk 0 id purposes*/
 
 #define DIOSFS_BLOCKSIZE 1024
@@ -151,7 +151,6 @@ struct diosfs_symlink {
     char path[MAX_FILENAME_LENGTH * 8];
 };
 
-
 struct diosfs_size_calculation {
     uint64_t total_blocks;
     uint64_t total_inodes;
@@ -160,21 +159,7 @@ struct diosfs_size_calculation {
     uint64_t total_inode_bitmap_blocks;
 };
 
-
 _Static_assert(sizeof(struct diosfs_inode) % 256 == 0, "Tempfs inode not the proper size");
 
 
-void diosfs_init(uint64_t filesystem_id);
-void dios_mkfs(const uint64_t device_id,const uint64_t device_type, struct diosfs_filesystem* fs);
-uint64_t diosfs_read(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
-uint64_t diosfs_write(struct vnode* vnode, uint64_t offset, char* buffer, uint64_t bytes);
-uint64_t diosfs_stat(const struct vnode* vnode);
-struct vnode* diosfs_lookup(struct vnode* parent, char* name);
-struct vnode* diosfs_create(struct vnode* parent, char *name, uint8_t vnode_type);
-void diosfs_close(struct vnode* vnode,uint64_t handle);
-struct vnode* diosfs_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
-void diosfs_unlink(struct vnode* vnode);
-void diosfs_remove(const struct vnode* vnode);
-void diosfs_rename(const struct vnode* vnode, char* new_name);
-uint64_t diosfs_open(struct vnode* vnode);
-
+#endif //MKDIOSFS_H

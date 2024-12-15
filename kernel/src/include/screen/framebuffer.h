@@ -1,5 +1,5 @@
 #pragma once
-#include <include/types.h>
+#include <stdint.h>
 
 typedef struct {
     uint64_t phys_address;

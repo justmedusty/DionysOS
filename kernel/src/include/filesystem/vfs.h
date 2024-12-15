@@ -144,3 +144,5 @@ char* vnode_get_canonical_path(struct vnode* vnode); /* Not sure if this will ne
 /* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */
 struct vnode* vnode_alloc();
 void vnode_free(struct vnode* vnode);
+int64_t vnode_open(char* path);
+void vnode_close(uint64_t handle);
