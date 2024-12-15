@@ -6,6 +6,9 @@
 #define MKDIOSFS_H
 #pragma once
 #include "stdint.h"
+
+#define INODE_TO_BYTE_OFFSET(inode_numer) ((inode_start * DIOSFS_BLOCKSIZE) + ((inode_numer / sizeof(struct diosfs_inode)) * DIOSFS_BLOCKSIZE) + ((inode_numer % DIOSFS_BLOCKSIZE) * sizeof(struct diosfs_inode)))
+
 #define INITIAL_FILESYSTEM 0 /* Just for ramdisk 0 id purposes*/
 
 #define DIOSFS_BLOCKSIZE 1024

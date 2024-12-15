@@ -10,7 +10,7 @@
 #include <stdbool.h>
 
 uint64_t strtoll_wrapper(const char* arg);
-void write_block(uint64_t block_numer, const char* block_buffer);
+void write_block(uint64_t block_number, const char* block_buffer);
 static uint64_t diosfs_allocate_single_indirect_block(struct diosfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
@@ -18,7 +18,7 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_inode* inode
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
 static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_inode* inode,
-                                                      const uint64_t num_allocated, uint64_t num_to_allocate);
+                                                       uint64_t num_allocated, uint64_t num_to_allocate);
 static void diosfs_write_inode(struct diosfs_inode* inode);
 static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_number(uint64_t block_number);
 uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_inode* inode,
@@ -34,38 +34,22 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode* inode,
                                     const struct diosfs_directory_entry* entry);
 static uint64_t diosfs_get_free_block_and_mark_bitmap();
 uint64_t diosfs_create(struct diosfs_inode* parent, char* name, uint8_t vnode_type);
-void read_block(uint64_t block_numer, char* block_buffer);
+void read_block(uint64_t block_number, char* block_buffer);
 static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number);
 static void diosfs_read_block_by_number(uint64_t block_number, char* buffer,
                                         uint64_t offset, uint64_t read_size);
 static void diosfs_write_block_by_number(uint64_t block_number, const char* buffer,
                                          uint64_t offset, uint64_t write_size);
 static void diosfs_get_free_inode_and_mark_bitmap(struct diosfs_inode* inode_to_be_filled);
+void read_inode(uint64_t inode_number, struct diosfs_inode* inode);
+void write_inode(struct diosfs_inode* inode);
+void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size_t gigabytes, size_t block_size);
 
 char* disk_buffer = NULL;
 uint64_t block_start = 0;
 uint64_t inode_start = 0;
 uint64_t block_bitmap_start = 0;
 uint64_t inode_bitmap_start = 0;
-
-void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size_t gigabytes, size_t block_size) {
-    if (gigabytes == 0) {
-        return;
-    }
-
-    const uint64_t size_bytes = gigabytes << 30;
-
-    size_calculation->total_blocks = size_bytes / block_size;
-
-    uint64_t split = size_calculation->total_blocks / 32;
-
-    size_calculation->total_inodes = split * (block_size / sizeof(struct diosfs_inode));
-    size_calculation->total_data_blocks = size_calculation->total_blocks - split;
-    size_calculation->total_block_bitmap_blocks = size_calculation->total_blocks / block_size / 8;
-    size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes / 8 / block_size;
-
-    size_calculation->total_blocks += 1; // superblock;
-}
 
 /*
  * mkdiosfs is the name of the executable
@@ -77,16 +61,22 @@ void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size
  *
  *  root
  *  bin
+ *  etc
+ *  home
+ *  mnt
+ *  var
  *
+ *  You can add files by adding arguments in this fashion :
+ *  mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc
  */
 int main(const int argc, char** argv) {
     if (argc < 4) {
         printf("Usage: mkdiosfs name.img size-gigs\n");
-        printf("You can add an archive via: mkdiosfs name.img size-gigs block-size --archive archive-name\n");
+        printf("You can add files via: mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc\n");
         exit(1);
     }
 
-    uint64_t arg2 = strtoll_wrapper(argv[2]);
+    const uint64_t arg2 = strtoll_wrapper(argv[2]);
 
     if (arg2 > 8) {
         printf("This tool does not support images above 8GB, pick a size between 1 and 8 GB\n");
@@ -150,6 +140,25 @@ int main(const int argc, char** argv) {
     free(disk_buffer);
 }
 
+void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size_t gigabytes, size_t block_size) {
+    if (gigabytes == 0) {
+        return;
+    }
+
+    const uint64_t size_bytes = gigabytes << 30;
+
+    size_calculation->total_blocks = size_bytes / block_size;
+
+    uint64_t split = size_calculation->total_blocks / 32;
+
+    size_calculation->total_inodes = split * (block_size / sizeof(struct diosfs_inode));
+    size_calculation->total_data_blocks = size_calculation->total_blocks - split;
+    size_calculation->total_block_bitmap_blocks = size_calculation->total_blocks / block_size / 8;
+    size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes / 8 / block_size;
+
+    size_calculation->total_blocks += 1; // superblock;
+}
+
 uint64_t strtoll_wrapper(const char* arg) {
     char* end_ptr;
     uint64_t result = strtoull(arg, &end_ptr, 10);
@@ -161,19 +170,21 @@ uint64_t strtoll_wrapper(const char* arg) {
     return result;
 }
 
-void write_block(const uint64_t block_numer, const char* block_buffer) {
-    memcpy(disk_buffer + block_numer * DIOSFS_BLOCKSIZE, block_buffer,DIOSFS_BLOCKSIZE);
+void write_block(const uint64_t block_number, const char* block_buffer) {
+    memcpy(disk_buffer + block_number * DIOSFS_BLOCKSIZE, block_buffer,DIOSFS_BLOCKSIZE);
 }
 
-void read_block(const uint64_t block_numer, char* block_buffer) {
-    memcpy(block_buffer, disk_buffer + block_numer * DIOSFS_BLOCKSIZE,DIOSFS_BLOCKSIZE);
+void read_block(const uint64_t block_number, char* block_buffer) {
+    memcpy(block_buffer, disk_buffer + block_number * DIOSFS_BLOCKSIZE,DIOSFS_BLOCKSIZE);
 }
 
-void read_inode(uint64_t inode_number, struct diosfs_inode* inode, char* disk_buffer) {
+void read_inode(uint64_t inode_number, struct diosfs_inode* inode) {
+    memcpy(&inode,&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], sizeof(struct diosfs_inode));
 }
 
 
-void write_inode(struct diosfs_inode* inode, char*) {
+void write_inode(struct diosfs_inode* inode) {
+     memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], &inode, sizeof(struct diosfs_inode));
 }
 
 uint64_t diosfs_create(struct diosfs_inode* parent, char* name, const uint8_t vnode_type) {
@@ -204,7 +215,7 @@ uint64_t diosfs_create(struct diosfs_inode* parent, char* name, const uint8_t vn
 
 static uint64_t diosfs_get_free_block_and_mark_bitmap() {
     uint64_t buffer_size = DIOSFS_BLOCKSIZE * 128;
-    char* buffer = malloc(buffer_size);
+    char* buffer = disk_buffer + (DIOSFS_BLOCKSIZE * block_bitmap_start);
     uint64_t block = 0;
     uint64_t byte = 0;
     uint64_t bit = 0;
@@ -212,17 +223,6 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap() {
     uint64_t block_number = 0;
 
 retry:
-
-    /*
-     *We do not free the buffer we simply write into a smaller and smaller portion of the buffer.
-     *It is only freed after a block is found and the new bitmap block is written.
-     *
-     *We do not use the diosfs_read_block function because it only works with single blocks and we are reading
-     *many blocks here so we will work with ramdisk functions directly.
-     *
-     */
-
-    //READ IT IN
 
     while (1) {
         if (buffer[block * DIOSFS_BLOCKSIZE + byte] != 0xFF) {
@@ -253,20 +253,12 @@ retry:
 
 found_free:
 
-    // WRITE IT IN
-
-    free(buffer);
-    /* Free the buffer, all other control paths lead to printf so until that changes this is the only place it is required */
-
-    /*
-     * It will be very important that this return value not be wasted because it will leave a block marked and not used.
-     */
     return block_number;
 }
 
 static void diosfs_get_free_inode_and_mark_bitmap(struct diosfs_inode* inode_to_be_filled) {
     uint64_t buffer_size = DIOSFS_BLOCKSIZE * 16;
-    char* buffer = malloc(buffer_size);
+    char* buffer = disk_buffer + (DIOSFS_BLOCKSIZE * inode_bitmap_start);
     uint64_t block = 0;
     uint64_t byte = 0;
     uint64_t bit = 0;
@@ -644,32 +636,21 @@ static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_nu
  * 4 functions beneath just take some of the ramdisk calls out in favor of local functions for read and writing blocks and inodes
  */
 static void diosfs_write_inode(struct diosfs_inode* inode) {
-    uint64_t inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
-    uint64_t block_number = inode_start + inode->inode_number / NUM_INODES_PER_BLOCK;
-
-    //WRITE IT IN
+    write_inode(inode);
 }
 
 static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number) {
-    uint64_t inode_number_in_block = inode_number % NUM_INODES_PER_BLOCK;
-    uint64_t block_number = inode_start + (inode_number / NUM_INODES_PER_BLOCK);
-    //READ THE INODE
+   read_inode(inode_number,inode);
 }
 
 static void diosfs_write_block_by_number(const uint64_t block_number, const char* buffer,
                                          uint64_t offset, uint64_t write_size) {
-    if (write_size > DIOSFS_BLOCKSIZE) {
-        write_size = DIOSFS_BLOCKSIZE;
-    }
-    if (offset >= DIOSFS_BLOCKSIZE) {
-        offset = 0;
-    }
 
     uint64_t write_size_bytes = write_size;
     if (write_size_bytes + offset > DIOSFS_BLOCKSIZE) {
         write_size_bytes = DIOSFS_BLOCKSIZE - offset;
     }
-    //WRITE INTO PASSED BUFFER
+    write_block(block_number,buffer);
 }
 
 static void diosfs_read_block_by_number(const uint64_t block_number, char* buffer,
@@ -683,7 +664,7 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char* buffe
         read_size_bytes = DIOSFS_BLOCKSIZE - offset;
     }
 
-    // READ IT INTO PASSED BUFFER
+    read_block(block_number,buffer);
 }
 
 
@@ -738,22 +719,9 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_inode* inode
     uint64_t index;
     uint64_t allocated;
     char* buffer = malloc(DIOSFS_BLOCKSIZE);
-    uint64_t double_indirect;
 
-    if (higher_order && block_number == 0) {
-        double_indirect = diosfs_get_free_block_and_mark_bitmap();
-    }
-    else if (!higher_order && block_number == 0) {
-        double_indirect = inode->double_indirect == 0
-                              ? diosfs_get_free_block_and_mark_bitmap()
-                              : inode->double_indirect;
-        inode->double_indirect = double_indirect;
-    }
-    else {
-        double_indirect = block_number;
-    }
-
-
+    uint64_t double_indirect = diosfs_get_free_block_and_mark_bitmap();
+    
     diosfs_read_block_by_number(double_indirect, buffer, 0,DIOSFS_BLOCKSIZE);
     uint64_t* block_array = (uint64_t*)buffer;
 
