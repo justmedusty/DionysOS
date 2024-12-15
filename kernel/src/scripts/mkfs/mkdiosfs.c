@@ -44,7 +44,7 @@ int main(const int argc, char **argv){
     exit(1);
   }
 
-  FILE *f = fopen(argv[1],"wb");
+  FILE *f = fopen(argv[1],"w+");
 
   if(!f) {
     printf("Error creating file\n");
