@@ -406,9 +406,6 @@ struct vnode* diosfs_lookup(struct vnode* parent, char* name) {
     for (uint64_t i = 0; i <= max_directories; i++) {
         struct diosfs_directory_entry* entry = &entries[i];
         if (fill_vnode) {
-            if (entry) {
-                serial_printf("ENTRY NAME %s\n",entry->name);
-            }
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
         }
         /*
@@ -668,6 +665,8 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem* fs, struct
         }
 
         if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number == inode_to_remove) {
+
+            
             if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].type == DIOSFS_DIRECTORY) {
                 diosfs_recursive_directory_entry_free(fs, &entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK], 0);
             }
@@ -727,7 +726,6 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem* fs, struct
             parent_inode.size -= 1;
             diosfs_write_inode(fs, &parent_inode);
             kfree(buffer);
-
             kfree(shift_buffer);
 
             return DIOSFS_SUCCESS;
@@ -738,6 +736,23 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem* fs, struct
     return DIOSFS_NOT_FOUND;
 }
 
+static void shift_directory_entry(struct diosfs_filesystem* fs, uint64_t entry_number, struct diosfs_inode *parent_inode) {
+    
+      char *buffer = kmalloc(PAGE_SIZE);
+      char* shift_buffer = kmalloc(PAGE_SIZE);
+
+        if (entry_number == parent_inode->size - 1) {
+            return; // other function handles decrementing size
+            }
+
+
+
+
+            diosfs_write_inode(fs, parent_inode);
+            kfree(buffer);
+            kfree(shift_buffer);
+
+}
 /*
  * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
  */
@@ -838,7 +853,6 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem* fs, const uint8_
     ramdisk_write(buffer, block, 0, fs->superblock->block_size,PAGE_SIZE, fs->device->device_id);
     kfree(buffer);
 }
-
 
 /*
  * This function searches the bitmap for a free inode. It will keep track of the block , byte ,and bit so that once it is marked
@@ -1123,6 +1137,57 @@ done:
     return DIOSFS_SUCCESS;
 }
 
+static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem* fs,
+                                              const uint64_t inode_number,
+                                             const uint64_t directory_inode_number) {
+    uint64_t buffer_size = PAGE_SIZE;
+    char* buffer = kmalloc(buffer_size);
+    struct diosfs_directory_entry* directory_entries = (struct diosfs_directory_entry *)buffer;
+    struct diosfs_directory_entry* directory_entry;
+    struct diosfs_inode inode;
+    struct diosfs_inode entry;
+    uint64_t directory_entries_read = 0;
+    uint64_t directory_block = 0;
+    uint64_t block_number = 0;
+
+    diosfs_read_inode(fs,&entry,inode_number);
+    diosfs_read_inode(fs, &inode, directory_inode_number);
+    if (inode.type != DIOSFS_DIRECTORY) {
+        kfree(buffer);
+        return DIOSFS_NOT_A_DIRECTORY;
+    }
+    
+
+
+    while (1) {
+        block_number = inode.blocks[directory_block++];
+        /*Should be okay to leave this unrestrained since we check children size and inode size */
+
+        diosfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
+
+        for (uint64_t i = 0; i < (fs->superblock->block_size / sizeof(struct diosfs_directory_entry)); i++) {
+            if (directory_entries_read == inode.size) {
+                goto not_found;
+            }
+            directory_entry = &directory_entries[i];
+            if (directory_entry->inode_number == inode_number) {
+                goto done;
+            }
+        }
+    }
+    done:
+    safe_strcpy(directory_entry->name,entry.name, MAX_FILENAME_LENGTH);
+    directory_entry->size = entry.size;
+    directory_entry->parent_inode_number = entry.parent_inode_number;
+
+    if (entry.parent_inode_number != directory_inode_number) {
+        
+    }
+    
+    not_found:
+    kfree(buffer);
+    return DIOSFS_SUCCESS;
+}
 /*
  * Fills a buffer with file data , following block pointers and appending bytes to the passed buffer.
  *
@@ -1469,6 +1534,15 @@ done:
     kfree(buffer);
     diosfs_write_inode(fs, inode);
     return DIOSFS_SUCCESS;
+}
+
+
+static void diosfs_update_parent_directory_entry(struct diosfs_filesystem *fs,struct diosfs_inode *inode) {
+    if (inode->inode_number == 0 || inode->type != DIOSFS_DIRECTORY) {
+        return;
+    }
+    struct diosfs_inode parent_inode;
+    diosfs_read_inode(fs,&parent_inode,inode->parent_inode_number);
 }
 
 /*

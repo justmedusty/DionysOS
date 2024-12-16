@@ -156,12 +156,30 @@ int main(const int argc, char** argv) {
     for (size_t i = 0; i < (size_calculation.total_blocks + block_start); i++) {
         diosfs_write_block_by_number(i + block_start,block,0,DIOSFS_BLOCKSIZE);
     }
+    /*
+     * Manually create the root inode
+     */
+    struct diosfs_inode inode;
+    diosfs_get_free_inode_and_mark_bitmap(&inode);
+    strcpy(inode.name, "/");
+    inode.type = DIOSFS_DIRECTORY;
+    inode.uid = 0;
+    inode.parent_inode_number = 0;
+    write_inode(&inode);
+
+    diosfs_create(&inode,"bin",DIOSFS_DIRECTORY);
+    diosfs_create(&inode,"etc",DIOSFS_DIRECTORY);
+    diosfs_create(&inode,"home",DIOSFS_DIRECTORY);
+    diosfs_create(&inode,"root",DIOSFS_DIRECTORY);
+    diosfs_create(&inode,"mnt",DIOSFS_DIRECTORY);
+    diosfs_create(&inode,"var",DIOSFS_DIRECTORY);
 
     fwrite(disk_buffer,size_calculation.total_blocks * DIOSFS_BLOCKSIZE,1,f);
     free(block);
     free(disk_buffer);
     printf("Successfully created diosfs image %s\n",argv[1]);
     exit(0);
+
 }
 
 void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, const size_t gigabytes, const size_t block_size) {
