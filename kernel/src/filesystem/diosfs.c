@@ -92,6 +92,9 @@ static uint64_t diosfs_write_dirent(struct diosfs_filesystem* fs, struct diosfs_
                                     const struct diosfs_directory_entry* entry);
 static uint64_t diosfs_symlink_check(struct diosfs_filesystem* fs, struct vnode* vnode, int32_t expected_type);
 static struct vnode* diosfs_follow_link(struct diosfs_filesystem* fs, const struct vnode* vnode);
+static void shift_directory_entry(const struct diosfs_filesystem* fs, const uint64_t entry_number,
+                                  struct diosfs_inode* parent_inode);
+
 /*
  * VFS pointer functions for vnodes
  */
@@ -736,23 +739,38 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem* fs, struct
     return DIOSFS_NOT_FOUND;
 }
 
-static void shift_directory_entry(struct diosfs_filesystem* fs, uint64_t entry_number, struct diosfs_inode *parent_inode) {
-    
-      char *buffer = kmalloc(PAGE_SIZE);
-      char* shift_buffer = kmalloc(PAGE_SIZE);
+static void shift_directory_entry(const struct diosfs_filesystem* fs, const uint64_t entry_number,
+                                  struct diosfs_inode* parent_inode) {
 
-        if (entry_number == parent_inode->size - 1) {
-            return; // other function handles decrementing size
-            }
+    if (entry_number == parent_inode->size - 1) {
+        return;
+    }
 
+    char* buffer = kmalloc(PAGE_SIZE);
+    char* shift_buffer = kmalloc(PAGE_SIZE);
 
+    uint64_t target_block = parent_inode->blocks[entry_number / DIOSFS_MAX_FILES_IN_DIRENT_BLOCK];
+    uint64_t target_entry_in_block = entry_number % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK;
+    uint64_t last_block = parent_inode->blocks[parent_inode->size / DIOSFS_MAX_FILES_IN_DIRENT_BLOCK];
+    uint64_t last_entry = parent_inode->size - 1 % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK;
 
+    diosfs_read_block_by_number(target_block, buffer, fs, 0, DIOSFS_BLOCKSIZE);
+    diosfs_read_block_by_number(last_block, shift_buffer, fs, 0,DIOSFS_BLOCKSIZE);
 
-            diosfs_write_inode(fs, parent_inode);
-            kfree(buffer);
-            kfree(shift_buffer);
+    struct diosfs_directory_entry* entries = (struct diosfs_directory_entry*)shift_buffer;
+    struct diosfs_directory_entry* entries2 = (struct diosfs_directory_entry*)buffer;
 
+    entries2[target_entry_in_block] = entries[last_entry];
+    memset(&entries[last_block], 0, sizeof(struct diosfs_directory_entry));
+
+    diosfs_write_block_by_number(target_block, buffer, fs, 0, DIOSFS_BLOCKSIZE);
+    diosfs_write_block_by_number(last_block, shift_buffer, fs, 0, DIOSFS_BLOCKSIZE);
+    diosfs_write_inode(fs, parent_inode);
+
+    kfree(buffer);
+    kfree(shift_buffer);
 }
+
 /*
  * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
  */
