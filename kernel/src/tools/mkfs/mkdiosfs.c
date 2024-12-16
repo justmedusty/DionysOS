@@ -74,10 +74,23 @@ uint64_t inode_bitmap_start = 0;
  *  mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc
  */
 int main(const int argc, char** argv) {
+    bool files = false;
+    size_t num_files = 0;
     if (argc < 3) {
         printf("Usage: mkdiosfs name.img size-gigs\n");
         printf("You can add files via: mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc\n");
         exit(1);
+    }
+
+
+    if (argc > 3 && strcmp(argv[3], "-f") == 1) {
+        printf("Invalid argument format, to add files append -f path/to/file/one path/to/file/two etc\n");
+        exit(1);
+    }
+
+    if (argc > 3) {
+        files = true;
+        num_files = argc - 3;
     }
 
     const uint64_t arg2 = strtoll_wrapper(argv[2]);
@@ -86,6 +99,8 @@ int main(const int argc, char** argv) {
         printf("This tool does not support images above 8GB, pick a size between 1 and 8 GB\n");
         exit(1);
     }
+
+
 
     FILE* f = fopen(argv[1], "w+");
 
@@ -162,6 +177,7 @@ int main(const int argc, char** argv) {
     for (size_t i = 0; i < (size_calculation.total_blocks + block_start); i++) {
         diosfs_write_block_by_number(i + block_start, block, 0,DIOSFS_BLOCKSIZE);
     }
+
     /*
      * Manually create the root inode
      */
@@ -195,6 +211,43 @@ int main(const int argc, char** argv) {
     diosfs_create(&inode, "var",DIOSFS_DIRECTORY);
     printf("Created var directory\n");
 
+    if (files) {
+        struct diosfs_inode home_inode;
+        read_inode(3,&home_inode); // home inode will always be inode 3
+        printf("Going into %s directory\n",home_inode.name);
+
+        for (size_t i = 0; i < num_files; i++) {
+
+            struct diosfs_inode new_inode;
+            FILE *file1 = fopen(argv[i + 3],"r");
+
+            if (file1 == NULL) {
+                printf("Error opening file %s\n",argv[i + 3]);
+                perror("fopen");
+                exit(1);
+            }
+
+            const char *filename = strchr(argv[i + 3], '/');
+
+            if (filename) {
+                filename++;
+            }else {
+                filename = argv[i + 3];
+            }
+
+            fseek(file1, 0L, SEEK_END);
+            uint64_t size = ftell(file1);
+            rewind(file1);
+            size_t bytes_read = 0;
+            char *file_buffer = malloc(size + 1);
+            fread(file_buffer, size, size, file1);
+            printf("Creating file %s in the home directory...\n",filename);
+            uint64_t inode_number =  diosfs_create(&home_inode,filename,DIOSFS_REG_FILE);
+            read_inode(inode_number, &new_inode);
+            diosfs_write_bytes_to_inode(&new_inode,file_buffer,size + 1,0,size);
+            printf("Created file %s\n",filename);
+        }
+    }
 
     fwrite(disk_buffer, size_calculation.total_blocks * DIOSFS_BLOCKSIZE, 1, f);
     free(block);
@@ -274,7 +327,7 @@ uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, const uint
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(parent, &entry);
     diosfs_write_inode(parent);
-    return DIOSFS_SUCCESS;
+    return inode.inode_number;
 }
 
 
