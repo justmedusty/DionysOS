@@ -8,6 +8,8 @@
 #include "mkdiosfs.h"
 #include <stdbool.h>
 
+#include "../../include/drivers/serial/uart.h"
+
 
 uint64_t strtoll_wrapper(const char* arg);
 void write_block(uint64_t block_number, const char* block_buffer);
@@ -18,7 +20,7 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_inode* inode
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
 static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_inode* inode,
-                                                       uint64_t num_allocated, uint64_t num_to_allocate);
+                                                      uint64_t num_allocated, uint64_t num_to_allocate);
 static void diosfs_write_inode(struct diosfs_inode* inode);
 static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_number(uint64_t block_number);
 uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_inode* inode,
@@ -44,7 +46,8 @@ static void diosfs_get_free_inode_and_mark_bitmap(struct diosfs_inode* inode_to_
 void read_inode(uint64_t inode_number, struct diosfs_inode* inode);
 void write_inode(struct diosfs_inode* inode);
 void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size_t gigabytes, size_t block_size);
-static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,const uint64_t directory_inode_number);
+static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,
+                                                       const uint64_t directory_inode_number);
 
 char* disk_buffer = NULL;
 uint64_t block_start = 0;
@@ -120,8 +123,10 @@ int main(const int argc, char** argv) {
     superblock->block_size = DIOSFS_BLOCKSIZE;
     superblock->num_blocks = size_calculation.total_blocks;
     superblock->num_inodes = size_calculation.total_inodes;
-    superblock->inode_start_pointer = size_calculation.total_inode_bitmap_blocks + size_calculation.total_block_bitmap_blocks + 1; // 1 for superblock
-    superblock->block_start_pointer = superblock->inode_start_pointer + (size_calculation.total_inodes / NUM_INODES_PER_BLOCK);
+    superblock->inode_start_pointer = size_calculation.total_inode_bitmap_blocks + size_calculation.
+        total_block_bitmap_blocks + 1; // 1 for superblock
+    superblock->block_start_pointer = superblock->inode_start_pointer + (size_calculation.total_inodes /
+        NUM_INODES_PER_BLOCK);
     superblock->inode_bitmap_pointers_start = 1;
     superblock->block_bitmap_pointers_start = inode_bitmap_start + size_calculation.total_inode_bitmap_blocks;
     superblock->block_bitmap_size = size_calculation.total_block_bitmap_blocks;
@@ -143,19 +148,19 @@ int main(const int argc, char** argv) {
 
     //write zerod blocks across the filesystem
     for (size_t i = 0; i < size_calculation.total_inode_bitmap_blocks; i++) {
-        diosfs_write_block_by_number(i + inode_bitmap_start,block,0,DIOSFS_BLOCKSIZE);
+        diosfs_write_block_by_number(i + inode_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < size_calculation.total_block_bitmap_blocks; i++) {
-        diosfs_write_block_by_number(i + block_bitmap_start,block,0,DIOSFS_BLOCKSIZE);
+        diosfs_write_block_by_number(i + block_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < ((size_calculation.total_inodes / NUM_INODES_PER_BLOCK)); i++) {
-        diosfs_write_block_by_number((i + inode_start),block,0,DIOSFS_BLOCKSIZE);
+        diosfs_write_block_by_number((i + inode_start), block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < (size_calculation.total_blocks + block_start); i++) {
-        diosfs_write_block_by_number(i + block_start,block,0,DIOSFS_BLOCKSIZE);
+        diosfs_write_block_by_number(i + block_start, block, 0,DIOSFS_BLOCKSIZE);
     }
     /*
      * Manually create the root inode
@@ -169,25 +174,37 @@ int main(const int argc, char** argv) {
     inode.uid = 0;
     inode.parent_inode_number = 0;
     write_inode(&inode);
+    read_inode(inode.inode_number, &inode);
+    printf("Created root directory\n");
 
-    diosfs_create(&inode,"bin",DIOSFS_DIRECTORY);
-    diosfs_create(&inode,"etc",DIOSFS_DIRECTORY);
-    diosfs_create(&inode,"home",DIOSFS_DIRECTORY);
-    diosfs_create(&inode,"root",DIOSFS_DIRECTORY);
-    diosfs_create(&inode,"mnt",DIOSFS_DIRECTORY);
-    diosfs_create(&inode,"var",DIOSFS_DIRECTORY);
-    printf("done\n");
-    fflush(stdout);
+    diosfs_create(&inode, "bin",DIOSFS_DIRECTORY);
+    printf("Created bin directory\n");
 
-    fwrite(disk_buffer,size_calculation.total_blocks * DIOSFS_BLOCKSIZE,1,f);
+    diosfs_create(&inode, "etc",DIOSFS_DIRECTORY);
+    printf("Created etc directory\n");
+
+    diosfs_create(&inode, "home",DIOSFS_DIRECTORY);
+    printf("Created home directory\n");
+
+    diosfs_create(&inode, "root",DIOSFS_DIRECTORY);
+    printf("Created root directory\n");
+
+    diosfs_create(&inode, "mnt",DIOSFS_DIRECTORY);
+    printf("Created mnt directory\n");
+
+    diosfs_create(&inode, "var",DIOSFS_DIRECTORY);
+    printf("Created var directory\n");
+
+
+    fwrite(disk_buffer, size_calculation.total_blocks * DIOSFS_BLOCKSIZE, 1, f);
     free(block);
     free(disk_buffer);
-    printf("Successfully created diosfs image %s\n",argv[1]);
+    printf("Successfully created diosfs image %s\n", argv[1]);
     exit(0);
-
 }
 
-void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, const size_t gigabytes, const size_t block_size) {
+void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, const size_t gigabytes,
+                          const size_t block_size) {
     if (gigabytes == 0) {
         exit(1);
     }
@@ -202,8 +219,10 @@ void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, cons
     size_calculation->total_inodes = split * (block_size / sizeof(struct diosfs_inode));
     size_calculation->total_data_blocks = (size_calculation->total_blocks - split) - padding;
     size_calculation->total_block_bitmap_blocks = (size_calculation->total_data_blocks / block_size / 8);
-    size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes  / block_size / 8;
-    printf("total_inodes %lu total data blocks %lu total block bitmap blocks %lu, total inode bitmap blocks %lu\n",size_calculation->total_inodes,size_calculation->total_data_blocks,size_calculation->total_block_bitmap_blocks,size_calculation->total_inode_bitmap_blocks);
+    size_calculation->total_inode_bitmap_blocks = size_calculation->total_inodes / block_size / 8;
+    printf("total_inodes %lu total data blocks %lu total block bitmap blocks %lu, total inode bitmap blocks %lu\n",
+           size_calculation->total_inodes, size_calculation->total_data_blocks,
+           size_calculation->total_block_bitmap_blocks, size_calculation->total_inode_bitmap_blocks);
 }
 
 uint64_t strtoll_wrapper(const char* arg) {
@@ -226,12 +245,12 @@ void read_block(const uint64_t block_number, char* block_buffer) {
 }
 
 void read_inode(uint64_t inode_number, struct diosfs_inode* inode) {
-    memcpy(&inode,&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], sizeof(struct diosfs_inode));
+    memcpy(inode, &disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], sizeof(struct diosfs_inode));
 }
 
 
 void write_inode(struct diosfs_inode* inode) {
-     memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], &inode, sizeof(struct diosfs_inode));
+    memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], inode, sizeof(struct diosfs_inode));
 }
 
 uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, const uint8_t inode_type) {
@@ -239,8 +258,6 @@ uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, const uint
 
     diosfs_get_free_inode_and_mark_bitmap(&inode);
     diosfs_read_inode(parent, parent->inode_number);
-    printf("here\n");
-    fflush(stdout);
     parent->size++;
     inode.type = inode_type;
     inode.block_count = 0;
@@ -256,7 +273,7 @@ uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, const uint
     entry.parent_inode_number = inode.parent_inode_number;
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(parent, &entry);
-    diosfs_write_inode( parent);
+    diosfs_write_inode(parent);
     return DIOSFS_SUCCESS;
 }
 
@@ -684,23 +701,24 @@ static void diosfs_write_inode(struct diosfs_inode* inode) {
 }
 
 static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number) {
-   read_inode(inode_number,inode);
+    read_inode(inode_number, inode);
 }
 
 static void diosfs_write_block_by_number(const uint64_t block_number, const char* buffer,
                                          uint64_t offset, uint64_t write_size) {
-    write_block(block_number,buffer);
+    write_block(block_number, buffer);
 }
 
 static void diosfs_read_block_by_number(const uint64_t block_number, char* buffer,
                                         uint64_t offset, uint64_t read_size) {
-    read_block(block_number,buffer);
+    read_block(block_number, buffer);
 }
 
-static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,const uint64_t directory_inode_number) {
+static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,
+                                                       const uint64_t directory_inode_number) {
     uint64_t buffer_size = DIOSFS_BLOCKSIZE;
     char* buffer = malloc(buffer_size);
-    struct diosfs_directory_entry* directory_entries = (struct diosfs_directory_entry *)buffer;
+    struct diosfs_directory_entry* directory_entries = (struct diosfs_directory_entry*)buffer;
     struct diosfs_directory_entry* directory_entry;
     struct diosfs_inode inode;
     struct diosfs_inode entry;
@@ -708,13 +726,12 @@ static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_numb
     uint64_t directory_block = 0;
     uint64_t block_number = 0;
 
-    diosfs_read_inode(&entry,inode_number);
-    diosfs_read_inode( &inode, directory_inode_number);
+    diosfs_read_inode(&entry, inode_number);
+    diosfs_read_inode(&inode, directory_inode_number);
     if (inode.type != DIOSFS_DIRECTORY) {
         free(buffer);
         return DIOSFS_NOT_A_DIRECTORY;
     }
-
 
 
     while (1) {
@@ -733,16 +750,15 @@ static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_numb
             }
         }
     }
-    done:
-    strcpy(directory_entry->name,entry.name);
+done:
+    strcpy(directory_entry->name, entry.name);
     directory_entry->size = entry.size;
     directory_entry->parent_inode_number = entry.parent_inode_number;
 
     if (entry.parent_inode_number != directory_inode_number) {
-
     }
 
-    not_found:
+not_found:
     free(buffer);
     return DIOSFS_SUCCESS;
 }
@@ -800,7 +816,7 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_inode* inode
     char* buffer = malloc(DIOSFS_BLOCKSIZE);
 
     uint64_t double_indirect = diosfs_get_free_block_and_mark_bitmap();
-    
+
     diosfs_read_block_by_number(double_indirect, buffer, 0,DIOSFS_BLOCKSIZE);
     uint64_t* block_array = (uint64_t*)buffer;
 
