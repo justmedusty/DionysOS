@@ -23,7 +23,6 @@ extern irq_handler
 extern panic
 
 %macro pushaq 0
-    cli
     push rax      ;save current rax
     push rbx      ;save current rbx
     push rcx      ;save current rcx
@@ -58,7 +57,6 @@ extern panic
     pop rcx      ;save current rcx
     pop rbx      ;save current rbx
     pop rax      ;save current rax
-    sti
 
 %endmacro
 
