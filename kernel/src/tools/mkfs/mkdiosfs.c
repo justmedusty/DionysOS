@@ -49,6 +49,8 @@ void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, size
 static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,
                                                        const uint64_t directory_inode_number);
 
+#define FILE_LIST_OFFSET 4
+
 char* disk_buffer = NULL;
 uint64_t block_start = 0;
 uint64_t inode_start = 0;
@@ -90,7 +92,7 @@ int main(const int argc, char** argv) {
 
     if (argc > 4) {
         files = true;
-        num_files = argc - 4;
+        num_files = argc - FILE_LIST_OFFSET;
     }
 
     const uint64_t arg2 = strtoll_wrapper(argv[2]);
@@ -212,23 +214,24 @@ int main(const int argc, char** argv) {
     diosfs_create(&inode, "var",DIOSFS_DIRECTORY);
     printf("Created var directory\n");
 
+    //include any passed files in
     if (files) {
         struct diosfs_inode home_inode;
         read_inode(3,&home_inode); // home inode will always be inode 3
-        printf("Going into %s directory\n",home_inode.name);
+        printf("Going into  %s  directory\n",home_inode.name,home_inode.inode_number);
 
-        for (size_t i = 0; i < num_files; i++) {
+        for (size_t i = 0; i <= num_files; i++) {
 
             struct diosfs_inode new_inode;
-            FILE *file1 = fopen(argv[i + 3],"r");
+            FILE *file1 = fopen(argv[i + FILE_LIST_OFFSET],"r");
 
             if (file1 == NULL) {
-                printf("Error opening file %s\n",argv[i + 3]);
+                printf("Error opening file %s\n",argv[i + FILE_LIST_OFFSET]);
                 perror("fopen");
                 exit(1);
             }
 
-            const char *filename = strchr(argv[i + 3], '/');
+            const char *filename = strchr(argv[i + FILE_LIST_OFFSET], '/');
 
             if (filename) {
                 filename++;
@@ -299,7 +302,7 @@ void read_block(const uint64_t block_number, char* block_buffer) {
 }
 
 void read_inode(uint64_t inode_number, struct diosfs_inode* inode) {
-    memcpy(inode, &disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], sizeof(struct diosfs_inode));
+    memcpy(inode, &disk_buffer[INODE_TO_BYTE_OFFSET(inode_number)], sizeof(struct diosfs_inode));
 }
 
 

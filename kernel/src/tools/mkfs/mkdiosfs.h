@@ -7,7 +7,7 @@
 #pragma once
 #include "stdint.h"
 
-#define INODE_TO_BYTE_OFFSET(inode_numer) ((inode_start * DIOSFS_BLOCKSIZE) + ((inode_numer / sizeof(struct diosfs_inode)) * DIOSFS_BLOCKSIZE) + ((inode_numer % DIOSFS_BLOCKSIZE) * sizeof(struct diosfs_inode)))
+#define INODE_TO_BYTE_OFFSET(inode_number) (((inode_start * DIOSFS_BLOCKSIZE) + (inode_number / NUM_INODES_PER_BLOCK) * DIOSFS_BLOCKSIZE) + (inode_number % NUM_INODES_PER_BLOCK) * sizeof(struct diosfs_inode))
 
 #define INITIAL_FILESYSTEM 0 /* Just for ramdisk 0 id purposes*/
 
