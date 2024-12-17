@@ -1,6 +1,6 @@
 # DionysOS. 
 ![16-Famous-Figure-Art-Dionysus-3840957333](https://github.com/user-attachments/assets/0cc8808b-31cc-4050-86b7-e99c01e3bb76)
-[History](https://www.worldhistory.org/Dionysos/)
+[Read More](https://www.worldhistory.org/Dionysos/) [Read More](http://dionysia.org/greek/dionysos/thompson/dionysos.html)
 
 # Why Dionysos?
 As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme. The themes of order & chaos are central to the story of Dionysos and such is also true for an operating system. Hardware is chaotic, users are chaotic, and the operating system stands between as an arbiter. It brings order to chaos and attempts to strike a balance between the inherent chaos of the surrounding environment and the order required for a coherent experience. The operating system provides a controlled environment for chaos, imposing structure on its internals and peripherals. The operating system may even succumb to the chaos on occasions such as an NMI or kernel panic, similar to the divine madness that afflicted Dionysos. His thyrsos, the staff capable of providing as well as destroying, also fits very well with this theme. The operating system can provide all of the resources a task requests, but at the same time it will destroy it when it steps out of line. Much like the thyrsos of Dionysos.
