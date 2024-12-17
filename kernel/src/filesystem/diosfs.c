@@ -1201,6 +1201,9 @@ static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem*
     if (entry.parent_inode_number != directory_inode_number) {
         
     }
+
+    diosfs_write_block_by_number(block_number,buffer,fs,0,DIOSFS_BLOCKSIZE);
+    return DIOSFS_SUCCESS;
     
     not_found:
     kfree(buffer);
