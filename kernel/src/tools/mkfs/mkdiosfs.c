@@ -242,7 +242,7 @@ int main(const int argc, char** argv) {
             rewind(file1);
             size_t bytes_read = 0;
             char* file_buffer = malloc(size + 1);
-            fread(file_buffer, size, size, file1);
+            bytes_read = fread(file_buffer, 1, size, file1);
             printf("Creating file %s in the home directory...\n", filename);
             uint64_t inode_number = diosfs_create(&home_inode, filename,DIOSFS_REG_FILE);
             read_inode(inode_number, &new_inode);
@@ -523,7 +523,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, char* bu
         else {
             byte_size = bytes_left;
         }
-        printf("HERE\n");
+        printf("start_block = %lu end block = %lu current block = %lu \n",start_block,end_block,i);
         fflush(stdout);
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i);
         diosfs_write_block_by_number(current_block_number, buffer, start_offset, byte_size);

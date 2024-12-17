@@ -1154,7 +1154,9 @@ done:
     kfree(buffer);
     return DIOSFS_SUCCESS;
 }
-
+/*
+ * This function exists to update the directory entry when a file name changes or size changes from a write or the like.
+ */
 static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem* fs,
                                               const uint64_t inode_number,
                                              const uint64_t directory_inode_number) {
