@@ -83,14 +83,14 @@ int main(const int argc, char** argv) {
     }
 
 
-    if (argc > 3 && strcmp(argv[3], "-f") == 1) {
-        printf("Invalid argument format, to add files append -f path/to/file/one path/to/file/two etc\n");
+    if (argc > 3 && strcmp(argv[3], "--f") != 0) {
+        printf("Invalid optional argument format, to add files append -f path/to/file/one path/to/file/two etc\n");
         exit(1);
     }
 
-    if (argc > 3) {
+    if (argc > 4) {
         files = true;
-        num_files = argc - 3;
+        num_files = argc - 4;
     }
 
     const uint64_t arg2 = strtoll_wrapper(argv[2]);
@@ -108,6 +108,7 @@ int main(const int argc, char** argv) {
         printf("Error creating file\n");
         exit(1);
     }
+
     uint64_t size_bytes = arg2 << 30;
     //giving a bit of extra space in the buffer, size + size / 20
     disk_buffer = malloc(size_bytes + (size_bytes / 20));
