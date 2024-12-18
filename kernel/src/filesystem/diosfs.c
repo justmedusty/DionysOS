@@ -1386,7 +1386,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem* fs, struct
 
         bytes_written += byte_size;
         bytes_left -= byte_size;
-        buffer += bytes_written;
+        buffer += byte_size;
 
         if (start_offset) {
             /*
