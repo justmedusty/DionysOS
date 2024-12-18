@@ -10,7 +10,7 @@
 
 
 uint64_t strtoll_wrapper(const char* arg);
-void write_block(const uint64_t block_number, const char* block_buffer,const uint64_t offset,uint64_t write_size);
+void write_block(const uint64_t block_number, const char* block_buffer, const uint64_t offset, uint64_t write_size);
 static uint64_t diosfs_allocate_single_indirect_block(struct diosfs_inode* inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
@@ -34,7 +34,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode* inode,
                                     const struct diosfs_directory_entry* entry);
 static uint64_t diosfs_get_free_block_and_mark_bitmap();
 uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, uint8_t inode_type);
-void read_block(const uint64_t block_number, char* block_buffer,uint64_t offset, uint64_t read_size);
+void read_block(const uint64_t block_number, char* block_buffer, uint64_t offset, uint64_t read_size);
 static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number);
 static void diosfs_read_block_by_number(uint64_t block_number, char* buffer,
                                         uint64_t offset, uint64_t read_size);
@@ -158,10 +158,10 @@ int main(const int argc, char** argv) {
     inode_start = superblock->inode_start_pointer;
     inode_bitmap_start = superblock->inode_bitmap_pointers_start;
 
-    printf("Block start %lu\n",block_start);
+    printf("Block start %lu\n", block_start);
 
     memset(superblock->reserved, 0, sizeof(superblock->reserved));
-    write_block(0, block,0,DIOSFS_BLOCKSIZE);
+    write_block(0, block, 0,DIOSFS_BLOCKSIZE);
 
     memset(block, 0,DIOSFS_BLOCKSIZE);
 
@@ -249,8 +249,9 @@ int main(const int argc, char** argv) {
             size_t bytes_read = 0;
             char* file_buffer = malloc(size + 1);
             bytes_read = fread(file_buffer, 1, size, file1);
-            if (bytes_read != size) {}
-            printf("Creating file %s in the home directory... check buffer %lu\n", filename,size);
+            if (bytes_read != size) {
+            }
+            printf("Creating file %s in the home directory... check buffer %lu\n", filename, size);
             uint64_t inode_number = diosfs_create(&home_inode, filename,DIOSFS_REG_FILE);
             read_inode(inode_number, &new_inode);
             diosfs_write_bytes_to_inode(&new_inode, file_buffer, size, 0, size);
@@ -298,21 +299,22 @@ uint64_t strtoll_wrapper(const char* arg) {
     return result;
 }
 
-void write_block(const uint64_t block_number, const char* block_buffer,const uint64_t offset,uint64_t write_size) {
-    memmove(disk_buffer + ( block_number * DIOSFS_BLOCKSIZE + offset), block_buffer,write_size);
+void write_block(const uint64_t block_number, const char* block_buffer, const uint64_t offset, uint64_t write_size) {
+    memcpy(disk_buffer + (block_number * DIOSFS_BLOCKSIZE + offset), block_buffer, write_size);
+    printf("%p\n", disk_buffer + (block_number * DIOSFS_BLOCKSIZE + offset));
 }
 
-void read_block(const uint64_t block_number, char* block_buffer,uint64_t offset, uint64_t read_size) {
-    memmove(block_buffer, disk_buffer +  (block_number * DIOSFS_BLOCKSIZE) + offset,read_size);
+void read_block(const uint64_t block_number, char* block_buffer, uint64_t offset, uint64_t read_size) {
+    memcpy(block_buffer, disk_buffer + (block_number * DIOSFS_BLOCKSIZE) + offset, read_size);
 }
 
 void read_inode(uint64_t inode_number, struct diosfs_inode* inode) {
-    memmove(inode, &disk_buffer[INODE_TO_BYTE_OFFSET(inode_number)], sizeof(struct diosfs_inode));
+    memcpy(inode, &disk_buffer[INODE_TO_BYTE_OFFSET(inode_number)], sizeof(struct diosfs_inode));
 }
 
 
 void write_inode(struct diosfs_inode* inode) {
-    memmove(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], inode, sizeof(struct diosfs_inode));
+    memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], inode, sizeof(struct diosfs_inode));
 }
 
 uint64_t diosfs_create(struct diosfs_inode* parent, const char* name, const uint8_t inode_type) {
@@ -509,7 +511,6 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, const ch
     uint64_t end_block = start_block + num_blocks_to_write;
 
     if (end_block + 1 > inode->block_count) {
-
         diosfs_inode_allocate_new_blocks(inode, (end_block + 1) - inode->block_count);
         inode->block_count += ((end_block + 1) - inode->block_count);
     }
@@ -530,10 +531,10 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, const ch
         else {
             byte_size = bytes_left;
         }
-        printf("start_block = %lu end block = %lu current block = %lu \n",start_block,end_block,i);
+        printf("start_block = %lu end block = %lu current block = %lu \n", start_block, end_block, i);
         fflush(stdout);
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i);
-        printf("here %lu",current_block_number);
+        printf("here %lu", current_block_number);
         fflush(stdout);
         diosfs_write_block_by_number(current_block_number, buffer, start_offset, byte_size);
         printf("there\n");
@@ -541,7 +542,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, const ch
         bytes_written += byte_size;
         bytes_left -= byte_size;
         buffer += bytes_written;
-        printf("bytes_written = %lu current block = %lu\n", bytes_written,current_block_number);
+        printf("bytes_written = %lu current block = %lu\n", bytes_written, current_block_number);
         fflush(stdout);
 
         if (start_offset) {
@@ -773,12 +774,12 @@ static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number)
 
 static void diosfs_write_block_by_number(const uint64_t block_number, const char* buffer,
                                          uint64_t offset, uint64_t write_size) {
-    write_block(block_number + block_start, buffer,offset,write_size);
+    write_block(block_number + block_start, buffer, offset, write_size);
 }
 
 static void diosfs_read_block_by_number(const uint64_t block_number, char* buffer,
                                         uint64_t offset, uint64_t read_size) {
-    read_block(block_number +block_start, buffer,offset, DIOSFS_BLOCKSIZE - offset);
+    read_block(block_number + block_start, buffer, offset, DIOSFS_BLOCKSIZE - offset);
 }
 
 static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,
@@ -821,7 +822,7 @@ done:
     strcpy(directory_entry->name, entry.name);
     directory_entry->size = entry.size;
     directory_entry->parent_inode_number = entry.parent_inode_number;
-    diosfs_write_block_by_number(block_number, buffer,0,DIOSFS_BLOCKSIZE);
+    diosfs_write_block_by_number(block_number, buffer, 0,DIOSFS_BLOCKSIZE);
     return DIOSFS_SUCCESS;
 not_found:
     free(buffer);
