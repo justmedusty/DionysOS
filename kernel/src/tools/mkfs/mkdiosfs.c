@@ -26,7 +26,7 @@ uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_inode* inode,
 static uint64_t diosfs_get_relative_block_number_from_file(const struct diosfs_inode* inode,
                                                            uint64_t current_block
 );
-static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, char* buffer,
+static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, const char* buffer,
                                             uint64_t buffer_size,
                                             uint64_t offset,
                                             uint64_t write_size_bytes);
@@ -164,36 +164,39 @@ int main(const int argc, char** argv) {
 
     //write zerod blocks across the filesystem
     for (size_t i = 0; i < size_calculation.total_inode_bitmap_blocks; i++) {
-        diosfs_write_block_by_number(i + inode_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
+        write_block(i + inode_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < size_calculation.total_block_bitmap_blocks; i++) {
-        diosfs_write_block_by_number(i + block_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
+        write_block(i + block_bitmap_start, block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < ((size_calculation.total_inodes / NUM_INODES_PER_BLOCK)); i++) {
-        diosfs_write_block_by_number((i + inode_start), block, 0,DIOSFS_BLOCKSIZE);
+        write_block((i + inode_start), block, 0,DIOSFS_BLOCKSIZE);
     }
 
     for (size_t i = 0; i < (size_calculation.total_blocks + block_start); i++) {
-        diosfs_write_block_by_number(i + block_start, block, 0,DIOSFS_BLOCKSIZE);
+        write_block(i + block_start, block, 0,DIOSFS_BLOCKSIZE);
     }
 
     /*
      * Manually create the root inode
      */
-
-    struct diosfs_inode inode;
+    struct diosfs_inode inode = {0};
     diosfs_get_free_inode_and_mark_bitmap(&inode);
-
     strcpy(inode.name, "/");
     inode.type = DIOSFS_DIRECTORY;
     inode.uid = 0;
     inode.parent_inode_number = 0;
+    inode.refcount = 1;
     write_inode(&inode);
     read_inode(inode.inode_number, &inode);
+
     printf("Created root directory\n");
 
+    /*
+     * create default directories
+     */
     diosfs_create(&inode, "bin",DIOSFS_DIRECTORY);
     printf("Created bin directory\n");
 
@@ -212,7 +215,7 @@ int main(const int argc, char** argv) {
     diosfs_create(&inode, "var",DIOSFS_DIRECTORY);
     printf("Created var directory\n");
 
-    //include any passed files in
+    //include any passed files in, they automamtically end up in the home directory
     if (files) {
         struct diosfs_inode home_inode;
         read_inode(3, &home_inode); // home inode will always be inode 3
@@ -292,11 +295,11 @@ uint64_t strtoll_wrapper(const char* arg) {
 }
 
 void write_block(const uint64_t block_number, const char* block_buffer,const uint64_t offset,uint64_t write_size) {
-    memcpy(disk_buffer + (block_number * DIOSFS_BLOCKSIZE) + offset, block_buffer,write_size);
+    memcpy(disk_buffer + (( block_number) * DIOSFS_BLOCKSIZE) + offset, block_buffer,write_size);
 }
 
 void read_block(const uint64_t block_number, char* block_buffer) {
-    memcpy(block_buffer, disk_buffer + block_number * DIOSFS_BLOCKSIZE,DIOSFS_BLOCKSIZE);
+    memcpy(block_buffer, disk_buffer +  ((block_number) * DIOSFS_BLOCKSIZE),DIOSFS_BLOCKSIZE);
 }
 
 void read_inode(uint64_t inode_number, struct diosfs_inode* inode) {
@@ -457,7 +460,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode* inode,
 }
 
 
-static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, char* buffer,
+static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, const char* buffer,
                                             const uint64_t buffer_size,
                                             const uint64_t offset,
                                             const uint64_t write_size_bytes) {
@@ -526,10 +529,16 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode* inode, char* bu
         printf("start_block = %lu end block = %lu current block = %lu \n",start_block,end_block,i);
         fflush(stdout);
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i);
+        printf("here ");
+        fflush(stdout);
         diosfs_write_block_by_number(current_block_number, buffer, start_offset, byte_size);
+        printf("there\n");
+        fflush(stdout);
         bytes_written += byte_size;
         bytes_left -= byte_size;
         buffer += bytes_written;
+        printf("bytes_written = %lu current block = %lu\n", bytes_written,current_block_number);
+        fflush(stdout);
 
         if (start_offset) {
             /*
@@ -758,7 +767,7 @@ static void diosfs_read_inode(struct diosfs_inode* inode, uint64_t inode_number)
 
 static void diosfs_write_block_by_number(const uint64_t block_number, const char* buffer,
                                          uint64_t offset, uint64_t write_size) {
-    write_block(block_number, buffer,offset,write_size);
+    write_block(block_number + block_start, buffer,offset,write_size);
 }
 
 static void diosfs_read_block_by_number(const uint64_t block_number, char* buffer,
