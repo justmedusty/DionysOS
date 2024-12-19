@@ -99,7 +99,6 @@ int phys_init() {
     struct limine_memmap_entry** entries = memmap->entries;
     uint64_t highest_address = 0;
     hhdm_offset = hhdm->offset;
-
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry* entry = entries[i];
 

@@ -23,7 +23,19 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
+      <change afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/serial/pcie.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/serial/pcie.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/arch/x86_64/acpi.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/arch/x86_64/acpi.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/mm/pmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/pmm.c" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,28 +72,6 @@
     <setting file="file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/kernel/src/mm/pmm.c" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="MakefileLocalSettings">
-    <option name="availableProjects">
-      <map>
-        <entry>
-          <key>
-            <ExternalProjectPojo>
-              <option name="name" value="DionysOS" />
-              <option name="path" value="$PROJECT_DIR$/.." />
-            </ExternalProjectPojo>
-          </key>
-          <value>
-            <list>
-              <ExternalProjectPojo>
-                <option name="name" value="DionysOS" />
-                <option name="path" value="$PROJECT_DIR$/.." />
-              </ExternalProjectPojo>
-            </list>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
     <option name="majorVersion" value="2024" />
@@ -113,7 +103,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/kernel/GNUmakefile&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/GNUmakefile&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -125,11 +115,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
+      <recent name="$PROJECT_DIR$/kernel/src/dev/disk" />
+      <recent name="$PROJECT_DIR$/kernel/src/dev" />
       <recent name="$PROJECT_DIR$/kernel/src/include/scheduling" />
       <recent name="$PROJECT_DIR$/kernel/src/arch/arch_specific" />
-      <recent name="$PROJECT_DIR$/kernel/src/arch" />
-      <recent name="$PROJECT_DIR$/kernel/src/sys" />
-      <recent name="$PROJECT_DIR$/kernel/src/include/arch/x86_64" />
     </key>
   </component>
   <component name="RunManager" selected="Makefile Target.run">
@@ -311,6 +301,9 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Embedded GDB Server.jj" />
+      <item itemvalue="Makefile Target.run-gdb" />
+      <item itemvalue="Makefile Target.run" />
       <item itemvalue="Native Application.GNUmakefile" />
       <item itemvalue="Native Application.Makefile" />
       <item itemvalue="Native Application.all-hdd" />
@@ -325,9 +318,6 @@
       <item itemvalue="Native Application.run-uefi" />
       <item itemvalue="Native Application.run-x86" />
       <item itemvalue="Remote Debug.GDB Kernel" />
-      <item itemvalue="Makefile Target.run-gdb" />
-      <item itemvalue="Makefile Target.run" />
-      <item itemvalue="Embedded GDB Server.jj" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -413,6 +403,8 @@
       <workItem from="1733730642226" duration="41000" />
       <workItem from="1734209413047" duration="87000" />
       <workItem from="1734552113400" duration="22000" />
+      <workItem from="1734631061559" duration="1422000" />
+      <workItem from="1734632498938" duration="4419000" />
     </task>
     <task id="LOCAL-00202" summary="Bunch of issues popping their heads out with some more aggressive testing , lots to do.">
       <option name="closed" value="true" />
@@ -879,7 +871,7 @@
           <option name="timeStamp" value="165" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c</url>
+          <url>file://$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c</url>
           <line>52</line>
           <option name="timeStamp" value="224" />
         </line-breakpoint>
@@ -889,13 +881,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -906,7 +898,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -953,31 +945,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" />
+          <dependency id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="0" />
+          <dependency id="0" master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="3" />
+          <dependency id="1" master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="2" />
+          <dependency id="2" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />

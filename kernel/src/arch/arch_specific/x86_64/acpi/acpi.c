@@ -8,6 +8,7 @@
 #include "include/mem/mem.h"
 #include "include/drivers/serial/uart.h"
 #include <include/arch/arch_cpu.h>
+#include "include/dev/bus/pci.h"
 #include "include/arch/x86_64/madt.h"
 #include "limine.h"
 
@@ -21,7 +22,7 @@ int8_t acpi_extended = 0;
 
 void *acpi_root_sdt;
 
-void *find_acpi_table(const int8_t *name) {
+void *find_acpi_table(const char *name) {
     struct acpi_rsdt *rsdt = (struct acpi_rsdt *) acpi_root_sdt;
     if (!acpi_extended) {
         uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
@@ -55,7 +56,7 @@ void acpi_init() {
         panic("rsdp null");
     }
 
-    serial_printf("acpi revision %x.64 \n", rsdp->revision);
+    serial_printf("acpi revision %x.8 \n", rsdp->revision);
 
     if (rsdp->revision != 0) {
         // Use XSDT
@@ -77,6 +78,14 @@ void acpi_init() {
         }
     }
 
+    struct mcfg_header *mcfg_header = (struct mcfg_header *)find_acpi_table("MCFG");
 
+    if(!mcfg_header){
+        panic("Cannot find mcfg header to set up PCI\n");
+    }
+    struct mcfg_header *header = find_acpi_table("MCFG");
+
+    set_pci_mmio_address(mcfg_header->entry->base_address);
+    serial_printf("PCI MMIO Base Address %x.64\n",V2P(mcfg_header->entry[0].base_address));
     madt_init();
 }

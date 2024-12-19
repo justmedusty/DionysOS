@@ -2,15 +2,15 @@
 // Created by dustyn on 9/17/24.
 //
 
-#include "include/drivers/block/ramdisk.h"
+#include "../../include/drivers/block/ramdisk.h"
 #include <include/types.h>
 #include <include/drivers/serial/uart.h>
 #include <include/filesystem/diosfs.h>
 #include <include/mem/kalloc.h>
-#include "include/mem/mem.h"
-#include "include/mem/pmm.h"
-#include "include/definitions.h"
-#include "include/definitions/string.h"
+#include "../../include/mem/mem.h"
+#include "../../include/mem/pmm.h"
+#include "../../include/definitions.h"
+#include "../../include/definitions/string.h"
 
 struct ramdisk ramdisk[RAMDISK_COUNT]; /* Only need one but why not 3! */
 uint64_t ramdisk_count = RAMDISK_COUNT;
