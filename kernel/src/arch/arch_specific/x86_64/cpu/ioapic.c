@@ -100,7 +100,7 @@ void ioapic_redirect_gsi(uint32_t lapic_id, uint8_t vector, uint32_t gsi, uint16
 
 void ioapic_redirect_irq(uint32_t lapic_id, uint8_t vector, uint8_t irq, uint8_t mask) {
     uint32_t index = 0;
-    madt_iso* iso;
+    struct madt_iso* iso;
 
     while (index < madt_iso_len) {
         iso = madt_iso_list[index];

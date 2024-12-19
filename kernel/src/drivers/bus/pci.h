@@ -4,8 +4,9 @@
 
 #ifndef KERNEL_PCI_H
 #define KERNEL_PCI_H
-
+#pragma once
 #include <stdint.h>
+#include <stdbool.h>
 
 #define PCI_MAX_BUSES 256
 #define DEVICES_PER_BUS 32
@@ -17,6 +18,7 @@
 #define PCI_DEVICE_TYPE_OFFSET 0x0E
 
 #define PCI_DEVICE_DOESNT_EXIST 0xFFFF
+#define PCI_ID_MASK PCI_DEVICE_DOESNT_EXIST
 
 #define BUS_SHIFT 20
 #define DEVICE_SHIFT 15
@@ -26,8 +28,11 @@ struct pci_device {
     uint16_t bus;
     uint8_t device;
     uint8_t function;
-    uint16_t offset;
+
+    uint16_t vendor_id;
+    uint16_t device_id;
 };
 
+void pci_scan(bool print);
 
 #endif //KERNEL_PCI_H
