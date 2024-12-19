@@ -44,9 +44,14 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
+🟡Write a PCI driver.
+
+🔴Write an NVMe driver.
+
+🔴Write an AHCI driver.
+
 🔴Get a userland going by loading executables from your VFS and running them in ring 3. Set up a way to perform system calls.
 
-🔴Write a PCI driver.
 
 🔴Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
 
