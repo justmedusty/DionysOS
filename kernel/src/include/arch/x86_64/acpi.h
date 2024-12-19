@@ -41,7 +41,7 @@ struct mcfg_entry{
     uint8_t start_bus;
     uint8_t end_bus;
     uint32_t reserved;
-};
+}__attribute__((packed));
 
 struct mcfg_header{
     char signature[4];
@@ -55,7 +55,7 @@ struct mcfg_header{
     uint32_t creator_revision;
     uint64_t reserved;
     struct mcfg_entry entry[];
-};
+}__attribute__((packed));
 
 
 

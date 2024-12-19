@@ -5,7 +5,7 @@
 #ifndef KERNEL_PCI_H
 #define KERNEL_PCI_H
 #pragma once
-
+#include <include/arch/x86_64/acpi.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -112,7 +112,6 @@ struct pci_bus {
 
 
 void pci_scan(bool print);
-
-void set_pci_mmio_address(uintptr_t address);
-
+char* pci_get_class_name(uint8_t class);
+void set_pci_mmio_address(struct mcfg_entry *entry);
 #endif //KERNEL_PCI_H

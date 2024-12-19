@@ -3,6 +3,7 @@
 //
 
 #include "include/dev/bus/pci.h"
+#include <include/arch/x86_64/acpi.h>
 #include"include/data_structures/doubly_linked_list.h"
 #include "include/definitions.h"
 #include "include/mem/kalloc.h"
@@ -10,10 +11,12 @@
 
 struct doubly_linked_list pci_device_list;
 uintptr_t pci_mmio_address = 0;
+uint8_t start_bus = 0;
+uint8_t end_bus = 0;
 
 
 static uint32_t pci_read_config(struct pci_device *device,uint16_t offset) {
-    uintptr_t address = (uintptr_t) pci_mmio_address
+    uintptr_t address = (uintptr_t) P2V(pci_mmio_address)
                         + (uintptr_t) (device->bus << BUS_SHIFT)
                         + (uintptr_t) (device->slot << DEVICE_SHIFT)
                         + (uintptr_t) (device->function << FUNCTION_SHIFT)
@@ -30,8 +33,11 @@ void pci_init(){
     doubly_linked_list_init(&pci_device_list);
 
 }
-void set_pci_mmio_address(uintptr_t address){
-    pci_mmio_address = address;
+void set_pci_mmio_address(struct mcfg_entry *entry){
+    pci_mmio_address = entry->base_address;
+    start_bus = entry->start_bus;
+    end_bus = entry->end_bus;
+    serial_printf("PCI MMIO address is %x.64 , start bus %i end bus %i\n",pci_mmio_address,start_bus,end_bus);
 }
 
 
@@ -72,7 +78,7 @@ void pci_scan(bool print){
 }
 
 
-char* pci_get_class_name(uint8_t class){
+char* pci_get_class_name(uint8_t class) {
 
     switch (class){
 

@@ -85,7 +85,7 @@ void acpi_init() {
     }
     struct mcfg_header *header = find_acpi_table("MCFG");
 
-    set_pci_mmio_address(mcfg_header->entry->base_address);
-    serial_printf("PCI MMIO Base Address %x.64\n",V2P(mcfg_header->entry[0].base_address));
+    set_pci_mmio_address((struct mcfg_entry *)&mcfg_header->entry);
+    pci_scan(true);
     madt_init();
 }
