@@ -26,6 +26,9 @@ struct spinlock serial_lock;
 /*
  * Your typical UART setup, COM1 port
  */
+
+#ifdef __x86_64__
+
 void init_serial() {
     write_port(COM1 + 1, 0x00);    // Disable all interrupts
     write_port(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -41,6 +44,8 @@ void init_serial() {
 static int is_transmit_empty() {
     return read_port(COM1 + 5) & 0x20;
 }
+
+#endif
 /*
  *  This function writes a single byte to the serial port,
  *  if it is a linebreak, it writes a carriage return after

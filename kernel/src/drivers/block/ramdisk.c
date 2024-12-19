@@ -98,7 +98,6 @@ uint64_t ramdisk_read(char* buffer, uint64_t block, uint64_t offset, uint64_t re
                 buffer[index] = read_start[index];
                 index++;
         }
-
         return SUCCESS;
 }
 
