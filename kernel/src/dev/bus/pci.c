@@ -8,6 +8,7 @@
 #include "include/definitions.h"
 #include "include/mem/kalloc.h"
 #include "include/drivers/serial/uart.h"
+#include "include/definitions/string.h"
 
 struct doubly_linked_list pci_device_list;
 uintptr_t pci_mmio_address = 0;
@@ -45,32 +46,44 @@ void pci_scan(bool print){
     for(uint16_t bus = 0; bus < PCI_MAX_BUSES; bus++){
         for(uint8_t device = 0; device < SLOTS_PER_BUS; device++){
             for(uint8_t function = 0; function < FUNCTIONS_PER_DEVICE; function++){
-                struct pci_device pci_device = {
-                        .bus = (uint8_t) bus,
-                        .slot = device,
-                        .function = function,
-                };
 
-                uint16_t vendor_id = pci_read_config(&pci_device,PCI_DEVICE_VENDOR_ID_OFFSET) & PCI_ID_MASK;
+                struct pci_device *pci_device = kmalloc(sizeof(struct pci_device));
+                uint16_t vendor_id = pci_read_config(pci_device,PCI_DEVICE_VENDOR_ID_OFFSET) & SHORT_MASK;
 
                 if(vendor_id == PCI_DEVICE_DOESNT_EXIST){
                     if(function == 0){
+                        kfree(pci_device);
                         break;
                     }
+                    kfree(pci_device);
                     continue;
                 }
-                uint16_t device_id = pci_read_config(&pci_device,PCI_DEVICE_ID_OFFSET);
 
-                if(print){
-                    serial_printf("Found device on bus %i, device %i, function %i, vendor id %i device id %i\n",bus,device,function,vendor_id,device_id);
+                pci_device->bus = bus;
+                pci_device->slot = device;
+                pci_device->function = function;
+
+                uint8_t class = pci_read_config(pci_device,PCI_DEVICE_CLASS_OFFSET) & BYTE_MASK;
+
+                if(class == PCI_CLASS_UNASSIGNED || strcmp(pci_get_class_name(class),"Unknown")){
+                    kfree(pci_device);
+                    continue;
                 }
 
-                pci_device.vendor_id = vendor_id;
-                pci_device.device_id = device_id;
+                pci_device->bus = bus;
+                pci_device->slot = device;
+                pci_device->function = function;
+                pci_device->vendor_id = vendor_id;
+                pci_device->device_id = pci_read_config(pci_device,PCI_DEVICE_ID_OFFSET) & SHORT_MASK;
+                pci_device->class = class;
 
-                struct pci_device *new_device = kmalloc(sizeof(struct pci_device));
+                if(print){
+                    serial_printf("Found device on bus %i, device %i, function %i, vendor id %i device id %i class %s\n",bus,device,function,pci_device->vendor_id,pci_device->device_id,
+                                  pci_get_class_name(pci_device->class));
+                }
 
-                *new_device = pci_device;
+
+                pci_insert_device_into_list(pci_device);
 
             }
         }

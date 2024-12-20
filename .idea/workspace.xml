@@ -23,18 +23,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
-      <change afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Some PCI scratch to be built and fixed as I go">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/serial/pcie.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/serial/pcie.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/arch/x86_64/acpi.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/arch/x86_64/acpi.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/mm/pmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/pmm.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +101,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -404,15 +396,8 @@
       <workItem from="1734209413047" duration="87000" />
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
-      <workItem from="1734632498938" duration="4419000" />
-    </task>
-    <task id="LOCAL-00202" summary="Bunch of issues popping their heads out with some more aggressive testing , lots to do.">
-      <option name="closed" value="true" />
-      <created>1732614698997</created>
-      <option name="number" value="00202" />
-      <option name="presentableId" value="LOCAL-00202" />
-      <option name="project" value="LOCAL" />
-      <updated>1732614698997</updated>
+      <workItem from="1734632498938" duration="6100000" />
+      <workItem from="1734679695306" duration="1335000" />
     </task>
     <task id="LOCAL-00203" summary="Have yet to fully resolve the linked list issues but I fixed the bad tempfs / ramdisk writes. Can now write files properly. Will need to test multiblock files still.">
       <option name="closed" value="true" />
@@ -798,7 +783,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733563602587</updated>
     </task>
-    <option name="localTasksCounter" value="251" />
+    <task id="LOCAL-00251" summary="Some PCI scratch to be built and fixed as I go">
+      <option name="closed" value="true" />
+      <created>1734637772105</created>
+      <option name="number" value="00251" />
+      <option name="presentableId" value="LOCAL-00251" />
+      <option name="project" value="LOCAL" />
+      <updated>1734637772106</updated>
+    </task>
+    <option name="localTasksCounter" value="252" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -819,7 +812,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed final issue with double indirect allocation. Can successfully write 600,000 byte files and edit any portion of the file etc and it works. Feels good." />
     <MESSAGE value="More stress testing and finding breaking components in the list functions going back to those." />
     <MESSAGE value="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way." />
     <MESSAGE value="Fucking fixed it, thank christ. Now slab deallocs work properly given the new 64 page slab size. Ripped the hash table out because it's unecessary for the number of slabs we have. If I ever have an obscene amount of slabs then I can think about a hash table." />
@@ -844,7 +836,8 @@
     <MESSAGE value="finished vnode close for now, need to implement the remove node by addr function in doubly_linked_list.c" />
     <MESSAGE value="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs" />
     <MESSAGE value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
+    <MESSAGE value="Some PCI scratch to be built and fixed as I go" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some PCI scratch to be built and fixed as I go" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -881,13 +874,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -898,7 +891,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -945,19 +938,19 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" />
+          <dependency id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="3" />
+          <dependency id="2" master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="0" />
+          <dependency id="1" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
@@ -969,7 +962,7 @@
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="1" />
+          <dependency id="3" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
