@@ -14,22 +14,22 @@
 #include "include/drivers/serial/uart.h"
 
 //Kernel heap
-slab_t slabs[10];
+struct slab_t slabs[10];
 /*
  * Create a slab of physical memory,
  */
 
 struct hash_table slab_hash;
-void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
+void heap_create_slab(struct slab_t *slab, uint64_t entry_size,uint64_t pages) {
     slab->first_free = P2V(phys_alloc(pages));
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE)));
 
     serial_printf("Slab created at %x.64\n",slab->first_free);
-    uint64_t header_offset = (sizeof(header) + (entry_size)) / entry_size * entry_size;
+    uint64_t header_offset = (sizeof(struct header) + (entry_size)) / entry_size * entry_size;
     uint64_t available_size = (pages * PAGE_SIZE) - header_offset;
-    header *slab_pointer = (header *) slab->first_free;
+    struct header *slab_pointer = (struct header *) slab->first_free;
 
     slab_pointer->slab = slab;
     slab->first_free = (void **) ((void *) slab->first_free + header_offset);
@@ -47,7 +47,7 @@ void heap_create_slab(slab_t *slab, uint64_t entry_size,uint64_t pages) {
 
 
 
-void *heap_allocate_from_slab(slab_t *slab) {
+void *heap_allocate_from_slab(struct slab_t *slab) {
     if (slab->first_free == NULL) {
         heap_create_slab(slab, slab->entry_size,PAGE_SIZE * 2);
     }
@@ -65,7 +65,7 @@ void *heap_allocate_from_slab(slab_t *slab) {
  * This can be useful
  */
 
-void heap_free_in_slab(slab_t *slab, void *address) {
+void heap_free_in_slab(struct slab_t *slab, void *address) {
     if (slab == NULL || (uint64_t) slab < 0x1000) {
         serial_printf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64 Slab Address %x.16\n",address, slab);
         return;

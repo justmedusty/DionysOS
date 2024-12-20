@@ -54,7 +54,7 @@ void *kmalloc(uint64_t size) {
 void *_kalloc(uint64_t size) {
 
     if(size < PAGE_SIZE) {
-        slab_t *slab = heap_slab_for(size);
+        struct slab_t *slab = heap_slab_for(size);
         if (slab != NULL) {
             return heap_allocate_from_slab(slab);
         }
@@ -82,14 +82,16 @@ void *krealloc(void *address, uint64_t new_size) {
     }
 
     if (((uint64_t) address & 0xFFF) == 0) {
-        metadata_t *metadata = (metadata_t *) (address - PAGE_SIZE);
+        struct metadata_t *metadata = (struct metadata_t *) (address - PAGE_SIZE);
         if (((metadata->size + (PAGE_SIZE - 1)) / PAGE_SIZE) == ((new_size + (PAGE_SIZE - 1)) / PAGE_SIZE)) {
             metadata->size = new_size;
+            release_spinlock(&alloc_lock);
             return address;
         }
 
         void *new_address =_kalloc(new_size);
         if (new_address == NULL) {
+            release_spinlock(&alloc_lock);
             return NULL;
         }
 
@@ -100,11 +102,12 @@ void *krealloc(void *address, uint64_t new_size) {
         }
 
         _kfree(address);
+        release_spinlock(&alloc_lock);
         return new_address;
     }
 
-    header *slab_header = (header *) ((uint64_t) address & ~0xFFF);
-    slab_t *slab = slab_header->slab;
+    struct header *slab_header = (struct header *) ((uint64_t) address & ~0xFFF);
+    struct slab_t *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
         void *new_address =_kalloc(new_size);
@@ -114,9 +117,10 @@ void *krealloc(void *address, uint64_t new_size) {
 
         memcpy(new_address, address, slab->entry_size);
         heap_free_in_slab(slab, address);
+        release_spinlock(&alloc_lock);
         return new_address;
     }
-
+    release_spinlock(&alloc_lock);
     return address;
 }
 
@@ -133,7 +137,7 @@ void _kfree(void* address) {
     }
 
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-        header* slab_header = (header*)((uint64_t)address & ~DEFAULT_SLAB_SIZE);
+        struct header* slab_header = (struct header*)((uint64_t)address & ~DEFAULT_SLAB_SIZE);
         if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
             goto slab;
         }
@@ -145,7 +149,7 @@ void _kfree(void* address) {
 
 slab:
 
-    header* slab_header = (header*)((uint64_t)address & ~0x3FFFF);
+    struct header* slab_header = (struct header*)((uint64_t)address & ~0x3FFFF);
 
     heap_free_in_slab(slab_header->slab, address);
 }

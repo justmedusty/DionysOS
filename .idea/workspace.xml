@@ -23,17 +23,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Got rid of dynamic allocation for pci devs">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/scheduling/sched.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/scheduling/sched.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/slab.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/slab.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/mm/kalloc.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/kalloc.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/mm/slab.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/slab.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/sched/dfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/dfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/sched/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -404,15 +399,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="13974000" />
-    </task>
-    <task id="LOCAL-00208" summary="Bad block crossing offset is fixed. Not able to print it but will investigate. The state of the ramdisk is good now.">
-      <option name="closed" value="true" />
-      <created>1732697509289</created>
-      <option name="number" value="00208" />
-      <option name="presentableId" value="LOCAL-00208" />
-      <option name="project" value="LOCAL" />
-      <updated>1732697509289</updated>
+      <workItem from="1734679695306" duration="16269000" />
     </task>
     <task id="LOCAL-00209" summary="Getting closer just some minor issues in read to hammer out">
       <option name="closed" value="true" />
@@ -798,7 +785,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734687220675</updated>
     </task>
-    <option name="localTasksCounter" value="257" />
+    <task id="LOCAL-00257" summary="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process.">
+      <option name="closed" value="true" />
+      <created>1734697922155</created>
+      <option name="number" value="00257" />
+      <option name="presentableId" value="LOCAL-00257" />
+      <option name="project" value="LOCAL" />
+      <updated>1734697922155</updated>
+    </task>
+    <option name="localTasksCounter" value="258" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -819,7 +814,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="comments" />
     <MESSAGE value="Fixed the get dir entries function it is testing properly now." />
     <MESSAGE value=" in tempfs_create" />
     <MESSAGE value="more testing and minor fixes in block_free function" />
@@ -844,7 +838,8 @@
     <MESSAGE value="pci_read_config was whacked, now fixed I believe" />
     <MESSAGE value="morning brain had me write that bunch of redundant nonsense so I removed it lol" />
     <MESSAGE value="Got rid of dynamic allocation for pci devs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Got rid of dynamic allocation for pci devs" />
+    <MESSAGE value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

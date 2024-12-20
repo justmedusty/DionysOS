@@ -109,7 +109,7 @@ void sched_run() {
     struct cpu *cpu = my_cpu();
 
     if (cpu->local_run_queue->head == NULL) {
-        timer_sleep(1000);
+        timer_sleep(15000);
         serial_printf("DFS: Local Run Queue is Empty \n");
         purge_dead_processes(); /* This doesn't allow for an explicit wait maybe I will change that later*/
         look_for_process();
@@ -191,11 +191,9 @@ static void look_for_process() {
         return;
     }
 
-    if(sched_global_queue.node_count > 0){
-        struct process *process = sched_global_queue.head->data;
-        dequeue(&sched_global_queue);
-        enqueue(cpu->local_run_queue, process, process->priority);
-    }
+    struct process *process = sched_global_queue.head->data;
+    dequeue(&sched_global_queue);
+    enqueue(cpu->local_run_queue, process, process->priority);
 
     release_spinlock(&sched_global_lock);
 }
