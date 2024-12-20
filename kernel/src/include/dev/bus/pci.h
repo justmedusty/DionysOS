@@ -153,6 +153,7 @@ struct pci_device {
     bool mutlifunction;
     uint16_t msi_offset;
     bool msi_support;
+    bool registered;
     union {
         struct generic_pci_device generic;
         struct pci_bridge bridge;

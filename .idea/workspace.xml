@@ -23,8 +23,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="pci_read_config was whacked, now fixed I believe">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="morning brain had me write that bunch of redundant nonsense so I removed it lol">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -395,15 +397,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="5672000" />
-    </task>
-    <task id="LOCAL-00206" summary="Still tons of bugs to fix. Fixed the issue of blocks overwriting the bitmap. Wasnt adding the offset.">
-      <option name="closed" value="true" />
-      <created>1732663348694</created>
-      <option name="number" value="00206" />
-      <option name="presentableId" value="LOCAL-00206" />
-      <option name="project" value="LOCAL" />
-      <updated>1732663348694</updated>
+      <workItem from="1734679695306" duration="7211000" />
     </task>
     <task id="LOCAL-00207" summary="Identified the block dispertion bug is not caused by the ramdisk functions or structure so gunning to fix it now. Fixed a divide by zero issue elsewhere.">
       <option name="closed" value="true" />
@@ -789,7 +783,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734685279788</updated>
     </task>
-    <option name="localTasksCounter" value="255" />
+    <task id="LOCAL-00255" summary="morning brain had me write that bunch of redundant nonsense so I removed it lol">
+      <option name="closed" value="true" />
+      <created>1734685398207</created>
+      <option name="number" value="00255" />
+      <option name="presentableId" value="LOCAL-00255" />
+      <option name="project" value="LOCAL" />
+      <updated>1734685398207</updated>
+    </task>
+    <option name="localTasksCounter" value="256" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -810,7 +812,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Testing is almost at a point where we can move on. Testing file deletion. Freeing bitmap isnt working it appears so debugging that." />
     <MESSAGE value="Fixed bitmap free issue. Almost all tempfs functions are ready to go." />
     <MESSAGE value="comments" />
     <MESSAGE value="Fixed the get dir entries function it is testing properly now." />
@@ -835,7 +836,8 @@
     <MESSAGE value="Decices are only being added to list if they are a recognizable type" />
     <MESSAGE value="Proper Device scanning being done and adding most of the fields (not all)" />
     <MESSAGE value="pci_read_config was whacked, now fixed I believe" />
-    <option name="LAST_COMMIT_MESSAGE" value="pci_read_config was whacked, now fixed I believe" />
+    <MESSAGE value="morning brain had me write that bunch of redundant nonsense so I removed it lol" />
+    <option name="LAST_COMMIT_MESSAGE" value="morning brain had me write that bunch of redundant nonsense so I removed it lol" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -9,13 +9,15 @@
 #include "include/mem/kalloc.h"
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
+#include "include/mem/mem.h"
 
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
  */
 
 
-struct doubly_linked_list pci_device_list;
+struct pci_bus pci_buses[PCI_MAX_BUSES] = {0};
+
 uintptr_t pci_mmio_address = 0;
 uint8_t start_bus = 0;
 uint8_t end_bus = 0;
@@ -33,14 +35,7 @@ static uint32_t pci_read_config(struct pci_device *device,uint16_t offset) {
     return *(volatile uint32_t *) address;
 }
 
-static void pci_insert_device_into_list(struct pci_device *device){
-    doubly_linked_list_insert_tail(&pci_device_list,device);
-}
 
-void pci_init(){
-    doubly_linked_list_init(&pci_device_list);
-
-}
 void set_pci_mmio_address(struct mcfg_entry *entry){
     pci_mmio_address = entry->base_address;
     start_bus = entry->start_bus;
@@ -51,23 +46,29 @@ void set_pci_mmio_address(struct mcfg_entry *entry){
 
 void pci_scan(bool print){
     for(uint16_t bus = 0; bus < PCI_MAX_BUSES; bus++){
-        for(uint8_t device = 0; device < SLOTS_PER_BUS; device++){
+        for(uint8_t slot = 0; slot < SLOTS_PER_BUS; slot++){
             for(uint8_t function = 0; function < FUNCTIONS_PER_DEVICE; function++){
 
-                struct pci_device *pci_device = kmalloc(sizeof(struct pci_device));
+                struct pci_bus *p_bus = &pci_buses[bus];
+                struct pci_slot *p_slot = &p_bus->pci_slots[slot];
+                struct pci_device *pci_device = &p_slot->pci_devices[function];
+
+                if(pci_device->registered){
+                    continue;
+                }
 
                 pci_device->bus = bus;
-                pci_device->slot = device;
+                pci_device->slot = slot;
                 pci_device->function = function;
 
                 uint16_t vendor_id = pci_read_config(pci_device,PCI_DEVICE_VENDOR_ID_OFFSET) & SHORT_MASK;
 
                 if(vendor_id == PCI_DEVICE_DOESNT_EXIST){
                     if(function == 0){
-                        kfree(pci_device);
+                        memset(pci_device,0,sizeof(struct pci_device));
                         break;
                     }
-                    kfree(pci_device);
+                    memset(pci_device,0,sizeof(struct pci_device));
                     continue;
                 }
 
@@ -76,12 +77,12 @@ void pci_scan(bool print){
                 uint8_t class = pci_read_config(pci_device,PCI_DEVICE_CLASS_OFFSET) & BYTE_MASK;
 
                 if(class == PCI_CLASS_UNASSIGNED || strcmp(pci_get_class_name(class),"Unknown")){
-                    kfree(pci_device);
+                    memset(pci_device,0,sizeof(struct pci_device));
                     continue;
                 }
 
                 pci_device->bus = bus;
-                pci_device->slot = device;
+                pci_device->slot = slot;
                 pci_device->function = function;
                 pci_device->vendor_id = vendor_id;
                 pci_device->class = class;
@@ -134,17 +135,16 @@ void pci_scan(bool print){
 
                     default:
                         serial_printf("Unknown header type in PCI Device, skipping\n");
-                        kfree(pci_device);
+                        memset(pci_device,0,sizeof(struct pci_device));
                         continue;
                 }
 
                 if(print){
-                    serial_printf("Found device on bus %i, device %i, function %i, vendor id %i device id %i class %s\n",bus,device,function,pci_device->vendor_id,pci_device->device_id,
+                    serial_printf("Found device on bus %i, device %i, function %i, vendor id %i device id %i class %s\n",bus,slot,function,pci_device->vendor_id,pci_device->device_id,
                                   pci_get_class_name(pci_device->class));
                 }
-
-
-                pci_insert_device_into_list(pci_device);
+                pci_device->pci_slot = p_slot;
+                pci_device->registered = true;
 
             }
         }
