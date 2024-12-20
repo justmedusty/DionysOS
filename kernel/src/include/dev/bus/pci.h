@@ -93,12 +93,23 @@
 #define PCI_FUNCTION_MASK 0x7
 #define PCI_REG_MASK 0xFC
 
-
+/*
+ * PCI driver abstraction, taking the simpler stuff out of the linux implementation
+ */
 struct pci_driver {
+    char *name;
+    const struct pci_device *device;
+    int32_t (*probe)(struct pci_device *device);
+    void (*remove)(struct pci_device *device);
+    int32_t (*suspend)(struct pci_device *device);
+    int32_t (*resume)(struct pci_device *device);
+    uint32_t (*shutdown)(struct pci_device *device);
+    // Skip the SRIOV stuff since I don't plan on supporting virtualization of devices
+    bool driver_managed_dma;
 
 };
 
-
+// Generic PCI Device AKA not a bridge
 struct generic_pci_device {
     uint32_t base_address_registers[6];
     uint16_t sub_vendor;
@@ -111,7 +122,7 @@ struct generic_pci_device {
 
 };
 
-
+// Bridge device, can only be one or the other
 struct pci_bridge {
     uint32_t base_address_registers[2];
     uint8_t bus_primary;
@@ -178,7 +189,7 @@ struct pci_bus {
 };
 
 
-void pci_scan(bool print);
+void pci_enumerate_devices(bool print);
 char* pci_get_class_name(uint8_t class);
 void set_pci_mmio_address(struct mcfg_entry *entry);
 #endif //KERNEL_PCI_H

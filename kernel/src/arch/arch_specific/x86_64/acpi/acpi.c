@@ -86,6 +86,6 @@ void acpi_init() {
     struct mcfg_header *header = find_acpi_table("MCFG");
 
     set_pci_mmio_address((struct mcfg_entry *)&mcfg_header->entry);
-    pci_scan(true);
+    pci_enumerate_devices(true);
     madt_init();
 }

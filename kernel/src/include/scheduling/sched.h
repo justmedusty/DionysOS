@@ -19,7 +19,7 @@ enum task_priority {
 
 
 void sched_init(void);
-void sched__yield(void);
+void sched_yield(void);
 void sched_run(void);
 void sched_preempt(void);
 void sched_claim_process(void);

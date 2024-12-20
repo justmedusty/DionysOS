@@ -22,7 +22,7 @@ int heap_init() {
     initlock(&alloc_lock, ALLOC_LOCK);
     int size = 8;
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-            heap_create_slab(&slabs[i],size,2);
+            heap_create_slab(&slabs[i],size,DEFAULT_SLAB_SIZE / PAGE_SIZE);
         size <<= 1;
     }
 
@@ -133,7 +133,7 @@ void _kfree(void* address) {
     }
 
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-        header* slab_header = (header*)((uint64_t)address & ~0x3FFFF);
+        header* slab_header = (header*)((uint64_t)address & ~DEFAULT_SLAB_SIZE);
         if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
             goto slab;
         }

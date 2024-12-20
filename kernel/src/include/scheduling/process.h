@@ -47,6 +47,7 @@ struct process {
     uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
     uint64_t process_type;
     uint8_t file_descriptors[16];
+    void *stack;
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
     struct virt_map* page_map;

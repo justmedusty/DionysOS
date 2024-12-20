@@ -44,7 +44,7 @@ void set_pci_mmio_address(struct mcfg_entry *entry){
 }
 
 
-void pci_scan(bool print){
+void pci_enumerate_devices(bool print){
     for(uint16_t bus = 0; bus < PCI_MAX_BUSES; bus++){
         for(uint8_t slot = 0; slot < SLOTS_PER_BUS; slot++){
             for(uint8_t function = 0; function < FUNCTIONS_PER_DEVICE; function++){
@@ -156,7 +156,7 @@ void pci_scan(bool print){
 char* pci_get_class_name(uint8_t class) {
 
     switch (class){
-
+        case 0x00: return "Unknown Device";
         case 0x01: return "Mass Storage Controller";
         case 0x02: return "Network Controller";
         case 0x03: return "Display Controller";
