@@ -85,11 +85,11 @@
 #define WORD_MASK 0xFFFFFFFF
 
 #define BUS_SHIFT 16
-#define DEVICE_SHIFT 8
+#define SLOT_SHIFT 11
 #define FUNCTION_SHIFT 8
 
 #define PCI_BUS_MASK 0xFF
-#define PCI_DEVICE_MASK 0x1F
+#define PCI_SLOT_MASK 0x1F
 #define PCI_FUNCTION_MASK 0x7
 #define PCI_REG_MASK 0xFC
 

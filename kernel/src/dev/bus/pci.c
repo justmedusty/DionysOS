@@ -10,17 +10,24 @@
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
 
+/*
+ * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
+ */
+
+
 struct doubly_linked_list pci_device_list;
 uintptr_t pci_mmio_address = 0;
 uint8_t start_bus = 0;
 uint8_t end_bus = 0;
 
-
+/*
+ * PCIe still uses the oldschool bus:slot:function layout so we use the those values + the shift macros in order to
+ */
 static uint32_t pci_read_config(struct pci_device *device,uint16_t offset) {
     uintptr_t address = (uintptr_t) P2V(pci_mmio_address)
-                        + (uintptr_t) (device->bus << BUS_SHIFT)
-                        + (uintptr_t) (device->slot << DEVICE_SHIFT)
-                        + (uintptr_t) (device->function << FUNCTION_SHIFT)
+                        + (uintptr_t) ((device->bus << BUS_SHIFT) & (PCI_BUS_MASK << BUS_SHIFT))
+                        + (uintptr_t) ((device->slot << SLOT_SHIFT) & (PCI_SLOT_MASK << SLOT_SHIFT))
+                        + (uintptr_t) ((device->function << FUNCTION_SHIFT) & (PCI_FUNCTION_MASK << FUNCTION_SHIFT))
                         + (uintptr_t) offset;
 
     return *(volatile uint32_t *) address;
@@ -143,6 +150,7 @@ void pci_scan(bool print){
         }
     }
 }
+
 
 
 char* pci_get_class_name(uint8_t class) {

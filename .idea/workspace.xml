@@ -23,8 +23,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Decices are only being added to list if they are a recognizable type">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Proper Device scanning being done and adding most of the fields (not all)">
       <change beforePath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
     </list>
@@ -397,15 +396,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="4499000" />
-    </task>
-    <task id="LOCAL-00204" summary="Bit more progress fixing bugs in read and write bytes">
-      <option name="closed" value="true" />
-      <created>1732643250927</created>
-      <option name="number" value="00204" />
-      <option name="presentableId" value="LOCAL-00204" />
-      <option name="project" value="LOCAL" />
-      <updated>1732643250927</updated>
+      <workItem from="1734679695306" duration="5359000" />
     </task>
     <task id="LOCAL-00205" summary="Fixed block bitmap allocate function oopsie among some other changes. Very heavy testing going on.">
       <option name="closed" value="true" />
@@ -791,7 +782,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734681230209</updated>
     </task>
-    <option name="localTasksCounter" value="253" />
+    <task id="LOCAL-00253" summary="Proper Device scanning being done and adding most of the fields (not all)">
+      <option name="closed" value="true" />
+      <created>1734684466869</created>
+      <option name="number" value="00253" />
+      <option name="presentableId" value="LOCAL-00253" />
+      <option name="project" value="LOCAL" />
+      <updated>1734684466869</updated>
+    </task>
+    <option name="localTasksCounter" value="254" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -812,7 +811,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way." />
     <MESSAGE value="Fucking fixed it, thank christ. Now slab deallocs work properly given the new 64 page slab size. Ripped the hash table out because it's unecessary for the number of slabs we have. If I ever have an obscene amount of slabs then I can think about a hash table." />
     <MESSAGE value="Testing is almost at a point where we can move on. Testing file deletion. Freeing bitmap isnt working it appears so debugging that." />
     <MESSAGE value="Fixed bitmap free issue. Almost all tempfs functions are ready to go." />
@@ -837,7 +835,8 @@
     <MESSAGE value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
     <MESSAGE value="Some PCI scratch to be built and fixed as I go" />
     <MESSAGE value="Decices are only being added to list if they are a recognizable type" />
-    <option name="LAST_COMMIT_MESSAGE" value="Decices are only being added to list if they are a recognizable type" />
+    <MESSAGE value="Proper Device scanning being done and adding most of the fields (not all)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Proper Device scanning being done and adding most of the fields (not all)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
