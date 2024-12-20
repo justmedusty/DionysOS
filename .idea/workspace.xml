@@ -23,7 +23,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Some PCI scratch to be built and fixed as I go">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Decices are only being added to list if they are a recognizable type">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/bus/pci.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/bus/pci.h" afterDir="false" />
@@ -397,15 +397,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="1335000" />
-    </task>
-    <task id="LOCAL-00203" summary="Have yet to fully resolve the linked list issues but I fixed the bad tempfs / ramdisk writes. Can now write files properly. Will need to test multiblock files still.">
-      <option name="closed" value="true" />
-      <created>1732628622222</created>
-      <option name="number" value="00203" />
-      <option name="presentableId" value="LOCAL-00203" />
-      <option name="project" value="LOCAL" />
-      <updated>1732628622222</updated>
+      <workItem from="1734679695306" duration="4499000" />
     </task>
     <task id="LOCAL-00204" summary="Bit more progress fixing bugs in read and write bytes">
       <option name="closed" value="true" />
@@ -791,7 +783,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734637772106</updated>
     </task>
-    <option name="localTasksCounter" value="252" />
+    <task id="LOCAL-00252" summary="Decices are only being added to list if they are a recognizable type">
+      <option name="closed" value="true" />
+      <created>1734681230209</created>
+      <option name="number" value="00252" />
+      <option name="presentableId" value="LOCAL-00252" />
+      <option name="project" value="LOCAL" />
+      <updated>1734681230209</updated>
+    </task>
+    <option name="localTasksCounter" value="253" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -812,7 +812,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More stress testing and finding breaking components in the list functions going back to those." />
     <MESSAGE value="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way." />
     <MESSAGE value="Fucking fixed it, thank christ. Now slab deallocs work properly given the new 64 page slab size. Ripped the hash table out because it's unecessary for the number of slabs we have. If I ever have an obscene amount of slabs then I can think about a hash table." />
     <MESSAGE value="Testing is almost at a point where we can move on. Testing file deletion. Freeing bitmap isnt working it appears so debugging that." />
@@ -837,7 +836,8 @@
     <MESSAGE value="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs" />
     <MESSAGE value="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again." />
     <MESSAGE value="Some PCI scratch to be built and fixed as I go" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some PCI scratch to be built and fixed as I go" />
+    <MESSAGE value="Decices are only being added to list if they are a recognizable type" />
+    <option name="LAST_COMMIT_MESSAGE" value="Decices are only being added to list if they are a recognizable type" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

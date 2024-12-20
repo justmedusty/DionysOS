@@ -48,6 +48,11 @@ void pci_scan(bool print){
             for(uint8_t function = 0; function < FUNCTIONS_PER_DEVICE; function++){
 
                 struct pci_device *pci_device = kmalloc(sizeof(struct pci_device));
+
+                pci_device->bus = bus;
+                pci_device->slot = device;
+                pci_device->function = function;
+
                 uint16_t vendor_id = pci_read_config(pci_device,PCI_DEVICE_VENDOR_ID_OFFSET) & SHORT_MASK;
 
                 if(vendor_id == PCI_DEVICE_DOESNT_EXIST){
@@ -59,9 +64,7 @@ void pci_scan(bool print){
                     continue;
                 }
 
-                pci_device->bus = bus;
-                pci_device->slot = device;
-                pci_device->function = function;
+
 
                 uint8_t class = pci_read_config(pci_device,PCI_DEVICE_CLASS_OFFSET) & BYTE_MASK;
 
@@ -74,8 +77,59 @@ void pci_scan(bool print){
                 pci_device->slot = device;
                 pci_device->function = function;
                 pci_device->vendor_id = vendor_id;
-                pci_device->device_id = pci_read_config(pci_device,PCI_DEVICE_ID_OFFSET) & SHORT_MASK;
                 pci_device->class = class;
+                pci_device->device_id = pci_read_config(pci_device,PCI_DEVICE_ID_OFFSET) & SHORT_MASK;
+                pci_device->command = pci_read_config(pci_device,PCI_DEVICE_COMMAND_OFFSET) & SHORT_MASK;
+                pci_device->revision_id = pci_read_config(pci_device,PCI_DEVICE_REVISION_OFFSET) & SHORT_MASK;
+                pci_device->header_type =  pci_read_config(pci_device,PCI_DEVICE_HEADER_TYPE_OFFSET) & BYTE_MASK;
+                pci_device->class = class;
+
+                switch(pci_device->header_type){
+                    case PCI_TYPE_BRIDGE:
+                        pci_device->bridge.base_address_registers[0] = pci_read_config(pci_device, PCI_BRIDGE_BAR0_OFFSET) & WORD_MASK;
+                        pci_device->bridge.base_address_registers[1] = pci_read_config(pci_device, PCI_BRIDGE_BAR1_OFFSET) & WORD_MASK;
+                        pci_device->bridge.bus_primary = pci_read_config(pci_device, PCI_BRIDGE_PRIMARY_BUS_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.bus_secondary = pci_read_config(pci_device, PCI_BRIDGE_SECONDARY_BUS_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.bus_subordinate = pci_read_config(pci_device, PCI_BRIDGE_SUBORDINATE_BUS_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.latency_timer2 = pci_read_config(pci_device, PCI_BRIDGE_LATENCY_TIMER_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.io_base = pci_read_config(pci_device, PCI_BRIDGE_IO_BASE_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.io_limit = pci_read_config(pci_device, PCI_BRIDGE_IO_LIMIT_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.status2 = pci_read_config(pci_device, PCI_BRIDGE_STATUS2_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.mem_base = pci_read_config(pci_device, PCI_BRIDGE_MEM_BASE_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.mem_limit = pci_read_config(pci_device, PCI_BRIDGE_MEM_LIMIT_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.pre_base = pci_read_config(pci_device, PCI_BRIDGE_PREFETCH_BASE_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.pre_limit = pci_read_config(pci_device, PCI_BRIDGE_PREFETCH_LIMIT_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.pre_base_upper = pci_read_config(pci_device, PCI_BRIDGE_PREFETCH_BASE_UPPER_OFFSET) & WORD_MASK;
+                        pci_device->bridge.pre_limit_upper = pci_read_config(pci_device, PCI_BRIDGE_PREFETCH_LIMIT_UPPER_OFFSET) & WORD_MASK;
+                        pci_device->bridge.io_base_upper = pci_read_config(pci_device, PCI_BRIDGE_IO_BASE_UPPER_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.io_limit_upper = pci_read_config(pci_device, PCI_BRIDGE_IO_LIMIT_UPPER_OFFSET) & SHORT_MASK;
+                        pci_device->bridge.capabilities = pci_read_config(pci_device, PCI_BRIDGE_CAPABILITIES_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.expansion_rom = pci_read_config(pci_device, PCI_BRIDGE_EXPANSION_ROM_OFFSET) & WORD_MASK;
+                        pci_device->bridge.int_line = pci_read_config(pci_device, PCI_BRIDGE_INT_LINE_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.int_pin = pci_read_config(pci_device, PCI_BRIDGE_INT_PIN_OFFSET) & BYTE_MASK;
+                        pci_device->bridge.bridge_control = pci_read_config(pci_device, PCI_BRIDGE_CONTROL_OFFSET) & SHORT_MASK;
+                        break;
+                    case PCI_TYPE_GENERIC_DEVICE:
+                        pci_device->generic.base_address_registers[0] = pci_read_config(pci_device,PCI_GENERIC_BAR0_OFFSET) & WORD_MASK;
+                        pci_device->generic.base_address_registers[1] = pci_read_config(pci_device,PCI_GENERIC_BAR1_OFFSET) & WORD_MASK;
+                        pci_device->generic.base_address_registers[2] = pci_read_config(pci_device,PCI_GENERIC_BAR2_OFFSET) & WORD_MASK;
+                        pci_device->generic.base_address_registers[3] = pci_read_config(pci_device,PCI_GENERIC_BAR3_OFFSET) & WORD_MASK;
+                        pci_device->generic.base_address_registers[4] = pci_read_config(pci_device,PCI_GENERIC_BAR4_OFFSET) & WORD_MASK;
+                        pci_device->generic.base_address_registers[5] = pci_read_config(pci_device,PCI_GENERIC_BAR5_OFFSET) & WORD_MASK;
+                        pci_device->generic.capabilities = pci_read_config(pci_device,PCI_GENERIC_CAPABILITIES_OFFSET) & BYTE_MASK;
+                        pci_device->generic.expansion_rom = pci_read_config(pci_device,PCI_GENERIC_EXPANSION_ROM_OFFSET) & WORD_MASK;
+                        pci_device->generic.int_line = pci_read_config(pci_device,PCI_GENERIC_INT_LINE_OFFSET) & BYTE_MASK;
+                        pci_device->generic.max_latency = pci_read_config(pci_device,PCI_GENERIC_MAX_LATENCY_OFFSET) & BYTE_MASK;
+                        pci_device->generic.min_grant = pci_read_config(pci_device,PCI_GENERIC_MIN_GRANT_OFFSET) & BYTE_MASK;
+                        pci_device->generic.sub_device = pci_read_config(pci_device,PCI_GENERIC_SUB_DEVICE_OFFSET) & SHORT_MASK;
+                        pci_device->generic.sub_vendor = pci_read_config(pci_device,PCI_GENERIC_SUB_VENDOR_OFFSET) & SHORT_MASK;
+                        break;
+
+                    default:
+                        serial_printf("Unknown header type in PCI Device, skipping\n");
+                        kfree(pci_device);
+                        continue;
+                }
 
                 if(print){
                     serial_printf("Found device on bus %i, device %i, function %i, vendor id %i device id %i class %s\n",bus,device,function,pci_device->vendor_id,pci_device->device_id,

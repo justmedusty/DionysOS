@@ -14,10 +14,65 @@
 #define FUNCTIONS_PER_DEVICE 8
 #define CONFIG_SPACE_PER_DEVICE 4096
 
-#define PCI_DEVICE_VENDOR_ID_OFFSET 0x00
-#define PCI_DEVICE_ID_OFFSET 0x02
-#define PCI_DEVICE_TYPE_OFFSET 0x0E
-#define PCI_DEVICE_CLASS_OFFSET 0xB
+//PCI Types
+#define PCI_TYPE_GENERIC_DEVICE 0x0
+#define PCI_TYPE_BRIDGE 0x1
+
+// PCI Device Common Header Offsets
+#define PCI_DEVICE_VENDOR_ID_OFFSET      0x00
+#define PCI_DEVICE_ID_OFFSET             0x02
+#define PCI_DEVICE_COMMAND_OFFSET        0x04
+#define PCI_DEVICE_STATUS_OFFSET         0x06
+#define PCI_DEVICE_REVISION_OFFSET       0x08
+#define PCI_DEVICE_PROG_IF_OFFSET        0x09
+#define PCI_DEVICE_SUB_CLASS_OFFSET      0x0A
+#define PCI_DEVICE_CLASS_OFFSET          0x0B
+#define PCI_DEVICE_CACHE_LINE_SIZE_OFFSET 0x0C
+#define PCI_DEVICE_LATENCY_TIMER_OFFSET  0x0D
+#define PCI_DEVICE_HEADER_TYPE_OFFSET    0x0E
+#define PCI_DEVICE_BIST_OFFSET           0x0F
+
+// PCI Generic Device Header Offsets (type 0x0)
+#define PCI_GENERIC_BAR0_OFFSET          0x10
+#define PCI_GENERIC_BAR1_OFFSET          0x14
+#define PCI_GENERIC_BAR2_OFFSET          0x18
+#define PCI_GENERIC_BAR3_OFFSET          0x1C
+#define PCI_GENERIC_BAR4_OFFSET          0x20
+#define PCI_GENERIC_BAR5_OFFSET          0x24
+#define PCI_GENERIC_CARDBUS_CIS_OFFSET   0x28
+#define PCI_GENERIC_SUB_VENDOR_OFFSET    0x2C
+#define PCI_GENERIC_SUB_DEVICE_OFFSET    0x2E
+#define PCI_GENERIC_EXPANSION_ROM_OFFSET 0x30
+#define PCI_GENERIC_CAPABILITIES_OFFSET  0x34
+#define PCI_GENERIC_INT_LINE_OFFSET      0x3C
+#define PCI_GENERIC_INT_PIN_OFFSET       0x3D
+#define PCI_GENERIC_MIN_GRANT_OFFSET     0x3E
+#define PCI_GENERIC_MAX_LATENCY_OFFSET   0x3F
+
+// PCI-to-PCI Bridge Header Offsets (type 0x1)
+#define PCI_BRIDGE_BAR0_OFFSET           0x10
+#define PCI_BRIDGE_BAR1_OFFSET           0x14
+#define PCI_BRIDGE_PRIMARY_BUS_OFFSET    0x18
+#define PCI_BRIDGE_SECONDARY_BUS_OFFSET  0x19
+#define PCI_BRIDGE_SUBORDINATE_BUS_OFFSET 0x1A
+#define PCI_BRIDGE_LATENCY_TIMER_OFFSET  0x1B
+#define PCI_BRIDGE_IO_BASE_OFFSET        0x1C
+#define PCI_BRIDGE_IO_LIMIT_OFFSET       0x1D
+#define PCI_BRIDGE_STATUS2_OFFSET        0x1E
+#define PCI_BRIDGE_MEM_BASE_OFFSET       0x20
+#define PCI_BRIDGE_MEM_LIMIT_OFFSET      0x22
+#define PCI_BRIDGE_PREFETCH_BASE_OFFSET  0x24
+#define PCI_BRIDGE_PREFETCH_LIMIT_OFFSET 0x26
+#define PCI_BRIDGE_PREFETCH_BASE_UPPER_OFFSET 0x28
+#define PCI_BRIDGE_PREFETCH_LIMIT_UPPER_OFFSET 0x2C
+#define PCI_BRIDGE_IO_BASE_UPPER_OFFSET  0x30
+#define PCI_BRIDGE_IO_LIMIT_UPPER_OFFSET 0x32
+#define PCI_BRIDGE_CAPABILITIES_OFFSET   0x34
+#define PCI_BRIDGE_EXPANSION_ROM_OFFSET  0x38
+#define PCI_BRIDGE_INT_LINE_OFFSET       0x3C
+#define PCI_BRIDGE_INT_PIN_OFFSET        0x3D
+#define PCI_BRIDGE_CONTROL_OFFSET        0x3E
+
 
 #define PCI_CONFIG_ADD 0xCF8
 #define PCI_CONFIG_DATA 0xCFC
@@ -38,6 +93,7 @@
 #define PCI_FUNCTION_MASK 0x7
 #define PCI_REG_MASK 0xFC
 
+
 struct pci_driver {
 
 };
@@ -45,7 +101,6 @@ struct pci_driver {
 
 struct generic_pci_device {
     uint32_t base_address_registers[6];
-    uint32_t cardbus_cis;
     uint16_t sub_vendor;
     uint16_t sub_device;
     uint32_t expansion_rom;
@@ -53,6 +108,7 @@ struct generic_pci_device {
     uint8_t int_line;
     uint8_t min_grant;
     uint8_t max_latency;
+
 };
 
 
@@ -84,9 +140,14 @@ struct pci_device {
     uint16_t bus;
     uint16_t slot;
     uint8_t function;
+    uint8_t prog_if;
     uint16_t vendor_id;
     uint16_t device_id;
     uint16_t revision_id;
+    uint8_t header_type;
+    uint16_t command;
+    uint16_t status;
+    uint8_t cache_line_size;
     uint8_t class;
     uint8_t subclass;
     bool mutlifunction;
