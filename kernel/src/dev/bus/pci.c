@@ -25,9 +25,9 @@ uint8_t end_bus = 0;
  */
 static uint32_t pci_read_config(struct pci_device *device,uint16_t offset) {
     uintptr_t address = (uintptr_t) P2V(pci_mmio_address)
-                        + (uintptr_t) ((device->bus << BUS_SHIFT) & (PCI_BUS_MASK << BUS_SHIFT))
-                        + (uintptr_t) ((device->slot << SLOT_SHIFT) & (PCI_SLOT_MASK << SLOT_SHIFT))
-                        + (uintptr_t) ((device->function << FUNCTION_SHIFT) & (PCI_FUNCTION_MASK << FUNCTION_SHIFT))
+                        + (uintptr_t) (device->bus << BUS_SHIFT)
+                        + (uintptr_t) (device->slot << SLOT_SHIFT)
+                        + (uintptr_t) (device->function << FUNCTION_SHIFT)
                         + (uintptr_t) offset;
 
     return *(volatile uint32_t *) address;
