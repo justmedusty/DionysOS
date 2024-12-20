@@ -42,18 +42,15 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟢Implement a scheduler to schedule threads in order make multitasking possible.
 
-🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
+🟢Write a PCI driver.
 
-🟡Write a PCI driver.
+🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
 🔴Write an NVMe driver.
 
 🔴Write an AHCI driver.
 
 🔴Get a userland going by loading executables from your VFS and running them in ring 3. Set up a way to perform system calls.
-
-
-🔴Add support for a storage medium, the easiest and most common ones are AHCI and NVMe
 
 🔴Add support for a usage of the framebuffer in userspace
 
