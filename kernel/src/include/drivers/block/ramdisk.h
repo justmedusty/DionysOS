@@ -14,11 +14,12 @@
 #define RAMDISK_COUNT 5
 
 #define SUCCESS 0
-#define RAMDISK_SIZE_TOO_SMALL 0x4
-#define RAMDISK_ID_OUT_OF_RANGE 0x8
-#define RAMDISK_BLOCK_OUT_OF_RANGE 0x10
-#define RAMDISK_OFFSET_OUT_OF_RANGE 0x20
-#define RAMDISK_READ_SIZE_OUT_OF_BOUNDS 0x30
+
+#define SIZE_TOO_SMALL 0x4
+#define ID_OUT_OF_RANGE 0x8
+#define BLOCK_OUT_OF_RANGE 0x10
+#define OFFSET_OUT_OF_RANGE 0x20
+#define READ_SIZE_OUT_OF_BOUNDS 0x30
 #define BLOCK_OUT_OF_RANGE 0x40
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
@@ -29,31 +30,28 @@
 extern struct device_ops ramdisk_device_ops;
 
 /*
- * ramdisk_read error handling very simple just prints a message
+ * error handling very simple just prints a message
  * takes the return value and a string for identifying where the message is being printed
  */
-#define HANDLE_RAMDISK_ERROR(ret,string)               \
+#define HANDLE_DISK_ERROR(ret,string)               \
 switch (ret) {                              \
-case RAMDISK_SIZE_TOO_SMALL:           \
+case SIZE_TOO_SMALL:           \
 serial_printf("Ramdisk size too small %s\n",string); \
 break;                              \
-case RAMDISK_ID_OUT_OF_RANGE:          \
+case ID_OUT_OF_RANGE:          \
 serial_printf("RAMDISK ID OUT OF RANGE %s \n",string); \
 break;                              \
-case RAMDISK_BLOCK_OUT_OF_RANGE:       \
-serial_printf("RAMDISK BLOCK OUT OF RANGE %s\n",string); \
-break;                              \
-case RAMDISK_OFFSET_OUT_OF_RANGE:      \
+case OFFSET_OUT_OF_RANGE:      \
 serial_printf("RAMDISK OFFSET OUT OF RANGE %s\n",string); \
 break;                              \
-case RAMDISK_READ_SIZE_OUT_OF_BOUNDS:  \
+case READ_SIZE_OUT_OF_BOUNDS:  \
 serial_printf("RAMDISK READ SIZE OUT OF BOUNDS %s\n",string); \
 break;                              \
 case BLOCK_OUT_OF_RANGE:                \
 serial_printf("BLOCK OUT OF RANGE %s\n",string); \
 break;                              \
 default:                                \
-panic("An unexpected result was returned from ramdisk_read"); \
+panic("An unexpected result was returned from block driver"); \
 }
 
 

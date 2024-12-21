@@ -55,7 +55,7 @@ struct block_device_ops {
 
     uint64_t (*block_read)(uint64_t byte_offset, size_t bytes_to_read, char *buffer,struct device *device);
 
-    uint64_t (*block_write)(uint64_t byte_offset, size_t bytes_to_write, char *buffer,struct device *device);
+    uint64_t (*block_write)(uint64_t byte_offset, size_t bytes_to_write, const char *buffer,struct device *device);
 
     int32_t (*flush)(struct device *dev);
 

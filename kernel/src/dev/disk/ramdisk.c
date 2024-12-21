@@ -47,10 +47,10 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name, ui
  */
 uint64_t ramdisk_mkfs(const char* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id) {
         if (ramdisk_id > ramdisk_count) {
-                return RAMDISK_ID_OUT_OF_RANGE;
+                return ID_OUT_OF_RANGE;
         }
         if ((size_bytes / PAGE_SIZE) < ramdisk[ramdisk_id].ramdisk_size_pages) {
-                return RAMDISK_SIZE_TOO_SMALL;
+                return SIZE_TOO_SMALL;
         }
         memcpy(ramdisk[ramdisk_id].ramdisk_start, initramfs_img, size_bytes);
         return SUCCESS;
@@ -79,15 +79,15 @@ void ramdisk_destroy(const uint64_t ramdisk_id) {
 uint64_t ramdisk_read(char* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
                       uint64_t ramdisk_id) {
         if (ramdisk_id > ramdisk_count) {
-                return RAMDISK_ID_OUT_OF_RANGE;
+                return ID_OUT_OF_RANGE;
         }
 
         if (offset > ramdisk[ramdisk_id].block_size) {
-                return RAMDISK_OFFSET_OUT_OF_RANGE;
+                return OFFSET_OUT_OF_RANGE;
         }
 
         if (read_size > buffer_size) {
-                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
+                return READ_SIZE_OUT_OF_BOUNDS;
         }
 
         if (block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
@@ -115,11 +115,11 @@ uint64_t ramdisk_write(const char* buffer, uint64_t block, uint64_t offset, uint
 
 
         if (ramdisk_id > ramdisk_count) {
-                return RAMDISK_ID_OUT_OF_RANGE;
+                return ID_OUT_OF_RANGE;
         }
 
         if (offset > ramdisk[ramdisk_id].block_size) {
-                return RAMDISK_OFFSET_OUT_OF_RANGE;
+                return OFFSET_OUT_OF_RANGE;
         }
  if (block > ((ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE) / ramdisk[ramdisk_id].block_size)) {
          serial_printf("Block too large %i %i\n",block,buffer_size);
@@ -152,7 +152,7 @@ uint64_t ramdisk_write(const char* buffer, uint64_t block, uint64_t offset, uint
         }
 
         if (write_size > buffer_size) {
-                return RAMDISK_READ_SIZE_OUT_OF_BOUNDS;
+                return READ_SIZE_OUT_OF_BOUNDS;
         }
 
 
@@ -177,7 +177,7 @@ uint64_t ramdisk_device_ops_read(uint64_t byte_offset, size_t bytes_to_read, cha
     return ret;
 }
 
-uint64_t ramdisk_device_ops_write(uint64_t byte_offset, size_t bytes_to_write, char *buffer,struct device *device){
+uint64_t ramdisk_device_ops_write(uint64_t byte_offset, size_t bytes_to_write, const char *buffer,struct device *device){
     struct ramdisk *rd = device->device_info;
     uint64_t ret = ramdisk_write(buffer,byte_offset / rd->block_size,byte_offset % rd->block_size,bytes_to_write,PAGE_SIZE * 100,device->device_minor);
     return ret;
