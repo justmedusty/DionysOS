@@ -5,9 +5,9 @@
 #ifndef _PROCESS_H_
 #define _PROCESS_H_
 #include "include/filesystem/vfs.h"
-#include <include/mem/kalloc.h>
-#include "include/arch/arch_cpu.h"
-#include "include/arch/arch_vmm.h"
+#include <include/memory/kalloc.h>
+#include "include/architecture/arch_cpu.h"
+#include "include/architecture/arch_vmm.h"
 #include "include/scheduling/process.h"
 
 /*

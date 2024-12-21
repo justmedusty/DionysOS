@@ -5,9 +5,9 @@
 #include "include/data_structures/binary_tree.h"
 
 #include "include/definitions/string.h"
-#include <include/arch/arch_cpu.h>
+#include <include/architecture/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
-#include <include/mem/kalloc.h>
+#include <include/memory/kalloc.h>
 
 /* Local Definitions */
 

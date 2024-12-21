@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/types.h"
-#include <include/arch/arch_cpu.h>
+#include <include/architecture/arch_cpu.h>
 // Mutual exclusion lock.
 //Making this 256 bytes, trying to force power of 2 alignment will make things easier later
 struct spinlock{

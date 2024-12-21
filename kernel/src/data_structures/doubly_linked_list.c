@@ -7,7 +7,7 @@
 #include "include/definitions/string.h"
 
 #include "include/types.h"
-#include <include/mem/kalloc.h>
+#include <include/memory/kalloc.h>
 #include "include/definitions.h"
 
 /*

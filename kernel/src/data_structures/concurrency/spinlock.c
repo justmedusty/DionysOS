@@ -3,9 +3,9 @@
 //
 
 #include "include/data_structures/spinlock.h"
-#include "include/arch//arch_atomic_operations.h"
-#include <include/arch/arch_cpu.h>
-#include "include/arch/arch_asm_functions.h"
+#include "include/architecture//arch_atomic_operations.h"
+#include <include/architecture/arch_cpu.h>
+#include "include/architecture/arch_asm_functions.h"
 
 //TODO replace cli/sti with architecture agnostic wrapper function
 void initlock(struct spinlock* spinlock, uint64_t id) {

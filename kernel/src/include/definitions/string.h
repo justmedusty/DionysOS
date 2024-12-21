@@ -5,7 +5,7 @@
 #define _STRING_H_
 #pragma once
 #include "include/types.h"
-#include "include/mem/mem.h"
+#include "include/memory/mem.h"
 
 // For strtok to identiy whether returned token is the final token or not
 #define LAST_TOKEN 0

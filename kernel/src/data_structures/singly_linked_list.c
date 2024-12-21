@@ -7,11 +7,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include "include/definitions/string.h"
-#include <include/arch/arch_cpu.h>
+#include <include/architecture/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
 
 #include "include/types.h"
-#include <include/mem/kalloc.h>
+#include <include/memory/kalloc.h>
 #include "include/definitions.h"
 
 /*

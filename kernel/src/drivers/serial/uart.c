@@ -6,7 +6,7 @@
 
 #include <include/data_structures/spinlock.h>
 #include "include/definitions.h"
-#include "include/arch/generic_asm_functions.h"
+#include "include/architecture/generic_asm_functions.h"
 #include "stdarg.h"
 
 

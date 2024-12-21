@@ -1,16 +1,16 @@
 //
 // Created by dustyn on 9/18/24.
 //
-#include "include/dev/device.h"
+#include "include/device/device.h"
 #include "include/filesystem/diosfs.h"
 #include "include/filesystem/vfs.h"
 #include <include/definitions/string.h>
 #include "include/data_structures/spinlock.h"
 #include "include/definitions.h"
 #include <include/drivers/serial/uart.h>
-#include <include/mem/kalloc.h>
+#include <include/memory/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
-#include "include/mem/mem.h"
+#include "include/memory/mem.h"
 /*
  * We need to ensure that for each filesystem we have a separate lock
  * We'll only implement the one filesystem for now.

@@ -8,9 +8,9 @@
 #include <include/data_structures/singly_linked_list.h>
 #include <include/drivers/serial/uart.h>
 #include <include/filesystem/diosfs.h>
-#include <include/mem/kalloc.h>
-#include "include/arch/arch_cpu.h"
-#include "include/mem/mem.h"
+#include <include/memory/kalloc.h>
+#include "include/architecture/arch_cpu.h"
+#include "include/memory/mem.h"
 
 //Used to hold the free nodes in the static pool
 struct singly_linked_list vnode_static_pool = {};

@@ -7,7 +7,7 @@
 #include "include/filesystem/diosfs.h"
 #include <stdint.h>
 #include <stddef.h>
-#include "include/dev/device.h"
+#include "include/device/device.h"
 #include "include/types.h"
 #include "include/data_structures/spinlock.h"
 

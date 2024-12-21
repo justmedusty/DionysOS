@@ -1,23 +1,23 @@
 //
 // Created by dustyn on 6/17/24.
 //
-#include <include/arch/x86_64/asm_functions.h>
-#include <include/arch/x86_64/idt.h>
+#include <include/architecture/x86_64/asm_functions.h>
+#include <include/architecture/x86_64/idt.h>
 #include <include/scheduling/kthread.h>
 
 #include "include/filesystem/vfs.h"
-#include "include/arch/arch_memory_init.h"
+#include "include/architecture/arch_memory_init.h"
 #include "include/drivers/serial/uart.h"
-#include "include/arch/arch_interrupts.h"
-#include "include/mem/pmm.h"
-#include "include/mem/mem_bounds.h"
-#include "include/arch/arch_paging.h"
-#include "include/arch/arch_smp.h"
-#include "include/mem/vmm.h"
-#include "include/mem/slab.h"
-#include "include/arch/x86_64/acpi.h"
-#include "include/arch/arch_timer.h"
-#include "include/arch/arch_local_interrupt_controller.h"
+#include "include/architecture/arch_interrupts.h"
+#include "include/memory/pmm.h"
+#include "include/memory/mem_bounds.h"
+#include "include/architecture/arch_paging.h"
+#include "include/architecture/arch_smp.h"
+#include "include/memory/vmm.h"
+#include "include/memory/slab.h"
+#include "include/architecture/x86_64/acpi.h"
+#include "include/architecture/arch_timer.h"
+#include "include/architecture/arch_local_interrupt_controller.h"
 #include "include/scheduling/sched.h"
 #include "include/filesystem/diosfs.h"
 

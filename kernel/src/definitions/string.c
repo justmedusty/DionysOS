@@ -4,7 +4,7 @@
 
 #include "include/definitions/string.h"
 #include "include/definitions.h"
-#include "include/arch/arch_cpu.h"
+#include "include/architecture/arch_cpu.h"
 #include "include/drivers/serial/uart.h"
 
 /*
