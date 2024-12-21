@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "include/scheduling/kthread.h"
 
-#include <string.h>
+#include "include/definitions/string.h"
 #include <include/arch/arch_asm_functions.h>
 #include <include/arch/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>

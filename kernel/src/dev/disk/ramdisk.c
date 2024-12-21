@@ -2,17 +2,21 @@
 // Created by dustyn on 9/17/24.
 //
 
-#include "../../include/drivers/block/ramdisk.h"
+#include "include/dev/device.h"
+#include "include/drivers/block/ramdisk.h"
 #include <include/types.h>
 #include <include/drivers/serial/uart.h>
 #include <include/filesystem/diosfs.h>
 #include <include/mem/kalloc.h>
-#include "../../include/mem/mem.h"
-#include "../../include/mem/pmm.h"
-#include "../../include/definitions.h"
-#include "../../include/definitions/string.h"
+#include "include/mem/mem.h"
+#include "include/mem/pmm.h"
+#include "include/definitions.h"
+#include "include/definitions/string.h"
+
+
 
 struct ramdisk ramdisk[RAMDISK_COUNT]; /* Only need one but why not 3! */
+struct spinlock ramdisk_locks[RAMDISK_COUNT];
 uint64_t ramdisk_count = RAMDISK_COUNT;
 
 /*
@@ -167,4 +171,33 @@ uint64_t ramdisk_write(const char* buffer, uint64_t block, uint64_t offset, uint
 }
 
 
+uint64_t ramdisk_device_ops_read(uint64_t byte_offset, size_t bytes_to_read, char *buffer,struct device *device){
+    struct ramdisk *rd = device->device_info;
+    uint64_t ret = ramdisk_read(buffer,byte_offset / rd->block_size,byte_offset % rd->block_size,bytes_to_read,PAGE_SIZE * 100,device->device_minor);
+    return ret;
+}
 
+uint64_t ramdisk_device_ops_write(uint64_t byte_offset, size_t bytes_to_write, char *buffer,struct device *device){
+    struct ramdisk *rd = device->device_info;
+    uint64_t ret = ramdisk_write(buffer,byte_offset / rd->block_size,byte_offset % rd->block_size,bytes_to_write,PAGE_SIZE * 100,device->device_minor);
+    return ret;
+}
+
+/*
+ * no flush required for a ramdisk
+ */
+int32_t ramdisk_device_ops_flush(struct device *dev){
+    return 0;
+}
+/*
+ * For the device object to facilitate abstracted function calls for different devices
+ */
+struct block_device_ops ramdisk_ops = {
+    .block_read = ramdisk_device_ops_read,
+    .block_write = ramdisk_device_ops_write,
+    .flush = ramdisk_device_ops_flush
+};
+
+struct device_ops ramdisk_device_ops = {
+        .block_device_ops = &ramdisk_ops
+};

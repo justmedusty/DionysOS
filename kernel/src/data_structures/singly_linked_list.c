@@ -6,7 +6,7 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
+#include "include/definitions/string.h"
 #include <include/arch/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
 

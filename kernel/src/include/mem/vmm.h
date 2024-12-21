@@ -1,6 +1,8 @@
 //
 // Created by dustyn on 6/21/24.
 //
+#ifndef _VMM_H_
+#define _VMM_H_
 #pragma once
 #include <stdbool.h>
 
@@ -46,3 +48,5 @@ struct virtual_region* arch_create_region(const uint64_t start_address, const ui
 void arch_attach_region(struct virt_map *map,struct virtual_region *region);
 void arch_detach_region(struct virt_map *map,struct virtual_region *region);
 void arch_dealloc_page_table(p4d_t* pgdir);
+
+#endif

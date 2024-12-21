@@ -1,8 +1,13 @@
 //
 // Created by dustyn on 9/17/24.
 //
-
+#ifndef _RAMDISK_H_
+#define _RAMDISK_H_
 #pragma once
+#include "include/filesystem/diosfs.h"
+#include <stdint.h>
+#include <stddef.h>
+#include "include/dev/device.h"
 #include "include/types.h"
 #include "include/data_structures/spinlock.h"
 
@@ -19,6 +24,10 @@
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
 #define RAMDISK_DIOSFS_ID 0x1
 #define RAMDISK_EXT2_ID 0x2
+
+
+extern struct device_ops ramdisk_device_ops;
+
 /*
  * ramdisk_read error handling very simple just prints a message
  * takes the return value and a string for identifying where the message is being printed
@@ -59,10 +68,13 @@ struct ramdisk {
 };
 
 
-void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char* name,uint64_t block_size);
-uint64_t ramdisk_mkfs(const char* initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id);
-void ramdisk_destroy(const uint64_t ramdisk_id);
+extern struct ramdisk ramdisk[RAMDISK_COUNT];
+
+void ramdisk_init(uint64_t size_bytes, uint64_t ramdisk_id, char* name,uint64_t block_size);
+uint64_t ramdisk_mkfs(const char* initramfs_img, uint64_t size_bytes, uint64_t ramdisk_id);
+void ramdisk_destroy(uint64_t ramdisk_id);
 uint64_t ramdisk_read(char* buffer, uint64_t block, uint64_t offset, uint64_t read_size, uint64_t buffer_size,
                     uint64_t ramdisk_id);
 uint64_t ramdisk_write(const char* buffer, uint64_t block, uint64_t offset, uint64_t write_size, uint64_t buffer_size,
                      uint64_t ramdisk_id);
+#endif

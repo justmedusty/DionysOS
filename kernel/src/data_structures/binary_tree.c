@@ -4,7 +4,7 @@
 #include "include/definitions.h"
 #include "include/data_structures/binary_tree.h"
 
-#include <string.h>
+#include "include/definitions/string.h"
 #include <include/arch/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
 #include <include/mem/kalloc.h>

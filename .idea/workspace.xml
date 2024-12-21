@@ -23,15 +23,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent">
-      <change afterPath="$PROJECT_DIR$/kernel/src/include/dev/device.h" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Laying out device.h among other things.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/mm/slab.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/slab.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/doubly_linked_list.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/doubly_linked_list.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/arch/arch_asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/arch/arch_asm_functions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/string.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/string.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/device.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/device.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/block_dev.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/filesystem/diosfs.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/filesystem/diosfs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/vmm.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/vmm.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/sched/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/kthread.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/tools/mkfs/mkdiosfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,32 +91,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/GNUmakefile&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Embedded GDB Server.run-gdb.executor": "Debug",
+    "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run.executor": "Run",
+    "Remote Debug.GDB Kernel.executor": "Debug",
+    "Remote Debug.Unnamed.executor": "Debug",
+    "Remote GDB Server.run-gdb.executor": "Debug",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/kernel/GNUmakefile",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "MakefileSettings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
@@ -402,15 +409,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="23089000" />
-    </task>
-    <task id="LOCAL-00210" summary="Read and write across multiple blocks now works">
-      <option name="closed" value="true" />
-      <created>1732703949064</created>
-      <option name="number" value="00210" />
-      <option name="presentableId" value="LOCAL-00210" />
-      <option name="project" value="LOCAL" />
-      <updated>1732703949064</updated>
+      <workItem from="1734679695306" duration="31905000" />
     </task>
     <task id="LOCAL-00211" summary="Wild goose chase going on on but fixing bugs left and right.">
       <option name="closed" value="true" />
@@ -796,7 +795,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734709496539</updated>
     </task>
-    <option name="localTasksCounter" value="259" />
+    <task id="LOCAL-00259" summary="Laying out device.h among other things.">
+      <option name="closed" value="true" />
+      <created>1734770614805</created>
+      <option name="number" value="00259" />
+      <option name="presentableId" value="LOCAL-00259" />
+      <option name="project" value="LOCAL" />
+      <updated>1734770614805</updated>
+    </task>
+    <option name="localTasksCounter" value="260" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -817,7 +824,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=" in tempfs_create" />
     <MESSAGE value="more testing and minor fixes in block_free function" />
     <MESSAGE value="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one." />
     <MESSAGE value="onto testing recursive directory freeing and the like" />
@@ -842,7 +848,8 @@
     <MESSAGE value="Got rid of dynamic allocation for pci devs" />
     <MESSAGE value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
     <MESSAGE value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
+    <MESSAGE value="Laying out device.h among other things." />
+    <option name="LAST_COMMIT_MESSAGE" value="Laying out device.h among other things." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -870,7 +877,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c</url>
-          <line>52</line>
+          <line>56</line>
           <option name="timeStamp" value="224" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

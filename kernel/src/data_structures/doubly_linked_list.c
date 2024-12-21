@@ -4,7 +4,7 @@
 
 #include "include/data_structures/doubly_linked_list.h"
 
-#include <string.h>
+#include "include/definitions/string.h"
 
 #include "include/types.h"
 #include <include/mem/kalloc.h>

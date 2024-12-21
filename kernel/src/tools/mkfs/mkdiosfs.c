@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "include/definitions/string.h"
 #include "mkdiosfs.h"
 #include <stdbool.h>
 

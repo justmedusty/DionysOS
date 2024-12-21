@@ -1,7 +1,8 @@
 //
 // Created by dustyn on 9/18/24.
 //
-
+#ifndef _DIOSFS_H_
+#define _DIOSFS_H_
 #pragma once
 #include "include/types.h"
 #include "stdint.h"
@@ -44,8 +45,6 @@
 #define NUM_BLOCKS_TRIPLE_INDIRECTION (NUM_BLOCKS_IN_INDIRECTION_BLOCK * NUM_BLOCKS_IN_INDIRECTION_BLOCK * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
 #define DIOSFS_INODE_SIZE sizeof(struct diosfs_inode)
-#define DIOSFS_NUM_INODES DIOSFS_NUM_INODE_POINTER_BLOCKS * DIOSFS_BLOCKSIZE * 8
-#define DIOSFS_NUM_BLOCKS DIOSFS_NUM_BLOCK_POINTER_BLOCKS * DIOSFS_BLOCKSIZE * 8
 
 enum diosfs_error {
     DIOSFS_SUCCESS = 0,                         // Operation successful
@@ -143,7 +142,7 @@ struct diosfs_filesystem {
     uint64_t filesystem_id;
     struct spinlock *lock;
     struct diosfs_superblock *superblock;
-    struct block_device *device;
+    struct device *device;
 };
 
 
@@ -178,3 +177,4 @@ void diosfs_remove(const struct vnode* vnode);
 void diosfs_rename(const struct vnode* vnode, char* new_name);
 uint64_t diosfs_open(struct vnode* vnode);
 
+#endif
