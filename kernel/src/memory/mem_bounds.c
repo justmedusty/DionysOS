@@ -2,12 +2,12 @@
 // Created by dustyn on 6/23/24.
 //
 
-#include <include/arch/arch_vmm.h>
+#include <include/architecture/arch_vmm.h>
 #include "include/types.h"
-#include "include/arch/arch_paging.h"
+#include "include/architecture/arch_paging.h"
 #include "limine.h"
 #include "include/drivers/serial/uart.h"
-#include "include/mem/pmm.h"
+#include "include/memory/pmm.h"
 
 
 uint64_t kernel_min, kernel_max, kernel_size;

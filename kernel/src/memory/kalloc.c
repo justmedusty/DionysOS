@@ -2,16 +2,16 @@
 // Created by dustyn on 7/6/24.
 //
 #include "include/types.h"
-#include "include/mem/pmm.h"
-#include "include/mem/kalloc.h"
+#include "include/memory/pmm.h"
+#include "include/memory/kalloc.h"
 
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
 
-#include "include/mem/slab.h"
+#include "include/memory/slab.h"
 #include "include/drivers/serial/uart.h"
-#include "include/mem/mem.h"
-#include "include/arch/arch_paging.h"
+#include "include/memory/mem.h"
+#include "include/architecture/arch_paging.h"
 
 struct spinlock alloc_lock;
 /*

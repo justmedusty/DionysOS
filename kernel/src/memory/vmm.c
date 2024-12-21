@@ -2,12 +2,12 @@
 // Created by dustyn on 6/21/24.
 //
 #pragma once
-#include "include/mem/vmm.h"
+#include "include/memory/vmm.h"
 
 #include <include/data_structures/doubly_linked_list.h>
 
-#include "include/arch/arch_vmm.h"
-#include "include/mem/kalloc.h"
+#include "include/architecture/arch_vmm.h"
+#include "include/memory/kalloc.h"
 struct virt_map* kernel_pg_map;
 
 /*
