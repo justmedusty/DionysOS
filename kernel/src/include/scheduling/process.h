@@ -56,9 +56,10 @@ struct process {
     struct vnode* current_working_dir;
 };
 
-#ifdef __x86_64__
+
 
 struct gpr_state {
+#ifdef __x86_64__
     uint64_t rax;
     uint64_t rbx;
     uint64_t rcx;
@@ -76,8 +77,9 @@ struct gpr_state {
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
+#endif
     bool interrupts_enabled;
 };
 
-#endif
+
 #endif

@@ -41,7 +41,7 @@ void kernel_bootstrap() {
     sched_init();
     smp_init();
     timer_init();
-    serial_printf("Total Pages Allocated %i\n",total_allocated);
+    serial_printf("Total Pages Allocated %i out of %i\n",total_allocated,usable_pages);
     kthread_init();
     ready = 1;
     scheduler_main();

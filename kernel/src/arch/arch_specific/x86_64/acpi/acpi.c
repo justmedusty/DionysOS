@@ -47,7 +47,10 @@ void *find_acpi_table(const char *name) {
 
     panic("ACPI Table not found");
 }
-
+/*
+ * Use the rsdp to find the r/xsdt and also find the mcfg table for setting up PCIe by taking the base address out of the table.
+ * Finally parse the MADT to find information about ISOs, apics, NMI
+ */
 void acpi_init() {
     void *addr = (void *) rsdp_request.response->address;
     struct acpi_rsdp *rsdp = (struct acpi_rsdp *) addr;

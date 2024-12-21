@@ -23,12 +23,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process.">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent">
+      <change afterPath="$PROJECT_DIR$/kernel/src/include/dev/device.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/slab.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/slab.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/mm/kalloc.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/kalloc.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/arch/arch_specific/x86_64/acpi/acpi.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/pmm.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/scheduling/process.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/mm/slab.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/mm/slab.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/sched/dfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/dfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/sched/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -399,15 +402,7 @@
       <workItem from="1734552113400" duration="22000" />
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
-      <workItem from="1734679695306" duration="16269000" />
-    </task>
-    <task id="LOCAL-00209" summary="Getting closer just some minor issues in read to hammer out">
-      <option name="closed" value="true" />
-      <created>1732699739499</created>
-      <option name="number" value="00209" />
-      <option name="presentableId" value="LOCAL-00209" />
-      <option name="project" value="LOCAL" />
-      <updated>1732699739499</updated>
+      <workItem from="1734679695306" duration="23089000" />
     </task>
     <task id="LOCAL-00210" summary="Read and write across multiple blocks now works">
       <option name="closed" value="true" />
@@ -793,7 +788,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734697922155</updated>
     </task>
-    <option name="localTasksCounter" value="258" />
+    <task id="LOCAL-00258" summary="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent">
+      <option name="closed" value="true" />
+      <created>1734709496539</created>
+      <option name="number" value="00258" />
+      <option name="presentableId" value="LOCAL-00258" />
+      <option name="project" value="LOCAL" />
+      <updated>1734709496539</updated>
+    </task>
+    <option name="localTasksCounter" value="259" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -814,7 +817,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed the get dir entries function it is testing properly now." />
     <MESSAGE value=" in tempfs_create" />
     <MESSAGE value="more testing and minor fixes in block_free function" />
     <MESSAGE value="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one." />
@@ -839,7 +841,8 @@
     <MESSAGE value="morning brain had me write that bunch of redundant nonsense so I removed it lol" />
     <MESSAGE value="Got rid of dynamic allocation for pci devs" />
     <MESSAGE value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
+    <MESSAGE value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
