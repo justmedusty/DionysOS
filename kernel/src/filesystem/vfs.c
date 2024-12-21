@@ -282,10 +282,14 @@ void vnode_close(uint64_t handle) {
 void vnode_rename(struct vnode* vnode, char* new_name) {
     diosfs_rename(vnode, new_name);
     safe_strcpy(vnode->vnode_name, new_name,VFS_MAX_NAME_LENGTH);
+    /*
+     * If we were passed a string that is too long, just truncate it
+     */
     if (strlen(new_name) > VFS_MAX_NAME_LENGTH) {
         vnode->vnode_name[VFS_MAX_NAME_LENGTH - 1] = '\0';
     }
-    return;
+
+    vnode->vnode_ops->rename(vnode,vnode->vnode_name);
 }
 
 /*

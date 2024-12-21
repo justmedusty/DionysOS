@@ -11,7 +11,6 @@
 #include <include/mem/kalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/mem/mem.h"
-#include <stdint.h>
 /*
  * We need to ensure that for each filesystem we have a separate lock
  * We'll only implement the one filesystem for now.
@@ -128,6 +127,9 @@ static struct vnode *diosfs_follow_link(struct diosfs_filesystem *fs, const stru
 
 static void shift_directory_entry(const struct diosfs_filesystem *fs, uint64_t entry_number,
                                   struct diosfs_inode *parent_inode);
+static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem *fs,
+                                                       const uint64_t inode_number,
+                                                       const uint64_t directory_inode_number);
 
 /*
  * VFS pointer functions for vnodes
@@ -328,12 +330,16 @@ void diosfs_remove(const struct vnode *vnode) {
 }
 
 void diosfs_rename(const struct vnode *vnode, char *new_name) {
+    if(vnode->vnode_inode_number == ROOT_INODE){
+        return;
+    }
     struct diosfs_filesystem *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
     safe_strcpy(inode.name, new_name, MAX_FILENAME_LENGTH);
     diosfs_write_inode(fs, &inode);
+    diosfs_find_directory_entry_and_update(fs,vnode->vnode_inode_number,vnode->vnode_parent->vnode_inode_number);
     release_spinlock(fs->lock);
 }
 
@@ -491,11 +497,11 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
  */
 struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnode_type) {
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS) {
-        serial_printf("tempfS_create parent filesystem ID doesn't match\n");
+        serial_printf("diosfs_create parent filesystem ID doesn't match\n");
         return NULL;
     }
     if (parent->vnode_type != VNODE_DIRECTORY) {
-        serial_printf("tempfS_create parent not directory\n");
+        serial_printf("diosfs_create parent not directory\n");
         return NULL;
     }
 
@@ -519,7 +525,6 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
     new_vnode->vnode_parent = parent;
     new_vnode->vnode_filesystem_id = parent->vnode_filesystem_id;
     safe_strcpy(new_vnode->vnode_name, name, MAX_FILENAME_LENGTH);
-    serial_printf("INODE NAME %s\n", parent_inode.name);
 
     inode.type = vnode_type;
     inode.block_count = 0;
@@ -1076,10 +1081,9 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
             fs->superblock->block_bitmap_pointers_start * fs->superblock->block_size,
             fs->superblock->block_size * fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
 
-    serial_printf("BLOCK NUMBER %i\n", block_number);
 
     if (ret != DIOSFS_SUCCESS) {
-        HANDLE_DISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap ramdisk_write call")
+        HANDLE_DISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap write call")
         panic("diosfs_get_free_inode_and_mark_bitmap"); /* Extreme but that is okay for diagnosing issues */
     }
 
@@ -1241,13 +1245,14 @@ static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem 
     directory_entry->parent_inode_number = entry.parent_inode_number;
 
     if (entry.parent_inode_number != directory_inode_number) {
-
+        panic("diosfs_find_directory_entry_and_update entry parent does not match expected parent");
     }
 
     diosfs_write_block_by_number(block_number, buffer, fs, 0, DIOSFS_BLOCKSIZE);
     return DIOSFS_SUCCESS;
 
     not_found:
+    panic("diosfs_find_directory_entry_and_update entry not found; this should not happen");
     kfree(buffer);
     return DIOSFS_SUCCESS;
 }
@@ -1440,6 +1445,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem *fs, struct
     }
 
     diosfs_write_inode(fs, inode);
+    diosfs_find_directory_entry_and_update(fs,inode->inode_number,inode->parent_inode_number);
     return DIOSFS_SUCCESS;
 }
 
@@ -1597,14 +1603,6 @@ uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem *fs, struct d
     return DIOSFS_SUCCESS;
 }
 
-
-static void diosfs_update_parent_directory_entry(struct diosfs_filesystem *fs, struct diosfs_inode *inode) {
-    if (inode->inode_number == 0 || inode->type != DIOSFS_DIRECTORY) {
-        return;
-    }
-    struct diosfs_inode parent_inode;
-    diosfs_read_inode(fs, &parent_inode, inode->parent_inode_number);
-}
 
 /*
  * A much simpler index derivation function for getting a diosfs index based off a block number given. Could be for reading a block at an arbitrary offset or finding the end

@@ -17,14 +17,11 @@
 
 #define SIZE_TOO_SMALL 0x4
 #define ID_OUT_OF_RANGE 0x8
-#define BLOCK_OUT_OF_RANGE 0x10
 #define OFFSET_OUT_OF_RANGE 0x20
 #define READ_SIZE_OUT_OF_BOUNDS 0x30
 #define BLOCK_OUT_OF_RANGE 0x40
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
-#define RAMDISK_DIOSFS_ID 0x1
-#define RAMDISK_EXT2_ID 0x2
 
 
 extern struct device_ops ramdisk_device_ops;
