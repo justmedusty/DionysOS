@@ -24,6 +24,9 @@ int heap_init() {
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
             heap_create_slab(&slabs[i],size,DEFAULT_SLAB_SIZE / PAGE_SIZE);
         size <<= 1;
+        if(size >= PAGE_SIZE){
+            break;
+        }
     }
 
     serial_printf("Kernel Heap Initialized\n");
