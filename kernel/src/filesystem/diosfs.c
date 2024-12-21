@@ -127,6 +127,7 @@ static struct vnode *diosfs_follow_link(struct diosfs_filesystem *fs, const stru
 
 static void shift_directory_entry(const struct diosfs_filesystem *fs, uint64_t entry_number,
                                   struct diosfs_inode *parent_inode);
+
 static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem *fs,
                                                        const uint64_t inode_number,
                                                        const uint64_t directory_inode_number);
@@ -310,7 +311,8 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     struct vnode *vnode10 = vnode_create("/etc", "config.txt", VNODE_FILE);
 
     vnode_write(vnode9, 0, sizeof("dustyn password"), "dustyn password");
-    vnode_read(vnode9, 0, vnode9->vnode_size, buffer);
+
+    struct vnode *test = vnode_lookup("/etc/passwd");
 
     kfree(buffer);
     serial_printf("Diosfs filesystem initialized of size %i , %i byte blocks\n", DEFAULT_DIOSFS_SIZE / DIOSFS_BLOCKSIZE,
@@ -330,7 +332,7 @@ void diosfs_remove(const struct vnode *vnode) {
 }
 
 void diosfs_rename(const struct vnode *vnode, char *new_name) {
-    if(vnode->vnode_inode_number == ROOT_INODE){
+    if (vnode->vnode_inode_number == ROOT_INODE) {
         return;
     }
     struct diosfs_filesystem *fs = vnode->filesystem_object;
@@ -339,7 +341,7 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
     safe_strcpy(inode.name, new_name, MAX_FILENAME_LENGTH);
     diosfs_write_inode(fs, &inode);
-    diosfs_find_directory_entry_and_update(fs,vnode->vnode_inode_number,vnode->vnode_parent->vnode_inode_number);
+    diosfs_find_directory_entry_and_update(fs, vnode->vnode_inode_number, vnode->vnode_parent->vnode_inode_number);
     release_spinlock(fs->lock);
 }
 
@@ -1445,7 +1447,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem *fs, struct
     }
 
     diosfs_write_inode(fs, inode);
-    diosfs_find_directory_entry_and_update(fs,inode->inode_number,inode->parent_inode_number);
+    diosfs_find_directory_entry_and_update(fs, inode->inode_number, inode->parent_inode_number);
     return DIOSFS_SUCCESS;
 }
 

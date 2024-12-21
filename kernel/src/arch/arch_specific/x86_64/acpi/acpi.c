@@ -47,6 +47,7 @@ void *find_acpi_table(const char *name) {
 
     panic("ACPI Table not found");
 }
+
 /*
  * Use the rsdp to find the r/xsdt and also find the mcfg table for setting up PCIe by taking the base address out of the table.
  * Finally parse the MADT to find information about ISOs, apics, NMI
@@ -81,14 +82,14 @@ void acpi_init() {
         }
     }
 
-    struct mcfg_header *mcfg_header = (struct mcfg_header *)find_acpi_table("MCFG");
+    struct mcfg_header *mcfg_header = (struct mcfg_header *) find_acpi_table("MCFG");
 
-    if(!mcfg_header){
+    if (!mcfg_header) {
         panic("Cannot find mcfg header to set up PCI\n");
     }
     struct mcfg_header *header = find_acpi_table("MCFG");
 
-    set_pci_mmio_address((struct mcfg_entry *)&mcfg_header->entry);
+    set_pci_mmio_address((struct mcfg_entry *) &mcfg_header->entry);
     pci_enumerate_devices(true);
     madt_init();
 }

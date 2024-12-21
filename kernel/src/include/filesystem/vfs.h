@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include "include/data_structures/spinlock.h"
 #include <stddef.h>
 #include "include/definitions.h"
@@ -68,11 +69,11 @@ enum vnode_types {
 #define VNODE_MAX_DIRECTORY_ENTRIES 64 // 4 pages
 
 struct vnode {
-    struct vnode* vnode_parent;
+    struct vnode *vnode_parent;
     struct vnode **vnode_children;
     uint8_t num_children;
     struct vnode_operations *vnode_ops;
-    struct vnode* mounted_vnode;
+    struct vnode *mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
     void *filesystem_object;
     uint64_t vnode_size;
@@ -96,7 +97,7 @@ struct date_time {
     uint8_t second;
 };
 struct vnode_stat {
-    struct vnode* vnode;
+    struct vnode *vnode;
     uint64_t vnode_size;
     uint64_t block_count;
 };
@@ -115,34 +116,62 @@ struct virtual_handle_list {
 };
 
 struct vnode_operations {
-    struct vnode* (*lookup)(struct vnode* vnode, char* name);
-    struct vnode* (*create)(struct vnode* parent, char *name, uint8_t vnode_type);
-    void (*remove)(const struct vnode* vnode);
-    void (*rename)(const struct vnode* vnode, char* new_name);
-    uint64_t (*write)(struct vnode* vnode,uint64_t offset,char *buffer,uint64_t bytes);
-    uint64_t (*read)(struct vnode* vnode,uint64_t offset,char *buffer,uint64_t bytes);
-    struct vnode* (*link)(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
-    void (*unlink)(struct vnode* vnode);
-    uint64_t (*open)(struct vnode* vnode);
-    void (*close)(struct vnode* vnode,uint64_t handle);
+    struct vnode *(*lookup)(struct vnode *vnode, char *name);
+
+    struct vnode *(*create)(struct vnode *parent, char *name, uint8_t vnode_type);
+
+    void (*remove)(const struct vnode *vnode);
+
+    void (*rename)(const struct vnode *vnode, char *new_name);
+
+    uint64_t (*write)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+
+    uint64_t (*read)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+
+    struct vnode *(*link)(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
+
+    void (*unlink)(struct vnode *vnode);
+
+    uint64_t (*open)(struct vnode *vnode);
+
+    void (*close)(struct vnode *vnode, uint64_t handle);
 };
 
-void vnode_directory_alloc_children(struct vnode* vnode);
-struct vnode* vnode_create(char* path,  char* name, uint8_t vnode_type);
-struct vnode* find_vnode_child(struct vnode* vnode, char* token);
-uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes,char *buffer);
-uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char *buffer);
-uint64_t vnode_unmount(struct vnode* vnode);
-uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode);
-struct vnode* find_vnode_child(struct vnode* vnode, char* token);
-int32_t vnode_remove(struct vnode* vnode,char *path);
-struct vnode* vnode_lookup(char* path);
-uint64_t vnode_unlink(struct vnode* link);
-struct vnode* vnode_link(struct vnode* vnode, struct vnode* new_vnode,uint8_t type);
+void vnode_directory_alloc_children(struct vnode *vnode);
+
+struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type);
+
+struct vnode *find_vnode_child(struct vnode *vnode, char *token);
+
+uint64_t vnode_write(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer);
+
+uint64_t vnode_read(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer);
+
+uint64_t vnode_unmount(struct vnode *vnode);
+
+uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode);
+
+struct vnode *find_vnode_child(struct vnode *vnode, char *token);
+
+int32_t vnode_remove(struct vnode *vnode, char *path);
+
+struct vnode *vnode_lookup(char *path);
+
+uint64_t vnode_unlink(struct vnode *link);
+
+struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
+
 void vfs_init();
-char* vnode_get_canonical_path(struct vnode* vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
+
+char *vnode_get_canonical_path(
+        struct vnode *vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
 /* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */
-struct vnode* vnode_alloc();
-void vnode_free(struct vnode* vnode);
-int64_t vnode_open(char* path);
+struct vnode *vnode_alloc();
+
+void vnode_free(struct vnode *vnode);
+
+int64_t vnode_open(char *path);
+
 void vnode_close(uint64_t handle);
+
+void vnode_rename(struct vnode *vnode, char *new_name);

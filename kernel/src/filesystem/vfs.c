@@ -27,9 +27,12 @@ struct vnode vfs_root;
 struct spinlock vfs_lock;
 
 //static prototype
-static struct vnode* parse_path(char* path);
-static uint64_t vnode_update_children_array(const struct vnode* vnode);
-static int8_t get_new_file_handle(struct virtual_handle_list* list);
+static struct vnode *parse_path(char *path);
+
+static uint64_t vnode_update_children_array(const struct vnode *vnode);
+
+static int8_t get_new_file_handle(struct virtual_handle_list *list);
+
 /*
  *The vfs_init function simply initializes a linked list of all of the vnode static pool
  *and marks each of them with a VNODE_STATIC_POOL flag
@@ -45,7 +48,7 @@ void vfs_init() {
         //Mark each one as being part of the static pool
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
     }
-    initlock(&vfs_lock,VFS_LOCK);
+    initlock(&vfs_lock, VFS_LOCK);
     serial_printf("VFS initialized\n");
 }
 
@@ -53,23 +56,23 @@ void vfs_init() {
  *  vnode_alloc is required with the static pool so that nodes may be taken from the pool if any are free,
  *  otherwise kalloc is invoked.
  */
-struct vnode* vnode_alloc() {
+struct vnode *vnode_alloc() {
     acquire_spinlock(&vfs_lock);
 
     if (vnode_static_pool.head == NULL) {
-        struct vnode* new_node = kmalloc(sizeof(struct vnode));
+        struct vnode *new_node = kmalloc(sizeof(struct vnode));
         release_spinlock(&vfs_lock);
         return new_node;
     }
 
-    struct vnode* vnode = vnode_static_pool.head->data;
+    struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
     release_spinlock(&vfs_lock);
     return vnode;
 }
 
-void vnode_directory_alloc_children(struct vnode* vnode) {
-    vnode->vnode_children = kmalloc(sizeof(struct vnode*) * VNODE_MAX_DIRECTORY_ENTRIES);
+void vnode_directory_alloc_children(struct vnode *vnode) {
+    vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
     vnode->is_cached = true;
 
@@ -86,7 +89,7 @@ void vnode_directory_alloc_children(struct vnode* vnode) {
  * Checks if part of static pool
  * Checks if the node is root
  */
-void vnode_free(struct vnode* vnode) {
+void vnode_free(struct vnode *vnode) {
     acquire_spinlock(&vfs_lock);
 
     if (vnode == NULL) {
@@ -132,13 +135,13 @@ void vnode_free(struct vnode* vnode) {
  *Takes a string path and returns the final vnode, if it is a valid path. Can take
  *absolute or relative path.
  */
-struct vnode* vnode_lookup(char* path) {
-    struct vnode* target = parse_path(path);
+struct vnode *vnode_lookup(char *path) {
+    struct vnode *target = parse_path(path);
 
     return target;
 }
 
-struct vnode* vnode_link(struct vnode* vnode, struct vnode* new_vnode, uint8_t type) {
+struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type) {
     if (vnode->vnode_type != VNODE_DIRECTORY) {
         return NULL;
     }
@@ -154,7 +157,7 @@ struct vnode* vnode_link(struct vnode* vnode, struct vnode* new_vnode, uint8_t t
     return vnode->vnode_ops->create(vnode, new_vnode->vnode_name, type);
 }
 
-uint64_t vnode_unlink(struct vnode* link) {
+uint64_t vnode_unlink(struct vnode *link) {
     if (link->vnode_type != VNODE_SYM_LINK && link->vnode_type != VNODE_HARD_LINK) {
         return WRONG_TYPE;
     }
@@ -166,10 +169,10 @@ uint64_t vnode_unlink(struct vnode* link) {
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
-struct vnode* vnode_create(char* path, char* name, uint8_t vnode_type) {
+struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
-    struct vnode* parent_directory = vnode_lookup(path);
+    struct vnode *parent_directory = vnode_lookup(path);
     if (parent_directory == NULL) {
         //handle null response, maybe want to return something descriptive later
         return NULL;
@@ -179,7 +182,7 @@ struct vnode* vnode_create(char* path, char* name, uint8_t vnode_type) {
         vnode_directory_alloc_children(parent_directory);
     }
 
-    struct vnode* new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    struct vnode *new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
     parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
 
     return new_vnode;
@@ -188,19 +191,18 @@ struct vnode* vnode_create(char* path, char* name, uint8_t vnode_type) {
 /*
  *This simply invokes the remove function pointer which is filesystem specific, afterward invokes vnode_free
 */
-int32_t vnode_remove(struct vnode* vnode, char* path) {
-    struct vnode* target;
+int32_t vnode_remove(struct vnode *vnode, char *path) {
+    struct vnode *target;
 
     if (vnode != NULL) {
 
         target = vnode;
 
-    }else if ((target = vnode_lookup(path)) == NULL) {
+    } else if ((target = vnode_lookup(path)) == NULL) {
 
         return NODE_NOT_FOUND;
 
     }
-
 
 
     if (target->is_mount_point) {
@@ -225,10 +227,10 @@ int32_t vnode_remove(struct vnode* vnode, char* path) {
  *
  *  This will need to return a handle at some point.
  */
-int64_t vnode_open(char* path) {
-    struct process* process = my_cpu()->running_process;
+int64_t vnode_open(char *path) {
+    struct process *process = my_cpu()->running_process;
 
-    struct virtual_handle_list* list = process->handle_list;
+    struct virtual_handle_list *list = process->handle_list;
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
     int8_t ret = get_new_file_handle(list);
@@ -237,7 +239,7 @@ int64_t vnode_open(char* path) {
         return MAX_HANDLES_REACHED;
     }
 
-    struct vnode* vnode = vnode_lookup(path);
+    struct vnode *vnode = vnode_lookup(path);
 
     if (vnode == NULL) {
         return INVALID_PATH;
@@ -247,12 +249,12 @@ int64_t vnode_open(char* path) {
         vnode = vnode->mounted_vnode;
     }
 
-    struct virtual_handle* new_handle = kmalloc(sizeof(struct virtual_handle));
+    struct virtual_handle *new_handle = kmalloc(sizeof(struct virtual_handle));
     memset(new_handle, 0, sizeof(struct virtual_handle));
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
-    new_handle->handle_id = (uint64_t)ret;
+    new_handle->handle_id = (uint64_t) ret;
 
     doubly_linked_list_insert_head(list->handle_list, new_handle);
     list->num_handles++;
@@ -264,12 +266,12 @@ int64_t vnode_open(char* path) {
  * TODO remember this may need to make some sort of write flush once I have non-ramdisk filesystems going
  */
 void vnode_close(uint64_t handle) {
-    struct process* process = my_cpu()->running_process;
-    struct virtual_handle_list* list = process->handle_list;
-    struct doubly_linked_list_node* node = list->handle_list->head;
+    struct process *process = my_cpu()->running_process;
+    struct virtual_handle_list *list = process->handle_list;
+    struct doubly_linked_list_node *node = list->handle_list->head;
 
     while (node != NULL) {
-        struct virtual_handle* virtual_handle = (struct virtual_handle*)node->data;
+        struct virtual_handle *virtual_handle = (struct virtual_handle *) node->data;
         if (virtual_handle->handle_id == handle) {
             kfree(virtual_handle);
             doubly_linked_list_remove_node_by_address(list->handle_list, node);
@@ -279,9 +281,9 @@ void vnode_close(uint64_t handle) {
     panic("vnode_close invalid handle identifier");
 }
 
-void vnode_rename(struct vnode* vnode, char* new_name) {
+void vnode_rename(struct vnode *vnode, char *new_name) {
     diosfs_rename(vnode, new_name);
-    safe_strcpy(vnode->vnode_name, new_name,VFS_MAX_NAME_LENGTH);
+    safe_strcpy(vnode->vnode_name, new_name, VFS_MAX_NAME_LENGTH);
     /*
      * If we were passed a string that is too long, just truncate it
      */
@@ -289,7 +291,7 @@ void vnode_rename(struct vnode* vnode, char* new_name) {
         vnode->vnode_name[VFS_MAX_NAME_LENGTH - 1] = '\0';
     }
 
-    vnode->vnode_ops->rename(vnode,vnode->vnode_name);
+    vnode->vnode_ops->rename(vnode, vnode->vnode_name);
 }
 
 /*
@@ -303,7 +305,7 @@ void vnode_rename(struct vnode* vnode, char* new_name) {
  *
  *  It iterates through the children in the vnode until it finds the child or the end of the children.
  */
-struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
+struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     if (vnode->vnode_type != VNODE_DIRECTORY) {
         return NULL;
     }
@@ -313,18 +315,18 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
     }
 
     if (!vnode->is_cached) {
-        struct vnode* child = vnode->vnode_ops->lookup(vnode, token);
+        struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         /* Handle cache stuff when I get there */
         return child;
     }
 
     size_t index = 0;
 
-    struct vnode* child = vnode->vnode_children[index];
+    struct vnode *child = vnode->vnode_children[index];
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child != NULL && safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH)) {
+        if (child != NULL && safe_strcmp(child->vnode_name, token, VFS_MAX_NAME_LENGTH)) {
             return child;
         }
 
@@ -338,7 +340,7 @@ struct vnode* find_vnode_child(struct vnode* vnode, char* token) {
 /*
  * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
-uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
+uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     //handle already mounted case
     if (mount_point->is_mount_point) {
         return ALREADY_MOUNTED;
@@ -365,7 +367,7 @@ uint64_t vnode_mount(struct vnode* mount_point, struct vnode* mounted_vnode) {
 /*
  * Clears mount data from the vnode, clearing it as a mount point.
  */
-uint64_t vnode_unmount(struct vnode* vnode) {
+uint64_t vnode_unmount(struct vnode *vnode) {
     if (!vnode->is_mount_point) {
         return NOT_MOUNTED;
     }
@@ -382,7 +384,7 @@ uint64_t vnode_unmount(struct vnode* vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
+uint64_t vnode_read(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset, buffer, bytes);
     }
@@ -391,7 +393,7 @@ uint64_t vnode_read(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* 
 }
 
 
-uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, char* buffer) {
+uint64_t vnode_write(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
     }
@@ -401,11 +403,11 @@ uint64_t vnode_write(struct vnode* vnode, uint64_t offset, uint64_t bytes, char*
 /*
  * Gets a canonical path, whether it be for a symlink or something else
  */
-char* vnode_get_canonical_path(struct vnode* vnode) {
-    char* buffer = kmalloc(PAGE_SIZE);
-    char* final_buffer = kmalloc(PAGE_SIZE);
-    struct vnode* pointer = vnode;
-    struct vnode* pointer2 = &vfs_root;
+char *vnode_get_canonical_path(struct vnode *vnode) {
+    char *buffer = kmalloc(PAGE_SIZE);
+    char *final_buffer = kmalloc(PAGE_SIZE);
+    struct vnode *pointer = vnode;
+    struct vnode *pointer2 = &vfs_root;
 
 
     while (pointer && pointer != &vfs_root) {
@@ -416,7 +418,7 @@ char* vnode_get_canonical_path(struct vnode* vnode) {
 
     const size_t token_length = strtok_count(buffer, '/');
 
-    char* temp = kmalloc(PAGE_SIZE);
+    char *temp = kmalloc(PAGE_SIZE);
     memset(temp, 0, PAGE_SIZE);
 
     for (size_t i = token_length; i > 0; i--) {
@@ -445,17 +447,16 @@ char* vnode_get_canonical_path(struct vnode* vnode) {
  * Returns target node.
  *
  */
-static struct vnode* parse_path(char* path) {
+static struct vnode *parse_path(char *path) {
     //Assign to the root node by default
-    struct vnode* current_vnode = &vfs_root;
+    struct vnode *current_vnode = &vfs_root;
 
-    char* current_token = kmalloc(VFS_MAX_NAME_LENGTH);
+    char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
         /* This isn't implemented yet so it will be garbage until I finish it up */
         current_vnode = current_process()->current_working_dir;
-    }
-    else {
+    } else {
         path++;
     }
 
@@ -486,20 +487,20 @@ static struct vnode* parse_path(char* path) {
 }
 
 //simple iteration
-static int8_t get_new_file_handle(struct virtual_handle_list* list) {
+static int8_t get_new_file_handle(struct virtual_handle_list *list) {
     for (size_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & (1 << i))) {
             list->handle_id_bitmap |= (1 << i);
-            return (int8_t)i;
+            return (int8_t) i;
         }
     }
     return -1;
 }
 
 
-static uint64_t vnode_update_children_array(const struct vnode* vnode) {
-    struct vnode* parent = vnode->vnode_parent;
-    int32_t index = 0;
+static uint64_t vnode_update_children_array(const struct vnode *vnode) {
+    struct vnode *parent = vnode->vnode_parent;
+    size_t index = 0;
     uint64_t size = parent->num_children;
     for (index = 0; index < size; index++) {
         if (parent->vnode_children[index] == vnode) {
