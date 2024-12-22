@@ -14,14 +14,14 @@
 #include "include/drivers/serial/uart.h"
 
 //Kernel heap
-struct slab_t slabs[10];
+struct slab slabs[10];
 /*
  * Create a slab of physical memory,
  */
 
 struct hash_table slab_hash;
 
-void heap_create_slab(struct slab_t *slab, uint64_t entry_size, uint64_t pages) {
+void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
     slab->first_free = P2V(phys_alloc(pages));
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
@@ -47,7 +47,7 @@ void heap_create_slab(struct slab_t *slab, uint64_t entry_size, uint64_t pages) 
 }
 
 
-void *heap_allocate_from_slab(struct slab_t *slab) {
+void *heap_allocate_from_slab(struct slab *slab) {
     if (slab->first_free == NULL) {
         heap_create_slab(slab, slab->entry_size, PAGE_SIZE * 2);
     }
@@ -63,7 +63,7 @@ void *heap_allocate_from_slab(struct slab_t *slab) {
  * This can be useful
  */
 
-void heap_free_in_slab(struct slab_t *slab, void *address) {
+void heap_free_in_slab(struct slab *slab, void *address) {
     if (slab == NULL) {
         serial_printf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64 Slab Address %x.16\n", address,
                       slab);

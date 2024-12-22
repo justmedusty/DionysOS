@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+
+#define BIT(bit) (1 << bit)
+
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
 #define SERIAL_LOCK 0
 #define SMP_BOOSTRAP_LOCK 1

@@ -262,17 +262,17 @@ int64_t vnode_open(char *path) {
     return ret;
 }
 
-/*
- * TODO remember this may need to make some sort of write flush once I have non-ramdisk filesystems going
- */
+
 void vnode_close(uint64_t handle) {
     struct process *process = my_cpu()->running_process;
     struct virtual_handle_list *list = process->handle_list;
     struct doubly_linked_list_node *node = list->handle_list->head;
 
+
     while (node != NULL) {
         struct virtual_handle *virtual_handle = (struct virtual_handle *) node->data;
         if (virtual_handle->handle_id == handle) {
+            virtual_handle->vnode->vnode_ops->close(virtual_handle->vnode,handle);
             kfree(virtual_handle);
             doubly_linked_list_remove_node_by_address(list->handle_list, node);
             return;

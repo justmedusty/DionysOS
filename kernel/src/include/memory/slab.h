@@ -11,7 +11,7 @@
 #define NUM_SLABS 10
 extern struct hash_table slab_hash;
 
-struct slab_t{
+struct slab{
     void **first_free;
     uint64_t entry_size;
     void *start_address;
@@ -22,19 +22,19 @@ struct slab_t{
  * This will be used to create a more sophisticated data structure later
  */
 struct header {
-    struct slab_t *slab;
+    struct slab *slab;
 };
 
-struct metadata_t {
+struct metadata {
     uint64_t pages;
     uint64_t size;
 };
 
-extern struct slab_t slabs[10];
+extern struct slab slabs[10];
 
-static inline struct slab_t *heap_slab_for(uint64_t size) {
+static inline struct slab *heap_slab_for(uint64_t size) {
     for (uint64_t i = 0; i < (sizeof(slabs) / sizeof(slabs[0])); i++) {
-        struct slab_t *slab = &slabs[i];
+        struct slab *slab = &slabs[i];
 
         if (slab->entry_size >= size) {
             return slab;
@@ -45,7 +45,7 @@ static inline struct slab_t *heap_slab_for(uint64_t size) {
 }
 
 int heap_init();
-void heap_create_slab(struct slab_t *slab, uint64_t entry_size,uint64_t pages);
-void *heap_allocate_from_slab(struct slab_t *slab);
-void heap_free_in_slab(struct slab_t *slab, void *address);
+void heap_create_slab(struct slab *slab, uint64_t entry_size,uint64_t pages);
+void *heap_allocate_from_slab(struct slab *slab);
+void heap_free_in_slab(struct slab *slab, void *address);
 

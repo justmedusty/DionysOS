@@ -57,7 +57,7 @@ void *kmalloc(uint64_t size) {
 void *_kalloc(uint64_t size) {
 
     if(size < PAGE_SIZE) {
-        struct slab_t *slab = heap_slab_for(size);
+        struct slab *slab = heap_slab_for(size);
         if (slab != NULL) {
             return heap_allocate_from_slab(slab);
         }
@@ -85,7 +85,7 @@ void *krealloc(void *address, uint64_t new_size) {
     }
 
     if (((uint64_t) address & 0xFFF) == 0) {
-        struct metadata_t *metadata = (struct metadata_t *) (address - PAGE_SIZE);
+        struct metadata *metadata = (struct metadata *) (address - PAGE_SIZE);
         if (((metadata->size + (PAGE_SIZE - 1)) / PAGE_SIZE) == ((new_size + (PAGE_SIZE - 1)) / PAGE_SIZE)) {
             metadata->size = new_size;
             release_spinlock(&alloc_lock);
@@ -110,7 +110,7 @@ void *krealloc(void *address, uint64_t new_size) {
     }
 
     struct header *slab_header = (struct header *) ((uint64_t) address & ~0xFFF);
-    struct slab_t *slab = slab_header->slab;
+    struct slab *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
         void *new_address =_kalloc(new_size);
