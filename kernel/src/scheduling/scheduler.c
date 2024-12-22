@@ -124,7 +124,8 @@ void sched_run() {
     struct cpu *cpu = my_cpu();
 
     if (cpu->local_run_queue->head == NULL) {
-        timer_sleep(15000);
+
+        timer_sleep(1500);
         serial_printf("DFS: Local Run Queue is Empty \n");
         purge_dead_processes(); /* This doesn't allow for an explicit wait maybe I will change that later*/
         look_for_process();

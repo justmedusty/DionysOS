@@ -69,7 +69,7 @@ void kthread_main() {
     serial_printf("FILE : %s \n", buffer);
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
-    timer_sleep(15000);
+    timer_sleep(1500);
     serial_printf("Thread %i exiting\n", cpu_no);
     kfree(buffer);
     sched_exit();
