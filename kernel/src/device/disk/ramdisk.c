@@ -3,7 +3,7 @@
 //
 
 #include "include/device/device.h"
-#include "include/drivers/block/ramdisk.h"
+#include "include/device/block/ramdisk.h"
 #include <include/types.h>
 #include <include/drivers/serial/uart.h>
 #include <include/filesystem/diosfs.h>

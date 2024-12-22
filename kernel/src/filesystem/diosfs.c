@@ -9,7 +9,7 @@
 #include "include/definitions.h"
 #include <include/drivers/serial/uart.h>
 #include <include/memory/kalloc.h>
-#include "include/drivers/block/ramdisk.h"
+#include "include/device/block/ramdisk.h"
 #include "include/memory/mem.h"
 /*
  * We need to ensure that for each filesystem we have a separate lock

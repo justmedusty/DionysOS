@@ -2,8 +2,8 @@
 // Created by dustyn on 8/11/24.
 //
 
-#include "../include/architecture/arch_interrupts.h"
-#include "../include/architecture/x86_64/idt.h"
+#include "include/architecture/arch_interrupts.h"
+#include "include/architecture/x86_64/idt.h"
 
 #ifdef __x86_64__
 
