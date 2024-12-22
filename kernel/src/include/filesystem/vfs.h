@@ -57,6 +57,7 @@ enum vnode_types {
 };
 
 /* FS Types */
+#define VNODE_FS_TMPFS 0x0
 #define VNODE_FS_DIOSFS 0xF
 #define VNODE_FS_EXT2 0x10
 
