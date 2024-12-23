@@ -72,9 +72,9 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
     struct tmpfs_directory_entries *entries = &node->directory_entries;
 
     for (size_t i = 0; i < node->t_node_size; i++) {
-        struct tmpfs_node *node = entries->entries[i];
-        if (safe_strcmp(node->node_name, name,VFS_MAX_NAME_LENGTH)) {
-            return node;
+        struct tmpfs_node *entry = entries->entries[i];
+        if (safe_strcmp(entry->node_name, name,VFS_MAX_NAME_LENGTH)) {
+            return entry;
         }
     }
 
