@@ -4,6 +4,8 @@
 
 #ifndef KERNEL_TMPFS_H
 #define KERNEL_TMPFS_H
+#include <include/data_structures/binary_tree.h>
+
 #include "include/filesystem/vfs.h"
 #include "include/data_structures/doubly_linked_list.h"
 
@@ -28,7 +30,7 @@ struct tmpfs_directory_entries {
     struct tmpfs_node **entries;
 };
 
-struct tmpfs_super_block {
+struct tmpfs_superblock {
     struct tmpfs_filesystem_object *filesystem;
     uint64_t magic;
     uint64_t max_size;
@@ -62,8 +64,9 @@ struct tmpfs_node {
 };
 
 struct tmpfs_filesystem_object {
-    struct tmpsfs_node *root;
-    struct binary_tree *tmpfs_node_tree;
+    struct tmpfs_superblock *superblock;
+    struct binary_tree node_tree;
+    struct spinlock fs_lock;
     struct device *virtual_device;
 };
 

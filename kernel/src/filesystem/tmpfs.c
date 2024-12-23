@@ -24,7 +24,7 @@ struct vnode_operations tmpfs_ops = {
 
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
     struct tmpfs_filesystem_object *tmpfs = vnode->filesystem_object;
-    struct tmpfs_node *target_node = lookup_tree(tmpfs->tmpfs_node_tree, vnode->vnode_inode_number,false);
+    struct tmpfs_node *target_node = lookup_tree(&tmpfs->node_tree, vnode->vnode_inode_number,false);
 
     if (target_node == NULL) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
