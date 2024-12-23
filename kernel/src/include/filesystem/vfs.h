@@ -11,6 +11,8 @@
 #define VFS_MAX_NAME_LENGTH 128
 #define VFS_STATIC_POOL_SIZE 100
 
+
+
 #define ROOT_INODE 0
 #define CURRENT_DIRECTORY_NAME "."
 #define PARENT_DIRECTORY_NAME ".."
@@ -40,10 +42,7 @@ enum vnode_device_types {
     VNODE_DEV_SATA = 3,
 };
 
-#define VNODE_DEV_SATA 3
-
 /* Node types */
-
 enum vnode_types {
     VNODE_DIRECTORY = 0,
     VNODE_FILE = 1,

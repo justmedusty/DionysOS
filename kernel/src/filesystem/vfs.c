@@ -75,7 +75,6 @@ void vnode_directory_alloc_children(struct vnode *vnode) {
     vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
     vnode->is_cached = true;
-
     for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
         vnode->vnode_children[i] = NULL;
     }
@@ -315,6 +314,11 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     }
 
     if (!vnode->is_cached) {
+
+        if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
+            vnode_directory_alloc_children(vnode);
+        }
+
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         /* Handle cache stuff when I get there */
         return child;

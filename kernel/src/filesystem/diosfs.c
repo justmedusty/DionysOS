@@ -456,9 +456,6 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     }
 
 
-    if (fill_vnode && !(parent->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
-        vnode_directory_alloc_children(parent);
-    }
 
     struct vnode *child = NULL;
 

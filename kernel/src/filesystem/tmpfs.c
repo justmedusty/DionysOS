@@ -9,6 +9,10 @@
 
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
+static struct vnode *insert_tempfs_children_nodes_into_vnode_children(struct vnode *vnode,
+                                                                      const struct tmpfs_directory_entries *entries,
+                                                                      const size_t num_entries, char *target_name);
+
 struct vnode_operations tmpfs_ops = {
     .close = tmpfs_close,
     .create = tmpfs_create,
@@ -23,6 +27,10 @@ struct vnode_operations tmpfs_ops = {
 };
 
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
+    if (vnode->is_cached && vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+        panic("tmpfs_lookup: vnode is cached already");
+        // not a huge deal but a logic bug nonetheless so panic for visibility
+    }
     struct tmpfs_filesystem_object *tmpfs = vnode->filesystem_object;
     struct tmpfs_node *target_node = lookup_tree(&tmpfs->node_tree, vnode->vnode_inode_number,false);
 
@@ -30,7 +38,10 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
     }
 
-    struct tmpfs_node *node = tmpfs_find_child(target_node, name);
+    struct vnode *child = insert_tempfs_children_nodes_into_vnode_children(
+        vnode, &target_node->directory_entries, target_node->t_node_size, name);
+    vnode->num_children = target_node->t_node_size;
+    return child;
 }
 
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
@@ -79,4 +90,32 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
     }
 
     return NULL;
+}
+
+static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
+    struct vnode *vnode = vnode_alloc();
+    memset(vnode, 0, sizeof(struct vnode));
+    vnode->filesystem_object = node->superblock->filesystem;
+    vnode->is_cached = false;
+    vnode->vnode_filesystem_id = VNODE_FS_TMPFS;
+    vnode->vnode_ops = &tmpfs_ops;
+    vnode->vnode_size = node->t_node_size;
+    vnode->vnode_type = node->node_type;
+    safe_strcpy(vnode->vnode_name, node->node_name,VFS_MAX_NAME_LENGTH);
+    return vnode;
+}
+
+static struct vnode *insert_tempfs_children_nodes_into_vnode_children(struct vnode *vnode,
+                                                                      const struct tmpfs_directory_entries *entries,
+                                                                      const size_t num_entries, char *target_name) {
+    struct vnode *ret = NULL;
+    for (size_t i = 0; i < num_entries; i++) {
+        vnode->vnode_children[i] = tmpfs_node_to_vnode(entries->entries[i]);
+        vnode->vnode_children[i]->vnode_parent = vnode;
+        if (safe_strcmp(vnode->vnode_children[i]->vnode_name, target_name, VFS_MAX_NAME_LENGTH)) {
+            ret = vnode->vnode_children[i];
+        }
+    }
+
+    return ret;
 }

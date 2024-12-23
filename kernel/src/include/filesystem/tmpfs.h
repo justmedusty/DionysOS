@@ -49,6 +49,7 @@ struct tmpfs_page_list_entry {
 
 
 struct tmpfs_node {
+    struct tmpfs_superblock *superblock;
     struct tmpfs_node *parent_t_node;
     char node_name[VFS_MAX_NAME_LENGTH];
     uint64_t t_node_number;
