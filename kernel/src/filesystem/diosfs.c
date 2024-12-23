@@ -227,6 +227,7 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     fs->superblock->inode_bitmap_size = DIOSFS_NUM_INODE_POINTER_BLOCKS;
 
     fs->superblock->total_size = DEFAULT_DIOSFS_SIZE;
+    fs->device->device_major = device_type;
     fs->device->device_minor = device_id;
 
     //copy the contents into our buffer

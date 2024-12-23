@@ -92,6 +92,21 @@ struct diosfs_superblock {
     uint64_t block_start_pointer; /* Where blocks start */
     uint64_t reserved[116]; // just to keep the size nice, we can do something with this space later if we so choose
 };
+struct tmpfs_directory_entry {
+    char name[VFS_MAX_NAME_LENGTH];
+    uint8_t node_type;
+    uint64_t t_node_number;
+    uint64_t t_node_size;
+};
+
+/*
+ *  Doing it this way to require less node hopping to find a page offset. Can do O(1) lookups within
+ *  PAGES_PER_TMPFS_ENTRY page lookups
+ */
+struct tmpfs_page_list_entry {
+    char **page_list;
+    uint64_t number_of_pages;
+};
 
 _Static_assert(sizeof(struct diosfs_superblock) == DIOSFS_BLOCKSIZE, "Tempfs Superblock not the proper size");
 

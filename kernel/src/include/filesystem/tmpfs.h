@@ -8,6 +8,8 @@
 #include "include/data_structures/doubly_linked_list.h"
 
 #define PAGES_PER_TMPFS_ENTRY 1024
+#define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * 8
+#define  MAX_TMPFS_ENTRIES
 
 enum tmpfs_types {
     DIRECTORY = 0,
@@ -21,22 +23,8 @@ enum tmpfs_types {
     SYM_LINK = 8,
 };
 
-struct tmpfs_node {
-    struct tmpfs_node *parent_t_node;
-    char node_name[VFS_MAX_NAME_LENGTH];
-    uint64_t t_node_number;
-    uint64_t t_node_size;
-    uint64_t t_node_pages;
-    uint8_t node_type;
-    struct doubly_linked_list page_list; //holds tmpfs page_list_entries
-    uint64_t t_flags;
-};
-
 struct tmpfs_directory_entry {
-    char name[VFS_MAX_NAME_LENGTH];
-    uint8_t node_type;
-    uint64_t t_node_number;
-    uint64_t t_node_size;
+    struct tmpfs_node *node;
 };
 
 /*
@@ -46,6 +34,30 @@ struct tmpfs_directory_entry {
 struct tmpfs_page_list_entry {
     char **page_list;
     uint64_t number_of_pages;
+};
+struct tmpfs_directory_entries {
+    struct tmpfs_directory_entry *entries;
+};
+
+struct tmpfs_node {
+    struct tmpfs_node *parent_t_node;
+    char node_name[VFS_MAX_NAME_LENGTH];
+    uint64_t t_node_number;
+    uint64_t t_node_size; // bytes if reg file, num dirents if directory
+    uint64_t t_node_pages;
+    uint8_t node_type;
+    uint64_t t_flags;
+
+    union {
+        struct doubly_linked_list page_list; //holds tmpfs page_list_entries as defined above
+        struct tmpfs_directory_entries directory_entries;
+    };
+};
+
+struct tmpfs_filesystem_object {
+    struct tmpsfs_node *root;
+    struct binary_tree *tmpfs_node_tree;
+    struct device *virtual_device;
 };
 
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name);

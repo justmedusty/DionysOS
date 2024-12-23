@@ -40,7 +40,7 @@ void set_pci_mmio_address(struct mcfg_entry *entry){
     pci_mmio_address = entry->base_address;
     start_bus = entry->start_bus;
     end_bus = entry->end_bus;
-    serial_printf("PCI MMIO address is %x.64 , start bus %i end bus %i\n",pci_mmio_address,start_bus,end_bus);
+    serial_printf("PCIe MMIO address is %x.64 , start bus %i end bus %i\n",pci_mmio_address,start_bus,end_bus);
 }
 
 
