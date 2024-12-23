@@ -7,6 +7,7 @@
 #include "include/filesystem/vfs.h"
 #include "include/data_structures/doubly_linked_list.h"
 
+#define TMPFS_MAGIC 0x534F455077778034
 #define PAGES_PER_TMPFS_ENTRY 1024
 #define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * 8
 #define  MAX_TMPFS_ENTRIES
@@ -23,10 +24,18 @@ enum tmpfs_types {
     SYM_LINK = 8,
 };
 
-struct tmpfs_directory_entry {
-    struct tmpfs_node *node;
+struct tmpfs_directory_entries {
+    struct tmpfs_node **entries;
 };
 
+struct tmpfs_super_block {
+    struct tmpfs_filesystem_object *filesystem;
+    uint64_t magic;
+    uint64_t max_size;
+    uint64_t block_size;
+    uint64_t block_count;
+    uint64_t inode_count;
+};
 /*
  *  Doing it this way to require less node hopping to find a page offset. Can do O(1) lookups within
  *  PAGES_PER_TMPFS_ENTRY page lookups
@@ -35,9 +44,7 @@ struct tmpfs_page_list_entry {
     char **page_list;
     uint64_t number_of_pages;
 };
-struct tmpfs_directory_entries {
-    struct tmpfs_directory_entry *entries;
-};
+
 
 struct tmpfs_node {
     struct tmpfs_node *parent_t_node;
