@@ -1,9 +1,9 @@
 //
 // Created by dustyn on 8/12/24.
 //
-
+#ifndef _DEFINITIONS_H_
+#define _DEFINITIONS_H_
 #pragma once
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -40,3 +40,4 @@ enum kernel_error_codes {
     KERN_INTERRUPTED = 4,   // Interrupted system call (EINTR)
     KERN_NOT_SUPPORTED = 95 // Operation not supported (ENOTSUP)
 };
+#endif
