@@ -54,6 +54,13 @@ void *kmalloc(uint64_t size) {
     return ret;
 }
 
+void *kzmalloc(uint64_t size) {
+    acquire_spinlock(&alloc_lock);
+    void *ret = _kalloc(size);
+    memset(ret, 0, size); // I am sure this is not the "official" way to do a kzmalloc you would have idle kthreads zeroing pages in a pool but this is fine for now
+    release_spinlock(&alloc_lock);
+    return ret;
+}
 void *_kalloc(uint64_t size) {
 
     if(size < PAGE_SIZE) {

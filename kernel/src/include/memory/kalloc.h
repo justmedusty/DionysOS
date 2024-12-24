@@ -11,5 +11,5 @@ void *_kalloc(uint64_t size);
 void *krealloc(void *address, uint64_t new_size);
 void _kfree(void *address);
 void kfree(void *address);
-
+void *kzmalloc(uint64_t size);
 #endif //KERNEL_KALLOC_H
