@@ -59,7 +59,7 @@ extern p4d_t *global_pg_dir;
 #define PTE_U           (uint64_t)0x004   // User
 #define PTE_A           (uint64_t)0x020   //accessed , for demand paging
 #define PTE_PS          (uint64_t)0x080   // Page Size
-#define PTE_NX          (uint64_t) 1 << 63 // no execute
+#define PTE_NX          (uint64_t) BIT(63) // no execute
 
 
 // Address in page table or page directory entry

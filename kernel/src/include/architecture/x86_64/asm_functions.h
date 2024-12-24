@@ -2,6 +2,7 @@
 // Created by dustyn on 6/16/24.
 //
 #pragma once
+#include <include/definitions.h>
 #ifdef __x86_64__
 #include <include/drivers/serial/uart.h>
 
@@ -156,7 +157,7 @@ static inline uint64_t interrupts_enabled() {
           :                  // No input operands
           : "memory"         // Memory is modified
       );
-    return ((flags & 1 << 9) > 0);
+    return ((flags & BIT(9)) > 0);
 }
 
 //PAGEBREAK: 36

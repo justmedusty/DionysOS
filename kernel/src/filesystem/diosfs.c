@@ -895,8 +895,6 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
         block = fs->superblock->inode_bitmap_pointers_start + block_to_read;
     }
 
-    uint64_t byte_in_block = number / 8;
-
     uint64_t bit = number % 8;
 
     char *buffer = kmalloc(PAGE_SIZE);
@@ -907,7 +905,7 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
-    buffer[byte_in_block] &= ~(1 << bit);
+    buffer[BYTE(number)] &= ~BIT(bit);
     fs->device->device_ops->block_device_ops->block_write(block * fs->superblock->block_size + 0,
                                                           fs->superblock->block_size, buffer, fs->device);
     kfree(buffer);
@@ -952,7 +950,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
             for (uint64_t i = 0; i <= 8; i++) {
                 if (!(buffer[(block * fs->superblock->block_size) + byte] & (1 << i))) {
                     bit = i;
-                    buffer[byte] |= (1 << bit);
+                    buffer[byte] |= BIT(bit);
                     inode_number = (block * fs->superblock->block_size * 8) + (byte * 8) + bit;
                     goto found_free;
                 }

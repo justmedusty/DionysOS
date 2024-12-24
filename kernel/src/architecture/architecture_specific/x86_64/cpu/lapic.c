@@ -64,7 +64,7 @@ void lapic_timer_oneshot(uint8_t vec, uint64_t ms) {
 void lapic_calibrate_timer() {
     lapic_timer_stop();
     lapic_write(LAPIC_TIMER_DIV, 0);
-    lapic_write(LAPIC_TIMER_LVT, (1 << 16) | 0xff);
+    lapic_write(LAPIC_TIMER_LVT, BIT(16) | 0xff);
     lapic_write(LAPIC_TIMER_INITCNT, 0xFFFFFFFF);
     lapic_write(LAPIC_TIMER_LVT, LAPIC_TIMER_DISABLE);
     uint32_t ticks = 0xFFFFFFFF - lapic_read(LAPIC_TIMER_CURCNT);
