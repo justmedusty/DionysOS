@@ -38,7 +38,7 @@ struct device block_dev[10] = {
 
 
 //Set up initial  filesystem object
-struct diosfs_filesystem diosfs_filesystem[10] = {
+struct diosfs_filesystem_context diosfs_filesystem_context[10] = {
         [0] = {
                 .filesystem_id = INITIAL_FILESYSTEM,
                 .lock = &diosfs_lock[0],
@@ -50,85 +50,85 @@ struct diosfs_filesystem diosfs_filesystem[10] = {
 /*
  * Internally linked function prototypes
  */
-static void diosfs_clear_bitmap(const struct diosfs_filesystem *fs, uint8_t type, uint64_t number);
+static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, uint8_t type, uint64_t number);
 
-static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem *fs,
+static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem_context *fs,
                                                   struct diosfs_inode *inode_to_be_filled);
 
-static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesystem *fs);
+static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesystem_context *fs);
 
-static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem *fs, uint64_t block_number);
+static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem_context *fs, uint64_t block_number);
 
-static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem *fs, uint64_t inode_number);
+static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem_context *fs, uint64_t inode_number);
 
-static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem *fs, struct diosfs_directory_entry *children,
+static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *fs, struct diosfs_directory_entry *children,
                                              uint64_t inode_number, uint64_t children_size);
 
 static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struct diosfs_directory_entry *entry,
-                                                     struct diosfs_filesystem *fs);
+                                                     struct diosfs_filesystem_context *fs);
 
 static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_number(uint64_t block_number);
 
-static void diosfs_write_inode(const struct diosfs_filesystem *fs, struct diosfs_inode *inode);
+static void diosfs_write_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode);
 
 static void diosfs_write_block_by_number(uint64_t block_number, const char *buffer,
-                                         const struct diosfs_filesystem *fs,
+                                         const struct diosfs_filesystem_context *fs,
                                          uint64_t offset, uint64_t write_size);
 
-static void diosfs_read_block_by_number(uint64_t block_number, char *buffer, const struct diosfs_filesystem *fs,
+static void diosfs_read_block_by_number(uint64_t block_number, char *buffer, const struct diosfs_filesystem_context *fs,
                                         uint64_t offset, uint64_t read_size);
 
-static uint64_t diosfs_allocate_single_indirect_block(const struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_single_indirect_block(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
 
-static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number);
 
-static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate);
 
-static void diosfs_read_inode(const struct diosfs_filesystem *fs, struct diosfs_inode *inode, uint64_t inode_number);
+static void diosfs_read_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, uint64_t inode_number);
 
 static uint64_t diosfs_get_relative_block_number_from_file(const struct diosfs_inode *inode, uint64_t current_block,
-                                                           struct diosfs_filesystem *fs);
+                                                           struct diosfs_filesystem_context *fs);
 
-static void free_blocks_from_inode(struct diosfs_filesystem *fs,
+static void free_blocks_from_inode(struct diosfs_filesystem_context *fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct diosfs_inode *inode);
 
-static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem *fs, struct diosfs_inode *inode, char *buffer,
+static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, char *buffer,
                                              uint64_t buffer_size,
                                              uint64_t offset, uint64_t read_size_bytes);
 
-static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem *fs, struct diosfs_inode *inode, char *buffer,
+static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, char *buffer,
                                             uint64_t buffer_size,
                                             uint64_t offset,
                                             uint64_t write_size_bytes);
 
-static void diosfs_remove_file(struct diosfs_filesystem *fs, struct diosfs_inode *inode);
+static void diosfs_remove_file(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode);
 
-static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem *fs,
+static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem_context *fs,
                                                   const struct diosfs_directory_entry *entry, uint64_t inode_number);
 
-static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem *fs, struct diosfs_directory_entry *entry,
+static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem_context *fs, struct diosfs_directory_entry *entry,
                                             const struct diosfs_inode *inode);
 
-uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                           uint32_t num_blocks_to_allocate);
 
-static uint64_t diosfs_write_dirent(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_write_dirent(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                     const struct diosfs_directory_entry *entry);
 
-static uint64_t diosfs_symlink_check(struct diosfs_filesystem *fs, struct vnode *vnode, int32_t expected_type);
+static uint64_t diosfs_symlink_check(struct diosfs_filesystem_context *fs, struct vnode *vnode, int32_t expected_type);
 
-static struct vnode *diosfs_follow_link(struct diosfs_filesystem *fs, const struct vnode *vnode);
+static struct vnode *diosfs_follow_link(struct diosfs_filesystem_context *fs, const struct vnode *vnode);
 
-static void shift_directory_entry(const struct diosfs_filesystem *fs, uint64_t entry_number,
+static void shift_directory_entry(const struct diosfs_filesystem_context *fs, uint64_t entry_number,
                                   struct diosfs_inode *parent_inode);
 
-static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem *fs,
+static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem_context *fs,
                                                        const uint64_t inode_number,
                                                        const uint64_t directory_inode_number);
 
@@ -181,10 +181,10 @@ void diosfs_init(uint64_t filesystem_id) {
     if (filesystem_id >= NUM_FILESYSTEM_OBJECTS) {
         return;
     }
-    initlock(diosfs_filesystem[filesystem_id].lock, DIOSFS_LOCK);
-    ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem[filesystem_id].device->device_minor, "initramfs",
+    initlock(diosfs_filesystem_context[filesystem_id].lock, DIOSFS_LOCK);
+    ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
-    dios_mkfs(filesystem_id, diosfs_filesystem->device->device_type, &diosfs_filesystem[filesystem_id]);
+    dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
 };
 
 
@@ -212,7 +212,7 @@ void diosfs_get_size_info(struct diosfs_size_calculation *size_calculation, size
  *
  * Takes a ramdisk ID to specify which ramdisk to operate on
  */
-void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem *fs) {
+void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem_context *fs) {
     char *buffer = kmalloc(PAGE_SIZE);
     fs->superblock->magic = DIOSFS_MAGIC;
     fs->superblock->version = DIOSFS_VERSION;
@@ -324,7 +324,7 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
  * The functions below encompass the vfs function pointer implementations utilizing all the vfs functions.
  */
 void diosfs_remove(const struct vnode *vnode) {
-    struct diosfs_filesystem *fs = vnode->filesystem_object;
+    struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
@@ -336,7 +336,7 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
     if (vnode->vnode_inode_number == ROOT_INODE) {
         return;
     }
-    struct diosfs_filesystem *fs = vnode->filesystem_object;
+    struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
@@ -347,7 +347,7 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
 }
 
 uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
-    struct diosfs_filesystem *fs = vnode->filesystem_object;
+    struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == VNODE_HARD_LINK) {
@@ -366,7 +366,7 @@ uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, c
 }
 
 uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
-    struct diosfs_filesystem *fs = vnode->filesystem_object;
+    struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == DIOSFS_DIRECTORY) {
@@ -397,7 +397,7 @@ uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, char *buffer, 
  * Unimplemented for now given there isn't really any extra data in the inode that isn't in the vnode I will sit on this
  */
 uint64_t diosfs_stat(const struct vnode *vnode) {
-    const struct diosfs_filesystem *fs = vnode->filesystem_object;
+    const struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
     release_spinlock(fs->lock);
@@ -429,7 +429,7 @@ uint64_t diosfs_stat(const struct vnode *vnode) {
  * Finally, return child
  */
 struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
-    struct diosfs_filesystem *fs = parent->filesystem_object;
+    struct diosfs_filesystem_context *fs = parent->filesystem_object;
 
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS || parent->vnode_type != VNODE_DIRECTORY) {
         return NULL;
@@ -505,7 +505,7 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
         return NULL;
     }
 
-    struct diosfs_filesystem *fs = parent->filesystem_object;
+    struct diosfs_filesystem_context *fs = parent->filesystem_object;
     acquire_spinlock(fs->lock);
     struct vnode *new_vnode = vnode_alloc();
     struct diosfs_inode parent_inode;
@@ -565,7 +565,7 @@ uint64_t diosfs_open(struct vnode *vnode) {
 }
 
 struct vnode *diosfs_link(struct vnode *parent, struct vnode *vnode_to_link, uint8_t type) {
-    struct diosfs_filesystem *fs = parent->filesystem_object;
+    struct diosfs_filesystem_context *fs = parent->filesystem_object;
     acquire_spinlock(fs->lock);
     switch (type) {
         case VNODE_HARD_LINK:
@@ -582,7 +582,7 @@ struct vnode *diosfs_link(struct vnode *parent, struct vnode *vnode_to_link, uin
 
 void diosfs_unlink(struct vnode *vnode) {
     struct diosfs_inode inode;
-    struct diosfs_filesystem *fs = vnode->filesystem_object;
+    struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
     if (inode.type == DIOSFS_SYMLINK) {
@@ -633,7 +633,7 @@ void diosfs_unlink(struct vnode *vnode) {
  * and returning said vnode.
  */
 static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struct diosfs_directory_entry *entry,
-                                                     struct diosfs_filesystem *fs) {
+                                                     struct diosfs_filesystem_context *fs) {
     struct vnode *vnode = vnode_alloc();
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
@@ -659,7 +659,7 @@ static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struc
 }
 
 
-static uint64_t diosfs_symlink_check(struct diosfs_filesystem *fs, struct vnode *vnode, int32_t expected_type) {
+static uint64_t diosfs_symlink_check(struct diosfs_filesystem_context *fs, struct vnode *vnode, int32_t expected_type) {
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
@@ -681,7 +681,7 @@ static uint64_t diosfs_symlink_check(struct diosfs_filesystem *fs, struct vnode 
 }
 
 
-static struct vnode *diosfs_follow_link(struct diosfs_filesystem *fs, const struct vnode *vnode) {
+static struct vnode *diosfs_follow_link(struct diosfs_filesystem_context *fs, const struct vnode *vnode) {
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
@@ -697,7 +697,7 @@ static struct vnode *diosfs_follow_link(struct diosfs_filesystem *fs, const stru
  * This function must be used to remove a dirent , recursive deletion should not be used only called from this function.
  *
  */
-static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem *fs, struct diosfs_directory_entry *entry,
+static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem_context *fs, struct diosfs_directory_entry *entry,
                                             const struct diosfs_inode *inode) {
     struct diosfs_inode parent_inode;
 
@@ -789,7 +789,7 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem *fs, struct
     return DIOSFS_NOT_FOUND;
 }
 
-static void shift_directory_entry(const struct diosfs_filesystem *fs, const uint64_t entry_number,
+static void shift_directory_entry(const struct diosfs_filesystem_context *fs, const uint64_t entry_number,
                                   struct diosfs_inode *parent_inode) {
 
     if (entry_number == parent_inode->size - 1) {
@@ -824,7 +824,7 @@ static void shift_directory_entry(const struct diosfs_filesystem *fs, const uint
 /*
  * This could pose an issue with stack space but we'll run with it. If it works it works, if it doesn't we'll either change it or allocate more stack space.
  */
-static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem *fs,
+static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem_context *fs,
                                                   const struct diosfs_directory_entry *entry,
                                                   const uint64_t inode_number) {
     struct diosfs_inode inode;
@@ -873,7 +873,7 @@ static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem *fs,
 /*
  *Remove regular file, free all blocks, clear the inode out, free the inode
  */
-static void diosfs_remove_file(struct diosfs_filesystem *fs, struct diosfs_inode *inode) {
+static void diosfs_remove_file(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode) {
     free_blocks_from_inode(fs, 0, inode->block_count, inode);
     memset(inode->name, 0, MAX_FILENAME_LENGTH);
     diosfs_write_inode(fs, inode);
@@ -884,7 +884,7 @@ static void diosfs_remove_file(struct diosfs_filesystem *fs, struct diosfs_inode
  * Clear a block or inode bitmap entry , essentially the same thing reversed but I do not read the entire bitmap section in because we know which block we need
  * since we're given a number.
  */
-static void diosfs_clear_bitmap(const struct diosfs_filesystem *fs, const uint8_t type, const uint64_t number) {
+static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, const uint8_t type, const uint64_t number) {
     if (type != BITMAP_TYPE_BLOCK && type != BITMAP_TYPE_INODE) {
         panic("Unknown type diosfs_clear_bitmap");
     }
@@ -934,7 +934,7 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem *fs, const uint8_
  *the first free bit.
  *
  */
-static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem *fs,
+static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem_context *fs,
                                                   struct diosfs_inode *inode_to_be_filled) {
     uint64_t buffer_size = PAGE_SIZE * 16;
     char *buffer = kmalloc(buffer_size);
@@ -1020,7 +1020,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
  *
  */
 
-static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesystem *fs) {
+static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesystem_context *fs) {
     uint64_t buffer_size = fs->superblock->block_bitmap_size * fs->superblock->block_size;
     char *buffer = kmalloc(buffer_size);
     uint64_t block = 0;
@@ -1104,7 +1104,7 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
 /*
  * I don't think I need locks on frees, I will find out one way or another if this is true
  */
-static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem *fs, const uint64_t block_number) {
+static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem_context *fs, const uint64_t block_number) {
     char *buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, fs->superblock->block_size);
 
@@ -1119,7 +1119,7 @@ static uint64_t diosfs_free_block_and_mark_bitmap(struct diosfs_filesystem *fs, 
 /*
  * I don't think I need locks on frees, I will find out one way or another if this is true
  */
-static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem *fs, const uint64_t inode_number) {
+static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem_context *fs, const uint64_t inode_number) {
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, inode_number);
     memset(&inode, 0, sizeof(struct diosfs_inode));
@@ -1157,7 +1157,7 @@ static uint64_t diosfs_free_inode_and_mark_bitmap(struct diosfs_filesystem *fs, 
  * it won't, there won't be any intermediate state. You can just read again if you suspect something has been added.
  *
  */
-static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem *fs,
+static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *fs,
                                              struct diosfs_directory_entry *children, const uint64_t inode_number,
                                              const uint64_t children_size) {
     uint64_t buffer_size = PAGE_SIZE;
@@ -1202,7 +1202,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem *fs,
 /*
  * This function exists to update the directory entry when a file name changes or size changes from a write or the like.
  */
-static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem *fs,
+static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem_context *fs,
                                                        const uint64_t inode_number,
                                                        const uint64_t directory_inode_number) {
     uint64_t buffer_size = PAGE_SIZE;
@@ -1262,7 +1262,7 @@ static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem 
  *
  * Took locks out since this will be called from a function that is locked.
  */
-static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem *fs, struct diosfs_inode *inode, char *buffer,
+static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, char *buffer,
                                              const uint64_t buffer_size,
                                              const uint64_t offset, const uint64_t read_size_bytes) {
     uint64_t num_blocks_to_read = read_size_bytes / fs->superblock->block_size;
@@ -1326,7 +1326,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem *fs, struc
 /*
  * Write a directory entry into a directory and handle block allocation, size changes accordingly
  */
-static uint64_t diosfs_write_dirent(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_write_dirent(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                     const struct diosfs_directory_entry *entry) {
     if (inode->size == DIOSFS_MAX_FILES_IN_DIRECTORY) {
         return DIOSFS_CANT_ALLOCATE_BLOCKS_FOR_DIR;
@@ -1358,7 +1358,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_filesystem *fs, struct diosfs_
 }
 
 
-static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem *fs, struct diosfs_inode *inode, char *buffer,
+static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, char *buffer,
                                             const uint64_t buffer_size,
                                             const uint64_t offset,
                                             const uint64_t write_size_bytes) {
@@ -1462,7 +1462,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem *fs, struct
  */
 static uint64_t diosfs_get_relative_block_number_from_file(const struct diosfs_inode *inode,
                                                            const uint64_t current_block,
-                                                           struct diosfs_filesystem *fs) {
+                                                           struct diosfs_filesystem_context *fs) {
     char *temp_buffer = kmalloc(PAGE_SIZE);
     const struct diosfs_byte_offset_indices indices = diosfs_indirection_indices_for_block_number(current_block);
     uint64_t current_block_number = 0;
@@ -1512,7 +1512,7 @@ static uint64_t diosfs_get_relative_block_number_from_file(const struct diosfs_i
  * This function will allocate new blocks to an inode. If needed it will also slide pointers down if there is a write to the beginning or
  * to the end of the file
  */
-uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                           uint32_t num_blocks_to_allocate) {
     struct diosfs_byte_offset_indices result;
     char *buffer = kmalloc(PAGE_SIZE);
@@ -1661,7 +1661,7 @@ static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_nu
 /*
  * 4 functions beneath just take some of the ramdisk calls out in favor of local functions for read and writing blocks and inodes
  */
-static void diosfs_write_inode(const struct diosfs_filesystem *fs, struct diosfs_inode *inode) {
+static void diosfs_write_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode) {
     uint64_t inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
     uint64_t block_number = fs->superblock->inode_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
     uint64_t ret = fs->device->device_ops->block_device_ops->block_write(
@@ -1674,7 +1674,7 @@ static void diosfs_write_inode(const struct diosfs_filesystem *fs, struct diosfs
     }
 }
 
-static void diosfs_read_inode(const struct diosfs_filesystem *fs, struct diosfs_inode *inode, uint64_t inode_number) {
+static void diosfs_read_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode, uint64_t inode_number) {
     uint64_t inode_number_in_block = inode_number % NUM_INODES_PER_BLOCK;
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
     uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
@@ -1688,7 +1688,7 @@ static void diosfs_read_inode(const struct diosfs_filesystem *fs, struct diosfs_
 }
 
 static void diosfs_write_block_by_number(const uint64_t block_number, const char *buffer,
-                                         const struct diosfs_filesystem *fs,
+                                         const struct diosfs_filesystem_context *fs,
                                          uint64_t offset, uint64_t write_size) {
     if (write_size > fs->superblock->block_size) {
         write_size = fs->superblock->block_size;
@@ -1715,7 +1715,7 @@ static void diosfs_write_block_by_number(const uint64_t block_number, const char
 }
 
 static void diosfs_read_block_by_number(const uint64_t block_number, char *buffer,
-                                        const struct diosfs_filesystem *fs,
+                                        const struct diosfs_filesystem_context *fs,
                                         uint64_t offset, uint64_t read_size) {
     if (read_size > fs->superblock->block_size) {
         read_size = fs->superblock->block_size - offset;
@@ -1742,7 +1742,7 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char *buffe
 /*
  * This function will start at block offset and go to num_blocks in order to free as many blocks as requested
  */
-static void free_blocks_from_inode(struct diosfs_filesystem *fs,
+static void free_blocks_from_inode(struct diosfs_filesystem_context *fs,
                                    uint64_t block_start, uint64_t num_blocks,
                                    struct diosfs_inode *inode) {
     if (inode->block_count == 0) {
@@ -1854,7 +1854,7 @@ static void free_blocks_from_inode(struct diosfs_filesystem *fs,
  *  num_allocated is how many have already been allocated in this indirect block
  */
 
-static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       const uint64_t num_allocated, uint64_t num_to_allocate) {
     char *buffer = kmalloc(PAGE_SIZE);
     uint64_t *block_array = (uint64_t *) buffer;
@@ -1891,7 +1891,7 @@ static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem *
     return triple_indirect;
 }
 
-static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       uint64_t num_allocated, uint64_t num_to_allocate,
                                                       bool higher_order, uint64_t block_number) {
     uint64_t index;
@@ -1949,7 +1949,7 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem *
 }
 
 
-static uint64_t diosfs_allocate_single_indirect_block(const struct diosfs_filesystem *fs, struct diosfs_inode *inode,
+static uint64_t diosfs_allocate_single_indirect_block(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       const uint64_t num_allocated, uint64_t num_to_allocate,
                                                       const bool higher_order, const uint64_t block_number) {
     if (num_allocated + num_to_allocate >= NUM_BLOCKS_IN_INDIRECTION_BLOCK) {

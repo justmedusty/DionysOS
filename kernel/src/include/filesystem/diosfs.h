@@ -95,8 +95,8 @@ struct diosfs_superblock {
 struct tmpfs_directory_entry {
     char name[VFS_MAX_NAME_LENGTH];
     uint8_t node_type;
-    uint64_t t_node_number;
-    uint64_t t_node_size;
+    uint64_t tmpfs_node_number;
+    uint64_t tmpfs_node_size;
 };
 
 /*
@@ -155,7 +155,7 @@ struct diosfs_byte_offset_indices {
     uint16_t levels_indirection;
 };
 
-struct diosfs_filesystem {
+struct diosfs_filesystem_context {
     uint64_t filesystem_id;
     struct spinlock *lock;
     struct diosfs_superblock *superblock;
@@ -182,7 +182,7 @@ _Static_assert(sizeof(struct diosfs_inode) % 256 == 0, "Tempfs inode not the pro
 
 void diosfs_init(uint64_t filesystem_id);
 
-void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem *fs);
+void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem_context *fs);
 
 uint64_t diosfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 

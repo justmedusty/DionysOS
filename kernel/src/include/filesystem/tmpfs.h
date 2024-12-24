@@ -9,10 +9,11 @@
 #include "include/filesystem/vfs.h"
 #include "include/data_structures/doubly_linked_list.h"
 
-#define TMPFS_MAGIC 0x534F455077778034
-#define PAGES_PER_TMPFS_ENTRY 1024
+#define TMPFS_MAGIC 0x534F455077778034UL
+#define PAGES_PER_TMPFS_ENTRY 1024UL
 #define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * 8
 #define  MAX_TMPFS_ENTRIES
+
 
 enum tmpfs_types {
     DIRECTORY = 0,
@@ -31,12 +32,12 @@ struct tmpfs_directory_entries {
 };
 
 struct tmpfs_superblock {
-    struct tmpfs_filesystem_object *filesystem;
+    struct tmpfs_filesystem_context *filesystem;
     uint64_t magic;
     uint64_t max_size;
     uint64_t block_size;
-    uint64_t block_count;
-    uint64_t inode_count;
+    uint64_t page_count;
+    uint64_t tmpfs_node_count;
 };
 /*
  *  Doing it this way to require less node hopping to find a page offset. Can do O(1) lookups within
@@ -50,21 +51,21 @@ struct tmpfs_page_list_entry {
 
 struct tmpfs_node {
     struct tmpfs_superblock *superblock;
-    struct tmpfs_node *parent_t_node;
+    struct tmpfs_node *parent_tmpfs_node;
     char node_name[VFS_MAX_NAME_LENGTH];
-    uint64_t t_node_number;
-    uint64_t t_node_size; // bytes if reg file, num dirents if directory
-    uint64_t t_node_pages;
+    uint64_t tmpfs_node_number;
+    uint64_t tmpfs_node_size; // bytes if reg file, num dirents if directory
+    uint64_t tmpfs_node_pages;
     uint8_t node_type;
     uint64_t t_flags;
 
     union {
-        struct doubly_linked_list page_list; //holds tmpfs page_list_entries as defined above
+        struct doubly_linked_list *page_list; //holds tmpfs page_list_entries as defined above
         struct tmpfs_directory_entries directory_entries;
     };
 };
 
-struct tmpfs_filesystem_object {
+struct tmpfs_filesystem_context {
     struct tmpfs_superblock *superblock;
     struct binary_tree node_tree;
     struct spinlock fs_lock;

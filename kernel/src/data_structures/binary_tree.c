@@ -378,10 +378,6 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
              * Handle right child is non-null while left child is
              */
             if (current->left == NULL) {
-                if (current->parent->key == 256) {
-                    panic("[ERROR] LEFT NULL KEY 256\n");
-                }
-
 
                 if(current->parent->left == current) {
                     current->parent->left = current->right;
@@ -462,7 +458,6 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
             }
 
             current = current->left;
-            depth++;
         }
         else {
             if (current->right == NULL) {
@@ -470,7 +465,6 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                 return VALUE_NOT_FOUND;
             }
             current = current->right;
-            depth++;
         }
     }
 }
@@ -485,7 +479,7 @@ uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key) {
 void init_red_black_tree(struct binary_tree* tree) {
     tree->mode = RED_BLACK_TREE;
     tree->root->color = BLACK;
-    tree->node_count = 1;
+    tree->node_count = 0;
     initlock(&tree->lock, BTREE_LOCK);
 }
 

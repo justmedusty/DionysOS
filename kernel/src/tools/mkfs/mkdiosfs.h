@@ -132,7 +132,7 @@ struct diosfs_byte_offset_indices {
     uint16_t levels_indirection;
 };
 
-struct diosfs_filesystem {
+struct diosfs_filesystem_context {
     uint64_t filesystem_id;
     struct spinlock *lock;
     struct diosfs_superblock *superblock;
