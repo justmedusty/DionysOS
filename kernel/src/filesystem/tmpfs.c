@@ -7,6 +7,7 @@
 #include <include/architecture/arch_asm_functions.h>
 #include <include/data_structures/binary_tree.h>
 #include <include/definitions/string.h>
+#include <include/filesystem/diosfs.h>
 
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
@@ -16,8 +17,10 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
 static struct tmpfs_node *find_tmpfs_node_from_vnode(struct vnode *vnode);
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node);
 static struct tmpfs_node *spawn_new_tmpfs_node(char *name, uint8_t type);
+static void tmpfs_node_bitmap_free(uint64_t node_number);
+static uint64_t tmpfs_node_bitmap_get() ;
 
-char tmpfs_node_number_bitmap[PAGE_SIZE];
+uint8_t tmpfs_node_number_bitmap[PAGE_SIZE];
 
 struct vnode_operations tmpfs_ops = {
     .close = tmpfs_close,
@@ -55,14 +58,15 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     memset(vnode, 0, sizeof(*vnode));
     struct tmpfs_node *parent_tmpfs_node = find_tmpfs_node_from_vnode(parent);
     struct tmpfs_node *child = spawn_new_tmpfs_node(name, type);
+    child->tmpfs_node_number = tmpfs_node_bitmap_get();
     child->parent_tmpfs_node = parent_tmpfs_node;
     insert_tmpfs_node_into_parent_directory_entries(child);
-
-
-
+    return vnode;
 }
 
 void tmpfs_rename(const struct vnode *vnode, char *name) {
+    struct tmpfs_node *tmpfs_node = find_tmpfs_node_from_vnode(vnode);
+    safe_strcpy(tmpfs_node->node_name,name,MAX_FILENAME_LENGTH);
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
@@ -174,4 +178,27 @@ static struct tmpfs_node *spawn_new_tmpfs_node(char *name, const uint8_t type) {
     tmpfs_node->node_type = type;
     return tmpfs_node;
 
+}
+/*
+ * Get a new tnode number and free one respectively
+ */
+static uint64_t tmpfs_node_bitmap_get() {
+    for (size_t i = 0; i < PAGE_SIZE; i++) {
+        if (tmpfs_node_number_bitmap[i] != 0xFF) {
+            for (size_t j = 0; j < 8; j++) {
+                if (tmpfs_node_number_bitmap[i] & BIT(j)) {
+                    tmpfs_node_number_bitmap[i] |= BIT(j);
+                    return (i * 8)+ j;
+                }
+            }
+
+        }
+    }
+    panic("tmpfs_node_bitmap_get: tmpfs nodes maxed out");
+}
+
+static void tmpfs_node_bitmap_free(const uint64_t node_number) {
+    uint64_t byte = node_number / 8;
+    uint64_t bit = node_number % 8;
+    tmpfs_node_number_bitmap[byte] &= ~BIT(bit);
 }

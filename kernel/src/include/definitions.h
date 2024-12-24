@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define BIT(bit) (1 << bit)
+#define BIT(bit) ((uint8_t)(1 << bit))
 
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
 #define SERIAL_LOCK 0

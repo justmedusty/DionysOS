@@ -48,7 +48,6 @@ struct tmpfs_page_list_entry {
     uint64_t number_of_pages;
 };
 
-
 struct tmpfs_node {
     struct tmpfs_superblock *superblock;
     struct tmpfs_node *parent_tmpfs_node;
