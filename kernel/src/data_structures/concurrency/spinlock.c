@@ -20,7 +20,7 @@ void acquire_spinlock(struct spinlock* spinlock) {
     arch_atomic_swap(&spinlock->locked, 1);
     disable_interrupts();
     if (bsp == true) {
-        return; // don't acquire any spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
+        return; // don't go past this point during bootstrap because my_cpu won't work until the cpu setup is complete
     }
     spinlock->cpu = my_cpu();
 }
