@@ -39,6 +39,7 @@ void kernel_bootstrap() {
     vfs_init();
     diosfs_init(0);
     sched_init();
+    bsp = false;
     smp_init();
     timer_init();
     serial_printf("Total Pages Allocated %i out of %i\n",total_allocated,usable_pages);

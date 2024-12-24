@@ -7,6 +7,8 @@
 #include <include/architecture/arch_cpu.h>
 #include "include/architecture/arch_asm_functions.h"
 
+bool bsp = true;
+
 //TODO replace cli/sti with architecture agnostic wrapper function
 void initlock(struct spinlock* spinlock, uint64_t id) {
     spinlock->id = id;
@@ -16,22 +18,17 @@ void initlock(struct spinlock* spinlock, uint64_t id) {
 
 void acquire_spinlock(struct spinlock* spinlock) {
     arch_atomic_swap(&spinlock->locked, 1);
-    spinlock->cpu = 0;
+    disable_interrupts();
+    if (bsp == true) {
+        return; // don't acquire any spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
+    }
+    spinlock->cpu = my_cpu();
 }
 
 void release_spinlock(struct spinlock* spinlock) {
-    spinlock->cpu = 0;
-    spinlock->locked = 0;
-}
-
-void acquire_interrupt_safe_spinlock(struct spinlock* spinlock) {
-    arch_atomic_swap(&spinlock->locked, 1);
-    disable_interrupts();
-    spinlock->cpu = 0;
-}
-
-void release_interrupt_safe_spinlock(struct spinlock* spinlock) {
-    spinlock->cpu = 0;
-    spinlock->locked = 0;
+    spinlock->cpu = NULL;
     enable_interrupts();
+    spinlock->locked = 0;
 }
+
+

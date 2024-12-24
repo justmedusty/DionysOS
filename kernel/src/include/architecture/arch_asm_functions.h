@@ -10,11 +10,11 @@
 #include "include/scheduling/process.h"
 
 static inline void enable_interrupts() {
-  cli();
+  sti();
 }
 
 static inline void disable_interrupts() {
-  sti();
+  cli();
 }
 
 static inline uint64_t are_interrupts_enabled() {

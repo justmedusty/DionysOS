@@ -58,10 +58,14 @@ void kthread_main() {
     uint8_t cpu_no = my_cpu()->cpu_number;
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
+    char *buffer = kmalloc(PAGE_SIZE * 8);
+    strcpy(buffer,"kthread_main Using allocated buffer about to yield scheduler");
+    serial_printf("%s \n", buffer);
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
     timer_sleep(15000);
     serial_printf("Thread %i exiting\n", cpu_no);
+    kfree(buffer);
     sched_exit();
 }
 

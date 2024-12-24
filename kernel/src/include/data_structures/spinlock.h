@@ -13,10 +13,8 @@ struct spinlock{
     struct cpu *cpu;
     uint64_t program_counters[10];
 };
-
+extern bool bsp;
 
 void initlock(struct spinlock *spinlock,uint64_t id);
 void acquire_spinlock(struct spinlock *spinlock);
 void release_spinlock(struct spinlock *spinlock);
-void acquire_interrupt_safe_spinlock(struct spinlock* spinlock);
-void release_interrupt_safe_spinlock(struct spinlock* spinlock);
