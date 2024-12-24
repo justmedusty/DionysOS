@@ -17,11 +17,17 @@ void initlock(struct spinlock* spinlock, uint64_t id) {
 }
 
 void acquire_spinlock(struct spinlock* spinlock) {
+    if (bsp == true) {
+        /*
+         * Spinlocks are acquired extensively during bootstrap for data structure functions and this cannot be changed
+         * without making specialized bootstrap functions or something similar which is wasteful. It is much easier to ust
+         * do a quick bool check on acquire
+         */
+        return; // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
+    }
     arch_atomic_swap(&spinlock->locked, 1);
     disable_interrupts();
-    if (bsp == true) {
-        return; // don't go past this point during bootstrap because my_cpu won't work until the cpu setup is complete
-    }
+
     spinlock->cpu = my_cpu();
 }
 
