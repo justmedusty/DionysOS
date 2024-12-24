@@ -437,7 +437,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     uint64_t buffer_size = fs->superblock->block_size * NUM_BLOCKS_DIRECT;
 
-    char *buffer = kmalloc(fs->superblock->block_size * NUM_BLOCKS_DIRECT);
+    char *buffer = kmalloc(buffer_size);
     struct diosfs_directory_entry *entries = (struct diosfs_directory_entry *) buffer;
 
     uint64_t ret = diosfs_get_directory_entries(fs, (struct diosfs_directory_entry *) buffer,
@@ -455,15 +455,13 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
         fill_vnode = true;
     }
 
-
-
     struct vnode *child = NULL;
 
     uint8_t max_directories = parent->vnode_size / sizeof(struct diosfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES
                               ? VNODE_MAX_DIRECTORY_ENTRIES
                               : parent->vnode_size / sizeof(struct diosfs_directory_entry);
 
-    for (uint64_t i = 0; i <= max_directories; i++) {
+    for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
         if (fill_vnode) {
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
@@ -477,12 +475,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
                 goto done;
             }
         }
-
-        if (i == max_directories) {
-            parent->vnode_children[i + 1] = NULL;
-        }
     }
-    parent->is_cached = TRUE;
 
     done:
     kfree(buffer);

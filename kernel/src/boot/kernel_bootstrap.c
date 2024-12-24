@@ -25,6 +25,7 @@
  *  BSP boostrapping.
  */
 int32_t ready = 0;
+
 void kernel_bootstrap() {
     init_serial();
     arch_init_segments();
@@ -40,9 +41,10 @@ void kernel_bootstrap() {
     diosfs_init(0);
     sched_init();
     bsp = false;
+    // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init();
-    serial_printf("Total Pages Allocated %i out of %i\n",total_allocated,usable_pages);
+    serial_printf("Total Pages Allocated %i out of %i\n", total_allocated, usable_pages);
     kthread_init();
     ready = 1;
     scheduler_main();

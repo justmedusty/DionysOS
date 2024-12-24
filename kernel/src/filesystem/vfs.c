@@ -72,9 +72,10 @@ struct vnode *vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode *vnode) {
+
     vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
-    vnode->is_cached = true;
+
     for (size_t i = 0; i < VNODE_MAX_DIRECTORY_ENTRIES; i++) {
         vnode->vnode_children[i] = NULL;
     }
@@ -194,13 +195,9 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
     struct vnode *target;
 
     if (vnode != NULL) {
-
         target = vnode;
-
     } else if ((target = vnode_lookup(path)) == NULL) {
-
         return NODE_NOT_FOUND;
-
     }
 
 
@@ -271,7 +268,7 @@ void vnode_close(uint64_t handle) {
     while (node != NULL) {
         struct virtual_handle *virtual_handle = (struct virtual_handle *) node->data;
         if (virtual_handle->handle_id == handle) {
-            virtual_handle->vnode->vnode_ops->close(virtual_handle->vnode,handle);
+            virtual_handle->vnode->vnode_ops->close(virtual_handle->vnode, handle);
             kfree(virtual_handle);
             doubly_linked_list_remove_node_by_address(list->handle_list, node);
             return;
@@ -314,12 +311,12 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     }
 
     if (!vnode->is_cached) {
-
         if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
             vnode_directory_alloc_children(vnode);
         }
 
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
+        vnode->is_cached = true;
         /* Handle cache stuff when I get there */
         return child;
     }
@@ -492,13 +489,13 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
-    for (size_t i = 0; i < NUM_HANDLES; i++) {
-        if (!(list->handle_id_bitmap & (1 << i))) {
-            list->handle_id_bitmap |= (1 << i);
-            return (int8_t) i;
+    for (int8_t i = 0; i < NUM_HANDLES; i++) {
+        if (!(list->handle_id_bitmap & BIT(i))) {
+            list->handle_id_bitmap |= BIT(i);
+            return i;
         }
     }
-    return -1;
+    return -KERN_NOT_FOUND;
 }
 
 
