@@ -15,9 +15,9 @@ extern volatile struct limine_memmap_request memmap_request;
 /* For buddy */
 #define MAX_ORDER 11 /* Going with the number Linux uses*/
 
-#define STATIC_POOL_FLAG 1 << 5 /* So we know to return to the pool not try to call kfree on it */
-#define FIRST_BLOCK_FLAG 1 << 6 /* So that we dont coalesce into other areas or memory*/
-#define IN_TREE_FLAG 1 << 7
+#define STATIC_POOL_FLAG BIT(5) /* So we know to return to the pool not try to call kfree on it */
+#define FIRST_BLOCK_FLAG BIT(6) /* So that we dont coalesce into other areas or memory*/
+#define IN_TREE_FLAG BIT(7)
 #define STATIC_POOL_SIZE 11000
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1

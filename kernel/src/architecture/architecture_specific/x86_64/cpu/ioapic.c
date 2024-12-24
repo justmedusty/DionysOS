@@ -67,15 +67,15 @@ void ioapic_redirect_gsi(uint32_t lapic_id, uint8_t vector, uint32_t gsi, uint16
     uint32_t ioapic = ioapic_get_gsi(gsi);
     uint64_t redirect = (uint64_t)vector;
 
-    if ((flags & (1 << 1)) != 0) {
-        redirect |= (1 << 13);
+    if ((flags & BIT(1)) != 0) {
+        redirect |= BIT(13);
     }
 
-    if ((flags & (1 << 3)) != 0) {
-        redirect |= (1 << 15);
+    if ((flags & BIT(3)) != 0) {
+        redirect |= BIT(15);
     }
     if(mask == 1) {
-        redirect |= 1 << 16;
+        redirect |= BIT(16);
     }
     redirect |= (uint64_t)lapic_id << 56;
 
