@@ -224,14 +224,15 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
  *  This will need to return a handle at some point.
  */
 int64_t vnode_open(char *path) {
+
     struct process *process = my_cpu()->running_process;
 
     struct virtual_handle_list *list = process->handle_list;
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
-    int8_t ret = get_new_file_handle(list);
+    const int8_t ret = get_new_file_handle(list);
 
-    if (ret == -1) {
+    if (ret == -KERN_NOT_FOUND) {
         return MAX_HANDLES_REACHED;
     }
 
@@ -302,7 +303,9 @@ void vnode_rename(struct vnode *vnode, char *new_name) {
  *  It iterates through the children in the vnode until it finds the child or the end of the children.
  */
 struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
+    acquire_spinlock(&vfs_lock);
     if (vnode->vnode_type != VNODE_DIRECTORY) {
+        release_spinlock(&vfs_lock);
         return NULL;
     }
 
@@ -318,6 +321,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         /* Handle cache stuff when I get there */
+        release_spinlock(&vfs_lock);
         return child;
     }
 
@@ -328,12 +332,13 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
         if (child != NULL && safe_strcmp(child->vnode_name, token, VFS_MAX_NAME_LENGTH)) {
+            release_spinlock(&vfs_lock);
             return child;
         }
 
         child = vnode->vnode_children[index++];
     }
-
+    release_spinlock(&vfs_lock);
     return NULL;;
 }
 
@@ -342,19 +347,23 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
  * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
 uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
+    acquire_spinlock(&vfs_lock);
     //handle already mounted case
     if (mount_point->is_mount_point) {
+        release_spinlock(&vfs_lock);
         return ALREADY_MOUNTED;
     }
 
     if (mount_point->vnode_type != VNODE_DIRECTORY) {
         //may want to return an integer to indicate what went wrong but this is ok for now
+        release_spinlock(&vfs_lock);
         return WRONG_TYPE;
     }
 
 
     //can you mount a mount point? I will say no for now that seems silly
     if (mounted_vnode->is_mount_point) {
+        release_spinlock(&vfs_lock);
         return ALREADY_MOUNTED;
     }
 
@@ -362,6 +371,7 @@ uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     mount_point->is_mount_point = TRUE;
     mount_point->mounted_vnode = mounted_vnode;
 
+    release_spinlock(&vfs_lock);
     return SUCCESS;
 }
 
@@ -369,7 +379,9 @@ uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
  * Clears mount data from the vnode, clearing it as a mount point.
  */
 uint64_t vnode_unmount(struct vnode *vnode) {
+    acquire_spinlock(&vfs_lock);
     if (!vnode->is_mount_point) {
+        release_spinlock(&vfs_lock);
         return NOT_MOUNTED;
     }
     //only going to allow mounting of whole filesystems so this works
@@ -377,6 +389,7 @@ uint64_t vnode_unmount(struct vnode *vnode) {
     vnode->is_mount_point = FALSE;
     // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
     vnode->mounted_vnode = NULL;
+    release_spinlock(&vfs_lock);
     return SUCCESS;
 }
 
@@ -385,7 +398,7 @@ uint64_t vnode_unmount(struct vnode *vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer) {
+uint64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->read(vnode->mounted_vnode, offset, buffer, bytes);
     }
@@ -394,7 +407,7 @@ uint64_t vnode_read(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *
 }
 
 
-uint64_t vnode_write(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer) {
+uint64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
     }
@@ -489,17 +502,21 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
+    acquire_spinlock(&vfs_lock);
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
+            release_spinlock(&vfs_lock);
             return i;
         }
     }
+    release_spinlock(&vfs_lock);
     return -KERN_NOT_FOUND;
 }
 
 
 static uint64_t vnode_update_children_array(const struct vnode *vnode) {
+    acquire_spinlock(&vfs_lock);
     struct vnode *parent = vnode->vnode_parent;
     size_t index = 0;
     uint64_t size = parent->num_children;
@@ -509,8 +526,26 @@ static uint64_t vnode_update_children_array(const struct vnode *vnode) {
             /* This just ensures that if its the last entry it will be zerod still*/
             parent->vnode_children[index] = parent->vnode_children[size];
             parent->num_children--;
+            release_spinlock(&vfs_lock);
             return SUCCESS;
         }
     }
-    panic("Vnode does not exist");
+    panic("Vnode does not exist"); // panic since this means invalid state and needs to be investigated
+    // unreachable code but makes clang-tidy shut up
+    release_spinlock(&vfs_lock);
+    return KERN_NOT_FOUND;
+}
+
+struct vnode *handle_to_vnode(int64_t handle_id) {
+    struct vnode *ret;
+    struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
+    int64_t current = 0;
+
+    do {
+        const struct virtual_handle *handle = node->data;
+        if (handle->handle_id == handle_id) {
+            return handle->vnode;
+        }
+        node = node->next;
+    }while (node->next != NULL);
 }

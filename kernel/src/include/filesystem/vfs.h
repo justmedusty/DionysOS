@@ -146,7 +146,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token);
 
 uint64_t vnode_write(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer);
 
-uint64_t vnode_read(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer);
+uint64_t vnode_read(struct vnode *vnode,uint64_t offset, uint64_t bytes, char *buffer);
 
 uint64_t vnode_unmount(struct vnode *vnode);
 
@@ -176,3 +176,5 @@ int64_t vnode_open(char *path);
 void vnode_close(uint64_t handle);
 
 void vnode_rename(struct vnode *vnode, char *new_name);
+
+struct vnode *handle_to_vnode(int64_t handle_id);
