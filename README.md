@@ -1,5 +1,5 @@
 # DionysOS. 
-![16-Famous-Figure-Art-Dionysus-3840957333](https://github.com/user-attachments/assets/0cc8808b-31cc-4050-86b7-e99c01e3bb76)
+![image](https://github.com/user-attachments/assets/efe61f4f-42d5-4e71-9208-3ce22268f3e3)
 [Link 1](https://www.worldhistory.org/Dionysos/) [Link 2](http://dionysia.org/greek/dionysos/thompson/dionysos.html)
 
 # Why Dionysos?
