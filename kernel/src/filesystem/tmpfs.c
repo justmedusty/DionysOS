@@ -31,6 +31,12 @@ static void free_page_list_entry(struct tmpfs_page_list_entry *entry);
 static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,
                                                                 uint64_t page_list_entry_number);
 
+static void tmpfs_delete_directory_recursively(struct tmpfs_node *node);
+
+static void tmpfs_delete_reg_file(struct tmpfs_node *node);
+
+static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove);
+
 uint8_t tmpfs_node_number_bitmap[PAGE_SIZE];
 
 struct vnode_operations tmpfs_ops = {
@@ -96,9 +102,16 @@ void tmpfs_rename(const struct vnode *vnode, char *name) {
 void tmpfs_remove(const struct vnode *vnode) {
     if (vnode->vnode_type == VNODE_FILE) {
         struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
-        tmpfs_remove_all_data_pages(node);
+
+        //TODO clear parent of entries
+        kfree(node);
+        return;
+    }
+
+    if (vnode->vnode_type == VNODE_DIRECTORY) {
     }
 }
+
 
 /*
  * Write bytes to a tmpfs regular file , update size if necessary and allocate new page_list_entries when
@@ -329,9 +342,8 @@ static uint64_t tmpfs_node_bitmap_get() {
 }
 
 static void tmpfs_node_bitmap_free(const uint64_t node_number) {
-    uint64_t byte = node_number / 8;
-    uint64_t bit = node_number % 8;
-    tmpfs_node_number_bitmap[byte] &= ~BIT(bit);
+    const uint64_t bit = node_number % 8;
+    tmpfs_node_number_bitmap[BYTE(node_number)] &= ~BIT(bit);
 }
 
 static void tmpfs_remove_all_data_pages(const struct tmpfs_node *node) {
@@ -353,4 +365,51 @@ static void free_page_list_entry(struct tmpfs_page_list_entry *entry) {
     }
     kfree(entry->page_list);
     kfree(entry);
+}
+
+static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove) {
+    struct tmpfs_node *parent = node_to_remove->parent_tmpfs_node;
+
+    uint64_t index = 0;
+    const struct tmpfs_node *current_node = parent->directory_entries.entries[index];
+
+    while (current_node && current_node != node_to_remove) {
+        current_node++;
+        index++;
+    }
+
+    if (current_node == NULL) {
+        panic("tmpfs_remove_dirent_in_parent_directory: node not found , invalid state");
+    }
+
+    parent->directory_entries.entries[index] = NULL;
+    parent->directory_entries.entries[index] = parent->directory_entries.entries[parent->tmpfs_node_size - 1];
+    // -1 since it is 1 indexed vs 0 indexed array
+    parent->tmpfs_node_size--;
+}
+
+static void tmpfs_delete_reg_file(struct tmpfs_node *node) {
+    tmpfs_remove_all_data_pages(node);
+    remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node,NULL);
+    tmpfs_node_bitmap_free(node->tmpfs_node_number);
+}
+
+static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
+    for (size_t i = 0; i < node->tmpfs_node_size; i++) {
+        struct tmpfs_node *current = node->directory_entries.entries[i];
+
+        remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node,NULL);
+        tmpfs_node_bitmap_free(node->tmpfs_node_number);
+
+        switch (current->node_type) {
+            case DIRECTORY:
+                tmpfs_delete_directory_recursively(current);
+                break;
+            case FILE:
+                tmpfs_delete_reg_file(current);
+                break;
+            default:
+                panic("tmpfs_delete_directory_recursively: invalid node type");
+        }
+    }
 }
