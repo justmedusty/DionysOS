@@ -54,7 +54,7 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
         // not a huge deal but a logic bug nonetheless so panic for visibility
     }
     struct tmpfs_filesystem_context *tmpfs = vnode->filesystem_object;
-    struct tmpfs_node *target_node = lookup_tree(&tmpfs->node_tree, vnode->vnode_inode_number,false);
+    struct tmpfs_node *target_node = lookup_tree(&tmpfs->superblock->node_tree, vnode->vnode_inode_number,false);
 
     if (target_node == NULL) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
@@ -77,7 +77,11 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     struct tmpfs_node *child = conjure_new_tmpfs_node(name, type);
     child->tmpfs_node_number = tmpfs_node_bitmap_get();
     child->parent_tmpfs_node = parent_tmpfs_node;
+    child->superblock = parent_tmpfs_node->superblock;
+    child->superblock->tmpfs_node_count++;
+    insert_tree_node(&child->superblock->node_tree, child, child->tmpfs_node_number);
     insert_tmpfs_node_into_parent_directory_entries(child);
+
     return vnode;
 }
 
@@ -275,18 +279,18 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
 
 static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) {
     struct tmpfs_node *ret = NULL;
-    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
-    ret = lookup_tree(&context->node_tree, vnode->vnode_inode_number, false);
+    const struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    ret = lookup_tree(&context->superblock->node_tree, vnode->vnode_inode_number, false);
 
-    if (ret != NULL) {
-        return ret;
+    if (ret == NULL) {
+        /*
+         * A state in which a vnode exists for a tmpfs object but no object exists underneath is invalid and should
+         * cause a kernel panic
+         */
+        panic("tmpfs_node_from_vnode: tmpfs node does not exist");
     }
 
-    /*
-     * A state in which a vnode exists for a tmpfs object but no object exists underneath is invalid and should
-     * cause a kernel panic
-     */
-    panic("tmpfs_node_from_vnode: tmpfs node does not exist");
+    return ret;
 }
 
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node) {

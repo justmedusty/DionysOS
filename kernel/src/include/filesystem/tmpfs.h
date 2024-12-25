@@ -33,6 +33,7 @@ struct tmpfs_directory_entries {
 
 struct tmpfs_superblock {
     struct tmpfs_filesystem_context *filesystem;
+    struct binary_tree node_tree;
     uint64_t magic;
     uint64_t max_size;
     uint64_t block_size;
@@ -67,7 +68,6 @@ struct tmpfs_node {
 
 struct tmpfs_filesystem_context {
     struct tmpfs_superblock *superblock;
-    struct binary_tree node_tree;
     struct spinlock fs_lock;
     struct device *virtual_device;
 };
