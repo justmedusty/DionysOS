@@ -11,6 +11,8 @@ In his travels around the world, Dionysos would gather followers, however those 
 
 Parallels can even be drawn to the philosophical juxtaposition of Dionysian vs Apollonian thinking. The operating system software as a concept is like a battle pitting the chaotic Dionysian thought against Apollonian thought, finding a sort of balance somewhere in the middle.
 
+Lastly, given Dionyos' creation as the son of a God and a mortal, there is a sense of "bridging the gap" with his story. His father was a god while his mother was a mortal, putting him in this state of entanglement between divinity and mortality. An operating system is also a sort of "gap bridger" between two realms, much like Dionysos.
+
 # Short Intro
 This is my take on my own operating system to further my understanding and improve my programming and system design skills. Also,  just to have some fun because let's face it, programming is like magic seeing how you can create almost anything by simply thinking it into existence. I will be combining some existing ideas and implementations and also mixing in some of my own thoughts and designs in as well.
 I may add a posix compliant layer at some point but for the time being I think I will end up rolling my own userspace. I will probably use this project as an opportunity to learn about everything from rolling my own cryptographic functions to better acquaint myself with the mathematics behind algorithms such as RSA, AES, SHA, maybe even some simpler ciphers for fun. I will also be rolling my own data structures and accompanying algorithms to improve my understanding and actually implement these concepts in C.
