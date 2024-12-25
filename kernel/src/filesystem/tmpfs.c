@@ -3,11 +3,9 @@
 //
 
 #include "include/filesystem/tmpfs.h"
-
 #include <include/architecture/arch_asm_functions.h>
 #include <include/data_structures/binary_tree.h>
 #include <include/definitions/string.h>
-#include <include/filesystem/diosfs.h>
 
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
@@ -19,7 +17,7 @@ static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *n
 static struct tmpfs_node *spawn_new_tmpfs_node(char *name, uint8_t type);
 static void tmpfs_node_bitmap_free(uint64_t node_number);
 static uint64_t tmpfs_node_bitmap_get() ;
-
+static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,uint64_t page_list_entry_number);
 uint8_t tmpfs_node_number_bitmap[PAGE_SIZE];
 
 struct vnode_operations tmpfs_ops = {
@@ -66,13 +64,38 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
 
 void tmpfs_rename(const struct vnode *vnode, char *name) {
     struct tmpfs_node *tmpfs_node = find_tmpfs_node_from_vnode(vnode);
-    safe_strcpy(tmpfs_node->node_name,name,MAX_FILENAME_LENGTH);
+    safe_strcpy(tmpfs_node->node_name,name,VFS_MAX_NAME_LENGTH);
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
 }
 
 uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
+    const struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
+    uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
+    uint64_t page_offset = offset % PAGE_SIZE;
+    const uint64_t total_bytes = bytes;
+    uint64_t copy_index = 0;
+    const struct tmpfs_page_list_entry *target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
+
+    while (bytes > 0) {
+        target->page_list[page / PAGES_PER_TMPFS_ENTRY][offset] = buffer[copy_index];
+
+        copy_index++;
+        offset = offset + 1 == PAGE_SIZE ? 0 : offset + 1;
+        bytes--;
+
+        if (offset == 0) {
+            page++;
+            if (page / PAGES_PER_TMPFS_ENTRY == 0) {
+                target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
+            }
+        }
+
+    }
+
+    return total_bytes - bytes;
+
 }
 
 
@@ -101,7 +124,20 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
 void tmpfs_mkfs() {
 
 }
+static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,uint64_t page_list_entry_number) {
+    struct doubly_linked_list_node *d_node = node->page_list->head;
 
+    while (d_node != NULL && page_list_entry_number != 0) {
+        d_node = d_node->next;
+        page_list_entry_number--;
+    }
+
+    if (d_node == NULL) {
+        panic("tmpfs_find_page_list_entry: page list entry is NULL");
+    }
+
+    return d_node->data;
+}
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) {
     if (node->node_type != DIRECTORY) {
         return NULL;
