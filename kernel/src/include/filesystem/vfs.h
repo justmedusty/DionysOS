@@ -125,7 +125,7 @@ struct vnode_operations {
 
     void (*rename)(const struct vnode *vnode, char *new_name);
 
-    uint64_t (*write)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+    uint64_t (*write)(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 
     uint64_t (*read)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 

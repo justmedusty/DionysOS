@@ -171,7 +171,7 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
 
 uint64_t diosfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 
-uint64_t diosfs_write(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+uint64_t diosfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 
 uint64_t diosfs_stat(const struct vnode *vnode);
 

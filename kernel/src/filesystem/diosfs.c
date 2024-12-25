@@ -370,7 +370,7 @@ uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, c
     return ret;
 }
 
-uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
+uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *buffer, const uint64_t bytes) {
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 

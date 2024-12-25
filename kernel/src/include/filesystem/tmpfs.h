@@ -44,7 +44,7 @@ struct tmpfs_superblock {
  *  PAGES_PER_TMPFS_ENTRY page lookups
  */
 struct tmpfs_page_list_entry {
-    char **page_list;
+    uintptr_t **page_list;
     uint64_t number_of_pages;
 };
 
@@ -74,7 +74,7 @@ struct tmpfs_filesystem_context {
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name);
 struct vnode *tmpfs_create(struct vnode *parent, char *name,uint8_t type);
 void tmpfs_rename(const struct vnode *vnode, char *name);
-uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
 void tmpfs_unlink(struct vnode *vnode);
