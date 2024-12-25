@@ -1,3 +1,4 @@
+
 //
 // Created by dustyn on 12/22/24.
 //
@@ -10,16 +11,26 @@
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
 static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnode *vnode,
-                                                                      const struct tmpfs_directory_entries *entries,
-                                                                       size_t num_entries, char *target_name);
+                                                                     const struct tmpfs_directory_entries *entries,
+                                                                     size_t num_entries, char *target_name);
+
 static void tmpfs_remove_all_data_pages(const struct tmpfs_node *node);
-static struct tmpfs_node *find_tmpfs_node_from_vnode(struct vnode *vnode);
+
+static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode);
+
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node);
-static struct tmpfs_node *spawn_new_tmpfs_node(char *name, uint8_t type);
+
+static struct tmpfs_node *conjure_new_tmpfs_node(char *name, uint8_t type);
+
 static void tmpfs_node_bitmap_free(uint64_t node_number);
-static uint64_t tmpfs_node_bitmap_get() ;
+
+static uint64_t tmpfs_node_bitmap_get();
+
 static void free_page_list_entry(struct tmpfs_page_list_entry *entry);
-static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,uint64_t page_list_entry_number);
+
+static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,
+                                                                uint64_t page_list_entry_number);
+
 uint8_t tmpfs_node_number_bitmap[PAGE_SIZE];
 
 struct vnode_operations tmpfs_ops = {
@@ -34,7 +45,9 @@ struct vnode_operations tmpfs_ops = {
     .unlink = tmpfs_unlink,
     .write = tmpfs_write
 };
-
+/*
+ * lookup a node inside the directory passed as the vnode argument
+ */
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
     if (vnode->is_cached && vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
         panic("tmpfs_lookup: vnode is cached already");
@@ -45,36 +58,48 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
 
     if (target_node == NULL) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
+        return NULL; // linter purposes
     }
 
     struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
         vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
-    vnode->num_children = target_node ->tmpfs_node_size;
+    vnode->num_children = target_node->tmpfs_node_size;
     return child;
 }
 
+/*
+ * Create a new tmpfs node , the parent parameter is the parent directory.
+ */
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     struct vnode *vnode = vnode_alloc();
     memset(vnode, 0, sizeof(*vnode));
     struct tmpfs_node *parent_tmpfs_node = find_tmpfs_node_from_vnode(parent);
-    struct tmpfs_node *child = spawn_new_tmpfs_node(name, type);
+    struct tmpfs_node *child = conjure_new_tmpfs_node(name, type);
     child->tmpfs_node_number = tmpfs_node_bitmap_get();
     child->parent_tmpfs_node = parent_tmpfs_node;
     insert_tmpfs_node_into_parent_directory_entries(child);
     return vnode;
 }
 
+/*
+ * Rename a given tmpfs_node
+ */
 void tmpfs_rename(const struct vnode *vnode, char *name) {
     struct tmpfs_node *tmpfs_node = find_tmpfs_node_from_vnode(vnode);
-    safe_strcpy(tmpfs_node->node_name,name,VFS_MAX_NAME_LENGTH);
+    safe_strcpy(tmpfs_node->node_name, name,VFS_MAX_NAME_LENGTH);
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
     if (vnode->vnode_type == VNODE_FILE) {
         struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
+        tmpfs_remove_all_data_pages(node);
     }
 }
 
+/*
+ * Write bytes to a tmpfs regular file , update size if necessary and allocate new page_list_entries when
+ * it is required to do so.
+ */
 uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
@@ -85,7 +110,7 @@ uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
 
     while (bytes > 0) {
         bool new_size = false;
-        char *data_page = (char*) target->page_list[page / PAGES_PER_TMPFS_ENTRY];
+        char *data_page = (char *) target->page_list[page / PAGES_PER_TMPFS_ENTRY];
         data_page[offset] = buffer[copy_index];
 
         copy_index++;
@@ -105,16 +130,17 @@ uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
             if (page / PAGES_PER_TMPFS_ENTRY == 0) {
                 target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
             }
-
         }
-
     }
 
     return total_bytes - bytes;
-
 }
 
-
+/*
+ * Read bytes from a tmpfs regular file. The meat and potatoes of this is just finding the page_list_entry with the page
+ * in it and from there simply indexing into the page pointer array.
+ *
+ */
 uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
     const struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
@@ -124,7 +150,7 @@ uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t
     const struct tmpfs_page_list_entry *target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
 
     while (bytes > 0) {
-        buffer[copy_index] = (char)target->page_list[page / PAGES_PER_TMPFS_ENTRY][offset];
+        buffer[copy_index] = (char) target->page_list[page / PAGES_PER_TMPFS_ENTRY][offset];
 
         copy_index++;
         offset = offset + 1 == PAGE_SIZE ? 0 : offset + 1;
@@ -136,7 +162,6 @@ uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t
                 target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
             }
         }
-
     }
 
     return total_bytes - bytes;
@@ -147,8 +172,9 @@ struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t t
 
 void tmpfs_unlink(struct vnode *vnode) {
 }
+
 /*
- * Nop for open and close since there's no page cache for this at the time of writing and desigining this.
+ * Nop for open and close since there's no page cache for this at the time of writing and designing this.
  * Maybe in the future it will be like linux where it can be paged out and there will be work to do here but
  * as of now this is not the case.
  */
@@ -162,26 +188,39 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
 }
 
 void tmpfs_mkfs() {
-
 }
-static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,uint64_t page_list_entry_number) {
+
+/*
+ * Finds a given node where the sought-after page is found
+ * If the node is not found this means we are reaching a new area and will allocate a new page list entry, allocating the first page as a courtesy
+ */
+static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmpfs_node *node,
+                                                                uint64_t page_list_entry_number) {
     struct doubly_linked_list_node *d_node = node->page_list->head;
 
     while (d_node != NULL && page_list_entry_number != 0) {
         d_node = d_node->next;
         page_list_entry_number--;
     }
-/*
- *  If it is null this should mean we are reaching outside of a page list boundary and need to allocate a new entry
- */
+    /*
+     *  If it is null this should mean we are reaching outside a page list boundary and need to allocate a new entry
+     */
     if (d_node == NULL) {
         struct tmpfs_page_list_entry *entry = kmalloc(sizeof(struct tmpfs_page_list_entry));
+        entry->page_list = kmalloc(sizeof(struct tmpfs_page_list_entry *) * PAGES_PER_TMPFS_ENTRY);
+        memset(entry->page_list, 0, sizeof(struct tmpfs_page_list_entry *) * PAGES_PER_TMPFS_ENTRY);
+        entry->page_list[0] = kmalloc(PAGE_SIZE);
+        entry->number_of_pages++;
         doubly_linked_list_insert_tail(node->page_list, entry);
         return entry;
     }
 
     return d_node->data;
 }
+
+/*
+ * Find a child node inside the given tmpfs directory
+ */
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) {
     if (node->node_type != DIRECTORY) {
         return NULL;
@@ -189,7 +228,7 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
 
     struct tmpfs_directory_entries *entries = &node->directory_entries;
 
-    for (size_t i = 0; i < node ->tmpfs_node_size; i++) {
+    for (size_t i = 0; i < node->tmpfs_node_size; i++) {
         struct tmpfs_node *entry = entries->entries[i];
         if (safe_strcmp(entry->node_name, name,VFS_MAX_NAME_LENGTH)) {
             return entry;
@@ -199,6 +238,9 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
     return NULL;
 }
 
+/*
+ * Simply creates a vnode with the attributes from a given tmpfs node
+ */
 static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     struct vnode *vnode = vnode_alloc();
     memset(vnode, 0, sizeof(struct vnode));
@@ -206,15 +248,20 @@ static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     vnode->is_cached = false;
     vnode->vnode_filesystem_id = VNODE_FS_TMPFS;
     vnode->vnode_ops = &tmpfs_ops;
-    vnode->vnode_size = node ->tmpfs_node_size;
+    vnode->vnode_size = node->tmpfs_node_size;
     vnode->vnode_type = node->node_type;
     safe_strcpy(vnode->vnode_name, node->node_name,VFS_MAX_NAME_LENGTH);
     return vnode;
 }
 
+/*
+ * Fill in the vnode children, this sort of thing happens when you do not create a filesystem from scratch on boot
+ * and instead load from an image or something along these lines. In this case the vnodes may not exist yet and the VFS
+ * needs to be set up from reading the filesystem
+ */
 static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnode *vnode,
-                                                                      const struct tmpfs_directory_entries *entries,
-                                                                      const size_t num_entries, char *target_name) {
+                                                                     const struct tmpfs_directory_entries *entries,
+                                                                     const size_t num_entries, char *target_name) {
     struct vnode *ret = NULL;
     for (size_t i = 0; i < num_entries; i++) {
         vnode->vnode_children[i] = tmpfs_node_to_vnode(entries->entries[i]);
@@ -226,8 +273,7 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
     return ret;
 }
 
-static struct tmpfs_node *find_tmpfs_node_from_vnode(struct vnode *vnode) {
-
+static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) {
     struct tmpfs_node *ret = NULL;
     struct tmpfs_filesystem_context *context = vnode->filesystem_object;
     ret = lookup_tree(&context->node_tree, vnode->vnode_inode_number, false);
@@ -236,9 +282,11 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(struct vnode *vnode) {
         return ret;
     }
 
+    /*
+     * A state in which a vnode exists for a tmpfs object but no object exists underneath is invalid and should
+     * cause a kernel panic
+     */
     panic("tmpfs_node_from_vnode: tmpfs node does not exist");
-
-
 }
 
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node) {
@@ -251,14 +299,14 @@ static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *n
     parent->tmpfs_node_size++;
 }
 
-static struct tmpfs_node *spawn_new_tmpfs_node(char *name, const uint8_t type) {
+static struct tmpfs_node *conjure_new_tmpfs_node(char *name, const uint8_t type) {
     struct tmpfs_node *tmpfs_node = kmalloc(sizeof(struct tmpfs_node));
     memset(tmpfs_node, 0, sizeof(struct tmpfs_node));
     safe_strcpy(tmpfs_node->node_name, name, VFS_MAX_NAME_LENGTH);
     tmpfs_node->node_type = type;
     return tmpfs_node;
-
 }
+
 /*
  * Get a new tnode number and free one respectively
  */
@@ -268,13 +316,12 @@ static uint64_t tmpfs_node_bitmap_get() {
             for (size_t j = 0; j < 8; j++) {
                 if (tmpfs_node_number_bitmap[i] & BIT(j)) {
                     tmpfs_node_number_bitmap[i] |= BIT(j);
-                    return (i * 8)+ j;
+                    return (i * 8) + j;
                 }
             }
-
         }
     }
-    panic("tmpfs_node_bitmap_get: tmpfs nodes maxed out");
+    panic("tmpfs_node_bitmap_get: tmpfs nodes maxed out"); // panic is extreme but I want to know when this happens
 }
 
 static void tmpfs_node_bitmap_free(const uint64_t node_number) {
@@ -284,7 +331,8 @@ static void tmpfs_node_bitmap_free(const uint64_t node_number) {
 }
 
 static void tmpfs_remove_all_data_pages(const struct tmpfs_node *node) {
-    uint64_t num_page_list_entries = (node->tmpfs_node_size / (PAGE_SIZE * PAGES_PER_TMPFS_ENTRY)) + 1; //plus one since loop breaks on 0
+    uint64_t num_page_list_entries = (node->tmpfs_node_size / (PAGE_SIZE * PAGES_PER_TMPFS_ENTRY)) + 1;
+    //plus one since loop breaks on 0
     struct doubly_linked_list_node *head = node->page_list->head;
     while (num_page_list_entries > 0) {
         free_page_list_entry(head->data);

@@ -10,20 +10,21 @@
 bool bsp = true;
 
 //TODO replace cli/sti with architecture agnostic wrapper function
-void initlock(struct spinlock* spinlock, uint64_t id) {
+void initlock(struct spinlock *spinlock, uint64_t id) {
     spinlock->id = id;
     spinlock->locked = 0;
     spinlock->cpu = 0;
 }
 
-void acquire_spinlock(struct spinlock* spinlock) {
+void acquire_spinlock(struct spinlock *spinlock) {
     if (bsp == true) {
         /*
          * Spinlocks are acquired extensively during bootstrap for data structure functions and this cannot be changed
          * without making specialized bootstrap functions or something similar which is wasteful. It is much easier to ust
          * do a quick bool check on acquire
          */
-        return; // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
+        return;
+        // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
     }
     arch_atomic_swap(&spinlock->locked, 1);
     disable_interrupts();
@@ -31,7 +32,7 @@ void acquire_spinlock(struct spinlock* spinlock) {
     spinlock->cpu = my_cpu();
 }
 
-void release_spinlock(struct spinlock* spinlock) {
+void release_spinlock(struct spinlock *spinlock) {
     spinlock->cpu = NULL;
     enable_interrupts();
     spinlock->locked = 0;

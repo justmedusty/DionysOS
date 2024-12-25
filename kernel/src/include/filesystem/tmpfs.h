@@ -39,6 +39,7 @@ struct tmpfs_superblock {
     uint64_t page_count;
     uint64_t tmpfs_node_count;
 };
+
 /*
  *  Doing it this way to require less node hopping to find a page offset. Can do O(1) lookups within
  *  PAGES_PER_TMPFS_ENTRY page lookups
@@ -72,13 +73,22 @@ struct tmpfs_filesystem_context {
 };
 
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name);
-struct vnode *tmpfs_create(struct vnode *parent, char *name,uint8_t type);
+
+struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type);
+
 void tmpfs_rename(const struct vnode *vnode, char *name);
+
 uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+
 uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
+
 void tmpfs_unlink(struct vnode *vnode);
+
 uint64_t tmpfs_open(struct vnode *vnode);
+
 void tmpfs_close(struct vnode *vnode, uint64_t handle);
+
 void tmpfs_remove(const struct vnode *vnode);
 #endif //KERNEL_TMPFS_H

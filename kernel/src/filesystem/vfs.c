@@ -72,7 +72,6 @@ struct vnode *vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode *vnode) {
-
     vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 
@@ -224,7 +223,6 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
  *  This will need to return a handle at some point.
  */
 int64_t vnode_open(char *path) {
-
     struct process *process = my_cpu()->running_process;
 
     struct virtual_handle_list *list = process->handle_list;
@@ -547,5 +545,5 @@ struct vnode *handle_to_vnode(int64_t handle_id) {
             return handle->vnode;
         }
         node = node->next;
-    }while (node->next != NULL);
+    } while (node->next != NULL);
 }
