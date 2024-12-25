@@ -107,7 +107,7 @@ src/limine.h:
 # GNU binutils, for silly reasons, forces the ELF type to ET_EXEC even for
 # relocatable PIEs, if the base load address is non-0.
 # See https://sourceware.org/bugzilla/show_bug.cgi?id=31795 for more information.
-bin/$(KERNEL): GNUmakefile linker.ld $(OBJ)
+bin/$(KERNEL): Makefile linker.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(KLD) $(OBJ) $(KLDFLAGS) -o $@
 	printf '\x03' | dd of=$@ bs=1 count=1 seek=16 conv=notrunc
@@ -116,17 +116,17 @@ bin/$(KERNEL): GNUmakefile linker.ld $(OBJ)
 -include $(HEADER_DEPS)
 
 # Compilation rules for *.c files.
-obj/%.c.o: src/%.c GNUmakefile src/limine.h
+obj/%.c.o: src/%.c Makefile src/limine.h
 	mkdir -p "$$(dirname $@)"
 	$(KCC) $(KCFLAGS) $(KCPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
-obj/%.S.o: src/%.S GNUmakefile
+obj/%.S.o: src/%.S Makefile
 	mkdir -p "$$(dirname $@)"
 	$(KCC) $(KCFLAGS) $(KCPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.asm (nasm) files.
-obj/%.asm.o: src/%.asm GNUmakefile
+obj/%.asm.o: src/%.asm Makefile
 	mkdir -p "$$(dirname $@)"
 	nasm $(KNASMFLAGS) $< -o $@
 
