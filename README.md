@@ -3,7 +3,7 @@
 [Link 1](https://www.worldhistory.org/Dionysos/) [Link 2](http://dionysia.org/greek/dionysos/thompson/dionysos.html)
 
 # Why Dionysos?
-As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme. The themes of order & chaos are central to the story of Dionysos and such is also true for an operating system. Hardware is chaotic, users are chaotic, and the operating system stands between as an arbiter. It brings order to chaos and attempts to strike a balance between the inherent chaos of the surrounding environment and the order required for a coherent experience. The operating system provides a controlled environment for chaos, imposing structure on its internals and peripherals. The operating system may even succumb to the chaos on occasions such as an NMI or kernel panic, similar to the divine madness that afflicted Dionysos. His thyrsos, the staff capable of providing as well as destroying, also fits very well with this theme. The operating system can provide all of the resources a task requests, but at the same time it will destroy it when it steps out of line. Much like the thyrsos of Dionysos. 
+As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme. The themes of order & chaos are central to the story of Dionysos and such is also true for an operating system. Hardware is chaotic, users are chaotic, and the operating system stands between as an arbiter. It brings order to chaos and attempts to strike a balance between the inherent chaos of the surrounding environment and the order required for a coherent experience. The operating system provides a controlled environment for chaos, imposing structure on its internals and peripherals. The operating system may even succumb to the chaos on occasions such as an NMI (Non-Maskable Interrupt) or kernel panic, similar to the divine madness that afflicted Dionysos. His thyrsos, the staff capable of providing as well as destroying, also fits very well with this theme. The operating system can provide all of the resources a task requests, but at the same time it will destroy it when it steps out of line. Much like the thyrsos of Dionysos. 
 
 In his travels around the world, Dionysos would gather followers, however those that did not partake in his proverbial song and dance were struck down while those that did were granted pleasures and gifts. The operating system tends to act in this way as well. The operating system demands compliance with rigid rules and protocols, much like Dionysos during his worldly travels. If the expectations of the operating system are not met, unruly processes will be struck down immediately, however those that partake in the song and dance will be granted the resources they request, even to unnecessary abundance. 
 
@@ -40,13 +40,15 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟢Design a virtual file system (VFS) and implement it. The traditional UNIX VFS works and saves headaches when porting software, but you can make your own thing too.
 
-🟢Implement a ramdisk driver to facilitate the tempsfs filesystem. 
+🟢Implement a ramdisk driver to facilitate the block filesystem. 
 
 🟢Implement a simple file system
 
 🟢Implement a scheduler to schedule threads in order make multitasking possible.
 
 🟢Write a PCI driver.
+
+🟡Implement a simple memory-only tmpfs filesystem
 
 🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
