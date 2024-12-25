@@ -2,11 +2,11 @@
 // Created by dustyn on 6/16/24.
 //
 #pragma once
-#include <include/definitions.h>
+#include <include/definitions/definitions.h>
 #ifdef __x86_64__
 #include <include/drivers/serial/uart.h>
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 // Routines to let C code use special x86 instructions.
 
 

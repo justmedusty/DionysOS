@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 struct acpi_rsdp{
     int8_t signature[8];

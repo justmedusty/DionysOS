@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "acpi.h"
 
 struct acpi_madt {

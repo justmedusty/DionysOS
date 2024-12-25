@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 7/6/24.
 //
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/memory/pmm.h"
 #include "include/memory/kalloc.h"
 

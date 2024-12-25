@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "include/device/device.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/data_structures/spinlock.h"
 
 #define RAMDISK_COUNT 5

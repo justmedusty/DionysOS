@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "limine.h"
 #include "kernel_bootstrap.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 
 // Set the base revision to 2, this is recommended as this is the latest

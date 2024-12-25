@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 8/31/24.
 //
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 #include "include/data_structures/binary_tree.h"
 
 #include "include/definitions/string.h"

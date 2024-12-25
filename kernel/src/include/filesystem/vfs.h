@@ -6,7 +6,7 @@
 
 #include "include/data_structures/spinlock.h"
 #include <stddef.h>
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 
 #define VFS_MAX_NAME_LENGTH 128
 #define VFS_STATIC_POOL_SIZE 100

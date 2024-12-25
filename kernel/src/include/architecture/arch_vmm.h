@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/architecture/arch_paging.h"
 
 //walkpgdir flags , going to add a flag for debugging

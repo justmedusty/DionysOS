@@ -4,7 +4,7 @@
 #include <include/architecture/x86_64/gdt.h>
 #include <include/architecture/arch_cpu.h>
 #include <include/architecture/arch_global_interrupt_controller.h>
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include <include/architecture/arch_paging.h>

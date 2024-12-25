@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <include/types.h>
+#include <include/definitions/types.h>
 
 #define QUEUE_MODE_FIFO 0 /* Traditional queue */
 #define QUEUE_MODE_LIFO 1 // More of a stack but will entertain it

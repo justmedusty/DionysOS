@@ -2,7 +2,7 @@
 // Created by dustyn on 6/17/24.
 //
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/screen/font.h"
 #define FONT_BASIC_WIDTH 8
 #define FONT_BASIC_HEIGHT 16

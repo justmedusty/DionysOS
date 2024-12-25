@@ -5,7 +5,7 @@
 #define _DIOSFS_H_
 #pragma once
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "stdint.h"
 #include "include/filesystem/vfs.h"
 

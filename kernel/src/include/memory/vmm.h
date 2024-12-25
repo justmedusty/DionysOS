@@ -6,7 +6,7 @@
 #pragma once
 #include <stdbool.h>
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 extern struct virt_map* kernel_pg_map;
 
 /*

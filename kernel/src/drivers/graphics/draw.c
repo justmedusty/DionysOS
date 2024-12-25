@@ -2,7 +2,7 @@
 // Created by dustyn on 6/16/24.
 //
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/screen/font.h"
 #include "include/screen/draw.h"
 

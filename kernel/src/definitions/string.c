@@ -3,7 +3,7 @@
 //
 
 #include "include/definitions/string.h"
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 #include "include/architecture/arch_cpu.h"
 #include "include/drivers/serial/uart.h"
 

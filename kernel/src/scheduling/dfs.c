@@ -14,7 +14,7 @@
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/data_structures/singly_linked_list.h>
 #include "include/scheduling/sched.h"
-#include <include/definitions.h>
+#include <include/definitions/definitions.h>
 #include <include/data_structures/spinlock.h>
 #include "include/data_structures/queue.h"
 #include "include/drivers/serial/uart.h"

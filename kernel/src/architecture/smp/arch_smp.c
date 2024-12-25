@@ -1,9 +1,9 @@
 //
 // Created by dustyn on 6/24/24.
 //
-#include <include/definitions.h>
+#include <include/definitions/definitions.h>
 #include <include/architecture/arch_cpu.h>
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "limine.h"
 #include "include/drivers/serial/uart.h"
 #include <include/architecture/arch_paging.h>

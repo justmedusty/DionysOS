@@ -16,7 +16,7 @@
 #include <include/scheduling/sched.h>
 #include <include/scheduling/kthread.h>
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include "limine.h"

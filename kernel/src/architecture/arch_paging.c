@@ -2,7 +2,7 @@
 // Created by dustyn on 6/24/24.
 //
 #include "limine.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/drivers/serial/uart.h"
 #include <include/architecture/arch_cpu.h>
 #include <include/architecture/arch_cpu.h>

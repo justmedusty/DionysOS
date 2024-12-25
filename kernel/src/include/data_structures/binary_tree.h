@@ -5,7 +5,7 @@
 #pragma once
 #include "singly_linked_list.h"
 #include "spinlock.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 #define BLACK 0xF
 #define RED 0xE

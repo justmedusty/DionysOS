@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 static inline uint64_t rdmsr(uint32_t msr){
     uint32_t eax = 0;

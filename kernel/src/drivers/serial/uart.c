@@ -1,11 +1,11 @@
 //
 // Created by dustyn on 6/19/24.
 //
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/drivers/serial/uart.h"
 
 #include <include/data_structures/spinlock.h>
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 #include "include/architecture/generic_asm_functions.h"
 #include "stdarg.h"
 

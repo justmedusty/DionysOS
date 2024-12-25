@@ -6,7 +6,7 @@
 #pragma once
 
 #include "gdt.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include <stdint.h>
 
 struct idtr_desc {

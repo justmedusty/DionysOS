@@ -6,9 +6,9 @@
 
 #include "include/definitions/string.h"
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include <include/memory/kalloc.h>
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 
 /*
  * A simple doubly linked list implementation which can be used anywhere in the kernel later on.

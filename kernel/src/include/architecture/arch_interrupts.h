@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 #include "include/architecture/x86_64/idt.h"
  void arch_setup_interrupts();

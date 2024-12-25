@@ -4,7 +4,7 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/memory/mem.h"
 
 // For strtok to identiy whether returned token is the final token or not

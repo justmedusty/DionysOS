@@ -4,7 +4,7 @@
 
 #ifndef MATH_H
 #define MATH_H
-#include "include/types.h"
+#include "include/definitions/types.h"
 /*
  * Simpe power function returns base^power
  */

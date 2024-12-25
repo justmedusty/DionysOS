@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/memory/vmm.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "limine.h"
 #include "include/scheduling/process.h"
 #include "include/data_structures/queue.h"

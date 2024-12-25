@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 
 #ifdef __x86_64__
 #include "include/architecture/x86_64/asm_functions.h"

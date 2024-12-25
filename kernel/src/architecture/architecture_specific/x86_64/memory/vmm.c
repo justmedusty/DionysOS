@@ -11,7 +11,7 @@
 
 #include <include/architecture/arch_cpu.h>
 #include "include/memory/vmm.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/memory/mem.h"
 #include "include/architecture/arch_paging.h"
 #include "include/memory/pmm.h"

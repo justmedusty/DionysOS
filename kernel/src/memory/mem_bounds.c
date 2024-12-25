@@ -3,7 +3,7 @@
 //
 
 #include <include/architecture/arch_vmm.h>
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/architecture/arch_paging.h"
 #include "limine.h"
 #include "include/drivers/serial/uart.h"

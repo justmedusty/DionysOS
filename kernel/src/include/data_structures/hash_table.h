@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/data_structures/singly_linked_list.h"
 #define HASH_TABLE_STATIC_POOL_SIZE 900
 struct hash_table {

@@ -5,7 +5,7 @@
 #include "include/data_structures/hash_table.h"
 #include <include/architecture/arch_cpu.h>
 #include <include/memory/kalloc.h>
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 
 /*
  * I may add support for growing the size of a hash table but for now I think I will just leave it

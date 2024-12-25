@@ -1,7 +1,7 @@
 //
 // Created by dustyn on 7/2/24.
 //
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/architecture//arch_atomic_operations.h"
 #include "include/architecture/x86_64/asm_functions.h"
 

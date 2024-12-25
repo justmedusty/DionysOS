@@ -1,9 +1,9 @@
 //
 // Created by dustyn on 6/21/24.
 //
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/memory/pmm.h"
-#include <include/definitions.h>
+#include <include/definitions/definitions.h>
 #include <include/architecture/arch_cpu.h>
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>

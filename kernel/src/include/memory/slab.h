@@ -5,8 +5,8 @@
 
 #include <include/drivers/serial/uart.h>
 
-#include "include/types.h"
-#include "include/definitions.h"
+#include "include/definitions/types.h"
+#include "include/definitions/definitions.h"
 
 #define NUM_SLABS 10
 extern struct hash_table slab_hash;

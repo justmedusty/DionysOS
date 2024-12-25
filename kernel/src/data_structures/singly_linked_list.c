@@ -10,9 +10,9 @@
 #include <include/architecture/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
 
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include <include/memory/kalloc.h>
-#include "include/definitions.h"
+#include "include/definitions/definitions.h"
 
 /*
  *  Generic Implementation of a singly linked list with some functions to operate on them.

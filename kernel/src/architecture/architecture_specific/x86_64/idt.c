@@ -4,7 +4,7 @@
 
 #include "include/architecture/x86_64/gdt.h"
 #include "include/architecture/x86_64/asm_functions.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #include "include/architecture/x86_64/idt.h"
 
 #include <include/architecture/arch_cpu.h>

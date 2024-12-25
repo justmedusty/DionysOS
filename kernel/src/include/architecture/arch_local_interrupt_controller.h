@@ -6,7 +6,7 @@
 
 #include "x86_64/madt.h"
 #include "x86_64/acpi.h"
-#include "include/types.h"
+#include "include/definitions/types.h"
 #ifdef __x86_64__
 
 
