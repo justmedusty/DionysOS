@@ -218,6 +218,7 @@ void diosfs_get_size_info(struct diosfs_size_calculation *size_calculation, size
  * Takes a ramdisk ID to specify which ramdisk to operate on
  */
 void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem_context *fs) {
+    serial_printf("Creating DiosFS filesystem...\n");
     char *buffer = kmalloc(PAGE_SIZE);
     fs->superblock->magic = DIOSFS_MAGIC;
     fs->superblock->version = DIOSFS_VERSION;
