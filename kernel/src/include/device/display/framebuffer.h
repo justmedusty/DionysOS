@@ -95,7 +95,7 @@ struct framebuffer {
     uint64_t pitch;
     uint64_t font_height;
     uint64_t font_width;
-    bool text_mode;
+    bool scrolling;
     struct text_mode_context context;
     struct framebuffer_ops *ops;
 };

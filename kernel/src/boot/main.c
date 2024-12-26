@@ -130,8 +130,8 @@ void _start(void) {
 
 draw_string(&main_framebuffer,"Test hello\nHello again 123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345",RED);
 
-draw_string(&main_framebuffer,"This is yet another test 0xF125E\n\n\n\n\n   HELLO",PURPLE);
-
+draw_string(&main_framebuffer,"This is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n This is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  \n\n\n\n\n\n\nHELLO HELLO",PURPLE);
+draw_string(&main_framebuffer,"hello",RED);
     kernel_bootstrap();
     // We're done, just hang...
     hcf();

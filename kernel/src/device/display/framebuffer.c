@@ -3,11 +3,12 @@
 //
 
 #include "include/device/display/framebuffer.h"
-#include "include/definitions/types.h"
+#include "include/memory/mem.h"
 #include "include/device/display/font.h"
-#include "include/device/display/draw.h"
 
 struct framebuffer main_framebuffer;
+
+struct device framebuffer_device = {0};
 
 void draw_char(uint32_t *framebuffer, uint64_t fb_width, uint64_t fb_height, uint64_t fb_pitch,
                char c, uint64_t x, uint64_t y, uint32_t color) {
@@ -39,7 +40,6 @@ void draw_string(struct framebuffer *fb, char *str, uint64_t color) {
     uint64_t index_x = fb->context.current_x_pos;
     uint64_t index_y = fb->context.current_y_pos;;
 
-    uint64_t max_x = fb->width;
     while (*str) {
 
         if (*str == '\n') {
@@ -50,15 +50,22 @@ void draw_string(struct framebuffer *fb, char *str, uint64_t color) {
         }
 
         if (index_y >= fb->height) {
+            fb->scrolling = true;
+            uint64_t row_size = fb->width * (fb->height - fb->font_height);
+            uint64_t max_rows = fb->height / fb->font_height;
+            memmove(fb->address, fb->address + (fb->width * fb->font_height), row_size);
+            memset(fb->address, 0, fb->width * fb->font_height);
+            index_y = fb->height - fb->font_height;
             index_x = 0;
-            index_y = fb->font_height;
         }
+
 
         if (index_x >= fb->width) {
             index_x = 0;
             index_y += fb->font_height;
+
         }
-        draw_char((uint32_t *) fb->address, fb->width, fb->height, fb->pitch, *str++, index_x, index_y, color);
+        draw_char(fb->address, fb->width, fb->height, fb->pitch, *str++, index_x, index_y, color);
         index_x += fb->font_width;
     }
 
