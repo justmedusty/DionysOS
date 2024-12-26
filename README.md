@@ -54,6 +54,8 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟡Implement a simple memory-only tmpfs filesystem
 
+🟡Add support for a usage of the framebuffer
+
 🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
 🔴Write an NVMe driver.
@@ -61,8 +63,6 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 🔴Write an AHCI driver.
 
 🔴Get a userland going by loading executables from your VFS and running them in ring 3. Set up a way to perform system calls.
-
-🔴Add support for a usage of the framebuffer in userspace
 
 🔴Write a shell program
 
