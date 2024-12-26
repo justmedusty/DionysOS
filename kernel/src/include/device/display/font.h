@@ -12,5 +12,4 @@ typedef struct {
 } font;
 
 extern font default_font;
-
 #endif //DIONYSOS_FONT_H

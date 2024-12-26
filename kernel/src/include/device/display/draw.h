@@ -4,5 +4,4 @@
 
 #ifndef DIONYSOS_DRAW_H
 #define DIONYSOS_DRAW_H
-
 #endif //DIONYSOS_DRAW_H
