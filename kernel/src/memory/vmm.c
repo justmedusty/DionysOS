@@ -5,6 +5,7 @@
 #include "include/memory/vmm.h"
 
 #include <include/data_structures/doubly_linked_list.h>
+#include <include/device/display/framebuffer.h>
 
 #include "include/architecture/arch_vmm.h"
 #include "include/memory/kalloc.h"
@@ -20,7 +21,9 @@ void arch_kvm_init(p4d_t *pgdir){
  * Architecture agnostic vmm init function
  */
 void arch_vmm_init(){
+    kprintf("Initializing Virtual Memory Manager...\n");
     init_vmm();
+    kprintf("Virtual Memory Manager Initialized\n");
 }
 /*
  * Architecture agnostic map pages function

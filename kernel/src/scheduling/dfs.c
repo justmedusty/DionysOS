@@ -6,6 +6,7 @@
 	Dustyn's fair scheduler
  */
 #define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
+#include <include/device/display/framebuffer.h>
 
 #ifdef _DFS_ // the type of scheduler used will be defined in the gcc flags at compile time.
 
@@ -64,6 +65,7 @@ static void free_process(struct process *process) {
  * Simple init function that sets up data structures for us
  */
 void sched_init() {
+    kprintf("Initializing Scheduler...\n");
     singly_linked_list_init(&dead_processes, 0);
     initlock(&sched_global_lock, sched_LOCK);
     initlock(&purge_lock, sched_LOCK);
@@ -74,6 +76,7 @@ void sched_init() {
         queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
         cpu_list[i].local_run_queue = &local_run_queues[i];
     }
+    kprintf("Scheduler initialized.\n");
     serial_printf("DFS: Local CPU RQs Initialized \n");
 }
 

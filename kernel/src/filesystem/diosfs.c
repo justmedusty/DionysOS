@@ -5,6 +5,8 @@
 #include "include/filesystem/diosfs.h"
 #include "include/filesystem/vfs.h"
 #include <include/definitions/string.h>
+#include <include/device/display/framebuffer.h>
+
 #include "include/data_structures/spinlock.h"
 #include "include/definitions/definitions.h"
 #include <include/drivers/serial/uart.h>
@@ -183,6 +185,7 @@ struct vnode_operations diosfs_vnode_ops = {
  * It will use the size DEFAULT_DIOSFS_SIZE and any other size, modifications need to be made to the superblock object.
  */
 void diosfs_init(uint64_t filesystem_id) {
+    kprintf("Initializing DiosFS Filesystem...\n");
     if (filesystem_id >= NUM_FILESYSTEM_OBJECTS) {
         return;
     }
@@ -190,6 +193,7 @@ void diosfs_init(uint64_t filesystem_id) {
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
     dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+    kprintf("DiosFS Filesystem Initialized\n");
 };
 
 

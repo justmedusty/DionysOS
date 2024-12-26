@@ -8,6 +8,7 @@
 #include <include/architecture/arch_asm_functions.h>
 #include <include/architecture/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
+#include <include/device/display/framebuffer.h>
 #include <include/filesystem/vfs.h>
 #include <include/scheduling/sched.h>
 
@@ -18,7 +19,7 @@
  * Initialize a kthread and add it to the local run-queue
  */
 void kthread_init() {
-
+    kprintf("Initializing Kernel Threads For CPU #%i...\n",my_cpu()->cpu_number);
     struct process *proc = kmalloc(sizeof(struct process));
     memset(proc, 0, sizeof(struct process));
     proc->current_cpu = my_cpu();
@@ -49,6 +50,7 @@ void kthread_init() {
     }
 
     enqueue(proc->current_cpu->local_run_queue, proc, MEDIUM);
+    kprintf("Kernel Threads Initialized For CPU #%i\n",my_cpu()->cpu_number);
 }
 
 /*

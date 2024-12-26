@@ -7,6 +7,7 @@
 
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
+#include <include/device/display/framebuffer.h>
 
 #include "include/memory/slab.h"
 #include "include/drivers/serial/uart.h"
@@ -19,17 +20,19 @@ struct spinlock alloc_lock;
  * Because 32 bytes is a common needed size so far in this kernel, I have allocated a metric fuckload of slab memory for it (comparatively)
  */
 int heap_init() {
+    kprintf("Initializing Kernel Heap...\n");
     initlock(&alloc_lock, ALLOC_LOCK);
     int size = 8;
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-            heap_create_slab(&slabs[i],size,DEFAULT_SLAB_SIZE);
+        heap_create_slab(&slabs[i], size,DEFAULT_SLAB_SIZE);
         size <<= 1;
-        if(size >= PAGE_SIZE){
+        if (size >= PAGE_SIZE) {
             break;
         }
     }
 
     serial_printf("Kernel Heap Initialized\n");
+    kprintf("Kernel Heap Initialized\n");
     return 0;
 }
 
@@ -57,13 +60,14 @@ void *kmalloc(uint64_t size) {
 void *kzmalloc(uint64_t size) {
     acquire_spinlock(&alloc_lock);
     void *ret = _kalloc(size);
-    memset(ret, 0, size); // I am sure this is not the "official" way to do a kzmalloc you would have idle kthreads zeroing pages in a pool but this is fine for now
+    memset(ret, 0, size);
+    // I am sure this is not the "official" way to do a kzmalloc you would have idle kthreads zeroing pages in a pool but this is fine for now
     release_spinlock(&alloc_lock);
     return ret;
 }
-void *_kalloc(uint64_t size) {
 
-    if(size < PAGE_SIZE) {
+void *_kalloc(uint64_t size) {
+    if (size < PAGE_SIZE) {
         struct slab *slab = heap_slab_for(size);
         if (slab != NULL) {
             return heap_allocate_from_slab(slab);
@@ -79,6 +83,7 @@ void *_kalloc(uint64_t size) {
     }
     return return_value;
 }
+
 /*
  * Krealloc is just realloc for the kernel. Allocate a bigger block of memory, copy the previous contents in.
  * I will use this as a soapbox opportunity to say that realloc is not a safe function in a secure context. You have no
@@ -99,7 +104,7 @@ void *krealloc(void *address, uint64_t new_size) {
             return address;
         }
 
-        void *new_address =_kalloc(new_size);
+        void *new_address = _kalloc(new_size);
         if (new_address == NULL) {
             release_spinlock(&alloc_lock);
             return NULL;
@@ -120,7 +125,7 @@ void *krealloc(void *address, uint64_t new_size) {
     struct slab *slab = slab_header->slab;
 
     if (new_size > slab->entry_size) {
-        void *new_address =_kalloc(new_size);
+        void *new_address = _kalloc(new_size);
         if (new_address == NULL) {
             return NULL;
         }
@@ -137,17 +142,17 @@ void *krealloc(void *address, uint64_t new_size) {
 /*
  * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
  */
-void _kfree(void* address) {
+void _kfree(void *address) {
     if (address == NULL) {
         return;
     }
 
-    if ((uint64_t)address & 0xFFF) {
+    if ((uint64_t) address & 0xFFF) {
         goto slab;
     }
 
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-        struct header* slab_header = (struct header*)((uint64_t)address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
+        struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
         if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
             goto slab;
         }
@@ -159,7 +164,7 @@ void _kfree(void* address) {
 
 slab:
 
-    struct header* slab_header = (struct header*)((uint64_t)address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
+    struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
 
     heap_free_in_slab(slab_header->slab, address);
 }

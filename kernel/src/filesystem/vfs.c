@@ -41,6 +41,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list);
  *It also initializes the lock for the VFS system.
  */
 void vfs_init() {
+    kprintf("Initializing Virtual Filesystem...\n");
     singly_linked_list_init(&vnode_static_pool, 0);
     singly_linked_list_init(&vnode_used_pool, 0);
 
@@ -50,6 +51,7 @@ void vfs_init() {
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
     }
     initlock(&vfs_lock, VFS_LOCK);
+    kprintf("Virtual Filesystem Initialized\n");
     serial_printf("VFS initialized\n");
 }
 

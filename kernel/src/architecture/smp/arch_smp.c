@@ -9,6 +9,7 @@
 #include <include/architecture/arch_paging.h>
 #include <include/architecture/arch_smp.h>
 #include <include/data_structures/spinlock.h>
+#include <include/device/display/framebuffer.h>
 
 uint64_t bootstrap_lapic_id;
 uint64_t cpu_count;
@@ -41,7 +42,7 @@ void smp_init(){
 
     serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n",bootstrap_lapic_id,cpu_count);
     uint8_t i = 0;
-
+    kprintf("Initializing Other Processors...\n%i CPUs Found\n",cpu_count);
     //For output cleanliness
     acquire_spinlock(&bootstrap_lock);
     while(i < cpu_count) {
@@ -65,6 +66,7 @@ void smp_init(){
         asm volatile("nop");
     }
     smp_enabled = 1;
+    kprintf("All CPUs Online\n");
     serial_printf("\n\nAll CPUs online......\n\n\n");
 
 

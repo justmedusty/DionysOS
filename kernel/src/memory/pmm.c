@@ -7,6 +7,7 @@
 #include <include/architecture/arch_cpu.h>
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
+#include <include/device/display/framebuffer.h>
 #include <include/memory/kalloc.h>
 #include "limine.h"
 #include "include/memory/mem.h"
@@ -91,6 +92,7 @@ struct contiguous_page_range contiguous_pages[10] = {};
  *
  */
 int phys_init() {
+    kprintf("Initializing Physical Memory Manager...\n");
     initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
 
@@ -211,6 +213,7 @@ int phys_init() {
     highest_page_index = highest_address / PAGE_SIZE;
     uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
+    kprintf("Physical Memory Manager Initialized %i MB Found\n",pages_mib);
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
