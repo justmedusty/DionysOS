@@ -35,20 +35,28 @@ void kernel_bootstrap() {
     arch_setup_interrupts();
     arch_paging_init();
     phys_init();
+    kprintf("Physical Memory Manager Initialized\n");
     heap_init();
     mem_bounds_init();
     arch_vmm_init();
+    kprintf("Virtual Memory Manager Initialized\n");
     acpi_init();
     lapic_init();
     vfs_init();
+    kprintf("Virtual Filesystem Initialized\n");
     diosfs_init(0);
+    kprintf("DiosFS Filesystem Initialized\n");
     sched_init();
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
+    kprintf("Other CPUs Online\n");
     timer_init();
+    kprintf("Timer Initialized\n");
     serial_printf("Total Pages Allocated %i out of %i\n", total_allocated, usable_pages);
     kthread_init();
+    kprintf("Kernel Threads Initialized\n");
     ready = 1;
+    kprintf("Ready...\nJumping into Scheduler");
     scheduler_main();
 }
