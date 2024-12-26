@@ -12,7 +12,7 @@
 #define TMPFS_MAGIC 0x534F455077778034UL
 #define PAGES_PER_TMPFS_ENTRY 1024UL
 #define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * 8
-#define  MAX_TMPFS_ENTRIES
+#define MAX_TMPFS_ENTRIES VNODE_MAX_DIRECTORY_ENTRIES
 
 
 enum tmpfs_types {
@@ -50,6 +50,10 @@ struct tmpfs_page_list_entry {
     uint64_t number_of_pages;
 };
 
+struct sym_link_path {
+    char *path;
+};
+
 struct tmpfs_node {
     struct tmpfs_superblock *superblock;
     struct tmpfs_node *parent_tmpfs_node;
@@ -63,6 +67,7 @@ struct tmpfs_node {
     union {
         struct doubly_linked_list *page_list; //holds tmpfs page_list_entries as defined above
         struct tmpfs_directory_entries directory_entries;
+        struct sym_link_path sym_link_path;
     };
 };
 
@@ -91,4 +96,5 @@ uint64_t tmpfs_open(struct vnode *vnode);
 void tmpfs_close(struct vnode *vnode, uint64_t handle);
 
 void tmpfs_remove(const struct vnode *vnode);
+
 #endif //KERNEL_TMPFS_H

@@ -59,13 +59,15 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
         panic("tmpfs_lookup: vnode is cached already");
         // not a huge deal but a logic bug nonetheless so panic for visibility
     }
-    struct tmpfs_filesystem_context *tmpfs = vnode->filesystem_object;
+    const struct tmpfs_filesystem_context *tmpfs = vnode->filesystem_object;
     struct tmpfs_node *target_node = lookup_tree(&tmpfs->superblock->node_tree, vnode->vnode_inode_number,false);
 
     if (target_node == NULL) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
         return NULL; // linter purposes
     }
+    struct tmpfs_node *child_node = tmpfs_find_child(target_node, name);
+
 
     struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
         vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
@@ -100,15 +102,19 @@ void tmpfs_rename(const struct vnode *vnode, char *name) {
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
+    struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     if (vnode->vnode_type == VNODE_FILE) {
-        struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
-
-        //TODO clear parent of entries
+        tmpfs_delete_reg_file(node);
+        tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
         return;
     }
 
     if (vnode->vnode_type == VNODE_DIRECTORY) {
+        tmpfs_delete_directory_recursively(node);
+        tmpfs_remove_dirent_in_parent_directory(node);
+        kfree(node);
+        return;
     }
 }
 
@@ -317,10 +323,26 @@ static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *n
 }
 
 static struct tmpfs_node *conjure_new_tmpfs_node(char *name, const uint8_t type) {
+
     struct tmpfs_node *tmpfs_node = kmalloc(sizeof(struct tmpfs_node));
     memset(tmpfs_node, 0, sizeof(struct tmpfs_node));
     safe_strcpy(tmpfs_node->node_name, name, VFS_MAX_NAME_LENGTH);
     tmpfs_node->node_type = type;
+
+    switch (type) {
+        case DIRECTORY:
+            tmpfs_node->directory_entries.entries = kmalloc(sizeof(uintptr_t) * MAX_TMPFS_ENTRIES);
+            break;
+        case FILE:
+            tmpfs_node->page_list = kmalloc(sizeof(struct doubly_linked_list));
+            doubly_linked_list_init(tmpfs_node->page_list);
+            break;
+        case SYM_LINK:
+            break;
+        default:
+            panic("conjure_new_tmpfs_node: unknown type");
+    }
+
     return tmpfs_node;
 }
 

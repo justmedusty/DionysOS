@@ -107,7 +107,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
                                              uint64_t offset, uint64_t read_size_bytes);
 
 static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
-                                            char *buffer,
+                                            const char *buffer,
                                             uint64_t buffer_size,
                                             uint64_t offset,
                                             uint64_t write_size_bytes);
@@ -286,7 +286,7 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     diosfs_get_free_inode_and_mark_bitmap(fs, &root);
 
 
-    root.type = DIOSFS_DIRECTORY;
+    root.type = DIRECTORY;
     strcpy((char *) &root.name, "/");
     root.parent_inode_number = root.inode_number;
     diosfs_write_inode(fs, &root);
@@ -295,7 +295,7 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     strcpy((char *) vfs_root.vnode_name, "/");
     vfs_root.filesystem_object = fs;
     vfs_root.vnode_inode_number = root.inode_number;
-    vfs_root.vnode_type = DIOSFS_DIRECTORY;
+    vfs_root.vnode_type = DIRECTORY;
     vfs_root.vnode_ops = &diosfs_vnode_ops;
     vfs_root.vnode_refcount = 1;
     vfs_root.vnode_parent = NULL;
@@ -357,7 +357,7 @@ uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, c
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == VNODE_HARD_LINK) {
-        if (diosfs_symlink_check(fs, vnode, DIOSFS_REG_FILE) != DIOSFS_SUCCESS) {
+        if (diosfs_symlink_check(fs, vnode, REG_FILE) != DIOSFS_SUCCESS) {
             return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
     }
@@ -375,12 +375,12 @@ uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *bu
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
-    if (vnode->vnode_type == DIOSFS_DIRECTORY) {
+    if (vnode->vnode_type == DIRECTORY) {
         return DIOSFS_CANNOT_WRITE_DIRECTORY;
     }
 
-    if (vnode->vnode_type == DIOSFS_SYMLINK) {
-        if (diosfs_symlink_check(fs, vnode, DIOSFS_REG_FILE) != DIOSFS_SUCCESS) {
+    if (vnode->vnode_type == SYM_LINK) {
+        if (diosfs_symlink_check(fs, vnode, REG_FILE) != DIOSFS_SUCCESS) {
             return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
 
@@ -584,7 +584,7 @@ void diosfs_unlink(struct vnode *vnode) {
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
-    if (inode.type == DIOSFS_SYMLINK) {
+    if (inode.type == SYM_LINK) {
         diosfs_remove_file(fs, &inode);
         vnode_free(vnode);
     }
@@ -648,7 +648,7 @@ static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struc
     vnode->is_cached = FALSE;
     safe_strcpy(vnode->vnode_name, entry->name, MAX_FILENAME_LENGTH);
     vnode->last_updated = 0;
-    vnode->num_children = entry->type == DIOSFS_DIRECTORY
+    vnode->num_children = entry->type == DIRECTORY
                               ? entry->size
                               : 0;
     vnode->filesystem_object = fs;
@@ -721,9 +721,9 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem_context *fs
         }
 
         if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number == inode_to_remove) {
-            if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].type == DIOSFS_DIRECTORY) {
+            if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].type == DIRECTORY) {
                 diosfs_recursive_directory_entry_free(fs, &entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK], 0);
-            } else if (entries[i].type == DIOSFS_REG_FILE) {
+            } else if (entries[i].type == REG_FILE) {
                 struct diosfs_inode temp_inode;
                 diosfs_read_inode(fs, &temp_inode, entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number);
 
@@ -840,7 +840,7 @@ static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem_conte
                                         fs->superblock->block_size);
         }
 
-        if (entries[i].type == DIOSFS_REG_FILE) {
+        if (entries[i].type == REG_FILE) {
             struct diosfs_inode temp_inode;
             diosfs_read_inode(fs, &temp_inode, entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number);
             /*
@@ -852,7 +852,7 @@ static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem_conte
                 temp_inode.refcount--;
                 diosfs_write_inode(fs, &temp_inode);
             }
-        } else if (entries[i].type == DIOSFS_DIRECTORY) {
+        } else if (entries[i].type == DIRECTORY) {
             diosfs_recursive_directory_entry_free(fs, &entries[i], 0);
         } else {
             struct diosfs_inode temp_inode;
@@ -1163,7 +1163,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
     uint64_t block_number = 0;
 
     diosfs_read_inode(fs, &inode, inode_number);
-    if (inode.type != DIOSFS_DIRECTORY) {
+    if (inode.type != DIRECTORY) {
         kfree(buffer);
         return DIOSFS_NOT_A_DIRECTORY;
     }
@@ -1211,7 +1211,7 @@ static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem_
 
     diosfs_read_inode(fs, &entry, inode_number);
     diosfs_read_inode(fs, &inode, directory_inode_number);
-    if (inode.type != DIOSFS_DIRECTORY) {
+    if (inode.type != DIRECTORY) {
         kfree(buffer);
         return DIOSFS_NOT_A_DIRECTORY;
     }
@@ -1262,7 +1262,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
                                              const uint64_t offset, const uint64_t read_size_bytes) {
     uint64_t num_blocks_to_read = read_size_bytes / fs->superblock->block_size;
 
-    if (inode->type != DIOSFS_REG_FILE) {
+    if (inode->type != REG_FILE) {
         panic("diosfs_write_bytes_to_inode bad type");
     }
 
@@ -1354,11 +1354,11 @@ static uint64_t diosfs_write_dirent(struct diosfs_filesystem_context *fs, struct
 
 
 static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
-                                            char *buffer,
+                                            const char *buffer,
                                             const uint64_t buffer_size,
                                             const uint64_t offset,
                                             const uint64_t write_size_bytes) {
-    if (inode->type != DIOSFS_REG_FILE) {
+    if (inode->type != REG_FILE) {
         panic("diosfs_write_bytes_to_inode bad type");
     }
 
@@ -1514,7 +1514,7 @@ uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem_context *fs, 
     char *buffer = kmalloc(PAGE_SIZE);
 
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
-    if (inode->type == DIOSFS_DIRECTORY && (num_blocks_to_allocate + (inode->size / fs->superblock->block_size)) >
+    if (inode->type == DIRECTORY && (num_blocks_to_allocate + (inode->size / fs->superblock->block_size)) >
         NUM_BLOCKS_DIRECT) {
         serial_printf("diosfs_inode_allocate_new_block inode type not directory!\n");
         kfree(buffer);

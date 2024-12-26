@@ -9,6 +9,19 @@
 #include "stdint.h"
 #include "include/filesystem/vfs.h"
 
+
+enum diosfs_types {
+    DIRECTORY = 0,
+    REG_FILE = 1,
+    HARD_LINK = 2,
+    BLOCK_DEV = 3,
+    CHAR_DEV = 4,
+    NET_DEV = 5,
+    SPECIAL = 6,
+    SPECIAL_FILE = 7,
+    SYM_LINK = 8,
+};
+
 #define INITIAL_FILESYSTEM 0 /* Just for ramdisk 0 id purposes*/
 
 #define DIOSFS_BLOCKSIZE 1024
@@ -20,10 +33,6 @@
 #define MAX_BLOCKS_IN_INODE (((((NUM_BLOCKS_DIRECT) * DIOSFS_BLOCKSIZE) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK) * NUM_BLOCKS_IN_INDIRECTION_BLOCK)
 
 #define NUM_BLOCKS_IN_INDIRECTION_BLOCK ((DIOSFS_BLOCKSIZE / sizeof(uint64_t)))
-
-#define DIOSFS_DIRECTORY 0
-#define DIOSFS_REG_FILE 1
-#define DIOSFS_SYMLINK 2
 
 #define DIOSFS_NUM_INODE_POINTER_BLOCKS 16
 #define DIOSFS_NUM_BLOCK_POINTER_BLOCKS 128
