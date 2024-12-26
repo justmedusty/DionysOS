@@ -8,7 +8,7 @@
 #include "include/definitions/definitions.h"
 #include "include/architecture/generic_asm_functions.h"
 #include "stdarg.h"
-
+#include "include/device/display/framebuffer.h"
 
 static int is_transmit_empty();
 static void write_serial(char a);
@@ -19,7 +19,6 @@ static char get_hex_char(uint8_t nibble);
 #ifdef __x86_64__
 #define COM1 0x3F8   // COM1 base port
 #endif
-char characters[16] = {'0','1', '2', '3', '4', '5', '6', '7','8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 struct spinlock serial_lock;
 

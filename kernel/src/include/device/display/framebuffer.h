@@ -5,10 +5,13 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 #include <stdint.h>
+#include <include/data_structures/spinlock.h>
+
 #include "include/device/device.h"
 
 extern struct framebuffer main_framebuffer;
 
+extern char characters[16];
 
 enum colors {
     // Basic colors
@@ -97,6 +100,7 @@ struct framebuffer {
     uint64_t font_width;
     struct text_mode_context context;
     struct framebuffer_ops *ops;
+    struct spinlock lock;
 };
 
 
@@ -107,4 +111,7 @@ void draw_char_with_context(struct framebuffer *fb,
                             const char c, const uint32_t color);
 
 void draw_string(struct framebuffer *fb, const char *str, uint64_t color);
+void kprintf(char *str, ...);
+void kprintf_color(uint32_t color,char *str, ...);
+void kprintf_exception(char *str, ...);
 #endif //FRAMEBUFFER_H

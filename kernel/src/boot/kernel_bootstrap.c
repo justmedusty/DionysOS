@@ -28,7 +28,9 @@ int32_t ready = 0;
 
 void kernel_bootstrap() {
     init_serial();
-    draw_string(&main_framebuffer,"DionysOS Booting...\n",GREEN);
+    initlock(&main_framebuffer.lock, FRAME_LOCK);
+    kprintf_color(WHITE,"Welcome to the DionysOS Operating System written by Dustyn Gibb\n");
+    kprintf("DionysOS Booting...\n");
     arch_init_segments();
     arch_setup_interrupts();
     arch_paging_init();

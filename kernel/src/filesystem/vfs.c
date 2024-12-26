@@ -6,6 +6,7 @@
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/definitions/string.h>
 #include <include/data_structures/singly_linked_list.h>
+#include <include/device/display/framebuffer.h>
 #include <include/drivers/serial/uart.h>
 #include <include/filesystem/diosfs.h>
 #include <include/memory/kalloc.h>
