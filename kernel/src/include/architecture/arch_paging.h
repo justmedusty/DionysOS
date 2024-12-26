@@ -4,6 +4,7 @@
 
 #pragma once
 #include "include/memory/pmm.h"
+#include "include/definitions/types.h"
 #define P2V(addr) (void *)(((uint64_t)addr) + (uint64_t)hhdm_offset)
 #define V2P(addr) (void *)(((uint64_t)addr) - (uint64_t)hhdm_offset)
 

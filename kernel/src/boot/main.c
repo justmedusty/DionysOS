@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <include/device/display/framebuffer.h>
 #include "limine.h"
 #include "kernel_bootstrap.h"
 #include "include/definitions/types.h"
@@ -20,8 +21,8 @@ static volatile LIMINE_BASE_REVISION(2);
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_framebuffer_request framebuffer_request = {
-        .id = LIMINE_FRAMEBUFFER_REQUEST,
-        .revision = 0
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0
 };
 
 // Finally, define the start and end markers for the Limine requests.
@@ -38,7 +39,6 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 // Implement them as the C specification mandates.
 // DO NOT remove or rename these functions, or stuff will eventually break!
 // They CAN be moved to a different .c file.
-
 
 
 void *memcpy(void *dest, const void *src, size_t n) {
@@ -118,12 +118,18 @@ void _start(void) {
     // Fetch the first framebuffer.
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
 
-    /*// Note: we assume the framebuffer model is RGB with 32-bit pixels.
-    for (size_t i = 0; i < 100; i++) {
-        volatile uint32_t *fb_ptr = framebuffer->address;
-        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
-    }
-*/
+    main_framebuffer.address = framebuffer->address;
+    main_framebuffer.pitch = framebuffer->pitch;
+    main_framebuffer.width = framebuffer->width;
+    main_framebuffer.height = framebuffer->height;
+    main_framebuffer.font_height = 16;
+    main_framebuffer.font_width = 8;
+    main_framebuffer.ops = NULL;
+
+draw_string(&main_framebuffer,"Test hello\nHello again 123456789",TEAL);
+
+
+
     kernel_bootstrap();
     // We're done, just hang...
     hcf();

@@ -3,7 +3,7 @@
 //
 
 #include "include/definitions/types.h"
-#include "include/screen/font.h"
+#include "include/device/display/font.h"
 #define FONT_BASIC_WIDTH 8
 #define FONT_BASIC_HEIGHT 16
 
