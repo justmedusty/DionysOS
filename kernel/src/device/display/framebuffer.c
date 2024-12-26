@@ -36,9 +36,10 @@ void draw_char(uint32_t *framebuffer, uint64_t fb_width, uint64_t fb_height, uin
 }
 
 void draw_string(struct framebuffer *fb, char *str, uint64_t color) {
-    uint64_t index_x = 0;
-    uint64_t index_y = 0;
-    uint64_t max_x = fb->width / fb->font_width;
+    uint64_t index_x = fb->context.current_x_pos;
+    uint64_t index_y = fb->context.current_y_pos;;
+
+    uint64_t max_x = fb->width;
     while (*str) {
 
         if (*str == '\n') {
@@ -48,11 +49,19 @@ void draw_string(struct framebuffer *fb, char *str, uint64_t color) {
             continue;
         }
 
-        if (index_x >= max_x) {
-            index_y = 0;
+        if (index_y >= fb->height) {
+            index_x = 0;
+            index_y = fb->font_height;
+        }
+
+        if (index_x >= fb->width) {
+            index_x = 0;
             index_y += fb->font_height;
         }
         draw_char((uint32_t *) fb->address, fb->width, fb->height, fb->pitch, *str++, index_x, index_y, color);
         index_x += fb->font_width;
     }
+
+    fb->context.current_x_pos = index_x;
+    fb->context.current_y_pos = index_y;
 }
