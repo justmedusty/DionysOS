@@ -3,6 +3,7 @@
 //
 #include <include/architecture/x86_64/asm_functions.h>
 #include <include/architecture/x86_64/idt.h>
+#include <include/device/display/framebuffer.h>
 #include <include/scheduling/kthread.h>
 #include "include/filesystem/vfs.h"
 #include "include/architecture/arch_memory_init.h"
@@ -27,6 +28,7 @@ int32_t ready = 0;
 
 void kernel_bootstrap() {
     init_serial();
+    draw_string(&main_framebuffer,"DionysOS Booting...\n",GREEN);
     arch_init_segments();
     arch_setup_interrupts();
     arch_paging_init();

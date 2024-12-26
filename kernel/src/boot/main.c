@@ -123,15 +123,11 @@ void _start(void) {
     main_framebuffer.width = framebuffer->width;
     main_framebuffer.height = framebuffer->height;
     main_framebuffer.font_height = 16;
-    main_framebuffer.font_width = 8;
+    main_framebuffer.font_width =  8;
     main_framebuffer.ops = NULL;
     main_framebuffer.context.current_x_pos = 0;
     main_framebuffer.context.current_y_pos = 0;
 
-draw_string(&main_framebuffer,"Test hello\nHello again 123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345123456789345345345435345345345345345345345345345345345345345",RED);
-
-draw_string(&main_framebuffer,"This is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n This is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  HELLOThis is yet another test 0xF125E\n\n\n\n\n \n\nHELLO\n\n\nHELLO\n\n\nHELLO\n\n\n\n  \n\n\n\n\n\n\nHELLO HELLO",PURPLE);
-draw_string(&main_framebuffer,"hello",RED);
     kernel_bootstrap();
     // We're done, just hang...
     hcf();
