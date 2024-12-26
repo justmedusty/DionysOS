@@ -70,12 +70,11 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 
 # Screeshots
-
+## The serial print messages are the most verbose, you can see these by selecting the serial0 output in your QEMU instance. This is where the majority of kernel output is cast to.
 ![image](https://github.com/user-attachments/assets/493fc7a2-b5f5-4b06-ba4c-41cc616053d7)
-The serial print messages are the most verbose, you can see these by selecting the serial0 output in your QEMU instance.
+## The framebuffer has fewer print messages and is more high-level as can be seen here. The framebuffer printing will be reserved mostly for userspace with kernelspace just using it for panic messages and a few bootstrapping messages.
 ![image](https://github.com/user-attachments/assets/b5d1d6eb-0c3f-48c2-a237-b2962b061550)
-The framebuffer has fewer print messages and is more high-level as can be seen here. The framebuffer printing will be reserved mostly
-for userspace with kernelspace just using it for panic messages and a few bootstrapping messages.
+
 
 
 # Ideas for arcane syscall names:
