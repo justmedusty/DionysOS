@@ -79,14 +79,18 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
  * Create a new tmpfs node , the parent parameter is the parent directory.
  */
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
+
     struct vnode *vnode = vnode_alloc();
     memset(vnode, 0, sizeof(*vnode));
+
     struct tmpfs_node *parent_tmpfs_node = find_tmpfs_node_from_vnode(parent);
     struct tmpfs_node *child = conjure_new_tmpfs_node(name, type);
+
     child->tmpfs_node_number = tmpfs_node_bitmap_get();
     child->parent_tmpfs_node = parent_tmpfs_node;
     child->superblock = parent_tmpfs_node->superblock;
     child->superblock->tmpfs_node_count++;
+
     insert_tree_node(&child->superblock->node_tree, child, child->tmpfs_node_number);
     insert_tmpfs_node_into_parent_directory_entries(child);
 
@@ -115,6 +119,12 @@ void tmpfs_remove(const struct vnode *vnode) {
         tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
         return;
+    }
+
+    if (vnode->vnode_type == VNODE_SYM_LINK) {
+        kfree(node->sym_link_path.path);
+        tmpfs_remove_dirent_in_parent_directory(node);
+        kfree(node);
     }
 }
 
@@ -296,6 +306,9 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
     return ret;
 }
 
+/*
+ * Uses a vnode to find a tmpfs_node via a binary search of the superblock node tree
+ */
 static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) {
     struct tmpfs_node *ret = NULL;
     const struct tmpfs_filesystem_context *context = vnode->filesystem_object;
@@ -312,6 +325,9 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
     return ret;
 }
 
+/*
+ * When a node is created this function inserts the pointer to the node in the parents entry array
+ */
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node) {
     struct tmpfs_node *parent = node->parent_tmpfs_node;
     if (parent->node_type != DIRECTORY) {
@@ -322,8 +338,10 @@ static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *n
     parent->tmpfs_node_size++;
 }
 
+/*
+ * Creates a new node object and initializes the type specific field
+ */
 static struct tmpfs_node *conjure_new_tmpfs_node(char *name, const uint8_t type) {
-
     struct tmpfs_node *tmpfs_node = kmalloc(sizeof(struct tmpfs_node));
     memset(tmpfs_node, 0, sizeof(struct tmpfs_node));
     safe_strcpy(tmpfs_node->node_name, name, VFS_MAX_NAME_LENGTH);
@@ -368,6 +386,9 @@ static void tmpfs_node_bitmap_free(const uint64_t node_number) {
     tmpfs_node_number_bitmap[BYTE(node_number)] &= ~BIT(bit);
 }
 
+/*
+ * Bottom two functions are for clearing out the list of page_list entries
+ */
 static void tmpfs_remove_all_data_pages(const struct tmpfs_node *node) {
     uint64_t num_page_list_entries = (node->tmpfs_node_size / (PAGE_SIZE * PAGES_PER_TMPFS_ENTRY)) + 1;
     //plus one since loop breaks on 0
@@ -389,6 +410,10 @@ static void free_page_list_entry(struct tmpfs_page_list_entry *entry) {
     kfree(entry);
 }
 
+/*
+ * Removes and shifts the node being deleted in the parents entry list to fill its spot, we dont want NULL
+ * entries in the array because we only use the size to traverse the array. Must not have any gaps
+ */
 static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove) {
     struct tmpfs_node *parent = node_to_remove->parent_tmpfs_node;
 
@@ -410,12 +435,20 @@ static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *nod
     parent->tmpfs_node_size--;
 }
 
+/*
+ * Delete a regular file, first remove all data pages, remove it from the node tree, and then free the node number from the
+ * bitmap entry
+ */
 static void tmpfs_delete_reg_file(struct tmpfs_node *node) {
     tmpfs_remove_all_data_pages(node);
     remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node,NULL);
     tmpfs_node_bitmap_free(node->tmpfs_node_number);
 }
 
+/*
+ * Recursively delete a directory. Deletes everything within each directory or just deletes each
+ * reg file
+ */
 static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
     for (size_t i = 0; i < node->tmpfs_node_size; i++) {
         struct tmpfs_node *current = node->directory_entries.entries[i];
