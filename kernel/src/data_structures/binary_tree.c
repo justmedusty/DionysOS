@@ -478,7 +478,7 @@ uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key) {
  */
 void init_red_black_tree(struct binary_tree* tree) {
     tree->mode = RED_BLACK_TREE;
-    tree->root->color = BLACK;
+    tree->root->color = BLACK_NODE;
     tree->node_count = 0;
     initlock(&tree->lock, BTREE_LOCK);
 }

@@ -117,6 +117,7 @@ void _start(void) {
 
     // Fetch the first framebuffer.
     const struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+
     struct framebuffer *main_framebuffer = framebuffer_device.device_info;
     main_framebuffer->address = framebuffer->address;
     main_framebuffer->pitch = framebuffer->pitch;

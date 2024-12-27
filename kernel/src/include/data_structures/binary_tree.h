@@ -7,8 +7,8 @@
 #include "spinlock.h"
 #include "include/definitions/types.h"
 
-#define BLACK 0xF
-#define RED 0xE
+#define BLACK_NODE 0xF
+#define RED_NODE 0xE
 
 #define REGULAR_TREE 1
 #define RED_BLACK_TREE 2
