@@ -197,7 +197,6 @@ static void look_for_process() {
     struct process *process = sched_global_queue.head->data;
     dequeue(&sched_global_queue);
     enqueue(cpu->local_run_queue, process, process->priority);
-
     release_spinlock(&sched_global_lock);
 }
 

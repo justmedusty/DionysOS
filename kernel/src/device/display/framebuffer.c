@@ -7,15 +7,57 @@
 #include <stdarg.h>
 #include <include/data_structures/spinlock.h>
 #include <include/definitions/definitions.h>
+#include <include/drivers/serial/uart.h>
 
 #include "include/memory/mem.h"
 #include "include/device/display/font.h"
 
 struct framebuffer main_framebuffer;
 
-struct device framebuffer_device = {0};
+struct framebuffer_ops framebuffer_ops = {
+    .clear = fb_ops_clear,
+    .draw_string = fb_ops_draw_string,
+    .draw_char = fb_ops_draw_char,
+    .init = NULL,
+    .draw_pixel = NULL
+};
+
+struct device_ops framebuffer_device_ops = {
+    .framebuffer_ops = &framebuffer_ops,
+    .get_status = NULL,
+    .configure = NULL,
+    .init = NULL,
+    .reset = NULL
+};
+#define MAIN_FB 0
+
+struct device framebuffer_device = {
+    .device_major = DEVICE_MAJOR_FRAMEBUFFER,
+    .device_minor = MAIN_FB,
+    .lock = &main_framebuffer.lock,
+    .parent = NULL,
+    .device_type = DEVICE_TYPE_BLOCK,
+    .device_info = &main_framebuffer,
+    .device_ops = &framebuffer_device_ops
+};
 
 char characters[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+
+void fb_ops_draw_char(struct device *dev,  char c,  uint32_t color) {
+    struct framebuffer *fb = dev->device_info;
+    draw_char_with_context(fb, c, color);
+};
+
+void fb_ops_draw_string( struct device *dev,  uint32_t color,  char *s) {
+    struct framebuffer *fb = dev->device_info;
+    draw_string(fb, s, color);
+};
+
+void fb_ops_clear(struct device *dev) {
+    struct framebuffer *fb = dev->device_info;
+    clear(fb);
+}
 
 void draw_char(const struct framebuffer *fb,
                const char c, const uint64_t x, const uint64_t y, const uint32_t color) {
@@ -70,7 +112,7 @@ void draw_char_with_context(struct framebuffer *fb,
             }
         }
     }
-    skip:
+skip:
     fb->context.current_x_pos += fb->font_width;
 
     if (fb->context.current_x_pos >= fb->width) {
@@ -92,6 +134,14 @@ void draw_char_with_context(struct framebuffer *fb,
         fb->context.current_y_pos += fb->font_height;
         fb->context.current_x_pos = 0;
     }
+}
+
+void clear(struct framebuffer *fb) {
+    for (uint64_t y = 0; y < (fb->height); y += fb->font_height * fb->pitch) {
+        memset((uint32_t *) fb->address + y, 0, fb->width * fb->pitch);
+    }
+    fb->context.current_x_pos = 0;
+    fb->context.current_y_pos = 0;
 }
 
 void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
@@ -144,7 +194,7 @@ static void draw_hex(struct framebuffer *fb, uint64_t num, int8_t size) {
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
-        draw_string(fb, &c, GREEN);
+        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device,GREEN,&c);
     }
 }
 
@@ -154,12 +204,12 @@ void kprintf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     while (*str) {
         if (*str == '\n') {
-            draw_string(&main_framebuffer, "\n", GREEN);
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', GREEN);
             str++;
             continue;
         }
         if (*str != '%') {
-            draw_char_with_context(&main_framebuffer, *str, GREEN);
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, GREEN);
         } else {
             str++;
             switch (*str) {
@@ -221,7 +271,7 @@ void kprintf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    draw_string(&main_framebuffer, value, GREEN);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, value);
                     break;
                 }
 
@@ -229,7 +279,7 @@ void kprintf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        draw_string(&main_framebuffer, "0", GREEN);
+                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0");
                         break;
                     }
 
@@ -243,15 +293,17 @@ void kprintf(char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        draw_char_with_context(&main_framebuffer, buffer[--index], GREEN);
+                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                            &framebuffer_device, buffer[--index], GREEN);
                     }
                     break;
                 }
 
                 default:
-                    draw_string(&main_framebuffer, "%", GREEN);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "%");
+
                     char c = *str;
-                    draw_string(&main_framebuffer, &c, GREEN);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
 
                     break;
             }
@@ -262,6 +314,7 @@ void kprintf(char *str, ...) {
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
+
 /*
  * Exception version, lockless in case another thread is holding the lock and all text is RED
  */
@@ -383,7 +436,7 @@ void kprintf_exception(char *str, ...) {
 /*
  * Choose the color
  */
-void kprintf_color(uint32_t color,char *str, ...) {
+void kprintf_color(uint32_t color, char *str, ...) {
     va_list args;
     va_start(args, str);
     acquire_spinlock(&main_framebuffer.lock);
@@ -497,8 +550,6 @@ void kprintf_color(uint32_t color,char *str, ...) {
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
-
-
 
 
 

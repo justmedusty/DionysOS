@@ -73,17 +73,6 @@ enum colors {
     CORAL = 0xFF7F50, // Coral
 };
 
-struct framebuffer_ops {
-    void (*init)(void);
-
-    void (*clear)(void);
-
-    void (*draw_char)(struct framebuffer *fb, uint64_t x, uint64_t y, char c);
-
-    void (*draw_string)(struct framebuffer *fb, uint64_t x, uint64_t y, char *string);
-
-    void (*draw_pixel)(int16_t x, int16_t y, uint16_t color);
-};
 
 struct text_mode_context {
     uint64_t current_x_pos;
@@ -110,8 +99,15 @@ void draw_char(const struct framebuffer *fb,
 void draw_char_with_context(struct framebuffer *fb,
                             const char c, const uint32_t color);
 
+void clear(struct framebuffer *fb);
+
 void draw_string(struct framebuffer *fb, const char *str, uint64_t color);
+
 void kprintf(char *str, ...);
-void kprintf_color(uint32_t color,char *str, ...);
+
+void kprintf_color(uint32_t color, char *str, ...);
+void fb_ops_draw_char(struct device *dev,  char c,  uint32_t color);
 void kprintf_exception(char *str, ...);
+void fb_ops_clear(struct device *dev);
+void fb_ops_draw_string( struct device *dev,  uint32_t color,  char *s);
 #endif //FRAMEBUFFER_H

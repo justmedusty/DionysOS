@@ -87,6 +87,18 @@ struct network_device_ops {
 
 };
 
+struct framebuffer_ops {
+    void (*init)(void);
+
+    void (*clear)(struct device *dev);
+
+    void (*draw_char)(struct device *dev,char c,uint32_t color);
+
+    void (*draw_string)(struct device *dev, uint32_t color, char *string);
+
+    void (*draw_pixel)(struct device *dev,int16_t x, int16_t y, uint16_t color);
+};
+
 struct device_ops {
     int32_t (*init)(struct device *dev, void *extra_arguments);
 
@@ -104,6 +116,8 @@ struct device_ops {
         struct char_device_ops *char_device_ops;
 
         struct network_device_ops *network_device_ops;
+
+        struct framebuffer_ops *framebuffer_ops;
     };
 
 };
