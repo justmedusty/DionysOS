@@ -9,10 +9,8 @@
 
 #include "include/device/device.h"
 
-extern struct framebuffer main_framebuffer;
-
 extern char characters[16];
-
+extern struct device framebuffer_device;
 enum colors {
     // Basic colors
     BLACK = 0x000000, // Black
@@ -88,7 +86,6 @@ struct framebuffer {
     uint64_t font_height;
     uint64_t font_width;
     struct text_mode_context context;
-    struct framebuffer_ops *ops;
     struct spinlock lock;
 };
 

@@ -27,7 +27,7 @@
 int32_t ready = 0;
 
 void kernel_bootstrap() {
-    initlock(&main_framebuffer.lock, FRAME_LOCK);
+    initlock(framebuffer_device.lock, FRAME_LOCK);
     kprintf_color(
         WHITE,
         "Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");

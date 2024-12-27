@@ -4,7 +4,7 @@
 #include <include/device/display/framebuffer.h>
 #include "limine.h"
 #include "kernel_bootstrap.h"
-#include "include/definitions/types.h"
+#include "include/device/display/font.h"
 
 
 // Set the base revision to 2, this is recommended as this is the latest
@@ -116,17 +116,16 @@ void _start(void) {
     }
 
     // Fetch the first framebuffer.
-    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
-
-    main_framebuffer.address = framebuffer->address;
-    main_framebuffer.pitch = framebuffer->pitch;
-    main_framebuffer.width = framebuffer->width;
-    main_framebuffer.height = framebuffer->height;
-    main_framebuffer.font_height = 16;
-    main_framebuffer.font_width =  8;
-    main_framebuffer.ops = NULL;
-    main_framebuffer.context.current_x_pos = 0;
-    main_framebuffer.context.current_y_pos = 0;
+    const struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+    struct framebuffer *main_framebuffer = framebuffer_device.device_info;
+    main_framebuffer->address = framebuffer->address;
+    main_framebuffer->pitch = framebuffer->pitch;
+    main_framebuffer->width = framebuffer->width;
+    main_framebuffer->height = framebuffer->height;
+    main_framebuffer->font_height = DEFAULT_FONT_HEIGHT;
+    main_framebuffer->font_width =  DEFAULT_FONT_WIDTH;
+    main_framebuffer->context.current_x_pos = 0;
+    main_framebuffer->context.current_y_pos = 0;
 
     kernel_bootstrap();
     // We're done, just hang...
