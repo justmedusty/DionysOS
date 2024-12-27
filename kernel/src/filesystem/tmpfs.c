@@ -125,7 +125,10 @@ void tmpfs_remove(const struct vnode *vnode) {
         kfree(node->sym_link_path.path);
         tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
+        return;
     }
+
+    panic("tmpfs_remove: unknown vnode type");
 }
 
 
@@ -191,7 +194,7 @@ uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t
 
         if (offset == 0) {
             page++;
-            if (page / PAGES_PER_TMPFS_ENTRY == 0) {
+            if (page / PAGES_PER_TMPFS_ENTRY == 1) {
                 target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
             }
         }

@@ -11,6 +11,7 @@
 
 extern char characters[16];
 extern struct device framebuffer_device;
+
 enum colors {
     // Basic colors
     BLACK = 0x000000, // Black
@@ -103,8 +104,12 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color);
 void kprintf(char *str, ...);
 
 void kprintf_color(uint32_t color, char *str, ...);
-void fb_ops_draw_char(struct device *dev,  char c,  uint32_t color);
+
+void fb_ops_draw_char(struct device *dev, char c, uint32_t color);
+
 void kprintf_exception(char *str, ...);
+
 void fb_ops_clear(struct device *dev);
-void fb_ops_draw_string( struct device *dev,  uint32_t color,  char *s);
+
+void fb_ops_draw_string(struct device *dev, uint32_t color, char *s);
 #endif //FRAMEBUFFER_H
