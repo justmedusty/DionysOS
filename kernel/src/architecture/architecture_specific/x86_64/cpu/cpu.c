@@ -31,9 +31,10 @@ struct spinlock bootstrap_lock;
 
 void panic(const char* str) {
     cli();
-    kprintf_exception("\nPanic! %s ",str);
+    kprintf_exception("\nPanic!\n%s\n",str);
     serial_printf("\nPanic! %s ",str);
     panicked = 1; /* The next timer interrupt other CPUs will see this and also halt*/
+    lapic_broadcast_interrupt(32);
     for (;;) {
         asm("hlt");
         asm("nop");

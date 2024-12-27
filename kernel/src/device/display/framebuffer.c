@@ -50,6 +50,7 @@ void draw_char_with_context(struct framebuffer *fb,
     if (c == '\n') {
         goto skip;
     }
+
     // Access the character's bitmap
     const uint8_t *bitmap = &default_font.data[(uint8_t) c * fb->font_height]; // Each character is 8 bytes tall
 
@@ -71,9 +72,11 @@ void draw_char_with_context(struct framebuffer *fb,
     }
     skip:
     fb->context.current_x_pos += fb->font_width;
+
     if (fb->context.current_x_pos >= fb->width) {
         fb->context.current_x_pos = 0;
     }
+
     if (fb->context.current_y_pos >= fb->height) {
         const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
         const uint64_t row_size = fb->pitch * fb->font_height;
@@ -263,6 +266,7 @@ void kprintf(char *str, ...) {
  * Exception version, lockless in case another thread is holding the lock and all text is RED
  */
 void kprintf_exception(char *str, ...) {
+    acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);
     while (*str) {
@@ -373,6 +377,7 @@ void kprintf_exception(char *str, ...) {
     }
 
     va_end(args);
+    release_spinlock(&main_framebuffer.lock);
 }
 
 /*
