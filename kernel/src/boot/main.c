@@ -123,8 +123,8 @@ void _start(void) {
     main_framebuffer->pitch = framebuffer->pitch;
     main_framebuffer->width = framebuffer->width;
     main_framebuffer->height = framebuffer->height;
-    main_framebuffer->font_height = DEFAULT_FONT_HEIGHT;
-    main_framebuffer->font_width =  DEFAULT_FONT_WIDTH;
+    main_framebuffer->font_height = default_font.height;
+    main_framebuffer->font_width =  default_font.width;
     main_framebuffer->context.current_x_pos = 0;
     main_framebuffer->context.current_y_pos = 0;
 

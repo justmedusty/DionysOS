@@ -4,7 +4,7 @@
 
 #include "include/definitions/types.h"
 #include "include/device/display/font.h"
-#define FONT_BASIC_WIDTH 16
+#define FONT_BASIC_WIDTH 8
 #define FONT_BASIC_HEIGHT 16
 
 static uint8_t basic_font_data[256][16] = {

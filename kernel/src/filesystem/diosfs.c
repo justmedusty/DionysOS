@@ -161,22 +161,12 @@ struct vnode_operations diosfs_vnode_ops = {
  *
  *  I have opted to go with this general flow.
  *
- *  Read ramdisk structure into temporary variable.
+ *  Read structure into temporary variable.
  *
  *  Write to temporary local variable.
  *
- *  Then write said variable to the ramdisk.
+ *  Then write said variable to the block device.
  *
- *  We can improve performance by passing pointers directly to ramdisk memory,
- *  but I will try this approach for now.
- *
- *  I think this will allow for more flexibility when it comes to not locking certain
- *  functions as it may help prevent race conditions so you don't read bad memory in a
- *  lockless read.
- *
- *  If it turns out to cause noticeable performance issues I may change this.
- *
- *  Anyway, putting this here as a bulletin of the approach being taken and why.
  */
 
 

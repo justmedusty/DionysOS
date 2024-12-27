@@ -450,7 +450,7 @@ static void tmpfs_delete_reg_file(struct tmpfs_node *node) {
 
 /*
  * Recursively delete a directory. Deletes everything within each directory or just deletes each
- * reg file
+ * reg file if the current target is a regular file
  */
 static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
     for (size_t i = 0; i < node->tmpfs_node_size; i++) {
