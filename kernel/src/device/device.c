@@ -4,46 +4,83 @@
 #include "include/device/device.h"
 
 #include <include/data_structures/doubly_linked_list.h>
+#include <include/definitions/string.h>
 #include <include/device/display/framebuffer.h>
+#include <include/drivers/serial/uart.h>
 
 struct doubly_linked_list system_device_tree;
 
+const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
+  [DEVICE_MAJOR_RAMDISK] = "RAMDISK",
+  [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
+  [DEVICE_MAJOR_NETWORK_CARD] = "NETWORK_CARD",
+  [DEVICE_MAJOR_SSD] = "SSD",
+  [DEVICE_MAJOR_HARD_DISK] = "HARD_DISK",
+  [DEVICE_MAJOR_KEYBOARD] = "KEYBOARD",
+  [DEVICE_MAJOR_MOUSE] = "MOUSE",
+  [DEVICE_MAJOR_SERIAL] = "SERIAL",
+  [DEVICE_MAJOR_USB_CONTROLLER] = "USB_CONTROLLER",
+  [DEVICE_MAJOR_WIFI_ADAPTER] = "WIFI_ADAPTER"
+};
+static struct device_group *get_device_group(uint64_t device_major);
+
+void insert_device_into_device_group(struct device *device, struct device_group *device_group);
+
+struct device_group *alloc_new_device_group(uint64_t device_major);
 
 void init_system_device_tree() {
   doubly_linked_list_init(&system_device_tree);
-  struct device_group* device_node_1 = kmalloc(sizeof(struct device_group));
-  device_node_1->devices = kmalloc(DEVICE_GROUP_SIZE * sizeof(uintptr_t));
-  device_node_1->device_major = DEVICE_MAJOR_RAMDISK;
-
-  doubly_linked_list_insert_head(&system_device_tree,device_node_1);
-
-  struct device_group* device_node_2 = kmalloc(sizeof(struct device_group));
-  device_node_2->devices = kmalloc(DEVICE_GROUP_SIZE * sizeof(uintptr_t));
-  device_node_2->device_major = DEVICE_MAJOR_FRAMEBUFFER;
-
-
-  doubly_linked_list_insert_head(&system_device_tree,device_node_2);
-
-
-  struct device_group* device_node_3 = kmalloc(sizeof(struct device_group));
-  device_node_3->devices = kmalloc(DEVICE_GROUP_SIZE * sizeof(uintptr_t));
-  device_node_3->device_major = DEVICE_MAJOR_SSD;
-
-
-  doubly_linked_list_insert_head(&system_device_tree,device_node_3);
-
-
-  struct device_group* device_node_4 = kmalloc(sizeof(struct device_group));
-  device_node_4->devices = kmalloc(DEVICE_GROUP_SIZE * sizeof(uintptr_t));
-  device_node_4->device_major = DEVICE_MAJOR_HARD_DISK;
-
-
-  doubly_linked_list_insert_head(&system_device_tree,device_node_4);
-
+  serial_printf("System device tree created\n");
   kprintf("System device tree created\n");
 }
 
 
 void insert_device_into_kernel_tree(struct device *device) {
+  uint64_t device_major = device->device_major;
 
+  if (device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS) {
+    kprintf_color(RED,"[ERROR] Unknown device major number %i\n", device_major);
+    return;
+  }
+
+  struct device_group *device_group = get_device_group(device->device_major);
+
+  if (device_group == NULL) {
+    device_group = alloc_new_device_group(device_major);
+  }
+
+  insert_device_into_device_group(device, device_group);
+}
+
+static struct device_group *get_device_group(uint64_t device_major) {
+  struct doubly_linked_list_node *node = system_device_tree.head;
+
+  while (node != NULL) {
+    struct device_group *device_group = (struct device_group *) node->data;
+    if (device_group->device_major == device_major) {
+      return device_group;
+    }
+    node = node->next;
+  }
+  return NULL;
+}
+
+struct device_group *alloc_new_device_group(uint64_t device_major) {
+  struct device_group *device_group = kmalloc(sizeof(struct device_group));
+  device_group->device_major = device_major;
+  device_group->devices = kmalloc(DEVICE_GROUP_SIZE * sizeof(uintptr_t));
+  device_group->num_devices = 0;
+  device_group->name = device_major_strings[device_major];
+  kprintf_color(CYAN,"Created device group for device type %s\n", device_group->name);
+  doubly_linked_list_insert_head(&system_device_tree, device_group);
+  return device_group;
+}
+
+void insert_device_into_device_group(struct device *device, struct device_group *device_group) {
+  if (device_group->num_devices >= DEVICE_GROUP_SIZE) {
+    serial_printf("[ERROR] Too many devices in device group %s\n", device_group->name);
+    return;
+  }
+
+  device_group->devices[device_group->num_devices++] = device;
 }

@@ -213,7 +213,8 @@ int phys_init() {
     highest_page_index = highest_address / PAGE_SIZE;
     uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
-    kprintf("Physical Memory Manager Initialized %i MB Found\n",pages_mib);
+    kprintf("Physical Memory Manager Initialized\n");
+    kprintf_color(ORANGE,"%i MB of Memory Found\n",pages_mib);
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }

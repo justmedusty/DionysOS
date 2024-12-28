@@ -183,6 +183,7 @@ void diosfs_init(uint64_t filesystem_id) {
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
     dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+    insert_device_into_kernel_tree(diosfs_filesystem_context->device);
     kprintf("DiosFS Filesystem Initialized\n");
 };
 
