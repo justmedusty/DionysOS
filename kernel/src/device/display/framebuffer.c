@@ -13,6 +13,7 @@
 #include "include/device/display/font.h"
 
 struct framebuffer main_framebuffer;
+#define MAIN_FB 0
 
 struct framebuffer_ops framebuffer_ops = {
     .clear = fb_ops_clear,
@@ -29,7 +30,7 @@ struct device_ops framebuffer_device_ops = {
     .init = NULL,
     .reset = NULL
 };
-#define MAIN_FB 0
+
 
 struct device framebuffer_device = {
     .device_major = DEVICE_MAJOR_FRAMEBUFFER,
@@ -44,12 +45,12 @@ struct device framebuffer_device = {
 char characters[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 
-void fb_ops_draw_char(struct device *dev,  char c,  uint32_t color) {
+void fb_ops_draw_char(struct device *dev, char c, uint32_t color) {
     struct framebuffer *fb = dev->device_info;
     draw_char_with_context(fb, c, color);
 };
 
-void fb_ops_draw_string( struct device *dev,  uint32_t color,  char *s) {
+void fb_ops_draw_string(struct device *dev, uint32_t color, char *s) {
     struct framebuffer *fb = dev->device_info;
     draw_string(fb, s, color);
 };
@@ -194,7 +195,7 @@ static void draw_hex(struct framebuffer *fb, uint64_t num, int8_t size) {
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
-        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device,GREEN,&c);
+        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, &c);
     }
 }
 

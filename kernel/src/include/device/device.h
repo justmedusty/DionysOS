@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include "include/device/bus/pci.h"
 
+#define DEVICE_GROUP_SIZE 32
 enum {
     DEVICE_MAJOR_RAMDISK,
     DEVICE_MAJOR_FRAMEBUFFER,
@@ -28,7 +29,12 @@ enum {
     DEVICE_TYPE_SERIAL
 };
 
-
+struct device_group {
+    const char *name;
+    uint64_t device_major;
+    uint64_t num_devices;
+    struct device **devices;
+};
 
 struct device {
     struct device *parent;
@@ -122,5 +128,6 @@ struct device_ops {
 
 };
 
+void init_system_device_tree();
 
 #endif //DIONYSOS_DEVICE_H

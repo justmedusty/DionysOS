@@ -37,7 +37,7 @@ static void tmpfs_delete_reg_file(struct tmpfs_node *node);
 
 static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove);
 
-uint8_t tmpfs_node_number_bitmap[PAGE_SIZE];
+uint8_t tmpfs_node_number_bitmap[PAGE_SIZE]; // only 1 since we won't support multiple distinct tmpfs filesystems
 
 struct vnode_operations tmpfs_ops = {
     .close = tmpfs_close,
@@ -79,7 +79,6 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
  * Create a new tmpfs node , the parent parameter is the parent directory.
  */
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
-
     struct vnode *vnode = vnode_alloc();
     memset(vnode, 0, sizeof(*vnode));
 
@@ -204,10 +203,14 @@ uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t
 }
 
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type) {
+   return NULL;
+
 }
 
 void tmpfs_unlink(struct vnode *vnode) {
+    nop();
 }
+
 
 /*
  * Nop for open and close since there's no page cache for this at the time of writing and designing this.
@@ -224,6 +227,17 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
 }
 
 void tmpfs_mkfs() {
+    struct tmpfs_node *root =kmalloc(sizeof(struct tmpfs_node));
+    root->superblock = kmalloc(sizeof(struct tmpfs_superblock));
+    struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
+    memset(context, 0, sizeof(struct tmpfs_filesystem_context));
+    context->superblock = root->superblock;
+    root->superblock->magic = TMPFS_MAGIC;
+    root->superblock->tmpfs_node_count = 1;
+    root->node_type = DIRECTORY;
+    root->directory_entries.entries = kmalloc(DIRECTORY_ENTRY_ARRAY_SIZE);
+    root->parent_tmpfs_node = NULL;
+    root->tmpfs_node_number = tmpfs_node_bitmap_get();
 }
 
 /*
