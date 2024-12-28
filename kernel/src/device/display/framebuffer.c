@@ -80,6 +80,8 @@ void draw_char(const struct framebuffer *fb,
                 if (px >= 0 && px < fb->width && py >= 0 && py < fb->height) {
                     uint32_t *framebuffer = fb->address;
                     framebuffer[py * (fb->pitch / 4) + px] = color; // Set pixel color
+                }else {
+                    panic("draw_char: can't draw char");
                 }
             }
         }
@@ -91,7 +93,24 @@ void draw_char_with_context(struct framebuffer *fb,
     if (c < 0 || c >= 128) return; // Ensure the character is within the font bounds
 
     if (c == '\n') {
-        goto skip;
+        fb->context.current_y_pos += fb->font_height;
+        fb->context.current_x_pos = 0;
+        return;
+    }
+
+    if (fb->context.current_x_pos >= fb->width) {
+        fb->context.current_x_pos = 0 ;
+    }
+    if (fb->context.current_y_pos >= fb->height) {
+        const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
+        const uint64_t row_size = fb->pitch * fb->font_height;
+        // Shift the framebuffer content upwards by one row
+        memmove(fb->address, fb->address + row_size, rows_size);
+        // Clear the bottom portion of the framebuffer
+        memset(fb->address + rows_size, 0, row_size);
+        // Reset the cursor to the last row
+        fb->context.current_y_pos  = fb->height - fb->font_height;
+        fb->context.current_x_pos = 0;
     }
 
     // Access the character's bitmap
@@ -113,28 +132,9 @@ void draw_char_with_context(struct framebuffer *fb,
             }
         }
     }
-skip:
     fb->context.current_x_pos += fb->font_width;
+skip:
 
-    if (fb->context.current_x_pos >= fb->width) {
-        fb->context.current_x_pos = 0;
-    }
-
-    if (fb->context.current_y_pos >= fb->height) {
-        const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
-        const uint64_t row_size = fb->pitch * fb->font_height;
-        // Shift the framebuffer content upwards by one row
-        memmove(fb->address, fb->address + row_size, rows_size);
-        // Clear the bottom portion of the framebuffer
-        memset(fb->address + rows_size, 0, row_size);
-        // Reset the cursor to the last row
-        fb->context.current_y_pos = fb->height - fb->font_height;
-        fb->context.current_x_pos = 0;
-    }
-    if (c == '\n') {
-        fb->context.current_y_pos += fb->font_height;
-        fb->context.current_x_pos = 0;
-    }
 }
 
 void clear(struct framebuffer *fb) {
