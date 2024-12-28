@@ -107,11 +107,13 @@ void kprintf_color(uint32_t color, char *str, ...);
 
 void fb_ops_draw_char(struct device *dev, char c, uint32_t color);
 
-void kprintf_exception(char *str, ...);
+void err_printf(char *str, ...);
 
 void fb_ops_clear(struct device *dev);
 
 void fb_ops_draw_string(struct device *dev, uint32_t color, char *s);
 
 void framebuffer_init();
+
+void warn_printf(char *str, ...);
 #endif //FRAMEBUFFER_H
