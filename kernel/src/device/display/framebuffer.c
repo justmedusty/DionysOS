@@ -554,3 +554,6 @@ void kprintf_color(uint32_t color, char *str, ...) {
 
 
 
+void framebuffer_init() {
+    insert_device_into_kernel_tree(&framebuffer_device);
+}

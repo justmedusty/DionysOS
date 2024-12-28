@@ -40,6 +40,7 @@ void kernel_bootstrap() {
     mem_bounds_init();
     arch_vmm_init();
     init_system_device_tree();
+    framebuffer_init();
     acpi_init();
     lapic_init();
     vfs_init();
