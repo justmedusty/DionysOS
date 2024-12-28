@@ -558,17 +558,17 @@ void warn_printf(char *str, ...) {
  * Choose the color
  */
 void kprintf_color(uint32_t color, char *str, ...) {
+    acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);
-    acquire_spinlock(&main_framebuffer.lock);
     while (*str) {
         if (*str == '\n') {
-            draw_string(&main_framebuffer, "\n", color);
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', color);
             str++;
             continue;
         }
         if (*str != '%') {
-            draw_char_with_context(&main_framebuffer, *str, color);
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, color);
         } else {
             str++;
             switch (*str) {
@@ -630,7 +630,7 @@ void kprintf_color(uint32_t color, char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    draw_string(&main_framebuffer, value, color);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, value);
                     break;
                 }
 
@@ -638,7 +638,7 @@ void kprintf_color(uint32_t color, char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        draw_string(&main_framebuffer, "0", color);
+                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0");
                         break;
                     }
 
@@ -652,15 +652,17 @@ void kprintf_color(uint32_t color, char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        draw_char_with_context(&main_framebuffer, buffer[--index], color);
+                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                            &framebuffer_device, buffer[--index], color);
                     }
                     break;
                 }
 
                 default:
-                    draw_string(&main_framebuffer, "%", color);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "%");
+
                     char c = *str;
-                    draw_string(&main_framebuffer, &c, color);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
 
                     break;
             }
