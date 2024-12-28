@@ -25,12 +25,16 @@
  *  BSP boostrapping.
  */
 int32_t ready = 0;
-
-void kernel_bootstrap() {
-    initlock(framebuffer_device.lock, FRAME_LOCK);
+void welcome_message() {
     kprintf_color(RED, DIONYSOS_ASCII_STRING);
     kprintf_color(RED,AUTHOR_ASCII_STRING);
     kprintf_color(WHITE,"Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
+}
+
+
+void kernel_bootstrap() {
+    initlock(framebuffer_device.lock, FRAME_LOCK);
+    welcome_message();
     init_serial();
     kprintf_color(CYAN, "DionysOS Booting...\n");
     arch_init_segments();
