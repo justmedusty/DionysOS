@@ -20,7 +20,8 @@ const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
   [DEVICE_MAJOR_MOUSE] = "MOUSE",
   [DEVICE_MAJOR_SERIAL] = "SERIAL",
   [DEVICE_MAJOR_USB_CONTROLLER] = "USB_CONTROLLER",
-  [DEVICE_MAJOR_WIFI_ADAPTER] = "WIFI_ADAPTER"
+  [DEVICE_MAJOR_WIFI_ADAPTER] = "WIFI_ADAPTER",
+  [DEVICE_MAJOR_TMPFS] = "TMPFS"
 };
 
 static struct device_group *get_device_group(uint64_t device_major);
@@ -86,7 +87,7 @@ void insert_device_into_device_group(struct device *device, struct device_group 
   device_group->devices[device_group->num_devices++] = device;
 }
 
-struct device *query_device(uint64_t device_major, uint64_t device_minor) {
+struct device *query_device(const uint64_t device_major, const uint64_t device_minor) {
 
   struct device_group *device_group = get_device_group(device_major);
   if (device_group == NULL) {
@@ -103,4 +104,7 @@ struct device *query_device(uint64_t device_major, uint64_t device_minor) {
     }
     index++;
   }
+
+  serial_printf("[ERROR] Device does not exist (%i:%i)\n", device_major,device_minor);
+  return NULL;
 }

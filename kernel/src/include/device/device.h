@@ -10,7 +10,7 @@
 
 #define DEVICE_GROUP_SIZE 32
 
-#define NUM_DEVICE_MAJOR_CLASSIFICATIONS 10
+#define NUM_DEVICE_MAJOR_CLASSIFICATIONS 11
 
 enum major {
     DEVICE_MAJOR_RAMDISK,
@@ -22,7 +22,8 @@ enum major {
     DEVICE_MAJOR_MOUSE,
     DEVICE_MAJOR_SERIAL,
     DEVICE_MAJOR_USB_CONTROLLER,
-    DEVICE_MAJOR_WIFI_ADAPTER
+    DEVICE_MAJOR_WIFI_ADAPTER,
+    DEVICE_MAJOR_TMPFS
 };
 
 extern const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS];
@@ -127,5 +128,8 @@ struct device_ops {
 };
 
 void init_system_device_tree();
+
 void insert_device_into_kernel_tree(struct device *device);
+
+struct device *query_device(uint64_t device_major, uint64_t device_minor);
 #endif //DIONYSOS_DEVICE_H
