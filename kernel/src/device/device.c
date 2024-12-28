@@ -88,10 +88,8 @@ void insert_device_into_device_group(struct device *device, struct device_group 
 }
 
 struct device *query_device(const uint64_t device_major, const uint64_t device_minor) {
-
   struct device_group *device_group = get_device_group(device_major);
   if (device_group == NULL) {
-
     serial_printf("[ERROR] Device group does not exist (%i)\n", device_major);
     return NULL;
   }
@@ -105,6 +103,6 @@ struct device *query_device(const uint64_t device_major, const uint64_t device_m
     index++;
   }
 
-  serial_printf("[ERROR] Device does not exist (%i:%i)\n", device_major,device_minor);
+  serial_printf("[ERROR] Device does not exist (%i:%i)\n", device_major, device_minor);
   return NULL;
 }

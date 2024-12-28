@@ -25,10 +25,13 @@
  *  BSP boostrapping.
  */
 int32_t ready = 0;
+
 void welcome_message() {
     kprintf_color(RED, DIONYSOS_ASCII_STRING);
     kprintf_color(RED,AUTHOR_ASCII_STRING);
-    kprintf_color(WHITE,"Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
+    kprintf_color(
+        WHITE,
+        "Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
 }
 
 
@@ -51,7 +54,8 @@ void kernel_bootstrap() {
     vfs_init();
     diosfs_init(0);
     sched_init();
-    bsp = false; // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
+    bsp = false;
+    // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init();
     kprintf_color(ORANGE, "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,

@@ -80,7 +80,7 @@ void draw_char(const struct framebuffer *fb,
                 if (px >= 0 && px < fb->width && py >= 0 && py < fb->height) {
                     uint32_t *framebuffer = fb->address;
                     framebuffer[py * (fb->pitch / 4) + px] = color; // Set pixel color
-                }else {
+                } else {
                     panic("draw_char: can't draw char");
                 }
             }
@@ -99,7 +99,7 @@ void draw_char_with_context(struct framebuffer *fb,
     }
 
     if (fb->context.current_x_pos >= fb->width) {
-        fb->context.current_x_pos = 0 ;
+        fb->context.current_x_pos = 0;
     }
     if (fb->context.current_y_pos >= fb->height) {
         const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
@@ -109,7 +109,7 @@ void draw_char_with_context(struct framebuffer *fb,
         // Clear the bottom portion of the framebuffer
         memset(fb->address + rows_size, 0, row_size);
         // Reset the cursor to the last row
-        fb->context.current_y_pos  = fb->height - fb->font_height;
+        fb->context.current_y_pos = fb->height - fb->font_height;
         fb->context.current_x_pos = 0;
     }
 
@@ -134,6 +134,7 @@ void draw_char_with_context(struct framebuffer *fb,
     }
     fb->context.current_x_pos += fb->font_width;
 skip:
+
 
 }
 
@@ -191,11 +192,11 @@ static char get_hex_char(uint8_t nibble) {
 }
 
 static void draw_hex(struct framebuffer *fb, uint64_t num, int8_t size) {
-    draw_string(fb, "0x", GREEN);
+    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0x");
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
-        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, &c);
+        framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
     }
 }
 
@@ -226,11 +227,6 @@ void kprintf(char *str, ...) {
                          * %x.16 = print 16 bit hex
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
-                         *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
@@ -348,10 +344,6 @@ void err_printf(char *str, ...) {
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
                          *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
@@ -466,10 +458,6 @@ void warn_printf(char *str, ...) {
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
                          *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
@@ -554,6 +542,7 @@ void warn_printf(char *str, ...) {
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
+
 /*
  * Choose the color
  */
@@ -584,11 +573,6 @@ void kprintf_color(uint32_t color, char *str, ...) {
                          * %x.16 = print 16 bit hex
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
-                         *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
@@ -673,7 +657,6 @@ void kprintf_color(uint32_t color, char *str, ...) {
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
-
 
 
 void framebuffer_init() {

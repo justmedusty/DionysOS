@@ -11,9 +11,13 @@
 #include "include/device/display/framebuffer.h"
 
 static int is_transmit_empty();
+
 static void write_serial(char a);
+
 static void write_string_serial(const char *str);
-static void write_hex_serial(uint64_t num,int8_t size);
+
+static void write_hex_serial(uint64_t num, int8_t size);
+
 static char get_hex_char(uint8_t nibble);
 
 #ifdef __x86_64__
@@ -29,13 +33,13 @@ struct spinlock serial_lock;
 #ifdef __x86_64__
 
 void init_serial() {
-    write_port(COM1 + 1, 0x00);    // Disable all interrupts
-    write_port(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    write_port(COM1 + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    write_port(COM1 + 1, 0x00);    //                  (hi byte)
-    write_port(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit
-    write_port(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    write_port(COM1 + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    write_port(COM1 + 1, 0x00); // Disable all interrupts
+    write_port(COM1 + 3, 0x80); // Enable DLAB (set baud rate divisor)
+    write_port(COM1 + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
+    write_port(COM1 + 1, 0x00); //                  (hi byte)
+    write_port(COM1 + 3, 0x03); // 8 bits, no parity, one stop bit
+    write_port(COM1 + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+    write_port(COM1 + 4, 0x0B); // IRQs enabled, RTS/DSR set
     initlock(&serial_lock,SERIAL_LOCK);
     serial_printf("Serial Initialized\n");
 }
@@ -65,7 +69,7 @@ static void write_serial(char a) {
 static void write_hex_serial(uint64_t num, int8_t size) {
     write_string_serial("0x");
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
-        uint8_t nibble = (num >> i) & 0xF;  // Extract 4 bits
+        uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         write_serial(get_hex_char(nibble));
     }
 }
@@ -88,6 +92,7 @@ static void write_binary_serial(uint64_t num, uint8_t size) {
         }
     }
 }
+
 /*
  * Writes string to serial, just calls write_serial repeatedly
  */
@@ -101,11 +106,11 @@ static void write_string_serial(const char *str) {
     Index into the char array if the value is valid
  */
 static char get_hex_char(uint8_t nibble) {
-    if(nibble <= 16) {
+    if (nibble <= 16) {
         return characters[nibble];
-     } else {
-    return '?';
-     }
+    } else {
+        return '?';
+    }
 }
 
 /*
@@ -118,7 +123,6 @@ void serial_printf(char *str, ...) {
     va_start(args, str);
     acquire_spinlock(&serial_lock);
     while (*str) {
-
         if (*str == '\n') {
             write_string_serial("\n");
             str++;
@@ -143,10 +147,6 @@ void serial_printf(char *str, ...) {
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
                          *
-                         * Important note, newline character needs to be separated from your x.x by a space..
-                         * So like this : x.8 \n
-                         * If you do x.8\n
-                         * the newline will not work properly.
                          */
 
                         switch (*str) {
@@ -159,12 +159,12 @@ void serial_printf(char *str, ...) {
                                 write_hex_serial(value16, 16);
                                 str++;
                                 break;
-                            case '3' :
+                            case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
                                 write_hex_serial(value32, 32);
                                 str++;
                                 break;
-                            case '6' :
+                            case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
                                 write_hex_serial(value64, 64);
                                 str++;
@@ -174,7 +174,6 @@ void serial_printf(char *str, ...) {
                                 write_hex_serial(value, 64);
                                 break;
                         }
-
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
                         write_hex_serial(value, 64);
@@ -189,7 +188,7 @@ void serial_printf(char *str, ...) {
 
                 case 's': {
                     char *value = va_arg(args,
-                    char*);
+                                         char*);
                     write_string_serial(value);
                     break;
                 }
@@ -197,7 +196,7 @@ void serial_printf(char *str, ...) {
                 case 'i': {
                     uint64_t value = va_arg(args, uint64_t);
 
-                    if(value == 0) {
+                    if (value == 0) {
                         write_serial('0');
                         break;
                     }
@@ -205,17 +204,16 @@ void serial_printf(char *str, ...) {
                     char buffer[20]; // Enough to hold the maximum 64 bit value
                     int index = 0;
 
-                        while (value > 0) {
-                            buffer[index++] = characters[value % 10];
-                            value /= 10;
-                        }
+                    while (value > 0) {
+                        buffer[index++] = characters[value % 10];
+                        value /= 10;
+                    }
 
-                        // Write digits in reverse order
-                        while (index > 0) {
-                            write_serial(buffer[--index]);
-                        }
+                    // Write digits in reverse order
+                    while (index > 0) {
+                        write_serial(buffer[--index]);
+                    }
                     break;
-
                 }
 
                 default:
@@ -229,5 +227,4 @@ void serial_printf(char *str, ...) {
 
     release_spinlock(&serial_lock);
     va_end(args);
-
 }
