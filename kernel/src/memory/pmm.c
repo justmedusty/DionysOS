@@ -424,7 +424,7 @@ static void buddy_free(void* address) {
 
     while (1) {
         if (node == NULL) {
-            warn_printf("Address of offending bucket is %x.64 slab_magic = %x.64\n",address);
+            warn_printf("Address of offending bucket is %x.64\n",address);
             panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
         }
         struct buddy_block* block = node->data;
