@@ -116,4 +116,6 @@ void fb_ops_draw_string(struct device *dev, uint32_t color, char *s);
 void framebuffer_init();
 
 void warn_printf(char *str, ...);
+
+void info_printf(char *str, ...);
 #endif //FRAMEBUFFER_H

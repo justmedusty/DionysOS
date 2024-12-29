@@ -543,6 +543,120 @@ void warn_printf(char *str, ...) {
     va_end(args);
 }
 
+void info_printf(char *str, ...) {
+    acquire_spinlock(&main_framebuffer.lock);
+    va_list args;
+    va_start(args, str);
+    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "[INFO] ");
+    while (*str) {
+        if (*str == '\n') {
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', YELLOW);
+            str++;
+            continue;
+        }
+        if (*str != '%') {
+            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, YELLOW);
+        } else {
+            str++;
+            switch (*str) {
+                case 'x': {
+                    if (*(str + 1) == '.') {
+                        str = str + 2;
+
+                        /*
+                         * We will check the length of the hex number, because I am lazy I will only check the first char and skip the second. No need to check the second anyway.
+                         * You will still be expected to put the second number there even though the internals do not require it, makes your code more readable anyway.
+                         * Usage looks like this :
+                         * %x.8 = print 8 bit hex
+                         * %x.16 = print 16 bit hex
+                         * %x.32 = print 32 bit hex
+                         * %x.64 = print 64 bit hex
+                         *
+                         */
+
+                        switch (*str) {
+                            case '8':
+                                uint64_t value8 = va_arg(args, uint32_t);
+                                draw_hex(&main_framebuffer, value8, 8);
+                                break;
+                            case '1':
+                                uint64_t value16 = va_arg(args, uint32_t);
+                                draw_hex(&main_framebuffer, value16, 16);
+
+                                str++;
+                                break;
+                            case '3':
+                                uint64_t value32 = va_arg(args, uint32_t);
+                                draw_hex(&main_framebuffer, value32, 32);
+
+                                str++;
+                                break;
+                            case '6':
+                                uint64_t value64 = va_arg(args, uint64_t);
+                                draw_hex(&main_framebuffer, value64, 64);
+
+                                str++;
+                                break;
+                            default:
+                                uint64_t value = va_arg(args, uint64_t);
+                                draw_hex(&main_framebuffer, value64, 64);
+
+                                break;
+                        }
+                    } else {
+                        uint64_t value = va_arg(args, uint64_t);
+                        draw_hex(&main_framebuffer, value, 64);
+                    }
+                    break;
+                }
+
+                case 's': {
+                    char *value = va_arg(args,
+                                         char*);
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, value);
+                    break;
+                }
+
+                case 'i': {
+                    uint64_t value = va_arg(args, uint64_t);
+
+                    if (value == 0) {
+                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "0");
+                        break;
+                    }
+
+                    char buffer[20]; // Enough to hold the maximum 64 bit value
+                    int index = 0;
+
+                    while (value > 0) {
+                        buffer[index++] = characters[value % 10];
+                        value /= 10;
+                    }
+
+                    // Write digits in reverse order
+                    while (index > 0) {
+                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                            &framebuffer_device, buffer[--index], YELLOW);
+                    }
+                    break;
+                }
+
+                default:
+                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "%");
+
+                    char c = *str;
+                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, YELLOW);
+
+                    break;
+            }
+        }
+        str++;
+    }
+
+    release_spinlock(&main_framebuffer.lock);
+    va_end(args);
+}
+
 /*
  * Choose the color
  */

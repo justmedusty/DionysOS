@@ -125,10 +125,11 @@ static void pmm_node_free(struct binary_tree_node* node) {
  * Initialize a binary tree of type reg tree or rb, calls the appropriate function
  */
 uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags) {
-    if (static_pool_init == 0) {
+    if (static_pool_init == false) {
         for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
             tree_node_static_pool[i].flags = BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
         }
+        static_pool_init = true;
     }
     switch (mode) {
     case REGULAR_TREE:

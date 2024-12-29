@@ -3,12 +3,13 @@
 //
 #include "include/device/device.h"
 
+#include <include/data_structures/binary_tree.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/definitions/string.h>
 #include <include/device/display/framebuffer.h>
 #include <include/drivers/serial/uart.h>
 
-struct doubly_linked_list system_device_tree;
+struct binary_tree system_device_tree;
 
 const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
   [DEVICE_MAJOR_RAMDISK] = "RAMDISK",
@@ -31,7 +32,7 @@ void insert_device_into_device_group(struct device *device, struct device_group 
 struct device_group *alloc_new_device_group(uint64_t device_major);
 
 void init_system_device_tree() {
-  doubly_linked_list_init(&system_device_tree);
+  init_tree(&system_device_tree,REGULAR_TREE,0);
   serial_printf("System device tree created\n");
   kprintf("System device tree created\n");
 }
@@ -39,31 +40,24 @@ void init_system_device_tree() {
 
 void insert_device_into_kernel_tree(struct device *device) {
   uint64_t device_major = device->device_major;
-
   if (device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS) {
-    kprintf_color(RED, "[ERROR] Unknown device major number %i\n", device_major);
+    warn_printf("Unknown device major number %i\n", device_major);
     return;
   }
-
   struct device_group *device_group = get_device_group(device->device_major);
-
   if (device_group == NULL) {
     device_group = alloc_new_device_group(device_major);
   }
-
   insert_device_into_device_group(device, device_group);
 }
 
 static struct device_group *get_device_group(uint64_t device_major) {
-  struct doubly_linked_list_node *node = system_device_tree.head;
+  struct device_group *group = lookup_tree(&system_device_tree,device_major,false);
 
-  while (node != NULL) {
-    struct device_group *device_group = (struct device_group *) node->data;
-    if (device_group->device_major == device_major) {
-      return device_group;
+    if (group && group->device_major == device_major) {
+      return group;
     }
-    node = node->next;
-  }
+
   return NULL;
 }
 
@@ -74,7 +68,7 @@ struct device_group *alloc_new_device_group(uint64_t device_major) {
   device_group->num_devices = 0;
   device_group->name = device_major_strings[device_major];
   kprintf_color(CYAN, "Created device group for device type %s\n", device_group->name);
-  doubly_linked_list_insert_head(&system_device_tree, device_group);
+  insert_tree_node(&system_device_tree, device_group,device_major);
   return device_group;
 }
 
