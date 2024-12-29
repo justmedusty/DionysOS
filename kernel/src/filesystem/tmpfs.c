@@ -203,8 +203,7 @@ uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t
 }
 
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type) {
-   return NULL;
-
+    return NULL;
 }
 
 void tmpfs_unlink(struct vnode *vnode) {
@@ -227,7 +226,7 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
 }
 
 void tmpfs_mkfs() {
-    struct tmpfs_node *root =kmalloc(sizeof(struct tmpfs_node));
+    struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
     root->superblock = kmalloc(sizeof(struct tmpfs_superblock));
     struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
     memset(context, 0, sizeof(struct tmpfs_filesystem_context));

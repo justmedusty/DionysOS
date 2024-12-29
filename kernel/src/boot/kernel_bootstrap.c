@@ -32,6 +32,7 @@ void welcome_message() {
     kprintf_color(
         WHITE,
         "Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
+    kprintf_color(CYAN, "DionysOS Booting...\n");
 }
 
 
@@ -39,7 +40,6 @@ void kernel_bootstrap() {
     initlock(framebuffer_device.lock, FRAME_LOCK);
     welcome_message();
     init_serial();
-    kprintf_color(CYAN, "DionysOS Booting...\n");
     arch_init_segments();
     arch_setup_interrupts();
     arch_paging_init();
@@ -58,7 +58,7 @@ void kernel_bootstrap() {
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init();
-    kprintf_color(ORANGE, "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
+    kprintf_color(CYAN, "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
                   (usable_pages * (PAGE_SIZE / 1024)) / 1024);
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();

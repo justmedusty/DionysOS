@@ -24,7 +24,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define USED 0x2
 #define UNUSED (uint64_t) 0xFFFFFFFFFFFFFFFF
 
-#define DEFAULT_SLAB_SIZE 2
+#define DEFAULT_SLAB_SIZE 4 // TODO figure out the hash bucket panic problem, making this number bigger makes it go away for longer but root issue needs to be addressed
 #define BUDDY_HASH_TABLE_SIZE 300
 
 extern uint64_t hhdm_offset;

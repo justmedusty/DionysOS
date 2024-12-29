@@ -19,7 +19,6 @@
  * Initialize a kthread and add it to the local run-queue
  */
 void kthread_init() {
-    kprintf("Initializing Kernel Threads For CPU #%i...\n",my_cpu()->cpu_number);
     struct process *proc = kmalloc(sizeof(struct process));
     memset(proc, 0, sizeof(struct process));
     proc->current_cpu = my_cpu();

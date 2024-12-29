@@ -214,7 +214,7 @@ int phys_init() {
     uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     kprintf("Physical Memory Manager Initialized\n");
-    kprintf_color(ORANGE,"%i MB of Memory Found\n",pages_mib);
+    kprintf_color(CYAN,"%i MB of Memory Found\n",pages_mib);
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
@@ -424,6 +424,7 @@ static void buddy_free(void* address) {
 
     while (1) {
         if (node == NULL) {
+            warn_printf("Address of offending bucket is %x.64 slab_magic = %x.64\n",address);
             panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
         }
         struct buddy_block* block = node->data;
