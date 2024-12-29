@@ -68,7 +68,6 @@ if (IS_PMM_TREE) {\
 
 #define NODE_FREE(name) \
 if (IS_PMM_TREE) {\
-kprintf("here\n"); \
 pmm_node_free(name);\
 }else {\
 node_free(name);\

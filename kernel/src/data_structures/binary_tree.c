@@ -55,7 +55,7 @@ static struct binary_tree_node* node_alloc() {
  */
 static void node_free(struct binary_tree_node* node) {
     if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
-        _kfree(node);
+        kfree(node);
         return;
     }
 
@@ -199,7 +199,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
                 current->parent->right = NULL;
             }
 
-            node_free(current);
+            NODE_FREE(current)
             current = parent;
             tree->node_count--;
         }
@@ -412,7 +412,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                 }else {
                     current->parent->right = NULL;
                 }
-                node_free(current);
+                NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
@@ -434,7 +434,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                     current->right->parent = current->parent;
                 }
 
-                node_free(current);
+                NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
@@ -457,7 +457,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                 if(current->left) {
                     current->left->parent = current->parent;
                 }
-                node_free(current);
+                NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
                 return SUCCESS;
@@ -490,7 +490,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
             if (right_min->left == right_min || right_min->parent == right_min) {
                 panic("Circular Reference NUMBA 2");
             }
-            node_free(current);
+            NODE_FREE(current);
             tree->node_count--;
             release_spinlock(&tree->lock);
             return SUCCESS;
