@@ -36,6 +36,50 @@ static uint8_t static_pool_init = 0;
  */
 static struct binary_tree_node* node_alloc() {
     if (pool_full) {
+        return kmalloc(sizeof(struct binary_tree_node));
+    }
+
+    for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
+        if (tree_node_static_pool[i].flags & BINARY_TREE_NODE_FREE) {
+            tree_node_static_pool[i].flags &= ~BINARY_TREE_NODE_FREE;
+            tree_node_static_pool[i].index = i;
+            return &tree_node_static_pool[i];
+        }
+    }
+    pool_full = 1;
+    return kmalloc(sizeof(struct binary_tree_node)); // TODO PUTTING THIS BACK TO INTERNAL FUNC BECAUSE OF DEADLOCK THIS CAN CAUSE PROBLEMS LATER SO STICKING A PIN
+}
+/*
+ * Free a node, just invoke _kfree( it not part of the static pool,
+ * other wise clear it and return it to the pool
+ */
+static void node_free(struct binary_tree_node* node) {
+    if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
+        _kfree(node);
+        return;
+    }
+
+    if (node->parent != NULL) {
+        if (node->parent->right == node) {
+            node->parent->right = NULL;
+        }
+        else {
+            node->parent->left = NULL;
+        }
+    }
+
+    node->flags |= BINARY_TREE_NODE_FREE;
+    node->parent = NULL;
+    node->left = NULL;
+    node->right = NULL;
+    node->key = 0xFFFF;
+    if (pool_full) {
+        pool_full = 0;
+    }
+}
+
+static struct binary_tree_node* pmm_node_alloc() {
+    if (pool_full) {
         return _kalloc(sizeof(struct binary_tree_node));
     }
 
@@ -53,7 +97,7 @@ static struct binary_tree_node* node_alloc() {
  * Free a node, just invoke _kfree( it not part of the static pool,
  * other wise clear it and return it to the pool
  */
-static void node_free(struct binary_tree_node* node) {
+static void pmm_node_free(struct binary_tree_node* node) {
     if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
         _kfree(node);
         return;
@@ -184,7 +228,7 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
     struct binary_tree_node* current = tree->root;
 
     if (current == NULL) {
-        struct binary_tree_node* new_node = node_alloc();
+        NODE_ALLOC(new_node)
         singly_linked_list_init(&new_node->data,0);
         singly_linked_list_insert_head(&new_node->data, data);
         new_node->key = key;
@@ -203,7 +247,7 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
 
         if (key < current->key) {
             if (current->left == NULL) {
-                struct binary_tree_node* new_node = node_alloc();
+               NODE_ALLOC(new_node)
                 singly_linked_list_init(&new_node->data,0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;
@@ -224,7 +268,7 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
         }
         else {
             if (current->right == NULL) {
-                struct binary_tree_node* new_node = node_alloc();
+               NODE_ALLOC(new_node)
                 singly_linked_list_init(&new_node->data,0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;

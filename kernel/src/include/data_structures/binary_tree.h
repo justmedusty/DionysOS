@@ -54,3 +54,25 @@ uint64_t insert_tree_node(struct binary_tree* tree, void* data, uint64_t key);
 uint64_t remove_tree_node(struct binary_tree *tree, uint64_t key,void *address,struct binary_tree_node *node /* Optional */);
 uint64_t destroy_tree(struct binary_tree* tree);
 void* lookup_tree(struct binary_tree* tree, uint64_t key,uint8_t remove);
+
+/*
+ * The PMM tree ops cannot have locked memory functions since it will cause a deadlock,
+ * these macros are here to ensure that they use the unlocked functions where needed
+ */
+#define NODE_ALLOC(name) struct binary_tree_node* name; \
+if (IS_PMM_TREE) {\
+    name = pmm_node_alloc();\
+}else {\
+    name = node_alloc();\
+}\
+
+#define NODE_FREE(name) \
+if (IS_PMM_TREE) {\
+kprintf("here\n"); \
+pmm_node_free(name);\
+}else {\
+node_free(name);\
+}\
+
+#define IS_PMM_TREE (tree == &buddy_free_list_zone[0])
+extern struct binary_tree buddy_free_list_zone[PHYS_ZONE_COUNT];

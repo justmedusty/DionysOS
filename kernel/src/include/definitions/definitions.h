@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <include/memory/pmm.h>
 
 #define BIT(bit) ((uint8_t)(1 << bit))
 #define BYTE(num) (num / 8)
