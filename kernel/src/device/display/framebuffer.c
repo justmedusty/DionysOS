@@ -191,12 +191,13 @@ static char get_hex_char(uint8_t nibble) {
     }
 }
 
-static void draw_hex(struct framebuffer *fb, uint64_t num, int8_t size) {
-    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0x");
+static void draw_hex(struct device *fb, uint64_t num, int8_t size,uint32_t color) {
+
+    fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
-        framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
+        fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
     }
 }
 
@@ -232,35 +233,35 @@ void kprintf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value8, 8);
+                                draw_hex(&framebuffer_device,value8, 8,GREEN);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value16, 16);
+                                draw_hex(&framebuffer_device,value16, 16,GREEN);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value32, 32);
+                                draw_hex(&framebuffer_device,value32, 32,GREEN);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,GREEN);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,GREEN);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&main_framebuffer, value, 64);
+                        draw_hex(&framebuffer_device,value, 64,GREEN);
                     }
                     break;
                 }
@@ -349,35 +350,35 @@ void err_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value8, 8);
+                                draw_hex(&framebuffer_device,value8, 8,RED);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value16, 16);
+                                draw_hex(&framebuffer_device,value16, 16,RED);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value32, 32);
+                                draw_hex(&framebuffer_device,value32, 32,RED);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,RED);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,RED);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&main_framebuffer, value, 64);
+                        draw_hex(&framebuffer_device,value, 64,RED);
                     }
                     break;
                 }
@@ -463,35 +464,35 @@ void warn_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value8, 8);
+                                draw_hex(&framebuffer_device,value8, 8,ORANGE);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value16, 16);
+                                draw_hex(&framebuffer_device,value16, 16,ORANGE);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value32, 32);
+                                draw_hex(&framebuffer_device,value32, 32,ORANGE);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,ORANGE);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,ORANGE);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&main_framebuffer, value, 64);
+                        draw_hex(&framebuffer_device,value, 64,ORANGE);
                     }
                     break;
                 }
@@ -577,35 +578,35 @@ void info_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value8, 8);
+                                draw_hex(&framebuffer_device,value8, 8,YELLOW);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value16, 16);
+                                draw_hex(&framebuffer_device,value16, 16,YELLOW);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value32, 32);
+                                draw_hex(&framebuffer_device,value32, 32,YELLOW);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,YELLOW);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,YELLOW);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&main_framebuffer, value, 64);
+                        draw_hex(&framebuffer_device,value, 64,YELLOW);
                     }
                     break;
                 }
@@ -692,35 +693,35 @@ void kprintf_color(uint32_t color, char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value8, 8);
+                                draw_hex(&framebuffer_device,value8, 8,color);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value16, 16);
+                                draw_hex(&framebuffer_device,value16, 16,color);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&main_framebuffer, value32, 32);
+                                draw_hex(&framebuffer_device,value32, 32,color);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,color);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&main_framebuffer, value64, 64);
+                                draw_hex(&framebuffer_device,value64, 64,color);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&main_framebuffer, value, 64);
+                        draw_hex(&framebuffer_device,value, 64,color);
                     }
                     break;
                 }

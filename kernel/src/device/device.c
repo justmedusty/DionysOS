@@ -12,12 +12,12 @@
 struct binary_tree system_device_tree;
 
 const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
-  [DEVICE_MAJOR_RAMDISK] = "RAMDISK",
-  [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
   [DEVICE_MAJOR_NETWORK_CARD] = "NETWORK_CARD",
   [DEVICE_MAJOR_SSD] = "SSD",
+  [DEVICE_MAJOR_RAMDISK] = "RAMDISK",
   [DEVICE_MAJOR_HARD_DISK] = "HARD_DISK",
   [DEVICE_MAJOR_KEYBOARD] = "KEYBOARD",
+  [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
   [DEVICE_MAJOR_MOUSE] = "MOUSE",
   [DEVICE_MAJOR_SERIAL] = "SERIAL",
   [DEVICE_MAJOR_USB_CONTROLLER] = "USB_CONTROLLER",
@@ -32,6 +32,7 @@ void insert_device_into_device_group(struct device *device, struct device_group 
 struct device_group *alloc_new_device_group(uint64_t device_major);
 
 void init_system_device_tree() {
+
   init_tree(&system_device_tree,REGULAR_TREE,0);
   serial_printf("System device tree created\n");
   kprintf("System device tree created\n");

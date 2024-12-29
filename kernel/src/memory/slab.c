@@ -34,7 +34,7 @@ void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
     slab->first_free = (void **) ((void *) slab->first_free + header_offset);
     serial_printf("Slab created at %x.64\n", slab->start_address);
 
-    void **array = (void **) slab->first_free;
+    void **array = slab->first_free;
 
     uint64_t max = available_size / entry_size - 1;
     uint64_t factor = entry_size / sizeof(void *);
