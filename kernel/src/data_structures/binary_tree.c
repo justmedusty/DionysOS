@@ -67,11 +67,12 @@ static void node_free(struct binary_tree_node* node) {
             node->parent->left = NULL;
         }
     }
+
     node->flags |= BINARY_TREE_NODE_FREE;
     node->parent = NULL;
     node->left = NULL;
     node->right = NULL;
-    node->key = 0xFF;
+    node->key = 0xFFFF;
     if (pool_full) {
         pool_full = 0;
     }
@@ -139,7 +140,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
     struct binary_tree_node* parent = tree->root;
 
     if (current == NULL) {
-        _kfree(tree);
+        kfree(tree);
         return SUCCESS;
     }
     while (tree->node_count != 0) {

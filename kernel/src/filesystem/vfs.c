@@ -51,6 +51,12 @@ void vfs_init() {
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
     }
     initlock(&vfs_lock, VFS_LOCK);
+    memset(&vfs_root,0,sizeof(struct vnode));
+    vfs_root.vnode_inode_number = 0;
+    vfs_root.vnode_type = DIRECTORY;
+    vfs_root.vnode_parent = NULL;
+    vfs_root.vnode_ops = NULL;
+    vfs_root.vnode_filesystem_id = VNODE_FS_VNODE_ROOT;
     kprintf("Virtual Filesystem Initialized\n");
     serial_printf("VFS initialized\n");
 }

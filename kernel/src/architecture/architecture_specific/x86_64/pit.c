@@ -12,7 +12,7 @@
 static uint64_t pit_ticks = 0;
 
 /*
- * The timer intterupt for the x86 PIT timer.
+ * The timer interrupt for the x86 PIT timer.
  * Only the BSP will be interrupted, after which it will invoke a broadcast interrupt after incrementing the tick counter.
  * After the broadcast, every CPU will be interrupted and do a panic check and then ack the interrupt.
  * Later this will also do scheduler preemption and the like.
