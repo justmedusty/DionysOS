@@ -77,10 +77,7 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 ## The serial print messages are the most verbose, you can see these by selecting the serial0 output in your QEMU instance. This is where the majority of kernel output is cast to.
 ![image](https://github.com/user-attachments/assets/493fc7a2-b5f5-4b06-ba4c-41cc616053d7)
 ## The framebuffer has fewer print messages and is more high-level as can be seen here. The framebuffer printing will be reserved mostly for userspace with kernelspace just using it for panic messages and a few bootstrapping messages. The reasoning for this is mainly because I do not plan on implementing text buffering and scrolling support with my framebuffer functionality anytime soon and QEMU automatically handles this in the serial ouput. The framebuffer does wrap properly in the current implementation but once a line has shifted out of view, it is gone and cannot be read again.
-![image](https://github.com/user-attachments/assets/b1e1b60f-3a0a-4113-9c1a-42c82572f26b)
-
-
-
+![image](https://github.com/user-attachments/assets/790ba6e8-73f9-422f-bc62-103c1f213e76)
 
 # Ideas for arcane syscall names:
 
