@@ -70,7 +70,8 @@ void *_kalloc(uint64_t size) {
     if (size < PAGE_SIZE) {
         struct slab *slab = heap_slab_for(size);
         if (slab != NULL) {
-            return heap_allocate_from_slab(slab);
+            void *addr = heap_allocate_from_slab(slab);
+            return addr;
         }
     }
 
@@ -151,21 +152,11 @@ void _kfree(void *address) {
         goto slab;
     }
 
-    for (uint64_t i = 0; i < NUM_SLABS; i++) {
-        struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
-        if (slab_header && slab_header->slab && slabs[i].start_address == slab_header) {
-            goto slab;
-        }
-    }
-
     phys_dealloc(V2P(address));
     return;
 
-
 slab:
-
     struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
-
     heap_free_in_slab(slab_header->slab, address);
 }
 

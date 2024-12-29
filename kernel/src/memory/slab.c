@@ -8,6 +8,7 @@
 #include "include/architecture/arch_cpu.h"
 #include "include/architecture/arch_paging.h"
 #include <include/data_structures/hash_table.h>
+#include <include/device/display/framebuffer.h>
 
 #include "include/memory/pmm.h"
 #include "include/memory/mem.h"
@@ -26,14 +27,12 @@ void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE)));
-
-    serial_printf("Slab created at %x.64\n", slab->first_free);
     uint64_t header_offset = (sizeof(struct header) + (entry_size)) / entry_size * entry_size;
     uint64_t available_size = (pages * PAGE_SIZE) - header_offset;
     struct header *slab_pointer = (struct header *) slab->first_free;
-
     slab_pointer->slab = slab;
     slab->first_free = (void **) ((void *) slab->first_free + header_offset);
+    serial_printf("Slab created at %x.64\n", slab->start_address);
 
     void **array = (void **) slab->first_free;
 
@@ -49,7 +48,7 @@ void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
 
 void *heap_allocate_from_slab(struct slab *slab) {
     if (slab->first_free == NULL) {
-        heap_create_slab(slab, slab->entry_size, PAGE_SIZE * 2);
+        heap_create_slab(slab, slab->entry_size, DEFAULT_SLAB_SIZE);
     }
     void **old_free = slab->first_free;
     slab->first_free = *old_free;
@@ -67,7 +66,7 @@ void heap_free_in_slab(struct slab *slab, void *address) {
     if (slab == NULL) {
         serial_printf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64 Slab Address %x.16\n", address,
                       slab);
-        panic("You changed the slab mask again");
+        panic("NULL Slab");
     }
     if (address == NULL) {
         return;

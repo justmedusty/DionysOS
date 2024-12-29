@@ -9,6 +9,7 @@
 #include <include/data_structures/spinlock.h>
 #include <include/device/display/framebuffer.h>
 #include <include/memory/kalloc.h>
+#include <include/memory/slab.h>
 #include "limine.h"
 #include "include/memory/mem.h"
 #include "include/architecture/arch_paging.h"
@@ -18,12 +19,17 @@
 /*
  * Static prototypes
  */
-static void buddy_coalesce(struct buddy_block* block);
-static struct buddy_block* buddy_alloc(uint64_t pages);
-static void buddy_free(void* address);
-static void buddy_block_free(struct buddy_block* block);
-static struct buddy_block* buddy_block_get();
-static struct buddy_block* buddy_split(struct buddy_block* block);
+static void buddy_coalesce(struct buddy_block *block);
+
+static struct buddy_block *buddy_alloc(uint64_t pages);
+
+static void buddy_free(void *address);
+
+static void buddy_block_free(struct buddy_block *block);
+
+static struct buddy_block *buddy_block_get();
+
+static struct buddy_block *buddy_split(struct buddy_block *block);
 
 /*
  * Bootloader requests for the memory and HHDM offset
@@ -96,33 +102,33 @@ int phys_init() {
     initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
 
-    struct limine_memmap_response* memmap = memmap_request.response;
-    struct limine_hhdm_response* hhdm = hhdm_request.response;
-    struct limine_memmap_entry** entries = memmap->entries;
+    struct limine_memmap_response *memmap = memmap_request.response;
+    struct limine_hhdm_response *hhdm = hhdm_request.response;
+    struct limine_memmap_entry **entries = memmap->entries;
     uint64_t highest_address = 0;
     hhdm_offset = hhdm->offset;
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
-        struct limine_memmap_entry* entry = entries[i];
+        struct limine_memmap_entry *entry = entries[i];
 
         switch (entry->type) {
-        case LIMINE_MEMMAP_USABLE:
-            contiguous_pages[page_range_index].start_address = entry->base;
-            contiguous_pages[page_range_index].end_address = entry->base + entry->length;
-            contiguous_pages[page_range_index].pages = entry->length / PAGE_SIZE;
-            page_range_index++;
-            usable_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
-            highest_address = highest_address > (entry->base + entry->length)
-                                  ? highest_address
-                                  : (entry->base +
-                                      entry->length);
-            break;
+            case LIMINE_MEMMAP_USABLE:
+                contiguous_pages[page_range_index].start_address = entry->base;
+                contiguous_pages[page_range_index].end_address = entry->base + entry->length;
+                contiguous_pages[page_range_index].pages = entry->length / PAGE_SIZE;
+                page_range_index++;
+                usable_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
+                highest_address = highest_address > (entry->base + entry->length)
+                                      ? highest_address
+                                      : (entry->base +
+                                         entry->length);
+                break;
 
-        case LIMINE_MEMMAP_KERNEL_AND_MODULES:
-            reserved_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
-            break;
+            case LIMINE_MEMMAP_KERNEL_AND_MODULES:
+                reserved_pages += (entry->length + (PAGE_SIZE - 1)) / PAGE_SIZE;
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
     /*
@@ -161,7 +167,8 @@ int phys_init() {
 
     for (int i = 0; i < page_range_index; i++) {
         for (uint64_t j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
-            buddy_block_static_pool[index].start_address = (void*)(contiguous_pages[i].start_address + (j * (PAGE_SIZE))& ~0xFFF);
+            buddy_block_static_pool[index].start_address = (void *) (
+                contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~0xFFF);
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -214,7 +221,7 @@ int phys_init() {
     uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     kprintf("Physical Memory Manager Initialized\n");
-    kprintf_color(CYAN,"%i MB of Memory Found\n",pages_mib);
+    kprintf_color(CYAN, "%i MB of Memory Found\n", pages_mib);
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
@@ -224,21 +231,21 @@ int phys_init() {
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
 
-void* phys_alloc(uint64_t pages) {
-    struct buddy_block* block = buddy_alloc(pages);
+void *phys_alloc(uint64_t pages) {
+    struct buddy_block *block = buddy_alloc(pages);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
     }
     block->is_free = USED;
     total_allocated += 1 << block->order;
-    void* return_value = (void*)block->start_address;
+    void *return_value = (void *) block->start_address;
     return return_value;
 }
 
 /*
  * The phys_dealloc simply calls buddy_free.
  */
-void phys_dealloc(void* address) {
+void phys_dealloc(void *address) {
     buddy_free(address);
 }
 
@@ -269,10 +276,9 @@ bool is_power_of_two(uint64_t x) {
 }
 
 uint64_t next_power_of_two(uint64_t x) {
-
-   if(x == 0) {
-       return 1;
-   }
+    if (x == 0) {
+        return 1;
+    }
     x--;
     x |= x >> 1;
     x |= x >> 2;
@@ -294,21 +300,20 @@ uint64_t next_power_of_two(uint64_t x) {
  * Freeing will just require an iterative approach to free everything and add it to the binary search tree
  */
 
-static struct buddy_block* buddy_alloc_large_range(uint64_t pages) {
-
+static struct buddy_block *buddy_alloc_large_range(uint64_t pages) {
     uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
-    struct buddy_block* block = NULL;
-    retry:
-        uint64_t current_blocks = 1;
-    block  = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
-    struct buddy_block* pointer = block;
+    struct buddy_block *block = NULL;
+retry:
+    uint64_t current_blocks = 1;
+    block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+    struct buddy_block *pointer = block;
 
     if (!block) {
         goto retry;
     }
 
-    if(block->order != MAX_ORDER) {
-        while(block != NULL && block->order != MAX_ORDER) {
+    if (block->order != MAX_ORDER) {
+        while (block != NULL && block->order != MAX_ORDER) {
             block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
         }
     }
@@ -340,26 +345,22 @@ static struct buddy_block* buddy_alloc_large_range(uint64_t pages) {
     total_allocated += (1 << MAX_ORDER) * block->buddy_chain_length;
 
     return block;
-
 }
-static struct buddy_block* buddy_alloc(uint64_t pages) {
 
+static struct buddy_block *buddy_alloc(uint64_t pages) {
     if (pages > (1 << MAX_ORDER)) {
         return buddy_alloc_large_range(pages);
     }
 
-    if(!is_power_of_two(pages)) {
+    if (!is_power_of_two(pages)) {
         pages = next_power_of_two(pages);
     }
 
     for (uint64_t i = 0; i < MAX_ORDER; i++) {
-
         if (pages == (1 << i)) {
-
-            struct buddy_block* block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
+            struct buddy_block *block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
 
             if (block == NULL) {
-
                 uint64_t index = i + 1;
 
                 while (index <= MAX_ORDER) {
@@ -368,8 +369,9 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                     if (block != NULL && block->start_address && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
                         while (block->order != i) {
-                            if (block-> order > MAX_ORDER) {
-                                serial_printf("block->order = %i block addr = %x.64 block start addr = %x.64\n", block->order,block,block->start_address);
+                            if (block->order > MAX_ORDER) {
+                                serial_printf("block->order = %i block addr = %x.64 block start addr = %x.64\n",
+                                              block->order, block, block->start_address);
                                 panic("order higher than max order in buddy_alloc");
                             }
                             block = buddy_split(block);
@@ -378,7 +380,7 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                             }
                         }
 
-                        hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
+                        hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
                         return block;
                     }
                     //find out where pointers are being manipulated so I can take this out
@@ -392,14 +394,12 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
                     }
                     index++;
                 }
-            }
-            else {
-                hash_table_insert(&used_buddy_hash_table, (uint64_t)block->start_address, block);
+            } else {
+                hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
                 block->flags &= ~IN_TREE_FLAG;
                 return block;
             }
         }
-
     }
 
     return NULL;
@@ -412,31 +412,35 @@ static struct buddy_block* buddy_alloc(uint64_t pages) {
  * Because of that, a loop to find the address in the hash bucket is provided in this function.
  * Once it is found, buddy_coalesce is called, the function returns.
  */
-static void buddy_free(void* address) {
-    struct singly_linked_list* bucket = hash_table_retrieve(&used_buddy_hash_table,hash((uint64_t)address, BUDDY_HASH_TABLE_SIZE));
+static void buddy_free(void *address) {
+    struct singly_linked_list *bucket = hash_table_retrieve(&used_buddy_hash_table,
+                                                            hash((uint64_t) address, BUDDY_HASH_TABLE_SIZE));
 
     if (bucket == NULL) {
         panic("Buddy Dealloc: Buddy hash table not found");
         /* Shouldn't ever happen so panicking for visibility if it does happen */
     }
 
-    struct singly_linked_list_node* node = bucket->head;
+    struct singly_linked_list_node *node = bucket->head;
 
     while (1) {
         if (node == NULL) {
-            warn_printf("Address of offending bucket is %x.64\n",address);
-            panic("Buddy Dealloc: Hash returned bucket without result"); /* This shouldn't happen */
+            info_printf("Slab cache entry straddling page line at %x.64\n", address);
+            struct header *slab_header = (struct header *) (
+                (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
+            heap_free_in_slab(slab_header->slab, P2V(address));
+            return;
         }
-        struct buddy_block* block = node->data;
+        struct buddy_block *block = node->data;
 
-        if ((uint64_t)block->start_address == (uint64_t)address) {
+        if ((uint64_t) block->start_address == (uint64_t) address) {
             uint64_t ret = singly_linked_list_remove_node_by_address(bucket, block);
             if (ret == NODE_NOT_FOUND) {
                 panic("Buddy Dealloc: Address not found");
             }
             block->is_free = FREE;
             block->flags &= ~IN_TREE_FLAG;
-            total_allocated  -= 1 << block->order;
+            total_allocated -= 1 << block->order;
             buddy_coalesce(block);
             return;
         }
@@ -460,7 +464,7 @@ static void buddy_free(void* address) {
  *
  *  It puts the new block into the free tree, and returns the original, now split in half block
  */
-static struct buddy_block* buddy_split(struct buddy_block* block) {
+static struct buddy_block *buddy_split(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
         remove_tree_node(&buddy_free_list_zone[zone_pointer], block->order, block,NULL);
         block->flags &= ~IN_TREE_FLAG;
@@ -477,7 +481,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
         return NULL; /* Obviously */
     }
 
-    struct buddy_block* new_block = buddy_block_get();
+    struct buddy_block *new_block = buddy_block_get();
 
     if (new_block == NULL) {
         return NULL;
@@ -497,7 +501,7 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
 
     if (ret == SUCCESS) {
         return block;
-    }else {
+    } else {
         panic("NULL");
     }
 
@@ -508,10 +512,10 @@ static struct buddy_block* buddy_split(struct buddy_block* block) {
  * This function just attempts to get a spare block from the static pool list
  * If none is found, kalloc is invoked in instead.
  */
-static struct buddy_block* buddy_block_get() {
-    struct buddy_block* block = (struct buddy_block*)singly_linked_list_remove_head(&unused_buddy_blocks_list);
+static struct buddy_block *buddy_block_get() {
+    struct buddy_block *block = (struct buddy_block *) singly_linked_list_remove_head(&unused_buddy_blocks_list);
     if (block == NULL) {
-        struct buddy_block* ret =_kalloc(sizeof(struct buddy_block));
+        struct buddy_block *ret = _kalloc(sizeof(struct buddy_block));
         return ret;
     }
     return block;
@@ -524,7 +528,7 @@ static struct buddy_block* buddy_block_get() {
  *
  * If not, _kfree( is invoked.
  */
-static void buddy_block_free(struct buddy_block* block) {
+static void buddy_block_free(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
         remove_tree_node(&buddy_free_list_zone[0], block->order, block,NULL);
     }
@@ -564,7 +568,7 @@ static void buddy_block_free(struct buddy_block* block) {
  *to make a large allocation for this to cause problems.
  */
 
-static void buddy_coalesce(struct buddy_block* block) {
+static void buddy_coalesce(struct buddy_block *block) {
     if (block == NULL) {
         return;
     }
@@ -586,8 +590,9 @@ static void buddy_coalesce(struct buddy_block* block) {
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
 
     /* Putting this here in the case of the expression evaluated true and by the time the lock is held it is no longer true */
-    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (block->zone == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
-        struct buddy_block* next = block->next;
+    if ((block->order == block->next->order) && (block->is_free == FREE && block->next->is_free == FREE) && (
+            block->zone == block->next->zone && !(block->next->flags & FIRST_BLOCK_FLAG))) {
+        struct buddy_block *next = block->next;
         /*
          * Reflect new order and new next block
          */
