@@ -5,15 +5,14 @@
 #pragma once
 #include "include/definitions/types.h"
 #include "include/architecture/arch_paging.h"
-
-//walkpgdir flags , going to add a flag for debugging
+#define USER_SPAN_SIZE (8UL << 30UL)
+//walkpgdir flags , going to ad a flag for debugging
 #define ALLOC 0x1
 #define DEBUG 0x2
 
 static void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");
 }
-
 static void native_flush_tlb_range(unsigned long vaddr,uint64_t pages) {
     for(uint64_t i = 0; i < pages; i++){
         asm volatile("invlpg (%0)" ::"r" (vaddr + (i * PAGE_SIZE)) : "memory");

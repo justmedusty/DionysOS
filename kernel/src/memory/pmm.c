@@ -46,13 +46,16 @@ volatile struct limine_hhdm_request hhdm_request = {
     .revision = 0
 };
 
+#define KERNEL_POOL 0
+#define USER_POOL 1
+
 uint64_t total_allocated = 0;
 
 struct spinlock pmm_lock;
 struct spinlock buddy_lock;
 
-uint64_t zone_pointer; /* will just use one zone until it's all allocated then increment the zone pointer */
-struct binary_tree buddy_free_list_zone[PHYS_ZONE_COUNT];
+ /* will just use one zone until it's all allocated then increment the zone pointer */
+struct binary_tree buddy_free_list_zone[2];
 
 struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
 // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
@@ -168,7 +171,7 @@ int phys_init() {
     for (int i = 0; i < page_range_index; i++) {
         for (uint64_t j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
             buddy_block_static_pool[index].start_address = (void *) (
-                contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~0xFFF);
+                contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~(PAGE_SIZE -1));
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
@@ -205,20 +208,36 @@ int phys_init() {
      *  Set up buddy blocks and insert them into proper trees
      */
     index = 0;
-    init_tree(&buddy_free_list_zone[0],REGULAR_TREE, 0);
+    init_tree(&buddy_free_list_zone[KERNEL_POOL],REGULAR_TREE, 0);
+    init_tree(&buddy_free_list_zone[USER_POOL],REGULAR_TREE, 0);
+    struct binary_tree *tree;
+    uint64_t kcount = 0;
+    uint64_t ucount = 0;
     for (int i = 0; i < page_range_index; i++) {
         while (buddy_block_static_pool[index].zone == i) {
-            insert_tree_node(&buddy_free_list_zone[0], &buddy_block_static_pool[index],
+
+
+            if ((uintptr_t) buddy_block_static_pool[index].start_address > USER_SPAN_SIZE) {
+                tree = &buddy_free_list_zone[KERNEL_POOL];
+                kcount++;
+            }else {
+                tree = &buddy_free_list_zone[USER_POOL];
+                ucount++;
+            }
+
+
+            insert_tree_node(tree, &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);
             index++;
         }
     }
+    kprintf("kcount %i ucount %i\n", kcount, ucount);
 
     hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
     highest_page_index = highest_address / PAGE_SIZE;
-    uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
+    uint32_t pages_mib = (usable_pages * 4096) >> 20;
 
     kprintf("Physical Memory Manager Initialized\n");
     info_printf("%i MB of Memory Found\n", pages_mib);
@@ -305,7 +324,7 @@ static struct buddy_block *buddy_alloc_large_range(uint64_t pages) {
     struct buddy_block *block = NULL;
 retry:
     uint64_t current_blocks = 1;
-    block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+    block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], MAX_ORDER,REMOVE_FROM_TREE);
     struct buddy_block *pointer = block;
 
     if (!block) {
@@ -314,7 +333,7 @@ retry:
 
     if (block->order != MAX_ORDER) {
         while (block != NULL && block->order != MAX_ORDER) {
-            block = lookup_tree(&buddy_free_list_zone[zone_pointer], MAX_ORDER,REMOVE_FROM_TREE);
+            block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], MAX_ORDER,REMOVE_FROM_TREE);
         }
     }
 
@@ -327,7 +346,7 @@ retry:
     }
 
     if (current_blocks < max_blocks) {
-        insert_tree_node(&buddy_free_list_zone[zone_pointer], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
         /* Since it will be inserted at the tail we can do this and it wont keep grabbing the same block*/
         goto retry;
     }
@@ -336,7 +355,7 @@ retry:
     current_blocks = 2;
     pointer = block->next;
     while (current_blocks <= max_blocks) {
-        remove_tree_node(&buddy_free_list_zone[0], pointer->order, pointer,NULL);
+        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], pointer->order, pointer,NULL);
         pointer->is_free = USED;
         pointer = pointer->next;
         current_blocks++;
@@ -358,13 +377,13 @@ static struct buddy_block *buddy_alloc(uint64_t pages) {
 
     for (uint64_t i = 0; i < MAX_ORDER; i++) {
         if (pages == (1 << i)) {
-            struct buddy_block *block = lookup_tree(&buddy_free_list_zone[zone_pointer], i,REMOVE_FROM_TREE);
+            struct buddy_block *block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], i,REMOVE_FROM_TREE);
 
             if (block == NULL) {
                 uint64_t index = i + 1;
 
                 while (index <= MAX_ORDER) {
-                    block = lookup_tree(&buddy_free_list_zone[zone_pointer], index,REMOVE_FROM_TREE);
+                    block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], index,REMOVE_FROM_TREE);
 
                     if (block != NULL && block->start_address && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
@@ -389,7 +408,7 @@ static struct buddy_block *buddy_alloc(uint64_t pages) {
                      */
 
                     if (block != NULL && block->order < index) {
-                        remove_tree_node(&buddy_free_list_zone[0], index, block,NULL);
+                        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], index, block,NULL);
                         continue;
                     }
                     index++;
@@ -472,7 +491,7 @@ static void buddy_free(void *address) {
  */
 static struct buddy_block *buddy_split(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[zone_pointer], block->order, block,NULL);
+        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], block->order, block,NULL);
         block->flags &= ~IN_TREE_FLAG;
     }
     if (block->order > MAX_ORDER) {
@@ -503,7 +522,7 @@ static struct buddy_block *buddy_split(struct buddy_block *block) {
 
 
     new_block->flags |= IN_TREE_FLAG;
-    const uint64_t ret = insert_tree_node(&buddy_free_list_zone[0], new_block, new_block->order);
+    const uint64_t ret = insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], new_block, new_block->order);
 
     if (ret == SUCCESS) {
         return block;
@@ -536,7 +555,7 @@ static struct buddy_block *buddy_block_get() {
  */
 static void buddy_block_free(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[0], block->order, block,NULL);
+        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], block->order, block,NULL);
     }
     if (block->flags & STATIC_POOL_FLAG) {
         block->is_free = UNUSED;
@@ -581,7 +600,7 @@ static void buddy_coalesce(struct buddy_block *block) {
 
     if (block->next == NULL) {
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
         /*
          *  Can't coalesce until the predecessor is free
          */
@@ -590,7 +609,7 @@ static void buddy_coalesce(struct buddy_block *block) {
 
     if (block->order == MAX_ORDER) {
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
         return;
     }
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
@@ -606,7 +625,7 @@ static void buddy_coalesce(struct buddy_block *block) {
         block->order++;
         buddy_block_free(next);
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
     }
 }
 

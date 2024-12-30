@@ -3,6 +3,8 @@
 //
 #pragma once
 #include <include/architecture/arch_cpu.h>
+#include <include/device/display/framebuffer.h>
+
 #include "include/architecture/x86_64/asm_functions.h"
 
 #include "include/definitions/types.h"
@@ -79,7 +81,7 @@ void stack_exception() {
 
 // Exception 13: General Protection Fault
 void general_protection_fault(int32_t error_code) {
-    serial_printf("Error Code %i\n",error_code);
+    err_printf("Error Code %i\n",error_code);
     panic("General Protection Fault Occurred");
     asm("hlt");
 }
@@ -88,7 +90,7 @@ void general_protection_fault(int32_t error_code) {
 void page_fault() {
     uint64_t faulting_address = rcr2();
     uint64_t cpu_no = my_cpu()->cpu_number;
-    serial_printf("Page Fault Occurred With Access %x.64 on CPU %i\n", faulting_address,cpu_no);
+    err_printf("Page Fault Occurred With Access %x.64 on CPU %i\n", faulting_address,cpu_no);
     panic("Page Fault!");
 }
 

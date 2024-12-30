@@ -22,7 +22,7 @@
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
 
-#define USER_SPAN_SIZE (6UL << 30UL)
+
 
 p4d_t* global_pg_dir = 0;
 
@@ -68,8 +68,8 @@ void map_kernel_address_space(p4d_t* pgdir){
         panic("Mapping data!");
     }
 
-    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, USER_SPAN_SIZE) == -1){
-        panic("Mapping first 4gb!");
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 12UL << 30UL) == -1){
+        panic("Mapping first half!");
     }
 
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -78,7 +78,7 @@ void map_kernel_address_space(p4d_t* pgdir){
     for (uint64_t i = 0; i < memmap->entry_count; i++){
         uint64_t base = PGROUNDDOWN(entries[i]->base);
         uint64_t top = PGROUNDUP(entries[i]->base + entries[i]->length);
-        if (top <  (USER_SPAN_SIZE)){
+        if (top < (USER_SPAN_SIZE)){
             continue;
         }
         for (uint64_t j = base; j < top; j += PAGE_SIZE){
@@ -90,6 +90,7 @@ void map_kernel_address_space(p4d_t* pgdir){
             }
         }
     }
+
 }
 
 /*
