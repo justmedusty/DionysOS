@@ -18,7 +18,6 @@
 #include "include/memory/kalloc.h"
 #include "include/memory/mem_bounds.h"
 #include "include/drivers/serial/uart.h"
-
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
 

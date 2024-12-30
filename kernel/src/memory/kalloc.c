@@ -115,7 +115,7 @@ void _kfree(void *address) {
  * Krealloc is just realloc for the kernel. Allocate a bigger block of memory, copy the previous contents in.
  * I will use this as a soapbox opportunity to say that realloc is not a safe function in a secure context. You have no
  * way to know if the memory that just deallocated was erased if there was sensitive data in it. That is always something
- * that needs to be kept in mind and it is best to avoid realloc and to use malloc and zero yourself.
+ * that needs to be kept in mind, and it is best to avoid realloc and to use malloc and zero yourself.
  */
 void *krealloc(void *address, uint64_t new_size) {
     acquire_spinlock(&alloc_lock);

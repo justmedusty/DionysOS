@@ -21,9 +21,9 @@ void arch_kvm_init(p4d_t *pgdir){
  * Architecture agnostic vmm init function
  */
 void arch_vmm_init(){
-    kprintf("Initializing Virtual Memory Manager...\n");
+    kprintf("Initializing Virtual Memory And Mapping Address Space...\n");
     init_vmm();
-    kprintf("Virtual Memory Manager Initialized\n");
+    kprintf("Virtual Memory Manager Initialized And Address Space Mapped\n");
 }
 /*
  * Architecture agnostic map pages function

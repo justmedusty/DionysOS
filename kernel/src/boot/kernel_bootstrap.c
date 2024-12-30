@@ -48,7 +48,7 @@ void kernel_bootstrap() {
     mem_bounds_init();
     arch_vmm_init();
     init_system_device_tree();
-    insert_device_into_kernel_tree(&serial_device);
+    insert_device_into_kernel_tree(&serial_device); // this is done late because memory is not setup yet until here and will just crash the system if we try to do this any earlier
     framebuffer_init();
     acpi_init();
     lapic_init();

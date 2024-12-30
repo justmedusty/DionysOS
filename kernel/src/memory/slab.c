@@ -49,6 +49,7 @@ void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
 void *heap_allocate_from_slab(struct slab *slab) {
     if (slab->first_free == NULL) {
         heap_create_slab(slab, slab->entry_size, DEFAULT_SLAB_SIZE_PAGES);
+
     }
     void **old_free = slab->first_free;
     slab->first_free = *old_free;

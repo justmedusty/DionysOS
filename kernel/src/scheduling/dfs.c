@@ -56,7 +56,7 @@ static void free_process(struct process *process) {
 
     if (process->page_map != kernel_pg_map) {
         arch_dealloc_page_table(process->page_map->top_level);
-        kfree(V2P(process->page_map->top_level));
+        kfree(P2V(process->page_map->top_level)); // we do this because kfree is locked, phys_dealloc is not
         kfree(process->page_map);
     }
 }
