@@ -69,7 +69,7 @@ void map_kernel_address_space(p4d_t* pgdir){
     /*
      * TODO fix vmm approach with a kernel page pool or something later on so we don't need to map the entirety of physical memory
      */
-    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 0x200000000) == -1){
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, usable_pages * PAGE_SIZE) == -1){
         panic("Mapping first 8gb!");
     }
 
@@ -79,11 +79,11 @@ void map_kernel_address_space(p4d_t* pgdir){
     for (uint64_t i = 0; i < memmap->entry_count; i++){
         uint64_t base = PGROUNDDOWN(entries[i]->base);
         uint64_t top = PGROUNDUP(entries[i]->base + entries[i]->length);
-        if (top < 0x100000000){
+        if (top < usable_pages * PAGE_SIZE){
             continue;
         }
         for (uint64_t j = base; j < top; j += PAGE_SIZE){
-            if (j < (uint64_t)0x100000000){
+            if (j < (uint64_t)usable_pages * PAGE_SIZE){
                 continue;
             }
             if (map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){

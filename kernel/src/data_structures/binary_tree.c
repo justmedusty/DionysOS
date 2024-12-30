@@ -14,17 +14,22 @@
 
 static struct binary_tree_node tree_node_static_pool[BINARY_TREE_NODE_STATIC_POOL_SIZE];
 static uint8_t pool_full = 0;
-static int32_t last_freed = -1; /* These two fields are just simple safeguards to prevent linear lookups when possible */
+static int32_t last_freed = -1;
+/* These two fields are just simple safeguards to prevent linear lookups when possible */
 
-void init_red_black_tree(struct binary_tree* tree);
-void init_binary_tree(struct binary_tree* tree);
-uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key);
-uint64_t insert_red_black_tree(struct binary_tree* tree, void* data, uint64_t key);
-uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* address, struct binary_tree_node* node);
-uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key);
+void init_red_black_tree(struct binary_tree *tree);
+
+void init_binary_tree(struct binary_tree *tree);
+
+uint64_t insert_binary_tree(struct binary_tree *tree, void *data, uint64_t key);
+
+uint64_t insert_red_black_tree(struct binary_tree *tree, void *data, uint64_t key);
+
+uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *address, struct binary_tree_node *node);
+
+uint64_t remove_red_black_tree(struct binary_tree *tree, uint64_t key);
 
 static uint8_t static_pool_init = 0;
-
 
 
 //TODO ADD TREE BALANCING
@@ -34,7 +39,7 @@ static uint8_t static_pool_init = 0;
  * If any are , allocate from there
  * Else invoke kalloc and return the new ponter
  */
-static struct binary_tree_node* node_alloc() {
+static struct binary_tree_node *node_alloc() {
     if (pool_full) {
         return kmalloc(sizeof(struct binary_tree_node));
     }
@@ -49,11 +54,12 @@ static struct binary_tree_node* node_alloc() {
     pool_full = 1;
     return kmalloc(sizeof(struct binary_tree_node));
 }
+
 /*
  * Free a node, just invoke _kfree( it not part of the static pool,
  * other wise clear it and return it to the pool
  */
-static void node_free(struct binary_tree_node* node) {
+static void node_free(struct binary_tree_node *node) {
     if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
         kfree(node);
         return;
@@ -62,8 +68,7 @@ static void node_free(struct binary_tree_node* node) {
     if (node->parent != NULL) {
         if (node->parent->right == node) {
             node->parent->right = NULL;
-        }
-        else {
+        } else {
             node->parent->left = NULL;
         }
     }
@@ -78,7 +83,7 @@ static void node_free(struct binary_tree_node* node) {
     }
 }
 
-static struct binary_tree_node* pmm_node_alloc() {
+static struct binary_tree_node *pmm_node_alloc() {
     if (pool_full) {
         return _kalloc(sizeof(struct binary_tree_node));
     }
@@ -93,11 +98,12 @@ static struct binary_tree_node* pmm_node_alloc() {
     pool_full = 1;
     return _kalloc(sizeof(struct binary_tree_node));
 }
+
 /*
  * Free a node, just invoke _kfree( it not part of the static pool,
  * other wise clear it and return it to the pool
  */
-static void pmm_node_free(struct binary_tree_node* node) {
+static void pmm_node_free(struct binary_tree_node *node) {
     if (!(node->flags & BINARY_TREE_NODE_STATIC_POOL)) {
         _kfree(node);
         return;
@@ -106,8 +112,7 @@ static void pmm_node_free(struct binary_tree_node* node) {
     if (node->parent != NULL) {
         if (node->parent->right == node) {
             node->parent->right = NULL;
-        }
-        else {
+        } else {
             node->parent->left = NULL;
         }
     }
@@ -121,10 +126,11 @@ static void pmm_node_free(struct binary_tree_node* node) {
         pool_full = 0;
     }
 }
+
 /*
  * Initialize a binary tree of type reg tree or rb, calls the appropriate function
  */
-uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags) {
+uint64_t init_tree(struct binary_tree *tree, uint64_t mode, uint64_t flags) {
     if (static_pool_init == false) {
         for (uint64_t i = 0; i < BINARY_TREE_NODE_STATIC_POOL_SIZE; i++) {
             tree_node_static_pool[i].flags = BINARY_TREE_NODE_STATIC_POOL | BINARY_TREE_NODE_FREE;
@@ -132,47 +138,47 @@ uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags) {
         static_pool_init = true;
     }
     switch (mode) {
-    case REGULAR_TREE:
-        init_binary_tree(tree);
-        return SUCCESS;
+        case REGULAR_TREE:
+            init_binary_tree(tree);
+            return SUCCESS;
 
-    case RED_BLACK_TREE:
-        init_red_black_tree(tree);
-        return SUCCESS;
+        case RED_BLACK_TREE:
+            init_red_black_tree(tree);
+            return SUCCESS;
 
-    default:
-        return BAD_TREE_MODE;
+        default:
+            return BAD_TREE_MODE;
     }
 }
 
 /*
  *  Inserts a tree node, calls a different function depending on the type of tree
  */
-uint64_t insert_tree_node(struct binary_tree* tree, void* data, uint64_t key) {
+uint64_t insert_tree_node(struct binary_tree *tree, void *data, uint64_t key) {
     switch (tree->mode) {
-    case REGULAR_TREE:
-        return insert_binary_tree(tree, data, key);
+        case REGULAR_TREE:
+            return insert_binary_tree(tree, data, key);
 
 
-    case RED_BLACK_TREE:
-        return insert_red_black_tree(tree, data, key);
-    default:
-        return BAD_TREE_MODE;
+        case RED_BLACK_TREE:
+            return insert_red_black_tree(tree, data, key);
+        default:
+            return BAD_TREE_MODE;
     }
 }
 
 /*
  * Removes a tree node, calls the appropriate function depending on tree type
  */
-uint64_t remove_tree_node(struct binary_tree* tree, uint64_t key, void* address,
-                        struct binary_tree_node* node /* Optional */) {
+uint64_t remove_tree_node(struct binary_tree *tree, uint64_t key, void *address,
+                          struct binary_tree_node *node /* Optional */) {
     switch (tree->mode) {
-    case REGULAR_TREE:
-        return remove_binary_tree(tree, key, address, node);
-    case RED_BLACK_TREE:
-        return remove_red_black_tree(tree, key);
-    default:
-        return BAD_TREE_MODE;
+        case REGULAR_TREE:
+            return remove_binary_tree(tree, key, address, node);
+        case RED_BLACK_TREE:
+            return remove_red_black_tree(tree, key);
+        default:
+            return BAD_TREE_MODE;
     }
 }
 
@@ -180,9 +186,9 @@ uint64_t remove_tree_node(struct binary_tree* tree, uint64_t key, void* address,
  * Frees a tree, if it is not free, frees all the nodes inside.
  * This function is untested.
  */
-uint64_t destroy_tree(struct binary_tree* tree) {
-    struct binary_tree_node* current = tree->root;
-    struct binary_tree_node* parent = tree->root;
+uint64_t destroy_tree(struct binary_tree *tree) {
+    struct binary_tree_node *current = tree->root;
+    struct binary_tree_node *parent = tree->root;
 
     if (current == NULL) {
         kfree(tree);
@@ -195,8 +201,7 @@ uint64_t destroy_tree(struct binary_tree* tree) {
 
             if (current->parent->left == current) {
                 current->parent->left = NULL;
-            }
-            else {
+            } else {
                 current->parent->right = NULL;
             }
 
@@ -219,18 +224,19 @@ uint64_t destroy_tree(struct binary_tree* tree) {
     kfree(tree);
     return SUCCESS;
 }
+
 /*
  * Inserts into a binary tree, does the typical binary search
  *  Current bigger? go right
  *  Current smaller? go left
  *  Continue until spot is found and insert beneath or in since we putting buckets in our tree
  */
-uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) {
-    struct binary_tree_node* current = tree->root;
+uint64_t insert_binary_tree(struct binary_tree *tree, void *data, uint64_t key) {
+    struct binary_tree_node *current = tree->root;
 
     if (current == NULL) {
         NODE_ALLOC(new_node)
-        singly_linked_list_init(&new_node->data,0);
+        singly_linked_list_init(&new_node->data, 0);
         singly_linked_list_insert_head(&new_node->data, data);
         new_node->key = key;
         tree->root = new_node;
@@ -248,8 +254,8 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
 
         if (key < current->key) {
             if (current->left == NULL) {
-               NODE_ALLOC(new_node)
-                singly_linked_list_init(&new_node->data,0);
+                NODE_ALLOC(new_node)
+                singly_linked_list_init(&new_node->data, 0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;
                 current->left = new_node;
@@ -266,11 +272,10 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
                 return SUCCESS;
             }
             current = current->left;
-        }
-        else {
+        } else {
             if (current->right == NULL) {
-               NODE_ALLOC(new_node)
-                singly_linked_list_init(&new_node->data,0);
+                NODE_ALLOC(new_node)
+                singly_linked_list_init(&new_node->data, 0);
                 singly_linked_list_insert_head(&new_node->data, data);
                 new_node->key = key;
                 current->right = new_node;
@@ -296,9 +301,8 @@ uint64_t insert_binary_tree(struct binary_tree* tree, void* data, uint64_t key) 
  *  If the remove flag is set, it will remove the first entry
  *  in the bucket if the key is found, otherwise just will return the pointer.
  */
-void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag to remove it from the tree*/) {
-
-    struct binary_tree_node* current = tree->root;
+void *lookup_tree(struct binary_tree *tree, uint64_t key, uint8_t remove /* Flag to remove it from the tree*/) {
+    struct binary_tree_node *current = tree->root;
     if (current == NULL) {
         return NULL; /* Indication of empty tree */
     }
@@ -306,7 +310,7 @@ void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            void* return_value = 0;
+            void *return_value = 0;
             if (remove) {
                 return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head->data, current);
@@ -324,8 +328,7 @@ void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag
             }
 
             current = current->left;
-        }
-        else {
+        } else {
             if (current->right == current) {
                 current->right = NULL;
             }
@@ -338,8 +341,9 @@ void* lookup_tree(struct binary_tree* tree, uint64_t key, uint8_t remove /* Flag
     }
 }
 
-uint64_t insert_red_black_tree(struct binary_tree* tree, void* data, uint64_t key) {
+uint64_t insert_red_black_tree(struct binary_tree *tree, void *data, uint64_t key) {
 }
+
 /*
  * Removes from a binary tree, node is optional this is the node to remove. If it is not null it will just remove right from the node,
  * otherwise it must traverse.
@@ -358,13 +362,13 @@ uint64_t insert_red_black_tree(struct binary_tree* tree, void* data, uint64_t ke
  * Two children? Bring the right sub-tree min value up (ie all lefts until a final right)
  *
  */
-uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* address,
-                          struct binary_tree_node* node /* Optional */
-                          /* This is required because there may be many of the same value so address needed to be passed as well */) {
+uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *address,
+                            struct binary_tree_node *node /* Optional */
+                            /* This is required because there may be many of the same value so address needed to be passed as well */) {
     acquire_spinlock(&tree->lock);
 
-    struct binary_tree_node* current = tree->root;
-    struct binary_tree_node* parent = tree->root;
+    struct binary_tree_node *current = tree->root;
+    struct binary_tree_node *parent = tree->root;
 
     if (node != NULL) {
         current = node;
@@ -378,8 +382,8 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
 
     if (key == tree->root->key) {
         uint64_t ret = singly_linked_list_remove_node_by_address(&current->data, address);
-        if(ret == NODE_NOT_FOUND) {
-            serial_printf("ADDRESS %x.64\n",address);
+        if (ret == NODE_NOT_FOUND) {
+            serial_printf("ADDRESS %x.64\n", address);
             panic("Here");
         }
         release_spinlock(&tree->lock);
@@ -408,9 +412,9 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
 
             if (current->left == NULL && current->right == NULL) {
                 //TODO might need to put protection for root node so no deref
-                if(current->parent->left == current) {
+                if (current->parent->left == current) {
                     current->parent->left = NULL;
-                }else {
+                } else {
                     current->parent->right = NULL;
                 }
                 NODE_FREE(current);
@@ -424,14 +428,13 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
              * Handle right child is non-null while left child is
              */
             if (current->left == NULL) {
-
-                if(current->parent->left == current) {
+                if (current->parent->left == current) {
                     current->parent->left = current->right;
-                }else {
+                } else {
                     current->parent->right = current->right;
                 }
 
-                if(current->right) {
+                if (current->right) {
                     current->right->parent = current->parent;
                 }
 
@@ -449,13 +452,13 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
                     panic("[ERROR] RIGHT NULL KEY 256\n");
                 }
 
-                if(current->parent->left == current) {
+                if (current->parent->left == current) {
                     current->parent->left = current->left;
-                }else {
+                } else {
                     current->parent->right = current->left;
                 }
 
-                if(current->left) {
+                if (current->left) {
                     current->left->parent = current->parent;
                 }
                 NODE_FREE(current);
@@ -469,24 +472,37 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
              *  Bring the right sub-tree min value up (ie all lefts until a final right)
              */
             parent = current->parent;
-            struct binary_tree_node* right_min = current;
+            struct binary_tree_node *right_min = current->right;
+            struct binary_tree_node *right_min_parent = current; // Track the parent of right_min
 
-            if (right_min->left == right_min || right_min->parent == right_min) {
-                panic("Circular Reference");
-            }
+            // Find the leftmost node in the right subtree
             while (right_min->left != NULL) {
+                right_min_parent = right_min;
                 right_min = right_min->left;
             }
 
-            /* I dont think this should happen but I am putting it here just in case there is a right chain, I may remove this later, just me being paranoid  */
-            while (right_min->right != NULL) {
-                right_min = right_min->right;
+            // Detach right_min from its original parent
+            if (right_min_parent != current) {
+                right_min_parent->left = right_min->right; // Reassign right_min's right child to its parent
+            } else {
+                right_min_parent->right = right_min->right; // Update the direct right child of `current`
             }
 
-
-            parent->left = right_min;
-            right_min->right = current->right;
+            // Reattach right_min to the current node's location
             right_min->left = current->left;
+            right_min->right = current->right;
+
+            // Update right_min's parent
+            right_min->parent = parent;
+
+            // Update the parent's reference to the new subtree
+            if (parent != NULL) {
+                if (parent->left == current) {
+                    parent->left = right_min;
+                } else {
+                    parent->right = right_min;
+                }
+            }
 
             if (right_min->left == right_min || right_min->parent == right_min) {
                 panic("Circular Reference NUMBA 2");
@@ -504,8 +520,7 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
             }
 
             current = current->left;
-        }
-        else {
+        } else {
             if (current->right == NULL) {
                 release_spinlock(&tree->lock);
                 return VALUE_NOT_FOUND;
@@ -516,13 +531,13 @@ uint64_t remove_binary_tree(struct binary_tree* tree, uint64_t key, void* addres
 }
 
 
-uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key) {
+uint64_t remove_red_black_tree(struct binary_tree *tree, uint64_t key) {
 }
 
 /*
  * Init a red black tree
  */
-void init_red_black_tree(struct binary_tree* tree) {
+void init_red_black_tree(struct binary_tree *tree) {
     tree->mode = RED_BLACK_TREE;
     tree->root->color = BLACK_NODE;
     tree->node_count = 0;
@@ -532,7 +547,7 @@ void init_red_black_tree(struct binary_tree* tree) {
 /*
  * Init a reg bin tree
  */
-void init_binary_tree(struct binary_tree* tree) {
+void init_binary_tree(struct binary_tree *tree) {
     tree->mode = REGULAR_TREE;
     tree->node_count = 0;
     tree->root = NULL;
