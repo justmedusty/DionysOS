@@ -424,8 +424,15 @@ static void buddy_free(void *address) {
     struct singly_linked_list_node *node = bucket->head;
 
     while (1) {
+
         if (node == NULL) {
-            info_printf("Slab cache entry straddling page line at %x.64\n", address);
+        /*
+         *
+         * If the node cannot be found in the hash bucket, this means that it is a slab entry that is right on a page line.
+         * Because of this, if we do not find the address in the hash bucket we will invoke the slab free functions on the virtual
+         * equivalent of the passed physical address and we will return
+         *
+         */
             struct header *slab_header = (struct header *) (
                 (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
             heap_free_in_slab(slab_header->slab, P2V(address));
