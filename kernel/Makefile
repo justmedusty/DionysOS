@@ -5,6 +5,8 @@ override MAKEFLAGS += -rR
 # Change as needed.
 override KERNEL := kernel
 
+CPUS := $(shell nproc)
+
 # Convenience macro to reliably declare user overridable variables.
 define DEFAULT_VAR =
     ifeq ($(origin $1),default)
@@ -60,6 +62,7 @@ override KCFLAGS += \
     -mno-red-zone \
    	-g \
    	-D _DFS_ \
+   	-DMAX_CPUS=$(CPUS)\
    	-fanalyzer \
    	-Wno-unused-variable \
    	-Wno-unused-function \

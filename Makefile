@@ -13,6 +13,8 @@ define DEFAULT_VAR =
     endif
 endef
 
+CPUS := $(shell nproc)
+MEMORY := 12G
 
 .PHONY: all
 all: $(IMAGE_NAME).iso
@@ -22,23 +24,23 @@ all-hdd: $(IMAGE_NAME).hdd
 
 .PHONY: run-gdb
 run-gdb: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -smp 4 -m 8G -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d cpu_reset,guest_errors -D qemu_debug.log
+	qemu-system-x86_64 -M q35 -smp $(CPUS) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d cpu_reset,guest_errors -D qemu_debug.log
 .PHONY: run-x86
 run-x86: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35,smm=off -smp 4 -m 8G -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -d cpu_reset,guest_errors -D qemu_debug.log
+	qemu-system-x86_64 -M q35,smm=off -smp $(CPUS) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -d cpu_reset,guest_errors -D qemu_debug.log
 
 
 .PHONY: run-uefi
 run-uefi: ovmf $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -m 2G -bios ovmf/OVMF.fd -cdrom $(IMAGE_NAME).iso -boot d
+	qemu-system-x86_64 -M q35 -m $(MEMORY) -bios ovmf/OVMF.fd -cdrom $(IMAGE_NAME).iso -boot d
 
 .PHONY: run-hdd
 run-hdd: $(IMAGE_NAME).hdd
-	qemu-system-x86_64 -M q35 -m 2G -hda $(IMAGE_NAME).hdd
+	qemu-system-x86_64 -M q35 -m $(MEMORY) -hda $(IMAGE_NAME).hdd
 
 .PHONY: run-hdd-uefi
 run-hdd-uefi: ovmf $(IMAGE_NAME).hdd
-	qemu-system-x86_64 -M q35 -m 2G -serial -append "console=ttyS0,115200" -serial stdio -bios ovmf/OVMF.fd -hda $(IMAGE_NAME).hdd
+	qemu-system-x86_64 -M q35 -m $(MEMORY) -serial -append "console=ttyS0,115200" -serial stdio -bios ovmf/OVMF.fd -hda $(IMAGE_NAME).hdd
 
 ovmf:
 	mkdir -p ovmf

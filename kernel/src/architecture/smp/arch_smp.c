@@ -46,7 +46,9 @@ void smp_init(){
     //For output cleanliness
     acquire_spinlock(&bootstrap_lock);
     while(i < cpu_count) {
-        if(i == 32) {
+        if(i == MAX_CPUS) {
+            warn_printf("DionysOS only supports up to %i processors!\n", MAX_CPUS);
+            cpus_online = cpu_count;
             break;
         }
         /*

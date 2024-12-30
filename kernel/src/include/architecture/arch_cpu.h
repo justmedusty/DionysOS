@@ -61,11 +61,13 @@ struct cpu{
 /*
  *  Function prototypes
  */
-
+#ifndef MAX_CPUS
+#define MAX_CPUS 2 // this will be overridden by the nproc return value
+#endif
 extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
-extern struct cpu cpu_list[16];
-extern struct queue local_run_queues[16];
+extern struct cpu cpu_list[MAX_CPUS];
+extern struct queue local_run_queues[MAX_CPUS];
 
 void panic(const char* str);
 struct cpu* my_cpu();

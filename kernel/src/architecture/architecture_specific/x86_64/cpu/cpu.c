@@ -23,8 +23,8 @@
 #include "limine.h"
 extern volatile int32_t ready;
 uint8_t panicked = 0;
-struct cpu cpu_list[16];
-struct queue local_run_queues[16];
+struct cpu cpu_list[MAX_CPUS];
+struct queue local_run_queues[MAX_CPUS];
 
 struct spinlock bootstrap_lock;
 #ifdef __x86_64__

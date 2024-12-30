@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppGeneralOptions" type="string" />
     <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
   </component>
   <component name="CMakeProjectFlavorService">
@@ -25,20 +28,10 @@
   <component name="ChangeListManager">
     <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Laying out device.h among other things.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/doubly_linked_list.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/doubly_linked_list.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/dev/disk/ramdisk.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/arch/arch_asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/arch/arch_asm_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/string.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/string.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/dev/device.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/dev/device.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/block_dev.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/filesystem/diosfs.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/filesystem/diosfs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/mem/vmm.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/mem/vmm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/sched/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/sched/kthread.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/tools/mkfs/mkdiosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/cpu.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/cpu.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/smp/arch_smp.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/smp/arch_smp.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/architecture/arch_cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/architecture/arch_cpu.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,12 +58,12 @@
     &quot;assignee&quot;: &quot;justmedusty&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/justmedusty/DionysOS.git&quot;,
-    &quot;accountId&quot;: &quot;e2b1b2ad-035b-4f66-8c92-326f785b0dec&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/justmedusty/DionysOS.git",
+    "accountId": "48dccaa7-6a6e-4b81-bd27-e7aaca5265c8"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/kernel/src/arch/smp/arch_smp.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" root0="FORCE_HIGHLIGHTING" />
@@ -107,7 +100,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/kernel/GNUmakefile",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/kernel/Makefile",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -305,9 +298,6 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Embedded GDB Server.jj" />
-      <item itemvalue="Makefile Target.run-gdb" />
-      <item itemvalue="Makefile Target.run" />
       <item itemvalue="Native Application.GNUmakefile" />
       <item itemvalue="Native Application.Makefile" />
       <item itemvalue="Native Application.all-hdd" />
@@ -322,6 +312,9 @@
       <item itemvalue="Native Application.run-uefi" />
       <item itemvalue="Native Application.run-x86" />
       <item itemvalue="Remote Debug.GDB Kernel" />
+      <item itemvalue="Makefile Target.run-gdb" />
+      <item itemvalue="Makefile Target.run" />
+      <item itemvalue="Embedded GDB Server.jj" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -410,6 +403,7 @@
       <workItem from="1734631061559" duration="1422000" />
       <workItem from="1734632498938" duration="6100000" />
       <workItem from="1734679695306" duration="31905000" />
+      <workItem from="1735560263482" duration="196000" />
     </task>
     <task id="LOCAL-00211" summary="Wild goose chase going on on but fixing bugs left and right.">
       <option name="closed" value="true" />
@@ -886,13 +880,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -903,7 +897,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -950,31 +944,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" />
+          <dependency id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="0" />
+          <dependency id="1" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="2" />
+          <dependency id="3" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="1" />
+          <dependency id="0" master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
