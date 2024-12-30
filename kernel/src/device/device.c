@@ -40,7 +40,7 @@ void init_system_device_tree() {
 
 
 void insert_device_into_kernel_tree(struct device *device) {
-  uint64_t device_major = device->device_major;
+  const uint64_t device_major = device->device_major;
   if (device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS) {
     warn_printf("Unknown device major number %i\n", device_major);
     return;
@@ -52,7 +52,7 @@ void insert_device_into_kernel_tree(struct device *device) {
   insert_device_into_device_group(device, device_group);
 }
 
-static struct device_group *get_device_group(uint64_t device_major) {
+static struct device_group *get_device_group(const uint64_t device_major) {
   struct device_group *group = lookup_tree(&system_device_tree,device_major,false);
 
     if (group && group->device_major == device_major) {

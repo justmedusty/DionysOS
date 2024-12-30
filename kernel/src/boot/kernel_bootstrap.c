@@ -27,7 +27,7 @@
 int32_t ready = 0;
 
 void welcome_message() {
-    kprintf_color(RED, DIONYSOS_ASCII_STRING2);
+    kprintf_color(RED, DIONYSOS_ASCII_STRING);
     kprintf_color(RED,AUTHOR_ASCII_STRING);
     kprintf_color(
         WHITE,
@@ -59,7 +59,7 @@ void kernel_bootstrap() {
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init();
-    kprintf_color(CYAN, "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
+    info_printf( "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
                   (usable_pages * (PAGE_SIZE / 1024)) / 1024);
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();

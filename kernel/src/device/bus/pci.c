@@ -4,6 +4,7 @@
 
 #include "include/device/bus/pci.h"
 #include <include/architecture/x86_64/acpi.h>
+#include <include/data_structures/binary_tree.h>
 #include <include/device/display/framebuffer.h>
 #include"include/data_structures/doubly_linked_list.h"
 #include "include/definitions/definitions.h"
@@ -19,6 +20,7 @@
 
 struct pci_bus pci_buses[PCI_MAX_BUSES] = {0};
 
+struct doubly_linked_list registered_pci_devices;
 uintptr_t pci_mmio_address = 0;
 uint8_t start_bus = 0;
 uint8_t end_bus = 0;
@@ -38,6 +40,7 @@ static uint32_t pci_read_config(struct pci_device *device,uint16_t offset) {
 
 
 void set_pci_mmio_address(struct mcfg_entry *entry){
+    doubly_linked_list_init(&registered_pci_devices);
     pci_mmio_address = entry->base_address;
     start_bus = entry->start_bus;
     end_bus = entry->end_bus;
@@ -146,6 +149,8 @@ void pci_enumerate_devices(bool print){
                 }
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
+                doubly_linked_list_insert_head(&registered_pci_devices,pci_device);
+                info_printf("PCI device of class %s inserted into registered device list\n", pci_get_class_name(pci_device->class));
 
             }
         }

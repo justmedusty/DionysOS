@@ -221,7 +221,7 @@ int phys_init() {
     uint32_t pages_mib = (((usable_pages * 4096) / 1024) / 1024);
 
     kprintf("Physical Memory Manager Initialized\n");
-    kprintf_color(CYAN, "%i MB of Memory Found\n", pages_mib);
+    info_printf("%i MB of Memory Found\n", pages_mib);
     serial_printf("Physical memory mapped %i mb found\n", pages_mib);
     return 0;
 }
@@ -424,15 +424,14 @@ static void buddy_free(void *address) {
     struct singly_linked_list_node *node = bucket->head;
 
     while (1) {
-
         if (node == NULL) {
-        /*
-         *
-         * If the node cannot be found in the hash bucket, this means that it is a slab entry that is right on a page line.
-         * Because of this, if we do not find the address in the hash bucket we will invoke the slab free functions on the virtual
-         * equivalent of the passed physical address and we will return
-         *
-         */
+            /*
+             *
+             * If the node cannot be found in the hash bucket, this means that it is a slab entry that is right on a page line.
+             * Because of this, if we do not find the address in the hash bucket we will invoke the slab free functions on the virtual
+             * equivalent of the passed physical address and we will return
+             *
+             */
             struct header *slab_header = (struct header *) (
                 (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
             heap_free_in_slab(slab_header->slab, P2V(address));
