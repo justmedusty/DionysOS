@@ -22,9 +22,9 @@ extern volatile struct limine_memmap_request memmap_request;
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
-#define UNUSED (uint64_t) 0xFFFFFFFFFFFFFFFF
+#define UNUSED 0xFFFFFFFFFFFFFFFFUL
 
-#define DEFAULT_SLAB_SIZE 32
+#define DEFAULT_SLAB_SIZE_PAGES 32
 #define BUDDY_HASH_TABLE_SIZE 300
 
 extern uint64_t hhdm_offset;

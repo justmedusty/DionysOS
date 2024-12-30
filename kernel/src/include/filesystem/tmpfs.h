@@ -11,7 +11,7 @@
 
 #define TMPFS_MAGIC 0x534F455077778034UL
 #define PAGES_PER_TMPFS_ENTRY 1024UL
-#define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * 8
+#define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * sizeof(uintptr_t)
 #define MAX_TMPFS_ENTRIES VNODE_MAX_DIRECTORY_ENTRIES
 
 
@@ -97,4 +97,5 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle);
 
 void tmpfs_remove(const struct vnode *vnode);
 
+void tmpfs_mkfs(uint64_t filesystem_id);
 #endif //KERNEL_TMPFS_H

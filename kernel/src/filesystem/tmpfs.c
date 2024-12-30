@@ -7,6 +7,7 @@
 #include <include/architecture/arch_asm_functions.h>
 #include <include/data_structures/binary_tree.h>
 #include <include/definitions/string.h>
+#include <include/device/display/framebuffer.h>
 
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
@@ -38,6 +39,9 @@ static void tmpfs_delete_reg_file(struct tmpfs_node *node);
 static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove);
 
 uint8_t tmpfs_node_number_bitmap[PAGE_SIZE]; // only 1 since we won't support multiple distinct tmpfs filesystems
+
+#define TMPFS_NUM_SUPERBLOCKS 10
+struct tmpfs_superblock superblock[TMPFS_NUM_SUPERBLOCKS] = {0};
 
 struct vnode_operations tmpfs_ops = {
     .close = tmpfs_close,
@@ -105,6 +109,7 @@ void tmpfs_rename(const struct vnode *vnode, char *name) {
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
+
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     if (vnode->vnode_type == VNODE_FILE) {
         tmpfs_delete_reg_file(node);
@@ -225,9 +230,13 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
     nop();
 }
 
-void tmpfs_mkfs() {
+void tmpfs_mkfs(uint64_t filesystem_id) {
+    if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
+        warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
+        return;
+    }
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
-    root->superblock = kmalloc(sizeof(struct tmpfs_superblock));
+    root->superblock = &superblock[filesystem_id];
     struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
     memset(context, 0, sizeof(struct tmpfs_filesystem_context));
     context->superblock = root->superblock;

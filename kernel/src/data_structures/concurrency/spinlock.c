@@ -9,7 +9,6 @@
 
 bool bsp = true;
 
-//TODO replace cli/sti with architecture agnostic wrapper function
 void initlock(struct spinlock *spinlock, uint64_t id) {
     spinlock->id = id;
     spinlock->locked = 0;

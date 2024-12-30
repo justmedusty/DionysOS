@@ -21,34 +21,71 @@ static void write_hex_serial(uint64_t num, int8_t size);
 static char get_hex_char(uint8_t nibble);
 
 #ifdef __x86_64__
-#define COM1 0x3F8   // COM1 base port
+#define BASE 0x3F8   // BASE port
 #endif
 
 struct spinlock serial_lock;
-
+struct device serial_device = {0};
 /*
- * Your typical UART setup, COM1 port
+ * Your typical UART setup, BASE port
  */
+int32_t put(char *c, struct device *device);
 
-#ifdef __x86_64__
+uint32_t get(uint32_t port, struct device *device);
+
+struct char_device_ops serial_ops = {
+    .get = get,
+    .put = put,
+    .ioctl = NULL
+};
+
+struct device_ops main_serial_ops = {
+    .init = NULL,
+    .shutdown = NULL,
+    .reset = NULL,
+    .char_device_ops = &serial_ops
+};
+
 
 void init_serial() {
-    write_port(COM1 + 1, 0x00); // Disable all interrupts
-    write_port(COM1 + 3, 0x80); // Enable DLAB (set baud rate divisor)
-    write_port(COM1 + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
-    write_port(COM1 + 1, 0x00); //                  (hi byte)
-    write_port(COM1 + 3, 0x03); // 8 bits, no parity, one stop bit
-    write_port(COM1 + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
-    write_port(COM1 + 4, 0x0B); // IRQs enabled, RTS/DSR set
+#ifdef __x86_64__
+    write_port(BASE + 1, 0x00); // Disable all interrupts
+    write_port(BASE + 3, 0x80); // Enable DLAB (set baud rate divisor)
+    write_port(BASE + 0, 0x03); // St divisor to 3 (lo byte) 38400 baud
+    write_port(BASE + 1, 0x00); //                  (hi byte)
+    write_port(BASE + 3, 0x03); // 8 bits, no parity, one stop bit
+    write_port(BASE + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+    write_port(BASE + 4, 0x0B); // IRQs enabled, RTS/DSR set
+#endif
     initlock(&serial_lock,SERIAL_LOCK);
+    serial_device.device_major = DEVICE_MAJOR_SERIAL;
+    serial_device.device_minor = BASE_SERIAL_DEVICE;
+    serial_device.lock = &serial_lock;
+    serial_device.parent = NULL;
+    serial_device.device_ops = &main_serial_ops;
+    serial_device.uses_dma = false;
+    serial_device.device_info = NULL;
+    serial_device.pci_driver = NULL;
+    serial_device.device_type = DEVICE_TYPE_CHAR;
     serial_printf("Serial Initialized\n");
 }
 
 static int is_transmit_empty() {
-    return read_port(COM1 + 5) & 0x20;
+#ifdef __x86_64__
+    int32_t ret = read_port(BASE + 5) & 0x20;
+#endif
+    return ret;
 }
 
-#endif
+int32_t put(char *c, struct device *device) {
+    write_port(BASE, *c);
+    return KERN_SUCCESS;
+}
+
+uint32_t get(uint32_t port, struct device *device) {
+    return read_port(BASE);
+}
+
 /*
  *  This function writes a single byte to the serial port,
  *  if it is a linebreak, it writes a carriage return after
@@ -58,9 +95,9 @@ static void write_serial(char a) {
     while (is_transmit_empty() == 0);
     //correct the serial tomfoolery of just dropping a \n
     if (a == '\n') {
-        write_port(COM1, '\r');
+        write_port(BASE, '\r');
     }
-    write_port(COM1, a);
+    write_port(BASE, a);
 }
 
 /*

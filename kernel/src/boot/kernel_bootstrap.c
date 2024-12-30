@@ -27,7 +27,7 @@
 int32_t ready = 0;
 
 void welcome_message() {
-    kprintf_color(RED, DIONYSOS_ASCII_STRING);
+    kprintf_color(RED, DIONYSOS_ASCII_STRING2);
     kprintf_color(RED,AUTHOR_ASCII_STRING);
     kprintf_color(
         WHITE,
@@ -48,6 +48,7 @@ void kernel_bootstrap() {
     mem_bounds_init();
     arch_vmm_init();
     init_system_device_tree();
+    insert_device_into_kernel_tree(&serial_device);
     framebuffer_init();
     acpi_init();
     lapic_init();

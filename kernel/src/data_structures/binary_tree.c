@@ -26,7 +26,7 @@ uint64_t remove_red_black_tree(struct binary_tree* tree, uint64_t key);
 static uint8_t static_pool_init = 0;
 
 
-//TODO OPTIMIZE SIZE AND ALIGNMENT OF NODES AND SET UP THE HEAP ALLOCATOR TO HAVE APPROPRIATE SIZE
+
 //TODO ADD TREE BALANCING
 
 /*
@@ -47,7 +47,7 @@ static struct binary_tree_node* node_alloc() {
         }
     }
     pool_full = 1;
-    return kmalloc(sizeof(struct binary_tree_node)); // TODO PUTTING THIS BACK TO INTERNAL FUNC BECAUSE OF DEADLOCK THIS CAN CAUSE PROBLEMS LATER SO STICKING A PIN
+    return kmalloc(sizeof(struct binary_tree_node));
 }
 /*
  * Free a node, just invoke _kfree( it not part of the static pool,
@@ -91,7 +91,7 @@ static struct binary_tree_node* pmm_node_alloc() {
         }
     }
     pool_full = 1;
-    return _kalloc(sizeof(struct binary_tree_node)); // TODO PUTTING THIS BACK TO INTERNAL FUNC BECAUSE OF DEADLOCK THIS CAN CAUSE PROBLEMS LATER SO STICKING A PIN
+    return _kalloc(sizeof(struct binary_tree_node));
 }
 /*
  * Free a node, just invoke _kfree( it not part of the static pool,

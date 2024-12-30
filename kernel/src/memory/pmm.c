@@ -434,7 +434,7 @@ static void buddy_free(void *address) {
          *
          */
             struct header *slab_header = (struct header *) (
-                (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
+                (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
             heap_free_in_slab(slab_header->slab, P2V(address));
             return;
         }

@@ -24,7 +24,7 @@ int heap_init() {
     initlock(&alloc_lock, ALLOC_LOCK);
     int size = 8;
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
-        heap_create_slab(&slabs[i], size,DEFAULT_SLAB_SIZE);
+        heap_create_slab(&slabs[i], size,DEFAULT_SLAB_SIZE_PAGES);
         size <<= 1;
         if (size >= PAGE_SIZE) {
             break;
@@ -42,7 +42,6 @@ int heap_init() {
  */
 
 /*
- *TODO fix nested dependency issue rendering the allocator not lockable
  *Possible fix is an even higher level wrapper function, a check to see if this
  *thread of control is holding the lock and allowing them through, having per cpu
  *buddy pools etc.
@@ -56,7 +55,10 @@ void *kmalloc(uint64_t size) {
     release_spinlock(&alloc_lock);
     return ret;
 }
-
+/*
+ * Zeros memory before passing it to you, generally there would be some sort of zero'd page cache but we don't need to go that far
+ * with a hobby operating system. Just zero on demand.
+ */
 void *kzmalloc(uint64_t size) {
     acquire_spinlock(&alloc_lock);
     void *ret = _kalloc(size);
@@ -65,7 +67,11 @@ void *kzmalloc(uint64_t size) {
     release_spinlock(&alloc_lock);
     return ret;
 }
-
+/*
+ * These two are lockless alloc functions which the main alloc functions wrap around. This allows us to alloc from inside a
+ * locked context and not worry about deadlocking yourself. Without these deadlock will occur very quickly whenever new bookkeeping
+ * objects are allocated during an allocation call chain. This happens a lot.
+ */
 void *_kalloc(uint64_t size) {
     if (size < PAGE_SIZE) {
         struct slab *slab = heap_slab_for(size);
@@ -83,6 +89,26 @@ void *_kalloc(uint64_t size) {
         return NULL;
     }
     return return_value;
+}
+
+/*
+ * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
+ */
+void _kfree(void *address) {
+    if (address == NULL) {
+        return;
+    }
+
+    if ((uint64_t) address & 0xFFF) {
+        goto slab;
+    }
+
+    phys_dealloc(V2P(address));
+    return;
+
+    slab:
+        struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
+    heap_free_in_slab(slab_header->slab, address);
 }
 
 /*
@@ -140,25 +166,6 @@ void *krealloc(void *address, uint64_t new_size) {
     return address;
 }
 
-/*
- * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
- */
-void _kfree(void *address) {
-    if (address == NULL) {
-        return;
-    }
-
-    if ((uint64_t) address & 0xFFF) {
-        goto slab;
-    }
-
-    phys_dealloc(V2P(address));
-    return;
-
-slab:
-    struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE * PAGE_SIZE) - 1));
-    heap_free_in_slab(slab_header->slab, address);
-}
 
 void kfree(void *address) {
     acquire_spinlock(&alloc_lock);

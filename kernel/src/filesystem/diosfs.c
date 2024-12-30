@@ -359,7 +359,7 @@ uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, c
 
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
-    //TODO decide what I wish to do with this buffer size constraint when dealing with userspace. This works for now
+
     uint64_t ret = diosfs_read_bytes_from_inode(fs, &inode, buffer, PGROUNDUP(bytes),
                                                 offset % fs->superblock->block_size, bytes);
     release_spinlock(fs->lock);

@@ -74,7 +74,7 @@ struct block_device_ops {
 struct char_device_ops {
     int32_t (*put)(char *c, struct device *device);
 
-    int32_t (*get)(char *c, struct device *device);
+    uint32_t (*get)(uint32_t port, struct device *device);
 
     int32_t (*ioctl)(struct device *dev, uint32_t cmd, void *arg, struct device *device);
 };
