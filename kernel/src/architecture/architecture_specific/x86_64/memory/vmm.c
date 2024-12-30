@@ -22,7 +22,7 @@
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
 
-#define USER_SPAN_SIZE (7UL << 30UL)
+#define USER_SPAN_SIZE (6UL << 30UL)
 
 p4d_t* global_pg_dir = 0;
 
