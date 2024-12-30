@@ -7,6 +7,7 @@
  */
 
 
+#include <include/device/display/framebuffer.h>
 #ifdef __x86_64__
 
 #include <include/architecture/arch_cpu.h>
@@ -21,6 +22,7 @@
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
 
+#define USER_SPAN_SIZE (7UL << 30UL)
 
 p4d_t* global_pg_dir = 0;
 
@@ -66,11 +68,8 @@ void map_kernel_address_space(p4d_t* pgdir){
         panic("Mapping data!");
     }
 
-    /*
-     * TODO fix vmm approach with a kernel page pool or something later on so we don't need to map the entirety of physical memory
-     */
-    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, usable_pages * PAGE_SIZE) == -1){
-        panic("Mapping first 8gb!");
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, USER_SPAN_SIZE) == -1){
+        panic("Mapping first 4gb!");
     }
 
     struct limine_memmap_response* memmap = memmap_request.response;
@@ -79,11 +78,11 @@ void map_kernel_address_space(p4d_t* pgdir){
     for (uint64_t i = 0; i < memmap->entry_count; i++){
         uint64_t base = PGROUNDDOWN(entries[i]->base);
         uint64_t top = PGROUNDUP(entries[i]->base + entries[i]->length);
-        if (top < usable_pages * PAGE_SIZE){
+        if (top <  (USER_SPAN_SIZE)){
             continue;
         }
         for (uint64_t j = base; j < top; j += PAGE_SIZE){
-            if (j < (uint64_t)usable_pages * PAGE_SIZE){
+            if (j < USER_SPAN_SIZE){
                 continue;
             }
             if (map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){

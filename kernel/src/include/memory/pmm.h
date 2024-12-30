@@ -9,7 +9,7 @@ extern volatile struct limine_hhdm_request hhdm_request;
 extern volatile struct limine_memmap_request memmap_request;
 
 
-#define PAGE_SIZE 4096
+#define PAGE_SIZE 4096UL
 #define BITMAP 0
 #define BUDDY 1
 /* For buddy */
@@ -18,7 +18,7 @@ extern volatile struct limine_memmap_request memmap_request;
 #define STATIC_POOL_FLAG BIT(5) /* So we know to return to the pool not try to call kfree on it */
 #define FIRST_BLOCK_FLAG BIT(6) /* So that we dont coalesce into other areas or memory*/
 #define IN_TREE_FLAG BIT(7)
-#define STATIC_POOL_SIZE 11000
+#define STATIC_POOL_SIZE 11000UL
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2

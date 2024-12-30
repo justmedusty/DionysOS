@@ -5,7 +5,6 @@
 /*
 	Dustyn's fair scheduler
  */
-#define _DFS_ // this is only here because clion is complaining and I lose intellisense because reading a makefile is too difficult and complicated. This is meant to just be defined in the makefile
 #include <include/device/display/framebuffer.h>
 
 #ifdef _DFS_ // the type of scheduler used will be defined in the gcc flags at compile time.
