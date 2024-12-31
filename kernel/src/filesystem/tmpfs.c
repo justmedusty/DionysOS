@@ -230,7 +230,7 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
     nop();
 }
 
-void tmpfs_mkfs(uint64_t filesystem_id) {
+void tmpfs_mkfs(const uint64_t filesystem_id) {
     if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
         return;
@@ -288,7 +288,7 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
 
     for (size_t i = 0; i < node->tmpfs_node_size; i++) {
         struct tmpfs_node *entry = entries->entries[i];
-        if (safe_strcmp(entry->node_name, name,VFS_MAX_NAME_LENGTH)) {
+        if (safe_strcmp(entry->node_name, name,VFS_MAX_NAME_LENGTH) == 0) {
             return entry;
         }
     }
@@ -324,7 +324,7 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
     for (size_t i = 0; i < num_entries; i++) {
         vnode->vnode_children[i] = tmpfs_node_to_vnode(entries->entries[i]);
         vnode->vnode_children[i]->vnode_parent = vnode;
-        if (safe_strcmp(vnode->vnode_children[i]->vnode_name, target_name, VFS_MAX_NAME_LENGTH)) {
+        if (safe_strcmp(vnode->vnode_children[i]->vnode_name, target_name, VFS_MAX_NAME_LENGTH) == 0) {
             ret = vnode->vnode_children[i];
         }
     }

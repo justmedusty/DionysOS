@@ -81,6 +81,9 @@ struct vnode *vnode_alloc() {
 }
 
 void vnode_directory_alloc_children(struct vnode *vnode) {
+    if (vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
+        return;
+    }
     vnode->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     vnode->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
 
@@ -180,10 +183,15 @@ uint64_t vnode_unlink(struct vnode *link) {
 struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
+    kprintf("PATH %s NAME %s\n",path,name);
     struct vnode *parent_directory = vnode_lookup(path);
+
     if (parent_directory == NULL) {
         //handle null response, maybe want to return something descriptive later
         return NULL;
+    }
+    if (parent_directory->is_mount_point) {
+        parent_directory = parent_directory->mounted_vnode;
     }
 
     if (!(parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
@@ -191,8 +199,10 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     }
 
     struct vnode *new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
-    parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
-
+    info_printf("CREATE : NAME %s \n",parent_directory->vnode_name);
+    parent_directory->vnode_children[parent_directory->num_children] = new_vnode;
+    parent_directory->num_children = parent_directory->num_children + 1;
+    kprintf("Parent dir %s children %i new child name %s\n",parent_directory->vnode_name,parent_directory->num_children, parent_directory->vnode_children[parent_directory->num_children - 1]->vnode_name);
     return new_vnode;
 }
 
@@ -210,7 +220,7 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
 
 
     if (target->is_mount_point) {
-        //should I make it a requirement to unmount before removing ?
+        panic("Cannot delete mount point without first unmounting\n"); // need to put logic here just putting this as a placeholder
     }
 
     if (vnode->vnode_active_references != 0) {
@@ -311,6 +321,7 @@ void vnode_rename(struct vnode *vnode, char *new_name) {
  */
 struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     acquire_spinlock(&vfs_lock);
+
     if (vnode->vnode_type != VNODE_DIRECTORY) {
         release_spinlock(&vfs_lock);
         return NULL;
@@ -324,21 +335,23 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
             vnode_directory_alloc_children(vnode);
         }
-
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         /* Handle cache stuff when I get there */
         release_spinlock(&vfs_lock);
+        kprintf("child name %s\n",child->vnode_name);
         return child;
     }
 
     size_t index = 0;
 
     struct vnode *child = vnode->vnode_children[index];
+    kprintf("CHILD NAME %s\n",child->vnode_name);
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child != NULL && safe_strcmp(child->vnode_name, token, VFS_MAX_NAME_LENGTH)) {
+        if (child != NULL && (strcmp(child->vnode_name, token) == 0)) {
+            kprintf("TOKEN %s PARENT NAME %s\n",token,vnode->vnode_name);
             release_spinlock(&vfs_lock);
             return child;
         }
@@ -407,7 +420,7 @@ uint64_t vnode_unmount(struct vnode *vnode) {
  */
 uint64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->read(vnode->mounted_vnode, offset, buffer, bytes);
+        panic("reading a directory");
     }
     //Let the specific impl handle this
     return vnode->vnode_ops->read(vnode, offset, buffer, bytes);
@@ -416,7 +429,7 @@ uint64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t b
 
 uint64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
-        return vnode->vnode_ops->write(vnode->mounted_vnode, offset, buffer, bytes);
+        panic("writing to a directory");
     }
     return vnode->vnode_ops->write(vnode, offset, buffer, bytes);
 }
@@ -469,8 +482,14 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
  *
  */
 static struct vnode *parse_path(char *path) {
+
     //Assign to the root node by default
     struct vnode *current_vnode = &vfs_root;
+
+    if (vfs_root.is_mount_point) {
+        current_vnode = vfs_root.mounted_vnode;
+    }
+
 
     char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
@@ -484,16 +503,14 @@ static struct vnode *parse_path(char *path) {
     if (!*path) {
         return current_vnode;
     }
-    //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the lasty. It is part of the altered design choice I chose
+    //This holds the value I chose to return from strok, it either returns 1 or 0, 0 means this token is the last. It is part of the altered design choice I chose
     uint64_t last_token = 1;
     uint64_t index = 1;
 
     while (last_token != LAST_TOKEN) {
         last_token = strtok(path, '/', current_token, index);
         index++;
-
         current_vnode = find_vnode_child(current_vnode, current_token);
-
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
             kfree(current_token);
@@ -503,6 +520,7 @@ static struct vnode *parse_path(char *path) {
         //Clear the token to be filled again next go round, this is important
         memset(current_token, 0, VFS_MAX_NAME_LENGTH);
     }
+
     kfree(current_token);
     return current_vnode;
 }

@@ -49,6 +49,7 @@ void insert_device_into_kernel_tree(struct device *device) {
   if (device_group == NULL) {
     device_group = alloc_new_device_group(device_major);
   }
+
   insert_device_into_device_group(device, device_group);
 }
 

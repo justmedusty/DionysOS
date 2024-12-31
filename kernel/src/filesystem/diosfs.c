@@ -183,6 +183,7 @@ void diosfs_init(uint64_t filesystem_id) {
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
     dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+
     insert_device_into_kernel_tree(diosfs_filesystem_context->device);
     kprintf("DiosFS Filesystem Initialized\n");
 };
@@ -286,38 +287,62 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     root.parent_inode_number = root.inode_number;
     diosfs_write_inode(fs, &root);
 
-    memset(&vfs_root, 0, sizeof(struct vnode));
-    strcpy((char *) vfs_root.vnode_name, "/");
-    vfs_root.filesystem_object = fs;
-    vfs_root.vnode_inode_number = root.inode_number;
-    vfs_root.vnode_type = DIRECTORY;
-    vfs_root.vnode_ops = &diosfs_vnode_ops;
-    vfs_root.vnode_refcount = 1;
-    vfs_root.vnode_parent = NULL;
-    vfs_root.vnode_children = NULL;
-    vfs_root.vnode_filesystem_id = VNODE_FS_DIOSFS;
+    struct vnode *vnode = vnode_alloc();
+    memset(vnode, 0, sizeof(struct vnode));
+    strcpy((char *) vnode->vnode_name, "/");
+    vnode->filesystem_object = fs;
+    vnode->vnode_inode_number = root.inode_number;
+    vnode->vnode_type = DIRECTORY;
+    vnode->vnode_ops = &diosfs_vnode_ops;
+    vnode->vnode_refcount = 1;
+    vnode->vnode_parent = NULL;
+    vnode->vnode_children = NULL;
+    vnode->vnode_filesystem_id = VNODE_FS_DIOSFS;
+
+    vnode_mount(&vfs_root, vnode);
 
     struct vnode *vnode1 = vnode_create("/", "etc", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode1->vnode_name);
+    serial_printf("DiosFS : Directory etc created\n");
     struct vnode *vnode2 = vnode_create("/", "dev", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode2->vnode_name);
+    serial_printf("DiosFS : Directory dev created\n");
     struct vnode *vnode3 = vnode_create("/", "mnt", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode3->vnode_name);
+    serial_printf("DiosFS : Directory mnt created\n");
     struct vnode *vnode4 = vnode_create("/", "var", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode4->vnode_name);
+    serial_printf("DiosFS : Directory var created\n");
     struct vnode *vnode5 = vnode_create("/", "bin", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode5->vnode_name);
+    serial_printf("DiosFS : Directory bin created\n");
     struct vnode *vnode6 = vnode_create("/", "root", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode6->vnode_name);
+    serial_printf("DiosFS : Directory root created\n");
     struct vnode *vnode7 = vnode_create("/", "home", VNODE_DIRECTORY);
-    struct vnode *vnode8 = vnode_create("/", "proc", VNODE_DIRECTORY);
-    struct vnode *vnode11 = vnode_create("/", "dev", VNODE_DIRECTORY);
+    kprintf("%s name\n",vnode7->vnode_name);
+    serial_printf("DiosFS : Directory home created\n");
 
+    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
     struct vnode *vnode12 = vnode_create("/dev", "rd0", VNODE_BLOCK_DEV);
+    serial_printf("DiosFS : Device file rd0 (Ramdisk 0) created\n");
 
     struct vnode *vnode9 = vnode_create("/etc", "passwd", VNODE_FILE);
+
+    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
+    serial_printf("DiosFS : File /etc/passwd created\n");
     struct vnode *vnode10 = vnode_create("/etc", "config.txt", VNODE_FILE);
-
+    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
+    serial_printf("DiosFS : File /etc/config created\n");
     vnode_write(vnode9, 0, sizeof("dustyn password"), "dustyn password");
-
+    char vbuffer[128];
+    kprintf("HERE\n");
     struct vnode *test = vnode_lookup("/etc/passwd");
+    vnode_read(test, 0, test->vnode_size, vbuffer);
+    kprintf("DiosFS : Password created, %s\n", vbuffer);
 
     kfree(buffer);
-    serial_printf("Diosfs filesystem initialized of size %i , %i byte blocks\n", DEFAULT_DIOSFS_SIZE / DIOSFS_BLOCKSIZE,
+    serial_printf("Diosfs filesystem initialized of size %i MB , %i byte blocks\n", DEFAULT_DIOSFS_SIZE / 1024 / 1024,
                   DIOSFS_BLOCKSIZE);
 }
 
@@ -458,19 +483,22 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     struct vnode *child = NULL;
 
-    uint8_t max_directories = parent->vnode_size / sizeof(struct diosfs_directory_entry) > VNODE_MAX_DIRECTORY_ENTRIES
+    uint8_t max_directories = parent->vnode_size > VNODE_MAX_DIRECTORY_ENTRIES
                                   ? VNODE_MAX_DIRECTORY_ENTRIES
-                                  : parent->vnode_size / sizeof(struct diosfs_directory_entry);
+                                  : parent->vnode_size;
+
 
     for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
+
         if (fill_vnode) {
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
          */
-        if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH)) {
+
+        if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH) == 0) {
             child = diosfs_directory_entry_to_vnode(parent, entry, fs);
             if (!fill_vnode) {
                 goto done;
@@ -491,7 +519,7 @@ done:
  */
 struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnode_type) {
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS) {
-        serial_printf("diosfs_create parent filesystem ID doesn't match\n");
+        panic("diosfs_create parent filesystem ID doesn't match\n");
         return NULL;
     }
     if (parent->vnode_type != VNODE_DIRECTORY) {
@@ -542,6 +570,7 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
         panic("Could not write dirent");
         return NULL;
     }
+
     return new_vnode;
 }
 
@@ -1257,7 +1286,8 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
                                              const uint64_t offset, const uint64_t read_size_bytes) {
     uint64_t num_blocks_to_read = read_size_bytes / fs->superblock->block_size;
 
-    if (inode->type != REG_FILE) {
+    if (inode->type != VNODE_FILE) {
+        kprintf("INODE NAME %s TYPE %i",inode->name,inode->type);
         panic("diosfs_write_bytes_to_inode bad type");
     }
 
