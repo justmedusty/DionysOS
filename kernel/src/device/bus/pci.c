@@ -80,7 +80,7 @@ void pci_enumerate_devices(bool print){
 
                 uint8_t class = pci_read_config(pci_device,PCI_DEVICE_CLASS_OFFSET) & BYTE_MASK;
 
-                if(class == PCI_CLASS_UNASSIGNED || strcmp(pci_get_class_name(class),"Unknown")){
+                if(class == PCI_CLASS_UNASSIGNED || safe_strcmp(pci_get_class_name(class),"Unknown",100)){
                     memset(pci_device,0,sizeof(struct pci_device));
                     continue;
                 }

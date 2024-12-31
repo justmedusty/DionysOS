@@ -183,7 +183,6 @@ uint64_t vnode_unlink(struct vnode *link) {
 struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
-    kprintf("PATH %s NAME %s\n",path,name);
     struct vnode *parent_directory = vnode_lookup(path);
 
     if (parent_directory == NULL) {
@@ -199,10 +198,8 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     }
 
     struct vnode *new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
-    info_printf("CREATE : NAME %s \n",parent_directory->vnode_name);
     parent_directory->vnode_children[parent_directory->num_children] = new_vnode;
     parent_directory->num_children = parent_directory->num_children + 1;
-    kprintf("Parent dir %s children %i new child name %s\n",parent_directory->vnode_name,parent_directory->num_children, parent_directory->vnode_children[parent_directory->num_children - 1]->vnode_name);
     return new_vnode;
 }
 
@@ -339,19 +336,16 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         vnode->is_cached = true;
         /* Handle cache stuff when I get there */
         release_spinlock(&vfs_lock);
-        kprintf("child name %s\n",child->vnode_name);
         return child;
     }
 
     size_t index = 0;
 
     struct vnode *child = vnode->vnode_children[index];
-    kprintf("CHILD NAME %s\n",child->vnode_name);
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child != NULL && (strcmp(child->vnode_name, token) == 0)) {
-            kprintf("TOKEN %s PARENT NAME %s\n",token,vnode->vnode_name);
+        if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH) )){
             release_spinlock(&vfs_lock);
             return child;
         }

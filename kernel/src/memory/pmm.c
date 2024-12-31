@@ -227,6 +227,7 @@ int phys_init() {
                 ucount++;
             }
 
+
             insert_tree_node(tree, &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);
             index++;

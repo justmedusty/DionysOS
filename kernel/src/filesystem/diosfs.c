@@ -302,45 +302,33 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     vnode_mount(&vfs_root, vnode);
 
     struct vnode *vnode1 = vnode_create("/", "etc", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode1->vnode_name);
     serial_printf("DiosFS : Directory etc created\n");
     struct vnode *vnode2 = vnode_create("/", "dev", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode2->vnode_name);
     serial_printf("DiosFS : Directory dev created\n");
     struct vnode *vnode3 = vnode_create("/", "mnt", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode3->vnode_name);
     serial_printf("DiosFS : Directory mnt created\n");
     struct vnode *vnode4 = vnode_create("/", "var", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode4->vnode_name);
     serial_printf("DiosFS : Directory var created\n");
     struct vnode *vnode5 = vnode_create("/", "bin", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode5->vnode_name);
     serial_printf("DiosFS : Directory bin created\n");
     struct vnode *vnode6 = vnode_create("/", "root", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode6->vnode_name);
     serial_printf("DiosFS : Directory root created\n");
     struct vnode *vnode7 = vnode_create("/", "home", VNODE_DIRECTORY);
-    kprintf("%s name\n",vnode7->vnode_name);
     serial_printf("DiosFS : Directory home created\n");
-
-    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
     struct vnode *vnode12 = vnode_create("/dev", "rd0", VNODE_BLOCK_DEV);
+    struct vnode *vnode13 = vnode_create("/", "proc", VNODE_DIRECTORY);
     serial_printf("DiosFS : Device file rd0 (Ramdisk 0) created\n");
 
     struct vnode *vnode9 = vnode_create("/etc", "passwd", VNODE_FILE);
-
-    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
     serial_printf("DiosFS : File /etc/passwd created\n");
     struct vnode *vnode10 = vnode_create("/etc", "config.txt", VNODE_FILE);
-    kprintf("%s CHILDREN %i\n",vnode1->vnode_name,vnode1->num_children);
     serial_printf("DiosFS : File /etc/config created\n");
     vnode_write(vnode9, 0, sizeof("dustyn password"), "dustyn password");
-    char vbuffer[128];
-    kprintf("HERE\n");
+    char *vbuffer = kmalloc(PAGE_SIZE);
     struct vnode *test = vnode_lookup("/etc/passwd");
     vnode_read(test, 0, test->vnode_size, vbuffer);
     kprintf("DiosFS : Password created, %s\n", vbuffer);
-
+    kfree(vbuffer);
     kfree(buffer);
     serial_printf("Diosfs filesystem initialized of size %i MB , %i byte blocks\n", DEFAULT_DIOSFS_SIZE / 1024 / 1024,
                   DIOSFS_BLOCKSIZE);
@@ -498,7 +486,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
          */
 
-        if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH) == 0) {
+        if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH)) {
             child = diosfs_directory_entry_to_vnode(parent, entry, fs);
             if (!fill_vnode) {
                 goto done;

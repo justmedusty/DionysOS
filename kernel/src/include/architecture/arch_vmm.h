@@ -5,7 +5,7 @@
 #pragma once
 #include "include/definitions/types.h"
 #include "include/architecture/arch_paging.h"
-#define USER_SPAN_SIZE (((highest_address) / 2UL) + (highest_address / 5UL))
+#define USER_SPAN_SIZE (((usable_pages * PAGE_SIZE) / 2UL))
 //walkpgdir flags , going to ad a flag for debugging
 #define ALLOC 0x1
 #define DEBUG 0x2
