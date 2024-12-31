@@ -75,14 +75,13 @@ void map_kernel_address_space(p4d_t* pgdir){
     if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , highest_address) == -1){
         panic("Mapping first half!");
     }
-
 }
 
 /*
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
  */
 
-static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
+static pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags){
     if (pgdir == 0){
         panic("page dir zero");
     }
@@ -147,7 +146,7 @@ int map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perm
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
 
     for (;;){
-        if ((pte = walkpgdir(pgdir, (void*)address, 1)) == 0){
+        if ((pte = walk_page_directory(pgdir, (void*)address, 1)) == 0){
             return -1;
         }
 
@@ -171,7 +170,7 @@ int map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perm
 
 uint64_t dealloc_va(p4d_t* pgdir, const uint64_t address){
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
-    pte_t* entry = walkpgdir(pgdir, (void*)aligned_address, 0);
+    pte_t* entry = walk_page_directory(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0){
         panic("dealloc_va");
