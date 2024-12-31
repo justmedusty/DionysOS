@@ -69,33 +69,13 @@ void map_kernel_address_space(p4d_t* pgdir){
     }
 
     /*
-     * Just map the entire physical range, the memmap reading below that I will leave commented out for now, starts causing crashes when I change memory size and I am not sure what it causing the faults.
-     * This allows me to use any amount of memory and it will not fault.
+     * Just map the entire physical range
+     * I will just have 2 trees in the PMM one for user pages one for kernel pages
      */
-    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , usable_pages * PAGE_SIZE) == -1){
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , highest_address) == -1){
         panic("Mapping first half!");
     }
 
-/*
-    struct limine_memmap_response* memmap = memmap_request.response;
-    struct limine_memmap_entry** entries = memmap->entries;
-
-    for (uint64_t i = 0; i < memmap->entry_count; i++){
-        uint64_t base = PGROUNDDOWN(entries[i]->base);
-        uint64_t top = PGROUNDUP(entries[i]->base + entries[i]->length);
-        if (top < (USER_SPAN_SIZE)){
-            continue;
-        }
-        for (uint64_t j = base; j < top; j += PAGE_SIZE){
-            if (j < USER_SPAN_SIZE){
-                continue;
-            }
-            if (map_pages(kernel_pg_map->top_level, j, (uint64_t*)j + hhdm_offset, PTE_NX | PTE_RW, PAGE_SIZE) == -1){
-                panic("hhdm mapping");
-            }
-        }
-    }
-*/
 }
 
 /*
