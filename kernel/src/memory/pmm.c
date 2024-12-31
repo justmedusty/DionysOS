@@ -100,6 +100,7 @@ struct contiguous_page_range contiguous_pages[10] = {};
  *
  *
  */
+uint64_t highest_address = 0;
 int phys_init() {
     kprintf("Initializing Physical Memory Manager...\n");
     initlock(&buddy_lock, BUDDY_LOCK);
@@ -108,7 +109,6 @@ int phys_init() {
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
-    uint64_t highest_address = 0;
     hhdm_offset = hhdm->offset;
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];
@@ -224,7 +224,6 @@ int phys_init() {
                 tree = &buddy_free_list_zone[USER_POOL];
                 ucount++;
             }
-
 
             insert_tree_node(tree, &buddy_block_static_pool[index],
                              buddy_block_static_pool[index].order);

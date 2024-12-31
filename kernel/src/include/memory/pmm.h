@@ -30,6 +30,7 @@ extern volatile struct limine_memmap_request memmap_request;
 extern uint64_t hhdm_offset;
 extern uint64_t total_allocated;
 extern uint64_t usable_pages;
+extern uint64_t highest_address;
 int phys_init();
 void *phys_alloc(uint64_t pages);
 void phys_dealloc(void *address);
