@@ -21,7 +21,7 @@
  */
 static void buddy_coalesce(struct buddy_block *block);
 
-static struct buddy_block *buddy_alloc(uint64_t pages);
+static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone);
 
 static void buddy_free(void *address);
 
@@ -70,7 +70,7 @@ uint64_t usable_pages = 0;
 uint64_t used_pages = 0;
 uint64_t reserved_pages = 0;
 uint64_t hhdm_offset = 0;
-int page_range_index = 0;
+uint64_t page_range_index = 0;
 
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
 struct contiguous_page_range contiguous_pages[10] = {};
@@ -219,9 +219,11 @@ int phys_init() {
 
             if ((uintptr_t) buddy_block_static_pool[index].start_address > USER_SPAN_SIZE) {
                 tree = &buddy_free_list_zone[KERNEL_POOL];
+                buddy_block_static_pool[index].zone = KERNEL_POOL;
                 kcount++;
             }else {
                 tree = &buddy_free_list_zone[USER_POOL];
+                buddy_block_static_pool[index].zone = USER_POOL;
                 ucount++;
             }
 
@@ -249,8 +251,8 @@ int phys_init() {
  * is marked USED and the return value is the start address of the buddy block that was found.
  */
 
-void *phys_alloc(uint64_t pages) {
-    struct buddy_block *block = buddy_alloc(pages);
+void *phys_alloc(uint64_t pages,uint8_t zone) {
+    struct buddy_block *block = buddy_alloc(pages,zone);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
     }
@@ -318,12 +320,12 @@ uint64_t next_power_of_two(uint64_t x) {
  * Freeing will just require an iterative approach to free everything and add it to the binary search tree
  */
 
-static struct buddy_block *buddy_alloc_large_range(uint64_t pages) {
+static struct buddy_block *buddy_alloc_large_range(uint64_t pages, uint8_t zone) {
     uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
     struct buddy_block *block = NULL;
 retry:
     uint64_t current_blocks = 1;
-    block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], MAX_ORDER,REMOVE_FROM_TREE);
+    block = lookup_tree(&buddy_free_list_zone[zone], MAX_ORDER,REMOVE_FROM_TREE);
     struct buddy_block *pointer = block;
 
     if (!block) {
@@ -332,7 +334,7 @@ retry:
 
     if (block->order != MAX_ORDER) {
         while (block != NULL && block->order != MAX_ORDER) {
-            block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], MAX_ORDER,REMOVE_FROM_TREE);
+            block = lookup_tree(&buddy_free_list_zone[zone], MAX_ORDER,REMOVE_FROM_TREE);
         }
     }
 
@@ -345,7 +347,7 @@ retry:
     }
 
     if (current_blocks < max_blocks) {
-        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[zone], block, block->order);
         /* Since it will be inserted at the tail we can do this and it wont keep grabbing the same block*/
         goto retry;
     }
@@ -354,7 +356,7 @@ retry:
     current_blocks = 2;
     pointer = block->next;
     while (current_blocks <= max_blocks) {
-        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], pointer->order, pointer,NULL);
+        remove_tree_node(&buddy_free_list_zone[zone], pointer->order, pointer,NULL);
         pointer->is_free = USED;
         pointer = pointer->next;
         current_blocks++;
@@ -365,9 +367,9 @@ retry:
     return block;
 }
 
-static struct buddy_block *buddy_alloc(uint64_t pages) {
+static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone) {
     if (pages > (1 << MAX_ORDER)) {
-        return buddy_alloc_large_range(pages);
+        return buddy_alloc_large_range(pages,zone);
     }
 
     if (!is_power_of_two(pages)) {
@@ -376,13 +378,13 @@ static struct buddy_block *buddy_alloc(uint64_t pages) {
 
     for (uint64_t i = 0; i < MAX_ORDER; i++) {
         if (pages == (1 << i)) {
-            struct buddy_block *block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], i,REMOVE_FROM_TREE);
+            struct buddy_block *block = lookup_tree(&buddy_free_list_zone[zone], i,REMOVE_FROM_TREE);
 
             if (block == NULL) {
                 uint64_t index = i + 1;
 
                 while (index <= MAX_ORDER) {
-                    block = lookup_tree(&buddy_free_list_zone[KERNEL_POOL], index,REMOVE_FROM_TREE);
+                    block = lookup_tree(&buddy_free_list_zone[zone], index,REMOVE_FROM_TREE);
 
                     if (block != NULL && block->start_address && block->order >= index) {
                         block->flags &= ~IN_TREE_FLAG;
@@ -407,7 +409,7 @@ static struct buddy_block *buddy_alloc(uint64_t pages) {
                      */
 
                     if (block != NULL && block->order < index) {
-                        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], index, block,NULL);
+                        remove_tree_node(&buddy_free_list_zone[zone], index, block,NULL);
                         continue;
                     }
                     index++;
@@ -599,7 +601,7 @@ static void buddy_coalesce(struct buddy_block *block) {
 
     if (block->next == NULL) {
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         /*
          *  Can't coalesce until the predecessor is free
          */
@@ -608,7 +610,7 @@ static void buddy_coalesce(struct buddy_block *block) {
 
     if (block->order == MAX_ORDER) {
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
         return;
     }
     /* This may be unneeded with high level locking but will keep it in mind still for the time being */
@@ -624,7 +626,7 @@ static void buddy_coalesce(struct buddy_block *block) {
         block->order++;
         buddy_block_free(next);
         block->flags |= IN_TREE_FLAG;
-        insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], block, block->order);
+        insert_tree_node(&buddy_free_list_zone[block->zone], block, block->order);
     }
 }
 

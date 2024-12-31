@@ -15,6 +15,7 @@
 #include "include/architecture/arch_paging.h"
 
 struct spinlock alloc_lock;
+struct spinlock userlock;
 /*
  * Init Memory for Kernel Heap.
  * Because 32 bytes is a common needed size so far in this kernel, I have allocated a metric fuckload of slab memory for it (comparatively)
@@ -22,6 +23,7 @@ struct spinlock alloc_lock;
 int heap_init() {
     kprintf("Initializing Kernel Heap...\n");
     initlock(&alloc_lock, ALLOC_LOCK);
+    initlock(&userlock, ALLOC_LOCK);
     int size = 8;
     for (uint64_t i = 0; i < NUM_SLABS; i++) {
         heap_create_slab(&slabs[i], size,DEFAULT_SLAB_SIZE_PAGES);
@@ -55,6 +57,19 @@ void *kmalloc(uint64_t size) {
     release_spinlock(&alloc_lock);
     return ret;
 }
+
+void *umalloc(uint64_t pages) {
+    acquire_spinlock(&userlock);
+    void *return_value = P2V(phys_alloc(pages,USER_POOL));
+
+    if (return_value == NULL) {
+        release_spinlock(&userlock);
+        return NULL;
+    }
+    release_spinlock(&userlock);
+    return return_value;
+}
+
 /*
  * Zeros memory before passing it to you, generally there would be some sort of zero'd page cache but we don't need to go that far
  * with a hobby operating system. Just zero on demand.
@@ -67,6 +82,7 @@ void *kzmalloc(uint64_t size) {
     release_spinlock(&alloc_lock);
     return ret;
 }
+
 /*
  * These two are lockless alloc functions which the main alloc functions wrap around. This allows us to alloc from inside a
  * locked context and not worry about deadlocking yourself. Without these deadlock will occur very quickly whenever new bookkeeping
@@ -83,7 +99,7 @@ void *_kalloc(uint64_t size) {
 
 
     uint64_t page_count = (size + (PAGE_SIZE)) / PAGE_SIZE;
-    void *return_value = P2V(phys_alloc(page_count));
+    void *return_value = P2V(phys_alloc(page_count,KERNEL_POOL));
 
     if (return_value == NULL) {
         return NULL;
@@ -106,8 +122,8 @@ void _kfree(void *address) {
     phys_dealloc(V2P(address));
     return;
 
-    slab:
-        struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
+slab:
+    struct header *slab_header = (struct header *) ((uint64_t) address & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
     heap_free_in_slab(slab_header->slab, address);
 }
 

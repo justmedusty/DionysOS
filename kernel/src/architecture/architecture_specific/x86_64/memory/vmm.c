@@ -32,7 +32,7 @@ void switch_page_table(p4d_t* page_dir){
 
 void init_vmm(){
     kernel_pg_map =kmalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64_t*)phys_alloc(1);
+    kernel_pg_map->top_level = (uint64_t*)phys_alloc(1,KERNEL_POOL); // 1 page , from kernel pool
     kernel_pg_map->vm_regions = NULL;
     /*
      * Map symbols in the linker script
@@ -97,7 +97,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
 
     if (!(*pud & PTE_P)){
         if (flags & ALLOC){
-            *pud = (pud_t)phys_alloc(1);
+            *pud = (pud_t)phys_alloc(1,KERNEL_POOL);
             *pud |= PTE_P | PTE_RW | PTE_U;
         }
         else{
@@ -110,7 +110,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
 
     if (!(*pmd & PTE_P)){
         if (flags & ALLOC){
-            *pmd = (pmd_t)phys_alloc(1);
+            *pmd = (pmd_t)phys_alloc(1,KERNEL_POOL);
             *pmd |= PTE_P | PTE_RW | PTE_U;
         }
         else{
@@ -124,7 +124,7 @@ static pte_t* walkpgdir(p4d_t* pgdir, const void* va, const int flags){
 
     if (!(*pte & PTE_P)){
         if (flags & ALLOC){
-            *pte = (pte_t)phys_alloc(1);
+            *pte = (pte_t)phys_alloc(1,KERNEL_POOL);
             *pte |= PTE_P | PTE_RW | PTE_U;
         }
         else{

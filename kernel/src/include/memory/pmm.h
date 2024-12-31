@@ -8,6 +8,8 @@
 extern volatile struct limine_hhdm_request hhdm_request;
 extern volatile struct limine_memmap_request memmap_request;
 
+#define KERNEL_POOL 0
+#define USER_POOL 1
 #define PAGE_SIZE 4096UL
 #define BITMAP 0
 #define BUDDY 1
@@ -30,7 +32,7 @@ extern uint64_t total_allocated;
 extern uint64_t usable_pages;
 extern uint64_t highest_address;
 int phys_init();
-void *phys_alloc(uint64_t pages);
+void *phys_alloc(uint64_t pages,uint8_t zone);
 void phys_dealloc(void *address);
 uint64_t next_power_of_two(uint64_t x);
 bool is_power_of_two(uint64_t x);
