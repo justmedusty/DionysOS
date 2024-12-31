@@ -68,10 +68,15 @@ void map_kernel_address_space(p4d_t* pgdir){
         panic("Mapping data!");
     }
 
-    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX, 12UL << 30UL) == -1){
+    /*
+     * Just map the entire physical range, the memmap reading below that I will leave commented out for now, starts causing crashes when I change memory size and I am not sure what it causing the faults.
+     * This allows me to use any amount of memory and it will not fault.
+     */
+    if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , usable_pages * PAGE_SIZE) == -1){
         panic("Mapping first half!");
     }
 
+/*
     struct limine_memmap_response* memmap = memmap_request.response;
     struct limine_memmap_entry** entries = memmap->entries;
 
@@ -90,7 +95,7 @@ void map_kernel_address_space(p4d_t* pgdir){
             }
         }
     }
-
+*/
 }
 
 /*
