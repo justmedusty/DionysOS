@@ -73,5 +73,5 @@ pmm_node_free(name);\
 node_free(name);\
 }\
 
-#define IS_PMM_TREE (tree == &buddy_free_list_zone[0])
 extern struct binary_tree buddy_free_list_zone[2];
+#define IS_PMM_TREE (tree == &buddy_free_list_zone[0] || tree == &buddy_free_list_zone[1] )
