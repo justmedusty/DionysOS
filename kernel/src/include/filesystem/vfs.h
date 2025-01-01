@@ -19,18 +19,6 @@
 extern struct vnode vfs_root;
 
 
-/* Error responses */
-enum vnode_error_codes {
-    WRONG_TYPE = 1,
-    ALREADY_MOUNTED = 2,
-    ALREADY_OPENED = 3,
-    NO_ACCESS = 4,
-    NOT_MOUNTED = 5,
-    BUSY = 6,
-    MAX_HANDLES_REACHED = 0xFFFF,
-    INVALID_PATH = (-1),
-};
-
 
 /* Device Types */
 enum vnode_device_types {
@@ -82,7 +70,8 @@ struct vnode {
     uint16_t vnode_type;
     uint64_t vnode_filesystem_id; /* will be empty if this is a device or otherwise non-file/directory node */
     uint16_t vnode_refcount; // Pulled from actual inode or equivalent structure
-    uint16_t vnode_active_references; //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
+    uint16_t vnode_active_references;
+    //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
     uint64_t vnode_device_id;
     uint16_t is_mount_point;
     uint64_t is_cached;
@@ -96,6 +85,7 @@ struct date_time {
     uint8_t minute;
     uint8_t second;
 };
+
 struct vnode_stat {
     struct vnode *vnode;
     uint64_t vnode_size;
@@ -124,15 +114,15 @@ struct vnode_operations {
 
     void (*rename)(const struct vnode *vnode, char *new_name);
 
-    uint64_t (*write)( struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+    int64_t (*write)(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 
-    uint64_t (*read)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+    int64_t (*read)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 
     struct vnode *(*link)(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
 
     void (*unlink)(struct vnode *vnode);
 
-    uint64_t (*open)(struct vnode *vnode);
+    int64_t (*open)(struct vnode *vnode);
 
     void (*close)(struct vnode *vnode, uint64_t handle);
 };
@@ -143,13 +133,13 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type);
 
 struct vnode *find_vnode_child(struct vnode *vnode, char *token);
 
-uint64_t vnode_write(struct vnode *vnode, uint64_t offset, uint64_t bytes, char *buffer);
+int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, const char *buffer);
 
-uint64_t vnode_read(struct vnode *vnode,uint64_t offset, uint64_t bytes, char *buffer);
+int64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer);
 
-uint64_t vnode_unmount(struct vnode *vnode);
+int64_t vnode_unmount(struct vnode *vnode);
 
-uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode);
+int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode);
 
 struct vnode *find_vnode_child(struct vnode *vnode, char *token);
 
@@ -157,14 +147,14 @@ int32_t vnode_remove(struct vnode *vnode, char *path);
 
 struct vnode *vnode_lookup(char *path);
 
-uint64_t vnode_unlink(struct vnode *link);
+int64_t vnode_unlink(struct vnode *link);
 
 struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
 
 void vfs_init();
 
 char *vnode_get_canonical_path(
-        struct vnode *vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
+    struct vnode *vnode); /* Not sure if this will need to be externally linked but I'll include it for now */
 /* These two are only exposed because other filesystems may return vnodes up to the abstraction layer above them */
 struct vnode *vnode_alloc();
 

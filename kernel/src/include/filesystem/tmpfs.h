@@ -83,15 +83,15 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type);
 
 void tmpfs_rename(const struct vnode *vnode, char *name);
 
-uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 
-uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
 
 void tmpfs_unlink(struct vnode *vnode);
 
-uint64_t tmpfs_open(struct vnode *vnode);
+int64_t tmpfs_open(struct vnode *vnode);
 
 void tmpfs_close(struct vnode *vnode, uint64_t handle);
 

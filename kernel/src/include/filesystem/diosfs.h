@@ -178,11 +178,11 @@ void diosfs_init(uint64_t filesystem_id);
 
 void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem_context *fs);
 
-uint64_t diosfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+int64_t diosfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
 
-uint64_t diosfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+int64_t diosfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
 
-uint64_t diosfs_stat(const struct vnode *vnode);
+int64_t diosfs_stat(const struct vnode *vnode);
 
 struct vnode *diosfs_lookup(struct vnode *parent, char *name);
 
@@ -198,6 +198,6 @@ void diosfs_remove(const struct vnode *vnode);
 
 void diosfs_rename(const struct vnode *vnode, char *new_name);
 
-uint64_t diosfs_open(struct vnode *vnode);
+int64_t diosfs_open(struct vnode *vnode);
 
 #endif

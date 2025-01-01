@@ -60,7 +60,6 @@ void kthread_main() {
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
     char *buffer = kmalloc(PAGE_SIZE * 8);
-    uint16_t file_handle = vnode_open("/etc/passwd");
     strcpy(buffer,"kthread_main Using allocated buffer about to yield scheduler");
     serial_printf("%s \n", buffer);
     sched_yield();

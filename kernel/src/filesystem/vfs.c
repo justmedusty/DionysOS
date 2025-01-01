@@ -30,7 +30,7 @@ struct spinlock vfs_lock;
 //static prototype
 static struct vnode *parse_path(char *path);
 
-static uint64_t vnode_update_children_array(const struct vnode *vnode);
+static int64_t vnode_update_children_array(const struct vnode *vnode);
 
 static int8_t get_new_file_handle(struct virtual_handle_list *list);
 
@@ -168,9 +168,9 @@ struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t t
     return vnode->vnode_ops->create(vnode, new_vnode->vnode_name, type);
 }
 
-uint64_t vnode_unlink(struct vnode *link) {
+int64_t vnode_unlink(struct vnode *link) {
     if (link->vnode_type != VNODE_SYM_LINK && link->vnode_type != VNODE_HARD_LINK) {
-        return WRONG_TYPE;
+        return KERN_WRONG_TYPE;
     }
 
     link->vnode_ops->unlink(link);
@@ -239,7 +239,7 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
     if (vnode != NULL) {
         target = vnode;
     } else if ((target = vnode_lookup(path)) == NULL) {
-        return NODE_NOT_FOUND;
+        return KERN_NOT_FOUND;
     }
 
 
@@ -249,7 +249,7 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
 
     if (vnode->vnode_active_references != 0) {
         release_spinlock(&vfs_lock);
-        return BUSY;
+        return KERN_BUSY;
     }
 
     target->vnode_ops->remove(target);
@@ -274,13 +274,13 @@ int64_t vnode_open(char *path) {
     const int8_t ret = get_new_file_handle(list);
 
     if (ret == -KERN_NOT_FOUND) {
-        return MAX_HANDLES_REACHED;
+        return KERN_MAX_REACHED;
     }
 
     struct vnode *vnode = vnode_lookup(path);
 
     if (vnode == NULL) {
-        return INVALID_PATH;
+        return KERN_NOT_FOUND;
     }
 
     if (vnode->is_mount_point) {
@@ -387,25 +387,25 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 /*
  * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
-uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
+int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     acquire_spinlock(&vfs_lock);
     //handle already mounted case
     if (mount_point->is_mount_point) {
         release_spinlock(&vfs_lock);
-        return ALREADY_MOUNTED;
+        return KERN_EXISTS;
     }
 
     if (mount_point->vnode_type != VNODE_DIRECTORY) {
         //may want to return an integer to indicate what went wrong but this is ok for now
         release_spinlock(&vfs_lock);
-        return WRONG_TYPE;
+        return KERN_WRONG_TYPE;
     }
 
 
     //can you mount a mount point? I will say no for now that seems silly
     if (mounted_vnode->is_mount_point) {
         release_spinlock(&vfs_lock);
-        return ALREADY_MOUNTED;
+        return KERN_EXISTS;
     }
 
     mounted_vnode->vnode_parent = mount_point->vnode_parent;
@@ -419,11 +419,11 @@ uint64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
 /*
  * Clears mount data from the vnode, clearing it as a mount point.
  */
-uint64_t vnode_unmount(struct vnode *vnode) {
+int64_t vnode_unmount(struct vnode *vnode) {
     acquire_spinlock(&vfs_lock);
     if (!vnode->is_mount_point) {
         release_spinlock(&vfs_lock);
-        return NOT_MOUNTED;
+        return KERN_NOT_FOUND;
     }
     //only going to allow mounting of whole filesystems so this works
     vnode->mounted_vnode->vnode_parent = NULL;
@@ -439,7 +439,7 @@ uint64_t vnode_unmount(struct vnode *vnode) {
  *
  * Handles mount points properly.
  */
-uint64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
+int64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         panic("reading a directory");
     }
@@ -448,7 +448,7 @@ uint64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t b
 }
 
 
-uint64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
+int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, const char *buffer) {
     if (vnode->is_mount_point) {
         panic("writing to a directory");
     }
@@ -561,7 +561,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
 }
 
 
-static uint64_t vnode_update_children_array(const struct vnode *vnode) {
+static int64_t vnode_update_children_array(const struct vnode *vnode) {
     acquire_spinlock(&vfs_lock);
     struct vnode *parent = vnode->vnode_parent;
     size_t index = 0;
@@ -594,6 +594,8 @@ struct vnode *handle_to_vnode(uint64_t handle_id) {
         }
         node = node->next;
     } while (node->next != NULL);
+
+    return NULL;
 }
 
 uint64_t handle_to_offset(uint64_t handle_id) {
@@ -616,26 +618,43 @@ uint64_t handle_to_offset(uint64_t handle_id) {
  *  these will operate on handles
  */
 
-uint64_t write(uint64_t handle,char *buffer, uint64_t bytes) {
+int64_t write(uint64_t handle,char *buffer, uint64_t bytes) {
+    struct vnode *handle_vnode = handle_to_vnode(handle);
+    if (!handle_vnode) {
+        return KERN_NOT_FOUND;
+    }
+
+    const uint64_t offset = handle_to_offset(handle);
+
+    return vnode_write(handle_vnode, offset, bytes, buffer);
+}
+
+int64_t read(uint64_t handle, char *buffer, uint64_t bytes) {
+    struct vnode *handle_vnode = handle_to_vnode(handle);
+    if (!handle_vnode) {
+        return KERN_NOT_FOUND;
+    }
+
+    const uint64_t offset = handle_to_offset(handle);
+
+    return vnode_read(handle_vnode, offset, bytes, buffer);
+}
+
+
+int64_t open(char *path) {
+    uint64_t handle = vnode_open(path);
 
 }
 
-uint64_t read(uint64_t handle, char *buffer, uint64_t bytes) {}
-
-
-uint64_t open(char *path) {
+int64_t close(uint64_t handle) {
 
 }
 
-uint64_t close(uint64_t handle) {
+int64_t mount(uint64_t handle, char *path) {
 
 }
 
-uint64_t mount(uint64_t handle, char *path) {
-
-}
-
-uint64_t unmount(uint64_t handle) {
+int64_t unmount(uint64_t handle) {
 
 }
 
@@ -643,7 +662,7 @@ void rename(uint64_t handle, char *new_name) {
 
 }
 
-uint64_t create(char *path, char *name, uint64_t type) {
+int64_t create(char *path, char *name, uint64_t type) {
 
 }
 

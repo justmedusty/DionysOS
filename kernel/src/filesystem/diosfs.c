@@ -355,7 +355,7 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
     release_spinlock(fs->lock);
 }
 
-uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
+int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -374,7 +374,7 @@ uint64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, c
     return ret;
 }
 
-uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *buffer, const uint64_t bytes) {
+int64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *buffer, const uint64_t bytes) {
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -405,7 +405,7 @@ uint64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *bu
 /*
  * Unimplemented for now given there isn't really any extra data in the inode that isn't in the vnode I will sit on this
  */
-uint64_t diosfs_stat(const struct vnode *vnode) {
+int64_t diosfs_stat(const struct vnode *vnode) {
     const struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -565,7 +565,7 @@ void diosfs_close(struct vnode *vnode, uint64_t handle) {
     asm("nop");
 }
 
-uint64_t diosfs_open(struct vnode *vnode) {
+int64_t diosfs_open(struct vnode *vnode) {
     asm("nop");
     return DIOSFS_SUCCESS;
 }

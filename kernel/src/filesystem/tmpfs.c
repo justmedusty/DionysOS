@@ -140,7 +140,7 @@ void tmpfs_remove(const struct vnode *vnode) {
  * Write bytes to a tmpfs regular file , update size if necessary and allocate new page_list_entries when
  * it is required to do so.
  */
-uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
     offset = offset % PAGE_SIZE;
@@ -173,7 +173,7 @@ uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
         }
     }
 
-    return total_bytes - bytes;
+    return (int64_t) (total_bytes - bytes);
 }
 
 /*
@@ -181,7 +181,7 @@ uint64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
  * in it and from there simply indexing into the page pointer array.
  *
  */
-uint64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
+int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
     const struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
     offset = offset % PAGE_SIZE;
@@ -221,9 +221,9 @@ void tmpfs_unlink(struct vnode *vnode) {
  * Maybe in the future it will be like linux where it can be paged out and there will be work to do here but
  * as of now this is not the case.
  */
-uint64_t tmpfs_open(struct vnode *vnode) {
+int64_t tmpfs_open(struct vnode *vnode) {
     nop();
-    return 0UL;
+    return 0;
 }
 
 void tmpfs_close(struct vnode *vnode, uint64_t handle) {
