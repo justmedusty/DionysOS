@@ -27,7 +27,7 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 Diosfs : I wrote a custom filesystem to be used for my operating system, it is non journaling and has similiarties to the original unix filesystem albeit a little bit simpler.
 
 # LoC To Date (Includng .c, .h, .asm)
-~21,000
+~21,000 (The line_count script under the scripts directory can show the most current figure)
 
 # Overall Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
 
