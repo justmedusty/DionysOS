@@ -26,6 +26,9 @@ Starting 10/26/2024 I am going to make the effort to comment my thoughts about e
 # Unique Features
 Diosfs : I wrote a custom filesystem to be used for my operating system, it is non journaling and has similiarties to the original unix filesystem albeit a little bit simpler.
 
+# LoC To Date (Includng .c, .h, .asm)
+~21,000
+
 # Overall Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
 
 🟢Serial
