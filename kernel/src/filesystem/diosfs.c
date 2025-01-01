@@ -579,11 +579,13 @@ struct vnode *diosfs_link(struct vnode *parent, struct vnode *vnode_to_link, uin
             break;
 
         case VNODE_SYM_LINK:
+            release_spinlock(fs->lock);
             return diosfs_create(parent, vnode_get_canonical_path(vnode_to_link), VNODE_SYM_LINK);
-        default: ;
+        default:
+            break;
     }
-
-    release_spinlock(fs->lock);
+    panic("Unrecognized diosfs link type");
+    return NULL;
 }
 
 void diosfs_unlink(struct vnode *vnode) {

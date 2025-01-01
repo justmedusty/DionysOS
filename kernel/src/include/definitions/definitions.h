@@ -52,6 +52,7 @@ enum kernel_error_codes {
     KERN_FS_READ_ONLY = -104,      // Filesystem is read-only (EROFS)
     KERN_NO_SPACE = -105,          // No space left on device (ENOSPC)
     KERN_QUOTA_EXCEEDED = -106,    // Quota exceeded (EDQUOT)
+    KERN_BAD_HANDLE = -156,
 
     // Process Management Errors
     KERN_NO_CHILD = -107,          // No child processes (ECHILD)
@@ -107,13 +108,13 @@ int64_t read(uint64_t handle, char *buffer, uint64_t bytes);
 
 int64_t open(char *path);
 
-int64_t close(uint64_t handle);
+void close(uint64_t handle);
 
-int64_t mount(uint64_t handle, char *path);
+int64_t mount(char *mount_point, char *mounted_filesystem);
 
-int64_t unmount(uint64_t handle);
+int64_t unmount(char *path);
 
-void rename(uint64_t handle, char *new_name);
+int64_t rename(char *path, char *new_name);
 
 int64_t create(char *path, char *name, uint64_t type);
 

@@ -236,6 +236,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id) {
         return;
     }
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
+    memset(root, 0, sizeof(struct tmpfs_node));
     root->superblock = &superblock[filesystem_id];
     struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
     memset(context, 0, sizeof(struct tmpfs_filesystem_context));

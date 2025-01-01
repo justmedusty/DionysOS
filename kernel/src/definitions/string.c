@@ -77,6 +77,18 @@ uint64_t strlen(const char* src) {
     return length;
 }
 
+int64_t safe_strlen(const char* src, const uint64_t max) {
+    int64_t length = 0;
+    while (src[length] != '\0' && length <= max) {
+        length++;
+    }
+    if (length > max) {
+        return KERN_OVERFLOW;
+    }
+
+    return length;
+}
+
 /*
  *    Tokenizing the string using a single character as a delimiter
  *  This is quite different from the regular impl of strtok, this one is thread safe since it contains no internal references.

@@ -19,4 +19,5 @@ uint64_t strcmp(char *str1, char *str2);
 uint64_t safe_strcmp(char* str1, char* str2,uint64_t max_len);
 uint64_t strtok_count(char* str, char delimiter);
 void safe_strcpy(char *dest, char *src,uint64_t dest_size);
+int64_t safe_strlen(const char* src, const uint64_t max);
 #endif

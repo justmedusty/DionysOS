@@ -8,7 +8,6 @@
 #include <include/data_structures/singly_linked_list.h>
 #include <include/device/display/framebuffer.h>
 #include <include/drivers/serial/uart.h>
-#include <include/filesystem/diosfs.h>
 #include <include/memory/kalloc.h>
 #include "include/architecture/arch_cpu.h"
 #include "include/memory/mem.h"
@@ -51,9 +50,9 @@ void vfs_init() {
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
     }
     initlock(&vfs_lock, VFS_LOCK);
-    memset(&vfs_root,0,sizeof(struct vnode));
+    memset(&vfs_root, 0, sizeof(struct vnode));
     vfs_root.vnode_inode_number = 0;
-    vfs_root.vnode_type = DIRECTORY;
+    vfs_root.vnode_type = VNODE_DIRECTORY;
     vfs_root.vnode_parent = NULL;
     vfs_root.vnode_ops = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_VNODE_ROOT;
@@ -179,8 +178,8 @@ int64_t vnode_unlink(struct vnode *link) {
 
 struct vnode *vnode_create_special(struct vnode *parent, char *name, uint8_t vnode_type) {
     struct vnode *new_vnode = vnode_alloc();
-    memset(new_vnode,0,sizeof(struct vnode));
-    safe_strcpy(new_vnode->vnode_name,name,VFS_MAX_NAME_LENGTH);
+    memset(new_vnode, 0, sizeof(struct vnode));
+    safe_strcpy(new_vnode->vnode_name, name,VFS_MAX_NAME_LENGTH);
     switch (vnode_type) {
         case VNODE_BLOCK_DEV:
             break;
@@ -221,8 +220,8 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
 
     struct vnode *new_vnode;
     if (vnode_type == VNODE_DIRECTORY || vnode_type == VNODE_FILE) {
-       new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
-    }else {
+        new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    } else {
         new_vnode = vnode_create_special(parent_directory, name, vnode_type);
     }
     parent_directory->vnode_children[parent_directory->num_children] = new_vnode;
@@ -244,7 +243,8 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
 
 
     if (target->is_mount_point) {
-        panic("Cannot delete mount point without first unmounting\n"); // need to put logic here just putting this as a placeholder
+        panic("Cannot delete mount point without first unmounting\n");
+        // need to put logic here just putting this as a placeholder
     }
 
     if (vnode->vnode_active_references != 0) {
@@ -266,14 +266,14 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
  *  This will need to return a handle at some point.
  */
 int64_t vnode_open(char *path) {
-    struct process *process = my_cpu()->running_process;
+    struct process *process = current_process();
 
     struct virtual_handle_list *list = process->handle_list;
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
     const int8_t ret = get_new_file_handle(list);
 
-    if (ret == -KERN_NOT_FOUND) {
+    if (ret < 0) {
         return KERN_MAX_REACHED;
     }
 
@@ -320,7 +320,6 @@ void vnode_close(uint64_t handle) {
 }
 
 void vnode_rename(struct vnode *vnode, char *new_name) {
-    diosfs_rename(vnode, new_name);
     safe_strcpy(vnode->vnode_name, new_name, VFS_MAX_NAME_LENGTH);
     /*
      * If we were passed a string that is too long, just truncate it
@@ -372,7 +371,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH) )){
+        if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
             release_spinlock(&vfs_lock);
             return child;
         }
@@ -503,7 +502,6 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
  *
  */
 static struct vnode *parse_path(char *path) {
-
     //Assign to the root node by default
     struct vnode *current_vnode = &vfs_root;
 
@@ -557,7 +555,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
         }
     }
     release_spinlock(&vfs_lock);
-    return -KERN_NOT_FOUND;
+    return -KERN_MAX_REACHED;
 }
 
 
@@ -598,19 +596,28 @@ struct vnode *handle_to_vnode(uint64_t handle_id) {
     return NULL;
 }
 
-uint64_t handle_to_offset(uint64_t handle_id) {
-    struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
+int64_t handle_to_offset(uint64_t handle_id) {
+    const struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
     uint64_t current = 0;
 
     do {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
-            return handle->offset;
+            return handle->offset; //TODO handle impl-def things like this
         }
         node = node->next;
     } while (node->next != NULL);
 
-    return UINT64_MAX;
+    return KERN_NOT_FOUND;
+}
+
+bool is_valid_vnode_type(uint64_t type) {
+    switch (type) {
+        VALID_VNODE_CASES
+            return true;
+        default:
+            return false;
+    }
 }
 
 /*
@@ -618,13 +625,18 @@ uint64_t handle_to_offset(uint64_t handle_id) {
  *  these will operate on handles
  */
 
-int64_t write(uint64_t handle,char *buffer, uint64_t bytes) {
+int64_t write(uint64_t handle, char *buffer, uint64_t bytes) {
     struct vnode *handle_vnode = handle_to_vnode(handle);
     if (!handle_vnode) {
         return KERN_NOT_FOUND;
     }
 
-    const uint64_t offset = handle_to_offset(handle);
+    const int64_t offset = handle_to_offset(handle);
+
+    if (offset < 0) {
+        return offset;
+    }
+
 
     return vnode_write(handle_vnode, offset, bytes, buffer);
 }
@@ -635,34 +647,94 @@ int64_t read(uint64_t handle, char *buffer, uint64_t bytes) {
         return KERN_NOT_FOUND;
     }
 
-    const uint64_t offset = handle_to_offset(handle);
+    const int64_t offset = handle_to_offset(handle);
+
+    if (offset < 0) {
+        return KERN_NOT_FOUND;
+    }
 
     return vnode_read(handle_vnode, offset, bytes, buffer);
 }
 
 
 int64_t open(char *path) {
-    uint64_t handle = vnode_open(path);
+    const int64_t handle = vnode_open(path);
 
+    if (handle < 0) {
+        return handle;
+    }
+
+    return handle;
 }
 
-int64_t close(uint64_t handle) {
-
+void close(uint64_t handle) {
+    vnode_close(handle);
 }
 
-int64_t mount(uint64_t handle, char *path) {
+int64_t mount(char *mount_point, char *mounted_filesystem) {
+    struct vnode *vnode = vnode_lookup(mount_point);
 
+    if (!vnode) {
+        return KERN_NOT_FOUND;
+    }
+
+    struct vnode *vnode_to_mount = vnode_lookup(mounted_filesystem);
+
+    if (!vnode_to_mount) {
+        return KERN_NOT_FOUND;
+    }
+
+    const int64_t ret = vnode_mount(vnode, vnode_to_mount);
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    return KERN_SUCCESS;
 }
 
-int64_t unmount(uint64_t handle) {
+int64_t unmount(char *path) {
+    struct vnode *mount_point = vnode_lookup(path);
 
+    if (!mount_point) {
+        return KERN_NOT_FOUND;
+    }
+
+    int64_t ret = vnode_unmount(mount_point);
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    return KERN_SUCCESS;
 }
 
-void rename(uint64_t handle, char *new_name) {
+int64_t rename(char *path, char *new_name) {
+    struct vnode *vnode = vnode_lookup(path);
 
+    if (!vnode) {
+        return KERN_NOT_FOUND;
+    }
+
+    vnode_rename(vnode, new_name);
+    return SUCCESS;
 }
 
 int64_t create(char *path, char *name, uint64_t type) {
+    if (safe_strlen(name,VFS_MAX_NAME_LENGTH) < 0) {
+        return KERN_OVERFLOW;
+    }
 
+    if (!is_valid_vnode_type(type)) {
+        return KERN_WRONG_TYPE;
+    }
+
+    struct vnode *vnode = vnode_create(path, name, type);
+
+    if (vnode == NULL) {
+        return KERN_UNEXPECTED;
+    }
+
+    return KERN_SUCCESS;
 }
 

@@ -75,7 +75,7 @@ void sched_init() {
         queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
         cpu_list[i].local_run_queue = &local_run_queues[i];
     }
-    kprintf("Scheduler initialized.\n");
+    kprintf("Scheduler initialized\n");
     serial_printf("DFS: Local CPU RQs Initialized \n");
 }
 

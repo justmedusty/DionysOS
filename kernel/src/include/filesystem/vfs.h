@@ -41,6 +41,17 @@ enum vnode_types {
     VNODE_SYM_LINK = 8,
 };
 
+#define VALID_VNODE_CASES \
+case VNODE_DIRECTORY: \
+case VNODE_FILE: \
+case VNODE_HARD_LINK: \
+case VNODE_BLOCK_DEV: \
+case VNODE_CHAR_DEV: \
+case VNODE_NET_DEV: \
+case VNODE_SPECIAL: \
+case VNODE_SPECIAL_FILE: \
+case VNODE_SYM_LINK:
+
 /* FS Types */
 #define VNODE_FS_VNODE_ROOT 0xE
 #define VNODE_FS_TMPFS 0x0
