@@ -582,10 +582,10 @@ static uint64_t vnode_update_children_array(const struct vnode *vnode) {
     return KERN_NOT_FOUND;
 }
 
-struct vnode *handle_to_vnode(int64_t handle_id) {
+struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
-    int64_t current = 0;
+    uint64_t current = 0;
 
     do {
         const struct virtual_handle *handle = node->data;
@@ -595,3 +595,55 @@ struct vnode *handle_to_vnode(int64_t handle_id) {
         node = node->next;
     } while (node->next != NULL);
 }
+
+uint64_t handle_to_offset(uint64_t handle_id) {
+    struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
+    uint64_t current = 0;
+
+    do {
+        const struct virtual_handle *handle = node->data;
+        if (handle->handle_id == handle_id) {
+            return handle->offset;
+        }
+        node = node->next;
+    } while (node->next != NULL);
+
+    return UINT64_MAX;
+}
+
+/*
+ *  These will be the actual exposed functions that system calls invoke, kthreads and use etc. The above functions operating on vnodes
+ *  these will operate on handles
+ */
+
+uint64_t write(uint64_t handle,char *buffer, uint64_t bytes) {
+
+}
+
+uint64_t read(uint64_t handle, char *buffer, uint64_t bytes) {}
+
+
+uint64_t open(char *path) {
+
+}
+
+uint64_t close(uint64_t handle) {
+
+}
+
+uint64_t mount(uint64_t handle, char *path) {
+
+}
+
+uint64_t unmount(uint64_t handle) {
+
+}
+
+void rename(uint64_t handle, char *new_name) {
+
+}
+
+uint64_t create(char *path, char *name, uint64_t type) {
+
+}
+

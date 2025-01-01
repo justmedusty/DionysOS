@@ -29,19 +29,38 @@
 #define FRAME_LOCK 12
 
 
-
 enum kernel_error_codes {
-    KERN_SUCCESS = 0,       // Operation successful
-    KERN_BUSY = 16,         // Device or resource busy (EBUSY)
-    KERN_NO_MEM = 12,       // Out of memory (ENOMEM)
-    KERN_INVALID_ARG = 22,  // Invalid argument (EINVAL)
-    KERN_PERMISSION = 13,   // Permission denied (EACCES)
-    KERN_NOT_FOUND = 2,     // No such file or directory (ENOENT)
-    KERN_EXISTS = 17,       // File exists (EEXIST)
-    KERN_IO_ERROR = 5,      // I/O error (EIO)
-    KERN_INTERRUPTED = 4,   // Interrupted system call (EINTR)
+    KERN_SUCCESS = 0, // Operation successful
+    KERN_BUSY = 16, // Device or resource busy (EBUSY)
+    KERN_NO_MEM = 12, // Out of memory (ENOMEM)
+    KERN_INVALID_ARG = 22, // Invalid argument (EINVAL)
+    KERN_PERMISSION = 13, // Permission denied (EACCES)
+    KERN_NOT_FOUND = 2, // No such file or directory (ENOENT)
+    KERN_EXISTS = 17, // File exists (EEXIST)
+    KERN_IO_ERROR = 5, // I/O error (EIO)
+    KERN_INTERRUPTED = 4, // Interrupted system call (EINTR)
     KERN_NOT_SUPPORTED = 95 // Operation not supported (ENOTSUP)
 };
+
+/*
+ * Core function prototypes
+ */
+
+uint64_t write(uint64_t handle, char *buffer, uint64_t bytes);
+
+uint64_t read(uint64_t handle, char *buffer, uint64_t bytes);
+
+uint64_t open(char *path);
+
+uint64_t close(uint64_t handle);
+
+uint64_t mount(uint64_t handle, char *path);
+
+uint64_t unmount(uint64_t handle);
+
+void rename(uint64_t handle, char *new_name);
+
+uint64_t create(char *path, char *name, uint64_t type);
 
 
 #define DIONYSOS_ASCII_STRING "                                                                                                                      \n"\
@@ -57,8 +76,7 @@ enum kernel_error_codes {
 "|____|____|/ |____|  \\|____||____|/ |____|   |___|/    |_____|/     \\|____|_____|     \\|____||____|/  \\|____|_____|   \n"\
 "  \\(    )/     \\(       \\(    )/      \\(       )/         )/           \\(    )/          \\(    )/        \\(    )/     \n"\
 "   '    '       '        '    '        '       '          '             '    '            '    '          '    '      \n"\
-"                                                                                                                  \n"\
-
+"                                                                                                                  \n"
 #define DIONYSOS_ASCII_STRING2 "                                ___           ___                       ___           ___           ___     \n" \
 "     _____                     /\\  \\         /\\  \\                     /\\__\\         /\\  \\         /\\__\\    \n" \
 "    /::\\  \\       ___         /::\\  \\        \\:\\  \\         ___       /:/ _/_       /::\\  \\       /:/ _/_   \n" \

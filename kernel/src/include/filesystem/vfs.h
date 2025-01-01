@@ -176,4 +176,4 @@ void vnode_close(uint64_t handle);
 
 void vnode_rename(struct vnode *vnode, char *new_name);
 
-struct vnode *handle_to_vnode(int64_t handle_id);
+struct vnode *handle_to_vnode(uint64_t handle_id);
