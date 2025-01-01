@@ -30,20 +30,73 @@
 
 
 enum kernel_error_codes {
-    KERN_SUCCESS = 0, // Operation successful
-    KERN_BUSY = -16, // Device or resource busy (EBUSY)
-    KERN_NO_MEM = -12, // Out of memory (ENOMEM)
-    KERN_INVALID_ARG = -22, // Invalid argument (EINVAL)
-    KERN_PERMISSION = -13, // Permission denied (EACCES)
-    KERN_NOT_FOUND = -2, // No such file or directory (ENOENT)
-    KERN_EXISTS = -17, // File exists (EEXIST)
-    KERN_IO_ERROR = -5, // I/O error (EIO)
-    KERN_INTERRUPTED = -4, // Interrupted system call (EINTR)
-    KERN_NOT_SUPPORTED = -95, // Operation not supported (ENOTSUP)
-    KERN_WRONG_TYPE = -19, // Generc Type Provided not Valid
-    KERN_MAX_REACHED = - -20 // Max of whatever you are requesting has been reached
-};
+    // General Success and Error Codes
+    KERN_SUCCESS = 0,              // Operation successful
+    KERN_BUSY = -16,               // Device or resource busy (EBUSY)
+    KERN_NO_MEM = -12,             // Out of memory (ENOMEM)
+    KERN_INVALID_ARG = -22,        // Invalid argument (EINVAL)
+    KERN_PERMISSION = -13,         // Permission denied (EACCES)
+    KERN_NOT_FOUND = -2,           // No such file or directory (ENOENT)
+    KERN_EXISTS = -17,             // File exists (EEXIST)
+    KERN_IO_ERROR = -5,            // I/O error (EIO)
+    KERN_INTERRUPTED = -4,         // Interrupted system call (EINTR)
+    KERN_NOT_SUPPORTED = -95,      // Operation not supported (ENOTSUP)
+    KERN_WRONG_TYPE = -19,         // Incorrect type provided (custom)
+    KERN_MAX_REACHED = -20,        // Maximum limit reached (custom)
 
+    // Filesystem and Mounting Errors
+    KERN_NO_MOUNT = -100,          // No mount point found (custom)
+    KERN_ALREADY_MOUNTED = -101,   // Already mounted (custom)
+    KERN_NOT_MOUNTED = -102,       // Not mounted (custom)
+    KERN_FS_CORRUPTED = -103,      // Filesystem corrupted (custom)
+    KERN_FS_READ_ONLY = -104,      // Filesystem is read-only (EROFS)
+    KERN_NO_SPACE = -105,          // No space left on device (ENOSPC)
+    KERN_QUOTA_EXCEEDED = -106,    // Quota exceeded (EDQUOT)
+
+    // Process Management Errors
+    KERN_NO_CHILD = -107,          // No child processes (ECHILD)
+    KERN_ZOMBIE_PROCESS = -108,    // Process is in zombie state (custom)
+    KERN_ACCESS_DENIED = -109,     // Access denied (EACCES)
+    KERN_NO_RESOURCE = -110,       // No resources available (ENOMEM)
+
+    // Networking Errors
+    KERN_NET_DOWN = -111,          // Network is down (ENETDOWN)
+    KERN_NET_UNREACH = -112,       // Network unreachable (ENETUNREACH)
+    KERN_NET_RESET = -113,         // Connection reset by network (ENETRESET)
+    KERN_CONN_ABORTED = -114,      // Connection aborted (ECONNABORTED)
+    KERN_CONN_RESET = -115,        // Connection reset by peer (ECONNRESET)
+    KERN_NO_BUFFER = -116,         // No buffer space available (ENOBUFS)
+    KERN_CONN_REFUSED = -117,      // Connection refused (ECONNREFUSED)
+    KERN_ADDR_IN_USE = -118,       // Address already in use (EADDRINUSE)
+    KERN_ADDR_NOT_AVAIL = -119,    // Address not available (EADDRNOTAVAIL)
+
+    // Device and Driver Errors
+    KERN_NO_DEVICE = -120,         // No such device (ENODEV)
+    KERN_DEVICE_NOT_READY = -121,  // Device not ready (custom)
+    KERN_DEVICE_FAILED = -122,     // Device failure (custom)
+    KERN_DRIVER_NOT_FOUND = -123,  // Driver not found (custom)
+    KERN_DRIVER_FAILED = -124,     // Driver initialization failed (custom)
+
+    // Synchronization and Locking Errors
+    KERN_DEADLOCK = -125,          // Deadlock detected (EDEADLK)
+    KERN_LOCK_FAILED = -126,       // Lock acquisition failed (custom)
+    KERN_ALREADY_LOCKED = -127,    // Resource already locked (custom)
+
+    // Memory and Resource Allocation Errors
+    KERN_OUT_OF_BOUNDS = -128,     // Access out of bounds (custom)
+    KERN_OVERFLOW = -129,          // Overflow detected (custom)
+    KERN_UNDERFLOW = -130,         // Underflow detected (custom)
+    KERN_NULL_POINTER = -131,      // Null pointer dereferenced (custom)
+    KERN_PAGE_FAULT = -132,        // Page fault occurred (custom)
+
+    // Miscellaneous Errors
+    KERN_TIMEOUT = -133,           // Operation timed out (ETIMEDOUT)
+    KERN_UNSUPPORTED_OPERATION = -134, // Operation unsupported in current state (custom)
+    KERN_UNEXPECTED = -135,        // Unexpected error (custom)
+    KERN_ILLEGAL_OPERATION = -136, // Illegal operation (custom)
+    KERN_BAD_DESCRIPTOR = -137,    // Bad file descriptor (EBADF)
+    KERN_OVERLOADED = -138,        // System overloaded (custom)
+};
 /*
  * Core function prototypes
  */
