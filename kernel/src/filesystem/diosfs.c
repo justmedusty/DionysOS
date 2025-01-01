@@ -324,11 +324,6 @@ void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct dios
     struct vnode *vnode10 = vnode_create("/etc", "config.txt", VNODE_FILE);
     serial_printf("DiosFS : File /etc/config created\n");
     vnode_write(vnode9, 0, sizeof("dustyn password"), "dustyn password");
-    char *vbuffer = kmalloc(PAGE_SIZE);
-    struct vnode *test = vnode_lookup("/etc/passwd");
-    vnode_read(test, 0, test->vnode_size, vbuffer);
-    kprintf("DiosFS : Password created, %s\n", vbuffer);
-    kfree(vbuffer);
     kfree(buffer);
     serial_printf("Diosfs filesystem initialized of size %i MB , %i byte blocks\n", DEFAULT_DIOSFS_SIZE / 1024 / 1024,
                   DIOSFS_BLOCKSIZE);
@@ -1275,7 +1270,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
     uint64_t num_blocks_to_read = read_size_bytes / fs->superblock->block_size;
 
     if (inode->type != VNODE_FILE) {
-        kprintf("INODE NAME %s TYPE %i",inode->name,inode->type);
+        kprintf("INODE NAME %s TYPE %i", inode->name, inode->type);
         panic("diosfs_write_bytes_to_inode bad type");
     }
 

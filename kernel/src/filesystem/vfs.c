@@ -177,6 +177,28 @@ uint64_t vnode_unlink(struct vnode *link) {
     return SUCCESS;
 }
 
+struct vnode *vnode_create_special(struct vnode *parent, char *name, uint8_t vnode_type) {
+    struct vnode *new_vnode = vnode_alloc();
+    memset(new_vnode,0,sizeof(struct vnode));
+    safe_strcpy(new_vnode->vnode_name,name,VFS_MAX_NAME_LENGTH);
+    switch (vnode_type) {
+        case VNODE_BLOCK_DEV:
+            break;
+        case VNODE_CHAR_DEV:
+            break;
+        case VNODE_NET_DEV:
+            break;
+        case VNODE_SPECIAL_FILE:
+            break;
+        case VNODE_SPECIAL:
+            break;
+        default:
+            panic("vnode_create_special: unknown vnode_type");
+    }
+
+    return new_vnode;
+}
+
 /*
  *  Create a vnode, invokes lookup , allocated a new vnode, and calls create on the parent.
  */
@@ -197,7 +219,12 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
         vnode_directory_alloc_children(parent_directory);
     }
 
-    struct vnode *new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    struct vnode *new_vnode;
+    if (vnode_type == VNODE_DIRECTORY || vnode_type == VNODE_FILE) {
+       new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
+    }else {
+        new_vnode = vnode_create_special(parent_directory, name, vnode_type);
+    }
     parent_directory->vnode_children[parent_directory->num_children] = new_vnode;
     parent_directory->num_children = parent_directory->num_children + 1;
     return new_vnode;
