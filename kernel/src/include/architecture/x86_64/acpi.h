@@ -34,6 +34,7 @@ struct acpi_rsdt {
     int8_t table[];
 } __attribute__((packed));
 
+#define NUM_MCFG_ENTRIES(header) ((header)->length - sizeof(struct mcfg_header)) / sizeof(struct mcfg_entry)
 
 struct mcfg_entry{
     uint64_t base_address;

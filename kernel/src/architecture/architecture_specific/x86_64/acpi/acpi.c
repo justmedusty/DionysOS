@@ -87,8 +87,8 @@ void acpi_init() {
     if (!mcfg_header) {
         panic("Cannot find mcfg header to set up PCI\n");
     }
-    struct mcfg_header *header = find_acpi_table("MCFG");
 
+    serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
     set_pci_mmio_address((struct mcfg_entry *) &mcfg_header->entry);
     pci_enumerate_devices(true);
     madt_init();
