@@ -438,9 +438,12 @@ int64_t diosfs_stat(const struct vnode *vnode) {
  * Finally, return child
  */
 struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
+    kprintf("START\n");
     struct diosfs_filesystem_context *fs = parent->filesystem_object;
+    acquire_spinlock(fs->lock);
 
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS || parent->vnode_type != VNODE_DIRECTORY) {
+        release_spinlock(fs->lock);
         return NULL;
     }
 
@@ -455,6 +458,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     if (ret != DIOSFS_SUCCESS) {
         kfree(buffer);
+        release_spinlock(fs->lock);
         return NULL;
     }
 
@@ -490,7 +494,12 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     }
 
 done:
+    kprintf("DONE\n");
+    release_spinlock(fs->lock);
     kfree(buffer);
+    if (fill_vnode) {
+        parent->is_cached = true;
+    }
     return child;
 }
 
@@ -529,6 +538,7 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
     new_vnode->vnode_ops = &diosfs_vnode_ops;
     new_vnode->vnode_parent = parent;
     new_vnode->vnode_filesystem_id = parent->vnode_filesystem_id;
+    new_vnode->is_cached = true;
     safe_strcpy(new_vnode->vnode_name, name, MAX_FILENAME_LENGTH);
 
     inode.type = vnode_type;

@@ -118,6 +118,8 @@ int64_t rename(char *path, char *new_name);
 
 int64_t create(char *path, char *name, uint64_t type);
 
+int64_t get_size(uint64_t handle);
+
 
 #define DIONYSOS_ASCII_STRING "                                                                                                                      \n"\
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\

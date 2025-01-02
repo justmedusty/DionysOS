@@ -62,6 +62,11 @@ void kthread_main() {
     char *buffer = kmalloc(PAGE_SIZE * 8);
     strcpy(buffer,"kthread_main Using allocated buffer about to yield scheduler");
     serial_printf("%s \n", buffer);
+    int64_t handle = open("/etc/passwd");
+    memset(buffer, 0, PAGE_SIZE * 8);
+    read(handle,buffer,get_size(handle));
+    kprintf("%i handle\n",handle);
+    serial_printf("FILE : %s \n", buffer);
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
     timer_sleep(15000);

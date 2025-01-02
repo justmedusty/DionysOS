@@ -147,7 +147,6 @@ void vnode_free(struct vnode *vnode) {
  */
 struct vnode *vnode_lookup(char *path) {
     struct vnode *target = parse_path(path);
-
     return target;
 }
 
@@ -224,8 +223,12 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     } else {
         new_vnode = vnode_create_special(parent_directory, name, vnode_type);
     }
-    parent_directory->vnode_children[parent_directory->num_children] = new_vnode;
-    parent_directory->num_children = parent_directory->num_children + 1;
+
+    if (!parent_directory->is_cached) {
+        parent_directory->is_cached = true;
+    }
+
+    parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
     return new_vnode;
 }
 
@@ -296,7 +299,6 @@ int64_t vnode_open(char *path) {
 
     doubly_linked_list_insert_head(list->handle_list, new_handle);
     list->num_handles++;
-
     return ret;
 }
 
@@ -354,7 +356,8 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         vnode = vnode->mounted_vnode;
     }
 
-    if (!vnode->is_cached) {
+    if (vnode->is_cached == false) {
+
         if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
             vnode_directory_alloc_children(vnode);
         }
@@ -504,11 +507,6 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
 static struct vnode *parse_path(char *path) {
     //Assign to the root node by default
     struct vnode *current_vnode = &vfs_root;
-
-    if (vfs_root.is_mount_point) {
-        current_vnode = vfs_root.mounted_vnode;
-    }
-
 
     char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
@@ -661,7 +659,7 @@ int64_t open(char *path) {
     const int64_t handle = vnode_open(path);
 
     if (handle < 0) {
-        return handle;
+        return KERN_NOT_FOUND;
     }
 
     return handle;
@@ -679,7 +677,7 @@ int64_t mount(char *mount_point, char *mounted_filesystem) {
     }
 
     struct vnode *vnode_to_mount = vnode_lookup(mounted_filesystem);
-
+int64_t get_size(uint64_t handle);
     if (!vnode_to_mount) {
         return KERN_NOT_FOUND;
     }
@@ -738,3 +736,11 @@ int64_t create(char *path, char *name, uint64_t type) {
     return KERN_SUCCESS;
 }
 
+int64_t get_size(uint64_t handle) {
+    struct vnode *handle_vnode = handle_to_vnode(handle);
+    if (!handle_vnode) {
+        return KERN_NOT_FOUND;
+    }
+
+    return handle_vnode->vnode_size;
+}

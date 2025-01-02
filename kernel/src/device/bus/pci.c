@@ -185,6 +185,7 @@ char* pci_get_class_name(uint8_t class) {
         case 0x40: return "Co-Processor";
         case 0xFF: return "Unassigned";
 
+        default: return "Unknown";
+
     }
-    return "Unknown";
 }
