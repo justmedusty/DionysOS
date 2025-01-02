@@ -438,7 +438,6 @@ int64_t diosfs_stat(const struct vnode *vnode) {
  * Finally, return child
  */
 struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
-    kprintf("START\n");
     struct diosfs_filesystem_context *fs = parent->filesystem_object;
     acquire_spinlock(fs->lock);
 
@@ -451,7 +450,8 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     char *buffer = kmalloc(buffer_size);
     struct diosfs_directory_entry *entries = (struct diosfs_directory_entry *) buffer;
-
+    struct diosfs_inode inode;
+    diosfs_read_inode(fs, &inode, parent->vnode_inode_number);
     uint64_t ret = diosfs_get_directory_entries(fs, (struct diosfs_directory_entry *) buffer,
                                                 parent->vnode_inode_number,
                                                 buffer_size);
@@ -464,10 +464,18 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     uint64_t fill_vnode = false;
 
+    /*
+     * There was a bug caused by trying to fill the vnode with dirents from the inode when it was already filled.
+     * This should ensure that the the bug does not happen, if this criteria below is met everything should be cached already
+     */
+    if (parent->num_children == inode.size && parent->vnode_children[0] != NULL) {
+      parent->is_cached = true;
+    }
+
     if (!parent->is_cached) {
         fill_vnode = true;
     }
-
+   kprintf("PARENT NAME %s SIZE %i\n",parent->vnode_name,parent->vnode_size);
     struct vnode *child = NULL;
 
     uint8_t max_directories = parent->vnode_size > VNODE_MAX_DIRECTORY_ENTRIES
@@ -477,9 +485,10 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
-
         if (fill_vnode) {
+            kprintf("1");
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
+            kprintf("\n2");
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
@@ -498,6 +507,7 @@ done:
     release_spinlock(fs->lock);
     kfree(buffer);
     if (fill_vnode) {
+    err_printf("NAME %s\n",parent->vnode_name);
         parent->is_cached = true;
     }
     return child;
@@ -659,7 +669,7 @@ static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struc
     vnode->vnode_device_id = entry->device_number;
     vnode->vnode_size = entry->size;
     vnode->vnode_inode_number = entry->inode_number;
-    vnode->vnode_filesystem_id = VNODE_FS_DIOSFS;\
+    vnode->vnode_filesystem_id = VNODE_FS_DIOSFS;
     vnode->vnode_ops = &diosfs_vnode_ops;
     vnode->vnode_refcount = inode.refcount;
     vnode->is_mount_point = FALSE;

@@ -224,8 +224,8 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
         new_vnode = vnode_create_special(parent_directory, name, vnode_type);
     }
 
-    if (!parent_directory->is_cached) {
-        parent_directory->is_cached = true;
+    if (vnode_type == VNODE_DIRECTORY) {
+        new_vnode->is_cached = true;
     }
 
     parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
@@ -357,7 +357,6 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     }
 
     if (vnode->is_cached == false) {
-
         if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
             vnode_directory_alloc_children(vnode);
         }
@@ -618,6 +617,31 @@ bool is_valid_vnode_type(uint64_t type) {
     }
 }
 
+
+struct virtual_handle *find_handle(int64_t handle_id) {
+    struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
+
+    if (!node || node->data == NULL) {
+        return NULL;
+    }
+
+    struct virtual_handle *handle = node->data;
+
+    while (node->data && handle->handle_id != handle_id) {
+        node = node->next;
+        if (!node) {
+            return NULL;
+        }
+        handle = node->data;
+    }
+
+    if (handle == NULL) {
+        return NULL;
+    }
+
+    return handle;
+}
+
 /*
  *  These will be the actual exposed functions that system calls invoke, kthreads and use etc. The above functions operating on vnodes
  *  these will operate on handles
@@ -677,7 +701,7 @@ int64_t mount(char *mount_point, char *mounted_filesystem) {
     }
 
     struct vnode *vnode_to_mount = vnode_lookup(mounted_filesystem);
-int64_t get_size(uint64_t handle);
+    int64_t get_size(uint64_t handle);
     if (!vnode_to_mount) {
         return KERN_NOT_FOUND;
     }
@@ -743,4 +767,26 @@ int64_t get_size(uint64_t handle) {
     }
 
     return handle_vnode->vnode_size;
+}
+
+int64_t seek(uint64_t handle, uint64_t whence) {
+    struct virtual_handle *vhandle = find_handle(handle);
+
+    if (!vhandle) {
+        return KERN_NOT_FOUND;
+    }
+
+    switch (whence) {
+        case SEEK_BEGIN:
+            vhandle->offset = 0;
+            break;
+        case SEEK_END:
+            vhandle->offset = get_size(vhandle->offset);
+            break;
+
+        default:
+            return KERN_INVALID_ARG;
+    }
+
+    return KERN_SUCCESS;
 }

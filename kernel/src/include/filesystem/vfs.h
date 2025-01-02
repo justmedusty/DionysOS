@@ -40,7 +40,6 @@ enum vnode_types {
     VNODE_SPECIAL_FILE = 7,
     VNODE_SYM_LINK = 8,
 };
-
 #define VALID_VNODE_CASES \
 case VNODE_DIRECTORY: \
 case VNODE_FILE: \

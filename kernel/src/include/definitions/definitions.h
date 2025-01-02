@@ -28,6 +28,12 @@
 #define SINGLE_LINKED_LIST_LOCK 11
 #define FRAME_LOCK 12
 
+enum seek_values {
+    SEEK_BEGIN = 0,
+    SEEK_CUR = 1,
+    SEEK_END = 2,
+};
+
 
 enum kernel_error_codes {
     // General Success and Error Codes
@@ -120,8 +126,10 @@ int64_t create(char *path, char *name, uint64_t type);
 
 int64_t get_size(uint64_t handle);
 
+int64_t seek(uint64_t handle, uint64_t whence);
 
-#define DIONYSOS_ASCII_STRING "                                                                                                                      \n"\
+
+#define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\
 " ___|\\    \\  |    |   ____|\\    \\|\\    \\ |\\     \\  |\\    \\    /    /|   ___|\\     \\    ____|\\    \\        ___|\\     \\ \n"\
 "|    |\\    \\ |    |  /     /\\    \\\\\\    \\| \\     \\ | \\    \\  /    / |  |    |\\     \\  /     /\\    \\      |    |\\     \\\n"\
@@ -133,8 +141,7 @@ int64_t get_size(uint64_t handle);
 "|    /    | ||    | \\ |    ||    | /|    |/ \\|   ||    |`    | /   | |    |     |    \\ |    ||    | /| |    |     |   \n"\
 "|____|____|/ |____|  \\|____||____|/ |____|   |___|/    |_____|/     \\|____|_____|     \\|____||____|/  \\|____|_____|   \n"\
 "  \\(    )/     \\(       \\(    )/      \\(       )/         )/           \\(    )/          \\(    )/        \\(    )/     \n"\
-"   '    '       '        '    '        '       '          '             '    '            '    '          '    '      \n"\
-"                                                                                                                  \n"
+"   '    '       '        '    '        '       '          '             '    '            '    '          '    '      \n"
 #define DIONYSOS_ASCII_STRING2 "                                ___           ___                       ___           ___           ___     \n" \
 "     _____                     /\\  \\         /\\  \\                     /\\__\\         /\\  \\         /\\__\\    \n" \
 "    /::\\  \\       ___         /::\\  \\        \\:\\  \\         ___       /:/ _/_       /::\\  \\       /:/ _/_   \n" \
