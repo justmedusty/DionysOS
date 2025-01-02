@@ -475,7 +475,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     if (!parent->is_cached) {
         fill_vnode = true;
     }
-   kprintf("PARENT NAME %s SIZE %i\n",parent->vnode_name,parent->vnode_size);
+
     struct vnode *child = NULL;
 
     uint8_t max_directories = parent->vnode_size > VNODE_MAX_DIRECTORY_ENTRIES
@@ -503,13 +503,8 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     }
 
 done:
-    kprintf("DONE\n");
     release_spinlock(fs->lock);
     kfree(buffer);
-    if (fill_vnode) {
-    err_printf("NAME %s\n",parent->vnode_name);
-        parent->is_cached = true;
-    }
     return child;
 }
 
