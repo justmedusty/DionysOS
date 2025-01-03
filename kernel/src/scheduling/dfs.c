@@ -26,7 +26,7 @@
 
 
 struct queue sched_global_queue; // this is where processes will be stuck for CPUs to poach when they aren't busy
-struct queue global_sleep_queue;
+struct doubly_linked_list global_sleep_queue;
 
 struct spinlock sched_global_lock;
 struct spinlock sched_sleep_lock;
@@ -69,8 +69,8 @@ void sched_init() {
     initlock(&sched_global_lock, sched_LOCK);
     initlock(&purge_lock, sched_LOCK);
     initlock(&sched_sleep_lock, sched_LOCK);
+    doubly_linked_list_init(&global_sleep_queue);
     queue_init(&sched_global_queue, QUEUE_MODE_FIFO, "sched_global");
-    queue_init(&global_sleep_queue, QUEUE_MODE_FIFO, "global_sleep");
     for (uint32_t i = 0; i < cpu_count; i++) {
         queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
         cpu_list[i].local_run_queue = &local_run_queues[i];
@@ -86,7 +86,6 @@ void scheduler_main(void) {
     for (;;) {
         sched_run();
     }
-
 }
 
 /*
@@ -119,6 +118,7 @@ void sched_run() {
     }
 
     cpu->running_process = cpu->local_run_queue->head->data;
+    cpu->running_process->current_cpu = cpu;
     cpu->running_process->current_state = PROCESS_RUNNING;
     dequeue(cpu->local_run_queue);
     context_switch(cpu->scheduler_state, cpu->running_process->current_gpr_state);
@@ -136,20 +136,37 @@ void sched_preempt() {
     context_switch(my_cpu()->running_process->current_gpr_state, cpu->scheduler_state);
 }
 
-/*
- * Under construction
- */
 void sched_sleep(void *sleep_channel) {
-    struct cpu *cpu = my_cpu();
-    struct process *process = cpu->running_process;
-
+    struct process *process = current_process();
+    doubly_linked_list_insert_head(&global_sleep_queue, process);
+    process->sleep_channel = sleep_channel;
+    process->current_state = PROCESS_SLEEPING;
+    context_switch(my_cpu()->running_process->current_gpr_state, process->current_cpu->scheduler_state);
 }
+
+void sched_wakeup(const void *wakeup_channel) {
+    acquire_spinlock(&sched_sleep_lock);
+    struct doubly_linked_list_node *node = global_sleep_queue.head;
+    if (node == NULL) {
+        return;
+    }
+    struct process *process = node->data;
+    while (node && process) {
+        process = node->data;
+
+        if (process->sleep_channel == wakeup_channel) {
+            process->sleep_channel = 0;
+            doubly_linked_list_remove_node_by_address(&global_sleep_queue, node);
+        }
+        node = node->next;
+    }
+    release_spinlock(&sched_sleep_lock);
+};
 
 /*
  * Under construction
  */
 void sched_claim_process() {
-
 }
 
 /*

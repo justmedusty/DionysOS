@@ -25,4 +25,6 @@ void sched_preempt(void);
 void sched_claim_process(void);
 void sched_exit(void);
 void scheduler_main(void);
+void sched_sleep(void *sleep_channel);
+void sched_wakeup(const void *wakeup_channel);
 #endif
