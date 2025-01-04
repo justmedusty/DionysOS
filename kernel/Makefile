@@ -61,7 +61,7 @@ override KCFLAGS += \
     -mno-sse2 \
     -mno-red-zone \
    	-g \
-   	-D _DFS_ \
+   	-D_DFS_ \
    	-DMAX_CPUS=$(CPUS)\
    	-fanalyzer \
    	-Wno-unused-variable \

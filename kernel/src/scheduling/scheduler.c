@@ -7,8 +7,6 @@
  */
 #include <include/device/display/framebuffer.h>
 
-#ifdef _DPS_ // the type of scheduler used will be defined in the gcc flags at compile time.
-
 #include <include/architecture/arch_asm_functions.h>
 #include <include/architecture/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
@@ -71,10 +69,26 @@ void sched_init() {
     initlock(&sched_sleep_lock, sched_LOCK);
     doubly_linked_list_init(&global_sleep_queue);
     for (uint32_t i = 0; i < cpu_count; i++) {
+
+#ifdef _DFS_
+        queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
+#endif
+
+#ifdef _DPS_
         queue_init(&local_run_queues[i], QUEUE_MODE_PRIORITY, "dfs");
+#endif
+
         cpu_list[i].local_run_queue = &local_run_queues[i];
     }
+
+#ifdef _DFS_
+    queue_init(&sched_global_queue, QUEUE_MODE_FIFO, "sched_global");
+#endif
+
+#ifdef _DPS_
     queue_init(&sched_global_queue, QUEUE_MODE_PRIORITY, "sched_global");
+#endif
+
     kprintf("Scheduler initialized\n");
     serial_printf("DFS: Local CPU RQs Initialized \n");
 }
@@ -216,4 +230,3 @@ static void look_for_process() {
     release_spinlock(&sched_global_lock);
 }
 
-#endif
