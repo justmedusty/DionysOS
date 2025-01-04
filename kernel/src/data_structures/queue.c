@@ -40,6 +40,8 @@ static void enqueue_lifo(struct queue* queue_head, struct queue_node* new_node);
  * Init a queue
  */
 void queue_init(struct queue* queue_head, uint8_t queue_mode, char* name) {
+    queue_head->spinlock = kmalloc(sizeof(struct spinlock));
+    initlock(queue_head->spinlock, QUEUE_LOCK);
     queue_head->name = name;
     queue_head->head = NULL;
     queue_head->tail = NULL;

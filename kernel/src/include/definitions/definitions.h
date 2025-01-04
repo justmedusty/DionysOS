@@ -27,6 +27,7 @@
 #define DOUBLY_LINKED_LIST_LOCK 10
 #define SINGLE_LINKED_LIST_LOCK 11
 #define FRAME_LOCK 12
+#define QUEUE_LOCK 13
 
 enum seek_values {
     SEEK_BEGIN = 0,

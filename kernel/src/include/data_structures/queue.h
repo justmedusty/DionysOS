@@ -29,6 +29,7 @@ struct queue {
     char *name; /* Should be short */
     uint8_t queue_mode; /* Determines the behaviour of enqueue, dequeue, init behaviours to provide maximum flexibility for use elsewhere in the kernel */
     uint32_t node_count;
+    struct spinlock *spinlock;
 
 };
 
