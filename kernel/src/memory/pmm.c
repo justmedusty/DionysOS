@@ -233,7 +233,7 @@ int phys_init() {
             index++;
         }
     }
-    kprintf("kcount %i ucount %i\n", kcount, ucount);
+    info_printf("Kernel Page Pool Page Count: %i User Page Pool Page Count: %i\n", kcount * 1 << MAX_ORDER, ucount * 1 << MAX_ORDER);
 
     hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
 

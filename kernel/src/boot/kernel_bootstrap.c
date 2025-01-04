@@ -54,7 +54,6 @@ void kernel_bootstrap() {
     lapic_init();
     vfs_init();
     diosfs_init(0);
-    sched_init();
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
