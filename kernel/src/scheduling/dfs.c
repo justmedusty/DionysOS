@@ -71,10 +71,6 @@ void sched_init() {
     initlock(&sched_sleep_lock, sched_LOCK);
     doubly_linked_list_init(&global_sleep_queue);
     queue_init(&sched_global_queue, QUEUE_MODE_FIFO, "sched_global");
-    for (uint32_t i = 0; i < cpu_count; i++) {
-        queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
-        cpu_list[i].local_run_queue = &local_run_queues[i];
-    }
     kprintf("Scheduler initialized\n");
     serial_printf("DFS: Local CPU RQs Initialized \n");
 }

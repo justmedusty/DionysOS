@@ -40,6 +40,11 @@ void smp_init(){
     cpu_count = response->cpu_count;
     smp_info = response->cpus;
 
+    for (uint32_t i = 0; i < cpu_count; i++) {
+        queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
+        cpu_list[i].local_run_queue = &local_run_queues[i];
+    }
+
     serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n",bootstrap_lapic_id,cpu_count);
     uint8_t i = 0;
     kprintf("%i CPUs Found\n",cpu_count);

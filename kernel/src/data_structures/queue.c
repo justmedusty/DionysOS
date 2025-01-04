@@ -3,6 +3,7 @@
 //
 
 #include "include/data_structures/queue.h"
+#include "include/data_structures/spinlock.h"
 #include <include/definitions/definitions.h>
 #include <include/memory/kalloc.h>
 #include <include/definitions/types.h>
@@ -68,6 +69,7 @@ void queue_node_init(struct queue_node* node, void* data, const uint8_t priority
  */
 
 void enqueue(struct queue* queue_head, void* data_to_enqueue, const uint8_t priority) {
+    acquire_spinlock(queue_head->spinlock);
     uint8_t queue_head_empty = 0;
     if (queue_head == NULL) {
         //So i can investigate when it happens, should have null data field not the entire head structure null
@@ -100,12 +102,14 @@ void enqueue(struct queue* queue_head, void* data_to_enqueue, const uint8_t prio
     default:
         break;
     }
+release_spinlock(queue_head->spinlock);
 }
 
 /*
  *  Generic dequeue, it will check the queue_mode field to tell what mode this is, and call the appropriate function.
  */
 void dequeue(struct queue* queue_head) {
+    acquire_spinlock(queue_head->spinlock);
     if (queue_head == NULL) {
         //So i can investigate when it happens, should have null data field not the entire head structure null
         panic("Null head");
@@ -133,6 +137,7 @@ void dequeue(struct queue* queue_head) {
     default:
         break;
     }
+    release_spinlock(queue_head->spinlock);
 }
 
 /*
