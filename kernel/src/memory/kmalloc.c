@@ -108,7 +108,7 @@ void *_kalloc(uint64_t size) {
 }
 
 /*
- * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise phys_dealloc is invoked.
+ * _kfree( frees kernel memory, if it is a multiple of page size, ie any bits in 0xFFF, then it is freed from the slab cache. Otherwise, phys_dealloc is invoked.
  */
 void _kfree(void *address) {
     if (address == NULL) {
