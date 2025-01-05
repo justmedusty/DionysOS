@@ -98,7 +98,7 @@ struct framebuffer_ops {
 
     void (*clear)(struct device *dev);
 
-    void (*draw_char)(struct device *dev, char c, uint32_t color);
+    void (*draw_char)(struct device *dev, uint8_t c, uint32_t color);
 
     void (*draw_string)(struct device *dev, uint32_t color, char *string);
 

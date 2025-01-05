@@ -51,19 +51,16 @@ void reload_vmm() {
 
 void map_kernel_address_space(p4d_t* pgdir){
 
-    kprintf("Mapping text space..\n");
     if (map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
 
-    kprintf("Mapping rodata space..\n");
     if (map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
 
-    kprintf("Mapping data address space..\n");
     if (map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
@@ -73,9 +70,8 @@ void map_kernel_address_space(p4d_t* pgdir){
      * Just map the entire physical range
      * I will just have 2 trees in the PMM one for user pages one for kernel pages
      */
-    kprintf("Mapping full address space..\n");
     if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , highest_address) == -1){
-        panic("Mapping first half!");
+        panic("Mapping address space!");
     }
 }
 

@@ -92,10 +92,10 @@ struct framebuffer {
 
 
 void draw_char(const struct framebuffer *fb,
-               char c, uint64_t x, uint64_t y, uint32_t color);
+               uint8_t c, uint64_t x, uint64_t y, uint32_t color);
 
 void draw_char_with_context(struct framebuffer *fb,
-                            const char c, const uint32_t color);
+                            const uint8_t c, const uint32_t color);
 
 void clear(struct framebuffer *fb);
 
@@ -105,7 +105,7 @@ void kprintf(char *str, ...);
 
 void kprintf_color(uint32_t color, char *str, ...);
 
-void fb_ops_draw_char(struct device *dev, char c, uint32_t color);
+void fb_ops_draw_char(struct device *dev, uint8_t c, uint32_t color);
 
 void err_printf(char *str, ...);
 

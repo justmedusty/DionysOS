@@ -45,7 +45,7 @@ struct device framebuffer_device = {
 char characters[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 
-void fb_ops_draw_char(struct device *dev, char c, uint32_t color) {
+void fb_ops_draw_char(struct device *dev, uint8_t c, uint32_t color) {
     struct framebuffer *fb = dev->device_info;
     draw_char_with_context(fb, c, color);
 };
@@ -61,8 +61,8 @@ void fb_ops_clear(struct device *dev) {
 }
 
 void draw_char(const struct framebuffer *fb,
-               const char c, const uint64_t x, const uint64_t y, const uint32_t color) {
-    if (c < 0 || c >= 128) return; // Ensure the character is within the font bounds
+               const uint8_t c, const uint64_t x, const uint64_t y, const uint32_t color) {
+    if (c < 0 || c >= 255) return; // Ensure the character is within the font bounds
 
     // Access the character's bitmap
     const uint8_t *bitmap = &default_font.data[(uint8_t) c * fb->font_height]; // Each character is 8 bytes tall
@@ -71,7 +71,7 @@ void draw_char(const struct framebuffer *fb,
 
     for (uint64_t cy = 0; cy < fb->font_height; cy++) {
         for (uint64_t cx = 0; cx < fb->font_width; cx++) {
-            if (bitmap[cy] & BIT(7 - cx)) {
+            if (bitmap[cy] & BIT((fb->font_width - 1 - cx))) {
                 // Check if the pixel should be set
                 const uint64_t px = x + cx; // Calculate absolute X position
                 const uint64_t py = y + cy; // Calculate absolute Y position
@@ -89,8 +89,8 @@ void draw_char(const struct framebuffer *fb,
 }
 
 void draw_char_with_context(struct framebuffer *fb,
-                            const char c, const uint32_t color) {
-    if (c < 0 || c >= 128) return; // Ensure the character is within the font bounds
+                            const uint8_t c, const uint32_t color) {
+    if (c < 0 || c >= 255) return; // Ensure the character is within the font bounds
 
     if (c == '\n') {
         fb->context.current_y_pos += fb->font_height;
@@ -119,7 +119,7 @@ void draw_char_with_context(struct framebuffer *fb,
     // Loop through each row and column of the character bitmap
     for (uint64_t cy = 0; cy < fb->font_height; cy++) {
         for (uint64_t cx = 0; cx < fb->font_width; cx++) {
-            if (bitmap[cy] & BIT((7 - cx))) {
+            if (bitmap[cy] & BIT((fb->font_width - 1 - cx ))) {
                 // Check if the pixel should be set
                 const uint64_t px = fb->context.current_x_pos + cx; // Calculate absolute X position
                 const uint64_t py = fb->context.current_y_pos + cy; // Calculate absolute Y position
