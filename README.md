@@ -9,11 +9,7 @@ The themes of fertility surrounding Dionysos are very relevant in the context of
 
 The operating system provides a controlled environment for chaos, imposing structure on its internals and peripherals. The operating system may even succumb to the chaos on occasions such as an NMI (Non-Maskable Interrupt) or kernel panic, similar to the divine madness that afflicted Dionysos. 
 
-His thyrsos, the staff capable of providing as well as destroying, also fits very well with this theme. The operating system can provide all of the resources a task requests, but at the same time it will destroy it when it steps out of line. Much like the dual nature of the thyrsos of Dionysos. 
-
 In his travels around the world, Dionysos would gather followers, however those that did not partake in his proverbial song and dance were struck down while those that did were granted pleasures and gifts. The operating system tends to act in this way as well. The operating system demands compliance with rigid rules and protocols, much like Dionysos during his worldly travels. If the expectations of the operating system are not met, unruly processes will be struck down immediately. Meanwhile, those that partake in his song and dance will be granted the resources they request, even to unnecessary abundance. 
-
-Parallels can even be drawn to the philosophical juxtaposition of Dionysian vs Apollonian thinking. The operating system software as a concept is like a battle pitting the chaotic Dionysian thought against Apollonian thought, finding a sort of balance somewhere in the middle.
 
 Lastly, given Dionysos' creation as the son of a God and a mortal, there is a sense of "bridging the gap" with his story. His father was a god while his mother was a mortal, putting him in this state of entanglement between divinity and mortality. An operating system is also a sort of "gap bridger" between two realms, much like Dionysos. Hardware is the embodiment of chaos, dancing with the laws of physics as well as the laws of chemistry and chemical interactions. Software on the other hand has rigid structure, is predictable, and is bound by logic and reason. The operating system is the bridge between these two opposing realms. Much like Zeus and Semele procreating to spawn Dionysos.
 
