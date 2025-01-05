@@ -122,7 +122,6 @@ void sched_yield() {
  */
 void sched_run() {
     struct cpu *cpu = my_cpu();
-
     if (cpu->local_run_queue->head == NULL) {
 
         timer_sleep(1500);
@@ -182,6 +181,7 @@ void sched_wakeup(const void *wakeup_channel) {
  * Under construction
  */
 void sched_claim_process() {
+
 }
 
 /*
@@ -192,7 +192,7 @@ void sched_exit() {
     struct process *process = cpu->running_process;
     singly_linked_list_insert_head(&dead_processes, process);
     my_cpu()->running_process = NULL;
-    context_switch(process->current_register_state, my_cpu()->scheduler_state);
+    context_switch(process->current_register_state, cpu->scheduler_state);
 }
 
 /*
@@ -220,7 +220,7 @@ static void look_for_process() {
     struct cpu *cpu = my_cpu();
     acquire_spinlock(&sched_global_lock);
 
-    if (sched_global_queue.queue_mode == 0) {
+    if (sched_global_queue.node_count == 0) {
         release_spinlock(&sched_global_lock);
         return;
     }

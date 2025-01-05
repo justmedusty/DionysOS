@@ -231,19 +231,14 @@ static void enqueue_priority(struct queue* queue_head, struct queue_node* new_no
         /*
          *  Switch mayh seem a little weird but I feel icky about any nested if statements and I prefer this
          */
-
-        switch (queue_head->head->priority > new_node->priority) {
-        case 1:
+        if(queue_head->head->priority < new_node->priority) {
             queue_head->head->prev = new_node;
             new_node->next = queue_head->head;
             queue_head->head = new_node;
-            break;
-
-        case 0:
+        }else{
             queue_head->head->next = new_node;
             new_node->prev = queue_head->head;
             queue_head->tail = new_node;
-            break;
         }
 
         queue_head->node_count++;
@@ -354,10 +349,17 @@ static void dequeue_priority(struct queue* queue_head) {
     }
 
     queue_head->head = pointer->next;
+
+    if (queue_head->head == NULL) {
+        queue_head->node_count--;
+        kfree(pointer);
+        return;
+    }
+
     queue_head->head->prev = NULL;
     queue_head->node_count--;
 
-    if (queue_head->tail == pointer) {
+    if (queue_head->node_count == 1) {
         queue_head->tail = queue_head->head;
     }
 
