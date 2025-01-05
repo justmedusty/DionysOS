@@ -16,30 +16,30 @@ struct framebuffer main_framebuffer;
 #define MAIN_FB 0
 
 struct framebuffer_ops framebuffer_ops = {
-    .clear = fb_ops_clear,
-    .draw_string = fb_ops_draw_string,
-    .draw_char = fb_ops_draw_char,
-    .init = NULL,
-    .draw_pixel = NULL
+        .clear = fb_ops_clear,
+        .draw_string = fb_ops_draw_string,
+        .draw_char = fb_ops_draw_char,
+        .init = NULL,
+        .draw_pixel = NULL
 };
 
 struct device_ops framebuffer_device_ops = {
-    .framebuffer_ops = &framebuffer_ops,
-    .get_status = NULL,
-    .configure = NULL,
-    .init = NULL,
-    .reset = NULL
+        .framebuffer_ops = &framebuffer_ops,
+        .get_status = NULL,
+        .configure = NULL,
+        .init = NULL,
+        .reset = NULL
 };
 
 
 struct device framebuffer_device = {
-    .device_major = DEVICE_MAJOR_FRAMEBUFFER,
-    .device_minor = MAIN_FB,
-    .lock = &main_framebuffer.lock,
-    .parent = NULL,
-    .device_type = DEVICE_TYPE_BLOCK,
-    .device_info = &main_framebuffer,
-    .device_ops = &framebuffer_device_ops
+        .device_major = DEVICE_MAJOR_FRAMEBUFFER,
+        .device_minor = MAIN_FB,
+        .lock = &main_framebuffer.lock,
+        .parent = NULL,
+        .device_type = DEVICE_TYPE_BLOCK,
+        .device_info = &main_framebuffer,
+        .device_ops = &framebuffer_device_ops
 };
 
 char characters[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -77,7 +77,7 @@ void draw_char(const struct framebuffer *fb,
                 const uint64_t py = y + cy; // Calculate absolute Y position
 
                 // Ensure the pixel is within the framebuffer bounds
-                if (px < fb->width  && py < fb->height) {
+                if (px < fb->width && py < fb->height) {
                     uint32_t *framebuffer = fb->address;
                     framebuffer[py * (fb->pitch / sizeof(uint32_t)) + px] = color; // Set pixel color
                 } else {
@@ -107,13 +107,17 @@ void draw_char_with_context(struct framebuffer *fb,
 
         uint64_t *dest = fb->address;
         uint64_t *src = fb->address + row_size;
-
+/*
+ * We speed this up by going two pixels at a time. This DRAMATICALLY increases the speed as which the frame
+ * buffer is able to scroll on real hardware.
+ * Since most pixels are blank and a lot stay the same, this is the way to go.
+ */
         for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
             if (dest[i] != src[i]) {
-                uint32_t lower_dest = (uint32_t)(dest[i] & UINT32_MAX);
-                uint32_t upper_dest = (uint32_t)((dest[i] >> 32) & UINT32_MAX);
-                uint32_t lower_src = (uint32_t)(src[i] & UINT32_MAX);
-                uint32_t upper_src = (uint32_t)((src[i] >> 32) & UINT32_MAX);
+                uint32_t lower_dest = (uint32_t) (dest[i] & UINT32_MAX);
+                uint32_t upper_dest = (uint32_t) ((dest[i] >> 32) & UINT32_MAX);
+                uint32_t lower_src = (uint32_t) (src[i] & UINT32_MAX);
+                uint32_t upper_src = (uint32_t) ((src[i] >> 32) & UINT32_MAX);
 
                 if (lower_dest != lower_src) {
                     lower_dest = lower_src;
@@ -122,7 +126,7 @@ void draw_char_with_context(struct framebuffer *fb,
                     upper_dest = upper_src;
                 }
 
-                dest[i] = ((uint64_t)upper_dest << 32) | lower_dest;
+                dest[i] = ((uint64_t) upper_dest << 32) | lower_dest;
             }
         }
 
@@ -139,7 +143,7 @@ void draw_char_with_context(struct framebuffer *fb,
     // Loop through each row and column of the character bitmap
     for (uint64_t cy = 0; cy < fb->font_height; cy++) {
         for (uint64_t cx = 0; cx < fb->font_width; cx++) {
-            if (bitmap[cy] & BIT((fb->font_width - 1 - cx ))) {
+            if (bitmap[cy] & BIT((fb->font_width - 1 - cx))) {
                 // Check if the pixel should be set
                 const uint64_t px = fb->context.current_x_pos + cx; // Calculate absolute X position
                 const uint64_t py = fb->context.current_y_pos + cy; // Calculate absolute Y position
@@ -179,13 +183,18 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
             uint64_t *dest = fb->address;
             uint64_t *src = fb->address + row_size;
 
+/*
+ * We speed this up by going two pixels at a time. This DRAMATICALLY increases the speed as which the frame
+ * buffer is able to scroll on real hardware.
+ * Since most pixels are blank and a lot stay the same, this is the way to go.
+ */
 
             for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
                 if (dest[i] != src[i]) {
-                    uint32_t lower_dest = (uint32_t)(dest[i] & UINT32_MAX);
-                    uint32_t upper_dest = (uint32_t)((dest[i] >> 32) & UINT32_MAX);
-                    uint32_t lower_src = (uint32_t)(src[i] & UINT32_MAX);
-                    uint32_t upper_src = (uint32_t)((src[i] >> 32) & UINT32_MAX);
+                    uint32_t lower_dest = (uint32_t) (dest[i] & UINT32_MAX);
+                    uint32_t upper_dest = (uint32_t) ((dest[i] >> 32) & UINT32_MAX);
+                    uint32_t lower_src = (uint32_t) (src[i] & UINT32_MAX);
+                    uint32_t upper_src = (uint32_t) ((src[i] >> 32) & UINT32_MAX);
 
                     if (lower_dest != lower_src) {
                         lower_dest = lower_src;
@@ -194,7 +203,7 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
                         upper_dest = upper_src;
                     }
 
-                    dest[i] = ((uint64_t)upper_dest << 32) | lower_dest;
+                    dest[i] = ((uint64_t) upper_dest << 32) | lower_dest;
                 }
             }
 
@@ -229,7 +238,7 @@ static char get_hex_char(uint8_t nibble) {
     }
 }
 
-static void draw_hex(struct device *fb, uint64_t num, int8_t size,uint32_t color) {
+static void draw_hex(struct device *fb, uint64_t num, int8_t size, uint32_t color) {
 
     fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
     for (int8_t i = (size - 4); i >= 0; i -= 4) {
@@ -271,35 +280,35 @@ void kprintf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value8, 8,GREEN);
+                                draw_hex(&framebuffer_device, value8, 8, GREEN);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value16, 16,GREEN);
+                                draw_hex(&framebuffer_device, value16, 16, GREEN);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value32, 32,GREEN);
+                                draw_hex(&framebuffer_device, value32, 32, GREEN);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,GREEN);
+                                draw_hex(&framebuffer_device, value64, 64, GREEN);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,GREEN);
+                                draw_hex(&framebuffer_device, value64, 64, GREEN);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&framebuffer_device,value, 64,GREEN);
+                        draw_hex(&framebuffer_device, value, 64, GREEN);
                     }
                     break;
                 }
@@ -330,7 +339,7 @@ void kprintf(char *str, ...) {
                     // Write digits in reverse order
                     while (index > 0) {
                         framebuffer_device.device_ops->framebuffer_ops->draw_char(
-                            &framebuffer_device, buffer[--index], GREEN);
+                                &framebuffer_device, buffer[--index], GREEN);
                     }
                     break;
                 }
@@ -388,35 +397,35 @@ void err_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value8, 8,RED);
+                                draw_hex(&framebuffer_device, value8, 8, RED);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value16, 16,RED);
+                                draw_hex(&framebuffer_device, value16, 16, RED);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value32, 32,RED);
+                                draw_hex(&framebuffer_device, value32, 32, RED);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,RED);
+                                draw_hex(&framebuffer_device, value64, 64, RED);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,RED);
+                                draw_hex(&framebuffer_device, value64, 64, RED);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&framebuffer_device,value, 64,RED);
+                        draw_hex(&framebuffer_device, value, 64, RED);
                     }
                     break;
                 }
@@ -447,7 +456,7 @@ void err_printf(char *str, ...) {
                     // Write digits in reverse order
                     while (index > 0) {
                         framebuffer_device.device_ops->framebuffer_ops->draw_char(
-                            &framebuffer_device, buffer[--index], RED);
+                                &framebuffer_device, buffer[--index], RED);
                     }
                     break;
                 }
@@ -502,35 +511,35 @@ void warn_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value8, 8,ORANGE);
+                                draw_hex(&framebuffer_device, value8, 8, ORANGE);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value16, 16,ORANGE);
+                                draw_hex(&framebuffer_device, value16, 16, ORANGE);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value32, 32,ORANGE);
+                                draw_hex(&framebuffer_device, value32, 32, ORANGE);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,ORANGE);
+                                draw_hex(&framebuffer_device, value64, 64, ORANGE);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,ORANGE);
+                                draw_hex(&framebuffer_device, value64, 64, ORANGE);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&framebuffer_device,value, 64,ORANGE);
+                        draw_hex(&framebuffer_device, value, 64, ORANGE);
                     }
                     break;
                 }
@@ -561,7 +570,7 @@ void warn_printf(char *str, ...) {
                     // Write digits in reverse order
                     while (index > 0) {
                         framebuffer_device.device_ops->framebuffer_ops->draw_char(
-                            &framebuffer_device, buffer[--index], ORANGE);
+                                &framebuffer_device, buffer[--index], ORANGE);
                     }
                     break;
                 }
@@ -616,35 +625,35 @@ void info_printf(char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value8, 8,YELLOW);
+                                draw_hex(&framebuffer_device, value8, 8, YELLOW);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value16, 16,YELLOW);
+                                draw_hex(&framebuffer_device, value16, 16, YELLOW);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value32, 32,YELLOW);
+                                draw_hex(&framebuffer_device, value32, 32, YELLOW);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,YELLOW);
+                                draw_hex(&framebuffer_device, value64, 64, YELLOW);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,YELLOW);
+                                draw_hex(&framebuffer_device, value64, 64, YELLOW);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&framebuffer_device,value, 64,YELLOW);
+                        draw_hex(&framebuffer_device, value, 64, YELLOW);
                     }
                     break;
                 }
@@ -675,7 +684,7 @@ void info_printf(char *str, ...) {
                     // Write digits in reverse order
                     while (index > 0) {
                         framebuffer_device.device_ops->framebuffer_ops->draw_char(
-                            &framebuffer_device, buffer[--index], YELLOW);
+                                &framebuffer_device, buffer[--index], YELLOW);
                     }
                     break;
                 }
@@ -731,35 +740,35 @@ void kprintf_color(uint32_t color, char *str, ...) {
                         switch (*str) {
                             case '8':
                                 uint64_t value8 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value8, 8,color);
+                                draw_hex(&framebuffer_device, value8, 8, color);
                                 break;
                             case '1':
                                 uint64_t value16 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value16, 16,color);
+                                draw_hex(&framebuffer_device, value16, 16, color);
 
                                 str++;
                                 break;
                             case '3':
                                 uint64_t value32 = va_arg(args, uint32_t);
-                                draw_hex(&framebuffer_device,value32, 32,color);
+                                draw_hex(&framebuffer_device, value32, 32, color);
 
                                 str++;
                                 break;
                             case '6':
                                 uint64_t value64 = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,color);
+                                draw_hex(&framebuffer_device, value64, 64, color);
 
                                 str++;
                                 break;
                             default:
                                 uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device,value64, 64,color);
+                                draw_hex(&framebuffer_device, value64, 64, color);
 
                                 break;
                         }
                     } else {
                         uint64_t value = va_arg(args, uint64_t);
-                        draw_hex(&framebuffer_device,value, 64,color);
+                        draw_hex(&framebuffer_device, value, 64, color);
                     }
                     break;
                 }
@@ -790,7 +799,7 @@ void kprintf_color(uint32_t color, char *str, ...) {
                     // Write digits in reverse order
                     while (index > 0) {
                         framebuffer_device.device_ops->framebuffer_ops->draw_char(
-                            &framebuffer_device, buffer[--index], color);
+                                &framebuffer_device, buffer[--index], color);
                     }
                     break;
                 }
