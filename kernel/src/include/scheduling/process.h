@@ -52,13 +52,13 @@ struct process {
     struct virtual_handle_list *handle_list;
     struct virt_map* page_map;
     struct cpu* current_cpu; /* Which run queue , if any is this process on? */
-    struct gpr_state* current_gpr_state;
+    struct register_state* current_register_state;
     struct vnode* current_working_dir;
 };
 
 
 
-struct gpr_state {
+struct register_state {
 #ifdef __x86_64__
     uint64_t rax;
     uint64_t rbx;

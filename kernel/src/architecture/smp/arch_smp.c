@@ -59,7 +59,7 @@ void smp_init() {
         cpu_list[smp_info[i]->lapic_id].lapic_id = smp_info[i]->lapic_id;
         serial_printf("  CPU %x.8  LAPIC %x.8  initialized inside cpu_list\n", smp_info[i]->processor_id,
                       smp_info[i]->lapic_id);
-        cpu_list[smp_info[i]->lapic_id].scheduler_state = kmalloc(sizeof(struct gpr_state));
+        cpu_list[smp_info[i]->lapic_id].scheduler_state = kmalloc(sizeof(struct register_state));
         //puts rest of CPUs online, works so will leave this commented out for now since I need to create or refactor functions for this
         smp_info[i]->goto_address = arch_initialise_cpu;
         i++;

@@ -63,7 +63,7 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     }
 
     if (my_cpu()->scheduler_state == NULL) {
-     my_cpu()->scheduler_state = kmalloc(sizeof(struct gpr_state));
+     my_cpu()->scheduler_state = kmalloc(sizeof(struct register_state));
     }
     my_cpu()->page_map = kernel_pg_map;
 
