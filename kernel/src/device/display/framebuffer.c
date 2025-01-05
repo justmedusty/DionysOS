@@ -105,12 +105,21 @@ void draw_char_with_context(struct framebuffer *fb,
         const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
         const uint64_t row_size = fb->pitch * fb->font_height;
 
-        uint32_t *dest = fb->address;
-        uint32_t *src = fb->address + row_size;
+        uint64_t *dest = fb->address;
+        uint64_t *src = fb->address + row_size;
 
-        for(size_t i = 0; i < rows_size / sizeof(uint32_t); i++){
+        for(size_t i = 0; i < rows_size / sizeof(uint64_t); i++){
             if(dest[i] != src[i]){
-                dest[i] = src[i];
+                uint32_t *ndest = (uint32_t *) dest;
+                uint32_t *nsrc = (uint32_t *) src;
+
+                if(ndest[0] != nsrc[0]){
+                    ndest[0] = nsrc[0];
+                }
+
+                if(ndest[1] != nsrc[1]){
+                    ndest[1] = nsrc[1];
+                }
             }
         }
 
@@ -172,9 +181,18 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
             uint32_t *dest = fb->address;
             uint32_t *src = fb->address + row_size;
 
-            for(size_t i = 0; i < rows_size / sizeof(uint32_t); i++){
+            for(size_t i = 0; i < rows_size / sizeof(uint64_t); i++){
                 if(dest[i] != src[i]){
-                    dest[i] = src[i];
+                    uint32_t *ndest = dest;
+                    uint32_t *nsrc = src;
+
+                    if(ndest[0] != nsrc[0]){
+                        ndest[0] = nsrc[0];
+                    }
+
+                    if(ndest[1] != nsrc[1]){
+                        ndest[1] = nsrc[1];
+                    }
                 }
             }
 
