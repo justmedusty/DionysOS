@@ -104,6 +104,16 @@ void draw_char_with_context(struct framebuffer *fb,
     if (fb->context.current_y_pos >= fb->height) {
         const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
         const uint64_t row_size = fb->pitch * fb->font_height;
+
+        uint32_t *dest = fb->address;
+        uint32_t *src = fb->address + row_size;
+
+        for(size_t i = 0; i < rows_size / sizeof(uint32_t); i++){
+            if(dest[i] != src[i]){
+                dest[i] = src[i];
+            }
+        }
+
         // Shift the framebuffer content upwards by one row
         memmove(fb->address, fb->address + row_size, rows_size);
         // Clear the bottom portion of the framebuffer
@@ -158,6 +168,16 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
         if (index_y >= fb->height) {
             const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
             const uint64_t row_size = fb->pitch * fb->font_height;
+
+            uint32_t *dest = fb->address;
+            uint32_t *src = fb->address + row_size;
+
+            for(size_t i = 0; i < rows_size / sizeof(uint32_t); i++){
+                if(dest[i] != src[i]){
+                    dest[i] = src[i];
+                }
+            }
+
             // Shift the framebuffer content upwards by one row
             memmove(fb->address, fb->address + row_size, rows_size);
             // Clear the bottom portion of the framebuffer
