@@ -91,5 +91,6 @@ void acpi_init() {
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
     set_pci_mmio_address((struct mcfg_entry *) &mcfg_header->entry);
     pci_enumerate_devices(true);
+    kprintf("PCI Scan Complete\n");
     madt_init();
 }
