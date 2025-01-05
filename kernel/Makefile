@@ -62,7 +62,6 @@ override KCFLAGS += \
     -mno-red-zone \
    	-g \
    	-D_DPS_ \
-   	-D_QEMU_\
    	-D_CREATE_RAMDISK_\
    	-DMAX_CPUS=$(CPUS)\
    	-fanalyzer \

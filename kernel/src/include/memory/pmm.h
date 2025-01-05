@@ -14,7 +14,7 @@ extern uint64_t highest_address;
 #define BITMAP 0
 #define BUDDY 1
 /* For buddy */
-#define MAX_ORDER 10 /* Going with the number Linux uses*/
+#define MAX_ORDER 10
 #define STATIC_POOL_FLAG BIT(5) /* So we know to return to the pool not try to call kfree on it */
 #define FIRST_BLOCK_FLAG BIT(6) /* So that we dont coalesce into other areas or memory*/
 #define IN_TREE_FLAG BIT(7)

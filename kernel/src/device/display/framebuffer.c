@@ -119,7 +119,7 @@ void draw_char_with_context(struct framebuffer *fb,
     // Loop through each row and column of the character bitmap
     for (uint64_t cy = 0; cy < fb->font_height; cy++) {
         for (uint64_t cx = 0; cx < fb->font_width; cx++) {
-            if (bitmap[cy] & BIT(7 - cx)) {
+            if (bitmap[cy] & BIT((7 - cx))) {
                 // Check if the pixel should be set
                 const uint64_t px = fb->context.current_x_pos + cx; // Calculate absolute X position
                 const uint64_t py = fb->context.current_y_pos + cy; // Calculate absolute Y position
