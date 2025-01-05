@@ -3,7 +3,7 @@
 [Link 1](https://www.worldhistory.org/Dionysos/) [Link 2](http://dionysia.org/greek/dionysos/thompson/dionysos.html)
 
 # NOTICE
-In the current state, since the inital ramdisk size is static, you will need to allocate OVER 4196MB of memory to the machine. If there is less, when the ramdisk initialization routine is looking for consecutive max order buddy blocks it will just loop infinitely since there is not enough memory in the kernel pool to satisfy. This will  not be an issue later on once the block device driver function interfaces are fleshed out but until then it psins up a ramdisk of a static size.
+In the current state, since the inital ramdisk size is static, you will need to allocate OVER 4196MB of memory to the machine. If there is less, when the ramdisk initialization routine is looking for consecutive max order buddy blocks it will just loop infinitely since there is not enough memory in the kernel pool to satisfy. This will  not be an issue later on once the block device driver function interfaces are fleshed out but until then it spins up a ramdisk of a static size.
 # Why Dionysos?
 As an enjoyer of greek myth, and Dionysos being associated with wine and insanity, writing an operating system seems to fit well with that theme. The themes of order & chaos are central to the story of Dionysos and such is also true for an operating system. Hardware is chaotic, users are chaotic, and the operating system stands between as an arbiter. It brings order to chaos and attempts to strike a balance between the inherent chaos of the surrounding environment and the order required for a coherent experience. 
 
