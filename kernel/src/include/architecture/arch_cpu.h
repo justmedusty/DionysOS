@@ -62,7 +62,7 @@ struct cpu{
  *  Function prototypes
  */
 #ifndef MAX_CPUS
-#define MAX_CPUS 2 // this will be overridden by the nproc return value
+#define MAX_CPUS 4 // this will be overridden by the nproc return value
 #endif
 extern struct spinlock bootstrap_lock;
 //static data structure for now this all just chicken scratch for the time being but I don't see a point of a linked list for cpus since it will never be more than 4 probably
