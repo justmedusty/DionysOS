@@ -77,9 +77,9 @@ void draw_char(const struct framebuffer *fb,
                 const uint64_t py = y + cy; // Calculate absolute Y position
 
                 // Ensure the pixel is within the framebuffer bounds
-                if (px >= 0 && px < fb->width && py >= 0 && py < fb->height) {
+                if (px < fb->width  && py < fb->height) {
                     uint32_t *framebuffer = fb->address;
-                    framebuffer[py * (fb->pitch / 4) + px] = color; // Set pixel color
+                    framebuffer[py * (fb->pitch / sizeof(uint32_t)) + px] = color; // Set pixel color
                 } else {
                     panic("draw_char: can't draw char");
                 }
@@ -125,9 +125,9 @@ void draw_char_with_context(struct framebuffer *fb,
                 const uint64_t py = fb->context.current_y_pos + cy; // Calculate absolute Y position
 
                 // Ensure the pixel is within the framebuffer bounds
-                if (px >= 0 && px < fb->width && py >= 0 && py < fb->height) {
+                if (px < fb->width && py < fb->height) {
                     uint32_t *framebuffer = fb->address;
-                    framebuffer[py * (fb->pitch / 4) + px] = color; // Set pixel color
+                    framebuffer[py * (fb->pitch / sizeof(uint32_t)) + px] = color; // Set pixel color
                 }
             }
         }
