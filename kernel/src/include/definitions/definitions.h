@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <include/memory/pmm.h>
 
-#define BIT(bit) ((uint8_t)(1 << bit))
+#define BIT(bit) ((1UL << bit))
 #define BYTE(num) (num / 8)
 
 

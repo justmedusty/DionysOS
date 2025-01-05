@@ -32,7 +32,7 @@ void switch_page_table(p4d_t* page_dir){
 
 void init_vmm(){
     kernel_pg_map =kmalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = (uint64_t*)phys_alloc(1,KERNEL_POOL); // 1 page , from kernel pool
+    kernel_pg_map->top_level = V2P(kzmalloc(PAGE_SIZE));
     kernel_pg_map->vm_regions = NULL;
     /*
      * Map symbols in the linker script
@@ -51,18 +51,19 @@ void reload_vmm() {
 
 void map_kernel_address_space(p4d_t* pgdir){
 
+    kprintf("Mapping text space..\n");
     if (map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
                   text_end - text_start) == -1){
         panic("Mapping text!");
     }
 
-
+    kprintf("Mapping rodata space..\n");
     if (map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1){
         panic("Mapping rodata!");
     }
 
-
+    kprintf("Mapping data address space..\n");
     if (map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1){
         panic("Mapping data!");
@@ -72,6 +73,7 @@ void map_kernel_address_space(p4d_t* pgdir){
      * Just map the entire physical range
      * I will just have 2 trees in the PMM one for user pages one for kernel pages
      */
+    kprintf("Mapping full address space..\n");
     if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , highest_address) == -1){
         panic("Mapping first half!");
     }
@@ -96,8 +98,8 @@ static pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags)
 
     if (!(*pud & PTE_P)){
         if (flags & ALLOC){
-            *pud = (pud_t)phys_alloc(1,KERNEL_POOL);
-            *pud |= PTE_P | PTE_RW | PTE_U;
+            *pud = (pud_t)V2P(kzmalloc(PAGE_SIZE));
+            *pud |= PTE_P | PTE_RW ;
         }
         else{
             return 0;
@@ -106,11 +108,10 @@ static pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags)
 
     pmd_t* pmd = P2V(PTE_ADDR(*pud));
     pmd += pud_idx;
-
     if (!(*pmd & PTE_P)){
         if (flags & ALLOC){
-            *pmd = (pmd_t)phys_alloc(1,KERNEL_POOL);
-            *pmd |= PTE_P | PTE_RW | PTE_U;
+            *pmd = (pmd_t)V2P(kzmalloc(PAGE_SIZE));
+            *pmd |= PTE_P | PTE_RW ;
         }
         else{
             return 0;
@@ -120,11 +121,10 @@ static pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags)
     pte_t* pte = P2V(PTE_ADDR(*pmd));
     pte += pmd_idx;
 
-
     if (!(*pte & PTE_P)){
         if (flags & ALLOC){
-            *pte = (pte_t)phys_alloc(1,KERNEL_POOL);
-            *pte |= PTE_P | PTE_RW | PTE_U;
+            *pte = (pte_t)V2P(kzmalloc(PAGE_SIZE));
+            *pte |= PTE_P | PTE_RW ;
         }
         else{
             return 0;
@@ -133,20 +133,19 @@ static pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags)
 
     pte_t* entry = P2V(PTE_ADDR(*pte));
     entry += pte_idx;
-
     return entry;
 }
 
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size){
+int map_pages(p4d_t* pgdir, uint64_t physaddr, const uint64_t* va, const uint64_t perms, const uint64_t size){
     pte_t* pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
 
     for (;;){
-        if ((pte = walk_page_directory(pgdir, (void*)address, 1)) == 0){
+        if ((pte = walk_page_directory(pgdir, (void*)address, ALLOC)) == 0){
             return -1;
         }
 

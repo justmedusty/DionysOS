@@ -31,7 +31,7 @@ extern char kernel_end[];
 
 void init_vmm();
 void switch_page_table(p4d_t *page_dir);
-int map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms,uint64_t size);
+int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, uint64_t perms,uint64_t size);
 uint64_t dealloc_va(p4d_t* pgdir, uint64_t address);
 void dealloc_va_range(p4d_t* pgdir, uint64_t address, uint64_t size);
 void map_kernel_address_space(p4d_t* pgdir);

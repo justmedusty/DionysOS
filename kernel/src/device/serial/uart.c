@@ -48,6 +48,7 @@ struct device_ops main_serial_ops = {
 
 
 void init_serial() {
+
 #ifdef _QEMU_
 #ifdef __x86_64__
     write_port(BASE + 1, 0x00); // Disable all interrupts

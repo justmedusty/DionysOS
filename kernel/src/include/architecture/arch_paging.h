@@ -24,7 +24,7 @@ void arch_paging_init();
 #define NPMDENTRIES     512    // # directory entries per page middle directory
 #define NPTENTRIES      512    // # PTEs per page table
 
-#define PAGE_DIR_MASK 0x1FF
+#define PAGE_DIR_MASK 0x1FFUL
 #define PAGE_OFFSET_MASK 0x3FF
 #define PTE_ADDRESS_MASK ~0xFFF
 
@@ -46,24 +46,24 @@ extern p4d_t *global_pg_dir;
 
 
 
-#define PTXSHIFT        12      // offset of PTX in a linear address
-#define PMDXSHIFT       21     // offset of PMDX in a linear address
-#define PUDXSHIFT       30     // offset of PUDX in a linear address
-#define P4DXSHIFT       39     // offset of P4DX
+#define PTXSHIFT        12UL      // offset of PTX in a linear address
+#define PMDXSHIFT       21UL     // offset of PMDX in a linear address
+#define PUDXSHIFT       30UL     // offset of PUDX in a linear address
+#define P4DXSHIFT       39UL     // offset of P4DX
 
 #define PGROUNDUP(sz)  (uint64_t) (uint64_t)((((uint64_t)sz)+PAGE_SIZE-1) & ~(uint64_t)(PAGE_SIZE-1))
 #define PGROUNDDOWN(a) (uint64_t) ((((uint64_t)a)) & ~(uint64_t)(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
-#define PTE_P           (uint64_t)0x001   // Present
-#define PTE_RW          (uint64_t)0x2
-#define PTE_U           (uint64_t)0x004   // User
-#define PTE_A           (uint64_t)0x020   //accessed , for demand paging
-#define PTE_PS          (uint64_t)0x080   // Page Size
-#define PTE_NX          (uint64_t) BIT(63) // no execute
+#define PTE_P           (uint64_t)0x001UL   // Present
+#define PTE_RW          (uint64_t)0x2UL
+#define PTE_U           (uint64_t)0x004UL   // User
+#define PTE_A           (uint64_t)0x020UL  //accessed , for demand paging
+#define PTE_PS          (uint64_t)0x080UL   // Page Size
+#define PTE_NX          (uint64_t) BIT(63UL) // no execute
 
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFF)
+#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFUL)
+#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFFUL)
 

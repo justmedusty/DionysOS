@@ -14,11 +14,11 @@ extern uint64_t highest_address;
 #define BITMAP 0
 #define BUDDY 1
 /* For buddy */
-#define MAX_ORDER 11 /* Going with the number Linux uses*/
+#define MAX_ORDER 10 /* Going with the number Linux uses*/
 #define STATIC_POOL_FLAG BIT(5) /* So we know to return to the pool not try to call kfree on it */
 #define FIRST_BLOCK_FLAG BIT(6) /* So that we dont coalesce into other areas or memory*/
 #define IN_TREE_FLAG BIT(7)
-#define STATIC_POOL_SIZE 15000UL
+#define STATIC_POOL_SIZE 24000UL
 #define PHYS_ZONE_COUNT 15
 #define FREE 0x1
 #define USED 0x2
@@ -40,12 +40,13 @@ struct contiguous_page_range {
       uint64_t start_address;
       uint64_t end_address;
       uint64_t pages;
+      uint64_t reserved;
   };
 
 
 struct buddy_block {
     struct buddy_block *next;
-    uint8_t zone;
+    uint64_t zone;
     void* start_address;
     uint64_t flags;
     uint8_t order;

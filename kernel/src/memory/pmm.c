@@ -73,7 +73,8 @@ uint64_t hhdm_offset = 0;
 uint64_t page_range_index = 0;
 
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
-struct contiguous_page_range contiguous_pages[10] = {};
+#define PAGE_RANGE_SIZE 100
+struct contiguous_page_range contiguous_pages[PAGE_RANGE_SIZE] = {};
 
 
 /*
@@ -110,6 +111,7 @@ int phys_init() {
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
     hhdm_offset = hhdm->offset;
+
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         struct limine_memmap_entry *entry = entries[i];
 
@@ -134,6 +136,7 @@ int phys_init() {
                 break;
         }
     }
+
     /*
      *  Quick bubble sort for the small list
      */
@@ -142,23 +145,19 @@ int phys_init() {
 
     while (changes) {
         int local_changes = 0;
-        for (int i = 0; i < page_range_index - 1; i++) {
+        for (size_t i = 0; i < page_range_index - 1; i++) {
             if (contiguous_pages[i].pages < contiguous_pages[i + 1].pages) {
                 struct contiguous_page_range placeholder = contiguous_pages[i];
-                memmove(&contiguous_pages[i], &contiguous_pages[i + 1], sizeof(struct contiguous_page_range));
-                memmove(&contiguous_pages[i + 1], &placeholder, sizeof(struct contiguous_page_range));
+                contiguous_pages[i] = contiguous_pages[i + 1];
+                contiguous_pages[i + 1] = placeholder;
                 local_changes++;
             }
         }
         if (local_changes == 0) {
             changes = 0;
-            for (int i = 0; i < page_range_index; i++) {
-                serial_printf("Page range %i Start Address %x.64 End Address %x.64 Pages %i\n", i,
-                              contiguous_pages[i].start_address, contiguous_pages[i].end_address,
-                              contiguous_pages[i].pages);
-            }
         }
     }
+
 
     /*
      *  Set up the buddy blocks which we will use later to replace our bitmap allocation scheme, reason being buddy
@@ -166,10 +165,13 @@ int phys_init() {
      *
      */
 
-    int index = 0; /* Index into the static buddy block pool */
+    size_t index = 0; /* Index into the static buddy block pool */
 
-    for (int i = 0; i < page_range_index; i++) {
-        for (uint64_t j = 0; j < contiguous_pages[i].pages; j += 1 << MAX_ORDER) {
+    for (size_t i = 0; i < page_range_index; i++) {
+        if(contiguous_pages[i].pages < 1 << MAX_ORDER){
+            continue;
+        }
+        for (uint64_t j = 0; j < contiguous_pages[i].pages; j += (1 << MAX_ORDER)) {
             buddy_block_static_pool[index].start_address = (void *) (
                 contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~(PAGE_SIZE -1));
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
@@ -184,6 +186,7 @@ int phys_init() {
             }
             index++;
             if (index == STATIC_POOL_SIZE) {
+                kprintf("Start addr %x.64\n", buddy_block_static_pool[index - 1].start_address);
                 panic("Phys_init : Static pool size hit"); /* A panic is excessive but it's fine for now*/
             }
         }
@@ -191,10 +194,11 @@ int phys_init() {
         /* Since the logic above will not apply for the last entry putting this here */
     }
 
+
     singly_linked_list_init(&unused_buddy_blocks_list, 0);
     for (uint64_t i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
-        buddy_block_static_pool[i].zone = 0xFFFF;
+        buddy_block_static_pool[i].zone = UNUSED;
         buddy_block_static_pool[i].next = NULL;
         buddy_block_static_pool[i].zone = UNUSED;
         buddy_block_static_pool[i].start_address = 0;
@@ -213,7 +217,7 @@ int phys_init() {
     struct binary_tree *tree;
     uint64_t kcount = 0;
     uint64_t ucount = 0;
-    for (int i = 0; i < page_range_index; i++) {
+    for (size_t i = 0; i < page_range_index; i++) {
         while (buddy_block_static_pool[index].zone == i) {
 
 
@@ -239,7 +243,7 @@ int phys_init() {
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
     highest_page_index = highest_address / PAGE_SIZE;
-    uint32_t pages_mib = (usable_pages * 4096) >> 20;
+    uint32_t pages_mib = (usable_pages * PAGE_SIZE) >> 20;
 
     kprintf("Physical Memory Manager Initialized\n");
     info_printf("%i MB of Memory Found\n", pages_mib);
@@ -260,6 +264,18 @@ void *phys_alloc(uint64_t pages,uint8_t zone) {
     block->is_free = USED;
     total_allocated += 1 << block->order;
     void *return_value = (void *) block->start_address;
+    return return_value;
+}
+
+void *phys_zalloc(uint64_t pages,uint8_t zone) {
+    struct buddy_block *block = buddy_alloc(pages,zone);
+    if (block == NULL) {
+        panic("phys_alloc cannot allocate");
+    }
+    block->is_free = USED;
+    total_allocated += 1 << block->order;
+    void *return_value = (void *) block->start_address;
+    memset(P2V(return_value),0,pages * PAGE_SIZE);
     return return_value;
 }
 
