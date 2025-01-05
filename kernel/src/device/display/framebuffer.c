@@ -108,23 +108,24 @@ void draw_char_with_context(struct framebuffer *fb,
         uint64_t *dest = fb->address;
         uint64_t *src = fb->address + row_size;
 
-        for(size_t i = 0; i < rows_size / sizeof(uint64_t); i++){
-            if(dest[i] != src[i]){
-                uint32_t *ndest = (uint32_t *) dest;
-                uint32_t *nsrc = (uint32_t *) src;
+        for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
+            if (dest[i] != src[i]) {
+                uint32_t lower_dest = (uint32_t)(dest[i] & UINT32_MAX);
+                uint32_t upper_dest = (uint32_t)((dest[i] >> 32) & UINT32_MAX);
+                uint32_t lower_src = (uint32_t)(src[i] & UINT32_MAX);
+                uint32_t upper_src = (uint32_t)((src[i] >> 32) & UINT32_MAX);
 
-                if(ndest[0] != nsrc[0]){
-                    ndest[0] = nsrc[0];
+                if (lower_dest != lower_src) {
+                    lower_dest = lower_src;
+                }
+                if (upper_dest != upper_src) {
+                    upper_dest = upper_src;
                 }
 
-                if(ndest[1] != nsrc[1]){
-                    ndest[1] = nsrc[1];
-                }
+                dest[i] = ((uint64_t)upper_dest << 32) | lower_dest;
             }
         }
 
-        // Shift the framebuffer content upwards by one row
-        memmove(fb->address, fb->address + row_size, rows_size);
         // Clear the bottom portion of the framebuffer
         memset(fb->address + rows_size, 0, row_size);
         // Reset the cursor to the last row
@@ -152,9 +153,6 @@ void draw_char_with_context(struct framebuffer *fb,
         }
     }
     fb->context.current_x_pos += fb->font_width;
-skip:
-
-
 }
 
 void clear(struct framebuffer *fb) {
@@ -178,26 +176,28 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
             const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
             const uint64_t row_size = fb->pitch * fb->font_height;
 
-            uint32_t *dest = fb->address;
-            uint32_t *src = fb->address + row_size;
+            uint64_t *dest = fb->address;
+            uint64_t *src = fb->address + row_size;
 
-            for(size_t i = 0; i < rows_size / sizeof(uint64_t); i++){
-                if(dest[i] != src[i]){
-                    uint32_t *ndest = dest;
-                    uint32_t *nsrc = src;
 
-                    if(ndest[0] != nsrc[0]){
-                        ndest[0] = nsrc[0];
+            for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
+                if (dest[i] != src[i]) {
+                    uint32_t lower_dest = (uint32_t)(dest[i] & UINT32_MAX);
+                    uint32_t upper_dest = (uint32_t)((dest[i] >> 32) & UINT32_MAX);
+                    uint32_t lower_src = (uint32_t)(src[i] & UINT32_MAX);
+                    uint32_t upper_src = (uint32_t)((src[i] >> 32) & UINT32_MAX);
+
+                    if (lower_dest != lower_src) {
+                        lower_dest = lower_src;
+                    }
+                    if (upper_dest != upper_src) {
+                        upper_dest = upper_src;
                     }
 
-                    if(ndest[1] != nsrc[1]){
-                        ndest[1] = nsrc[1];
-                    }
+                    dest[i] = ((uint64_t)upper_dest << 32) | lower_dest;
                 }
             }
 
-            // Shift the framebuffer content upwards by one row
-            memmove(fb->address, fb->address + row_size, rows_size);
             // Clear the bottom portion of the framebuffer
             memset(fb->address + rows_size, 0, row_size);
             // Reset the cursor to the last row
