@@ -83,6 +83,9 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 ![image](https://github.com/user-attachments/assets/493fc7a2-b5f5-4b06-ba4c-41cc616053d7)
 ## The framebuffer has fewer print messages and is more high-level as can be seen here. The framebuffer printing will be reserved mostly for userspace with kernelspace just using it for panic messages and a few bootstrapping messages. The reasoning for this is mainly because I do not plan on implementing text buffering and scrolling support with my framebuffer functionality anytime soon and QEMU automatically handles this in the serial ouput. The framebuffer does wrap properly in the current implementation but once a line has shifted out of view, it is gone and cannot be read again.
 ![image](https://github.com/user-attachments/assets/6c96c449-6c14-4a21-9fd5-7538efd6e258)
+## I have got it working on bare hardware on my main laptop as well as my chromebook.
+![20250105_101314](https://github.com/user-attachments/assets/3485e5f6-f889-4d91-b93a-a95312cf1438)
+![20250105_073158](https://github.com/user-attachments/assets/7413d619-66cb-406f-ba10-0f67f4ccee50)
 
 # Ideas for arcane syscall names:
 
