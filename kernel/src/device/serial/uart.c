@@ -8,7 +8,7 @@
 #include "include/definitions/definitions.h"
 #include "include/architecture/generic_asm_functions.h"
 #include "stdarg.h"
-#include "include/device/display/framebuffer.h"
+
 
 static int is_transmit_empty();
 
@@ -68,7 +68,7 @@ void init_serial() {
     serial_device.device_info = NULL;
     serial_device.pci_driver = NULL;
     serial_device.device_type = DEVICE_TYPE_CHAR;
-    serial_printf("Serial Initialized\n");
+    kprintf("Serial Initialized\n");
 #endif
 }
 
