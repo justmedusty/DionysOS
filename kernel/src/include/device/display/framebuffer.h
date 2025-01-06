@@ -118,4 +118,6 @@ void framebuffer_init();
 void warn_printf(char *str, ...);
 
 void info_printf(char *str, ...);
+
+void current_pos_cursor(struct framebuffer *fb);
 #endif //FRAMEBUFFER_H

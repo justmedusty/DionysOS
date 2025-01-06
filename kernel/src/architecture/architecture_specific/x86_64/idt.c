@@ -701,7 +701,7 @@ void irq_register(uint8_t vec, void* handler) {
         asm volatile("nop");
     }
     irq_routines[vec] = handler;
-    ioapic_redirect_irq(bootstrap_lapic_id, vec + 32, vec, 0);
+    ioapic_redirect_irq(bootstrap_cpu_id, vec + 32, vec, 0);
     serial_printf("IRQ %x.8  loaded\n", vec);
 }
 

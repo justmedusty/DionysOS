@@ -19,7 +19,7 @@ static uint64_t pit_ticks = 0;
  */
 
 void pit_interrupt() {
-    if(my_cpu()->lapic_id == 0) {
+    if(my_cpu()->cpu_id == 0) {
         pit_ticks++;
         lapic_broadcast_interrupt(32 + 0 /* Broadcast IPI to all other processes so they can do their own preemption checks or panic checks */);
     }

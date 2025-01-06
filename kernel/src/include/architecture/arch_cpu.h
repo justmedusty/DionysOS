@@ -43,7 +43,7 @@ typedef struct cpu_state {
 
 struct cpu{
     uint8_t cpu_number;
-    uint32_t lapic_id;
+    uint32_t cpu_id;
     uint64_t lapic_timer_frequency;
     cpu_state* cpu_state;
     struct register_state *scheduler_state;

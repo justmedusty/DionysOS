@@ -12,7 +12,7 @@
 #include <include/device/display/framebuffer.h>
 #include <include/scheduling/sched.h>
 
-uint64_t bootstrap_lapic_id;
+uint64_t bootstrap_cpu_id;
 uint64_t cpu_count;
 
 
@@ -35,13 +35,13 @@ void smp_init() {
         panic("SMP Response NULL");
     }
 
-    bootstrap_lapic_id = response->bsp_lapic_id;
+    bootstrap_cpu_id = response->bsp_lapic_id;
     cpu_count = response->cpu_count;
     smp_info = response->cpus;
     sched_init();
 
 
-    serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n", bootstrap_lapic_id, cpu_count);
+    serial_printf("LAPIC ID : %x.8 \nCPU Count : %x.8 \n", bootstrap_cpu_id, cpu_count);
     uint8_t i = 0;
     kprintf("%i CPUs Found\n", cpu_count);
     //For output cleanliness
@@ -56,7 +56,7 @@ void smp_init() {
          *  Index into the cpu array based on the LAPIC ID which should be easier to get in the case that they do not line up with processor id
          */
         cpu_list[smp_info[i]->lapic_id].cpu_number = smp_info[i]->processor_id;
-        cpu_list[smp_info[i]->lapic_id].lapic_id = smp_info[i]->lapic_id;
+        cpu_list[smp_info[i]->lapic_id].cpu_id = smp_info[i]->lapic_id;
         serial_printf("  CPU %x.8  LAPIC %x.8  initialized inside cpu_list\n", smp_info[i]->processor_id,
                       smp_info[i]->lapic_id);
         cpu_list[smp_info[i]->lapic_id].scheduler_state = kmalloc(sizeof(struct register_state));

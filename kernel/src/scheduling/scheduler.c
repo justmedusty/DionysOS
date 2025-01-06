@@ -75,7 +75,7 @@ void sched_init() {
 #endif
 
 #ifdef _DPS_
-        queue_init(&local_run_queues[i], QUEUE_MODE_PRIORITY, "dfs");
+        queue_init(&local_run_queues[i], QUEUE_MODE_PRIORITY, "dps");
 #endif
 
         cpu_list[i].local_run_queue = &local_run_queues[i];
@@ -125,9 +125,15 @@ void sched_run() {
     if (cpu->local_run_queue->head == NULL) {
 
         timer_sleep(1500);
+#ifdef _DFS_
         serial_printf("DFS: Local Run Queue is Empty \n");
+#endif
+#ifdef _DPS_
+        serial_printf("DPS: Local Run Queue is Empty \n");
+#endif
         purge_dead_processes(); /* This doesn't allow for an explicit wait maybe I will change that later*/
         look_for_process();
+        current_pos_cursor(framebuffer_device.device_info);
         return;
     }
 
