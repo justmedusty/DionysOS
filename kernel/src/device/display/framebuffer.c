@@ -145,14 +145,13 @@ void current_pos_cursor(struct framebuffer *fb) {
     if (fb->context.current_y_pos >= fb->height) {
         scroll_framebuffer(fb);
     }
-    for(size_t i = 0; i < 5; i++){
-        timer_sleep(750);
-        draw_cursor_box(fb, BLACK);
-        timer_sleep(750);
+    for(size_t i = 0; i < 10; i++){
         draw_cursor_box(fb, WHITE);
-
+        timer_sleep(500);
+        draw_cursor_box(fb, BLACK);
+        timer_sleep(500);
     }
-
+    draw_cursor_box(fb, WHITE);
     release_spinlock(&fb->lock);
 }
 

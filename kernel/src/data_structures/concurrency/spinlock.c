@@ -41,8 +41,5 @@ bool try_lock(struct spinlock *spinlock) {
     if(!arch_atomic_swap_or_return(&spinlock->locked,1)){
         return false;
     }
-    disable_interrupts();
-
-    spinlock->cpu = my_cpu();
     return true;
 }
