@@ -89,9 +89,14 @@ void draw_char(const struct framebuffer *fb,
     }
 }
 
+void reset_x_value(struct framebuffer *fb){
+    fb->context.current_x_pos = 0;
+    fb->context.current_y_pos += fb->font_height;
+}
+
 void draw_cursor_box(struct framebuffer *fb, uint32_t color) {
     uint32_t *framebuffer = fb->address;
-    for (uint64_t cy = 0; cy < fb->font_height; cy++) {
+    for (uint64_t cy = fb->font_height - 1; cy < fb->font_height; cy++) {
         for (uint64_t cx = 0; cx < fb->font_width; cx++) {
             const uint64_t px = fb->context.current_x_pos + cx; // Calculate absolute X position
             const uint64_t py = fb->context.current_y_pos + cy; // Calculate absolute Y position
@@ -141,21 +146,22 @@ void current_pos_cursor(struct framebuffer *fb) {
     if(!try_lock(&fb->lock)){
         return;
     }
-
+    if(fb->context.current_x_pos >= fb->width){
+        reset_x_value(fb);
+    }
     if (fb->context.current_y_pos >= fb->height) {
         scroll_framebuffer(fb);
     }
-    for(size_t i = 0; i < 10; i++){
-        draw_cursor_box(fb, WHITE);
-        timer_sleep(500);
-        draw_cursor_box(fb, BLACK);
-        timer_sleep(500);
+
+    for(size_t i = 0; i < 3; i++){
+        draw_cursor_box(fb,WHITE);
+        timer_sleep(250);
+        draw_cursor_box(fb,BLACK);
+        timer_sleep(250);
     }
-    draw_cursor_box(fb, WHITE);
+
     release_spinlock(&fb->lock);
 }
-
-
 
 void draw_char_with_context(struct framebuffer *fb,
                             const uint8_t c, const uint32_t color) {
@@ -168,7 +174,7 @@ void draw_char_with_context(struct framebuffer *fb,
     }
 
     if (fb->context.current_x_pos >= fb->width) {
-        fb->context.current_x_pos = 0;
+        reset_x_value(fb);
     }
     if (fb->context.current_y_pos >= fb->height) {
         scroll_framebuffer(fb);
@@ -209,65 +215,9 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
     uint64_t index_y = fb->context.current_y_pos;
 
     while (*str) {
-        if (index_x >= fb->width) {
-            index_x = 0;
-            index_y += fb->font_height;
-        }
-        if (index_y >= fb->height) {
-            const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
-            const uint64_t row_size = fb->pitch * fb->font_height;
-
-            uint64_t *dest = fb->address;
-            uint64_t *src = fb->address + row_size;
-
-/*
- * We speed this up by going two pixels at a time. This DRAMATICALLY increases the speed as which the frame
- * buffer is able to scroll on real hardware.
- * Since most pixels are blank and a lot stay the same, this is the way to go.
- * Before we were using a memmove call on the entire region this solution below speeds it up by possibly 60-70%
- */
-
-            for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
-                if (dest[i] != src[i]) {
-                    uint32_t lower_dest = (uint32_t) (dest[i] & UINT32_MAX);
-                    uint32_t upper_dest = (uint32_t) ((dest[i] >> 32) & UINT32_MAX);
-                    uint32_t lower_src = (uint32_t) (src[i] & UINT32_MAX);
-                    uint32_t upper_src = (uint32_t) ((src[i] >> 32) & UINT32_MAX);
-
-                    if (lower_dest != lower_src) {
-                        lower_dest = lower_src;
-                    }
-                    if (upper_dest != upper_src) {
-                        upper_dest = upper_src;
-                    }
-
-                    dest[i] = ((uint64_t) upper_dest << 32) | lower_dest;
-                }
-            }
-
-            // Clear the bottom portion of the framebuffer
-            memset(fb->address + rows_size, 0, row_size);
-            // Reset the cursor to the last row
-            index_y = fb->height - fb->font_height;
-            index_x = 0;
-            continue;
-        }
-
-        if (*str == '\n') {
-            index_y += fb->font_height;
-            index_x = 0;
-            str++;
-            continue;
-        }
-
-        draw_char(fb, *str++, index_x, index_y, color);
-        index_x += fb->font_width;
+        draw_char_with_context(fb,*str++,color);
     }
-
-    fb->context.current_x_pos = index_x;
-    fb->context.current_y_pos = index_y;
 }
-
 static char get_hex_char(uint8_t nibble) {
     if (nibble <= 16) {
         return characters[nibble];
@@ -276,10 +226,9 @@ static char get_hex_char(uint8_t nibble) {
     }
 }
 
-static void draw_hex(struct device *fb, uint64_t num, int8_t size, uint32_t color) {
-
+static void draw_hex(struct device *fb, uint64_t num, uint8_t size, uint32_t color) {
     fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
-    for (int8_t i = (size - 4); i >= 0; i -= 4) {
+    for (uint8_t i = size - 4; i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
         fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
@@ -393,7 +342,6 @@ void kprintf(char *str, ...) {
         }
         str++;
     }
-
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }

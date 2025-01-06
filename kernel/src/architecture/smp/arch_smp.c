@@ -49,8 +49,8 @@ void smp_init() {
     while (i < cpu_count) {
         if (i == MAX_CPUS) {
             warn_printf("DionysOS only supports up to %i processors!\n", MAX_CPUS);
-            cpus_online = cpu_count;
-            break;
+            //cpu_count = MAX_CPUS;
+           // break;
         }
         /*
          *  Index into the cpu array based on the LAPIC ID which should be easier to get in the case that they do not line up with processor id

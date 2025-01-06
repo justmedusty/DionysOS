@@ -64,7 +64,7 @@ override KCFLAGS += \
    	-D_DPS_ \
    	-D_SERIAL_\
    	-D_CREATE_RAMDISK_\
-   	-DMAX_CPUS=8\
+   	-DMAX_CPUS=32\
    	-fanalyzer \
    	-Wno-unused-variable \
    	-Wno-unused-function \

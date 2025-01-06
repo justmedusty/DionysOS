@@ -19,7 +19,7 @@ static const struct gdt_desc _gdt_desc = {
 };
 
 //Just make many so we don't up with different cpus using the same TSS cause that would be bad for obvious reasons
-struct tss tss[8];
+struct tss tss[MAX_CPUS];
 uint8_t tss_idx = 0;
 static void _gdt_init_long_mode_entry(struct gdt_segment_desc *seg, bool code,
                                       int dpl) {

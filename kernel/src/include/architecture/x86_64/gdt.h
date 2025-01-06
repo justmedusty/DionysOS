@@ -123,7 +123,7 @@ struct tss {
 } __attribute__((packed));
 _Static_assert(sizeof(struct tss) == 104, "sizeof tss");
 
-extern struct tss tss[8];
+extern struct tss tss[MAX_CPUS];
 /**
  * Read/write the GDT. When writing the GDT, make sure to also update segment
  * registers. Even though they are cached (hidden part), they will be re-read
