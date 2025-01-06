@@ -138,14 +138,22 @@ static void scroll_framebuffer(struct framebuffer *fb){
 }
 
 void current_pos_cursor(struct framebuffer *fb) {
+    if(!try_lock(&fb->lock)){
+        return;
+    }
 
     if (fb->context.current_y_pos >= fb->height) {
         scroll_framebuffer(fb);
     }
+    for(size_t i = 0; i < 5; i++){
+        timer_sleep(750);
+        draw_cursor_box(fb, BLACK);
+        timer_sleep(750);
+        draw_cursor_box(fb, WHITE);
 
-    draw_cursor_box(fb, BLACK);
-    timer_sleep(2000);
-    draw_cursor_box(fb, WHITE);
+    }
+
+    release_spinlock(&fb->lock);
 }
 
 

@@ -18,3 +18,4 @@ extern bool bsp;
 void initlock(struct spinlock *spinlock,uint64_t id);
 void acquire_spinlock(struct spinlock *spinlock);
 void release_spinlock(struct spinlock *spinlock);
+bool try_lock(struct spinlock *spinlock);
