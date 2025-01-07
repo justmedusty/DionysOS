@@ -2,10 +2,10 @@
 // Created by dustyn on 12/19/24.
 //
 
-#include "include/device/bus/pci.h"
-#include <include/architecture/x86_64/acpi.h>
-#include <include/data_structures/binary_tree.h>
-#include <include/device/display/framebuffer.h>
+#include "include/drivers/bus/pci.h"
+#include "include/architecture/x86_64/acpi.h"
+#include "include/data_structures/binary_tree.h"
+#include "include/drivers/display/framebuffer.h"
 #include"include/data_structures/doubly_linked_list.h"
 #include "include/definitions/definitions.h"
 #include "include/memory/kalloc.h"

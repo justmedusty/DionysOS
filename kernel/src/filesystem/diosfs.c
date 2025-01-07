@@ -5,13 +5,13 @@
 #include "include/filesystem/diosfs.h"
 #include "include/filesystem/vfs.h"
 #include <include/definitions/string.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 #include "include/data_structures/spinlock.h"
 #include "include/definitions/definitions.h"
 #include <include/drivers/serial/uart.h>
 #include <include/memory/kalloc.h>
-#include "include/device/block/ramdisk.h"
+#include "include/drivers/block/ramdisk.h"
 #include "include/memory/mem.h"
 /*
  * We need to ensure that for each filesystem we have a separate lock

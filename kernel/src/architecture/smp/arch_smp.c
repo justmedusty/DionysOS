@@ -10,7 +10,7 @@
 #include <include/architecture/arch_paging.h>
 #include <include/architecture/arch_smp.h>
 #include <include/data_structures/spinlock.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/scheduling/sched.h>
 
 uint64_t bootstrap_cpu_id;

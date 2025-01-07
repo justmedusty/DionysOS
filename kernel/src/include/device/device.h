@@ -6,7 +6,7 @@
 #define DIONYSOS_DEVICE_H
 #pragma once
 #include <stddef.h>
-#include "include/device/bus/pci.h"
+#include "include/drivers/bus/pci.h"
 
 #define DEVICE_GROUP_SIZE 32
 

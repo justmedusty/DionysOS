@@ -7,7 +7,7 @@
 #include <include/architecture/arch_asm_functions.h>
 #include <include/data_structures/binary_tree.h>
 #include <include/definitions/string.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 

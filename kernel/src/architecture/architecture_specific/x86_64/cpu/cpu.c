@@ -12,7 +12,7 @@
 #include <include/architecture/x86_64/asm_functions.h>
 #include <include/data_structures/spinlock.h>
 #include <include/definitions/string.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/memory/kalloc.h>
 #include <include/scheduling/sched.h>
 #include <include/scheduling/kthread.h>

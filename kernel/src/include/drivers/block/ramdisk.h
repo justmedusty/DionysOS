@@ -4,12 +4,12 @@
 #ifndef _RAMDISK_H_
 #define _RAMDISK_H_
 #pragma once
-#include "include/filesystem/diosfs.h"
+#include "../../filesystem/diosfs.h"
 #include <stdint.h>
 #include <stddef.h>
-#include "include/device/device.h"
-#include "include/definitions/types.h"
-#include "include/data_structures/spinlock.h"
+#include "../../device/device.h"
+#include "../../definitions/types.h"
+#include "../../data_structures/spinlock.h"
 
 #define RAMDISK_COUNT 5
 

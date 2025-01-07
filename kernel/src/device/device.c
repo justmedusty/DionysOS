@@ -6,7 +6,7 @@
 #include <include/data_structures/binary_tree.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/definitions/string.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/drivers/serial/uart.h>
 
 struct binary_tree system_device_tree;

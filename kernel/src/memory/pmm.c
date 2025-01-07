@@ -7,7 +7,7 @@
 #include <include/architecture/arch_cpu.h>
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/memory/kalloc.h>
 #include <include/memory/slab.h>
 #include "limine.h"

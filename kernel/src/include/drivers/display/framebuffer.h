@@ -5,9 +5,9 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 #include <stdint.h>
-#include <include/data_structures/spinlock.h>
+#include "../../data_structures/spinlock.h"
 
-#include "include/device/device.h"
+#include "../../device/device.h"
 
 extern char characters[16];
 extern struct device framebuffer_device;

@@ -8,7 +8,7 @@
 #include "include/memory/mem.h"
 #include "include/drivers/serial/uart.h"
 #include <include/architecture/arch_cpu.h>
-#include "include/device/bus/pci.h"
+#include "include/drivers/bus/pci.h"
 #include "include/architecture/x86_64/madt.h"
 #include "limine.h"
 

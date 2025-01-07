@@ -2,15 +2,15 @@
 // Created by dustyn on 12/26/24.
 //
 
-#include "include/device/display/framebuffer.h"
+#include "include/drivers/display/framebuffer.h"
 
 #include <stdarg.h>
-#include <include/data_structures/spinlock.h>
-#include <include/definitions/definitions.h>
-#include <include/drivers/serial/uart.h>
+#include "include/data_structures/spinlock.h"
+#include "include/definitions/definitions.h"
+#include "include/drivers/serial/uart.h"
 
 #include "include/memory/mem.h"
-#include "include/device/display/font.h"
+#include "include/drivers/display/font.h"
 #include "include/architecture/arch_timer.h"
 
 struct framebuffer main_framebuffer;

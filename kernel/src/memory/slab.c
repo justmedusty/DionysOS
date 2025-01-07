@@ -8,7 +8,7 @@
 #include "include/architecture/arch_cpu.h"
 #include "include/architecture/arch_paging.h"
 #include <include/data_structures/hash_table.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 #include "include/memory/pmm.h"
 #include "include/memory/mem.h"

@@ -3,7 +3,7 @@
 //
 #include <include/architecture/x86_64/asm_functions.h>
 #include <include/architecture/x86_64/idt.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/scheduling/kthread.h>
 #include "include/filesystem/vfs.h"
 #include "include/architecture/arch_memory_init.h"

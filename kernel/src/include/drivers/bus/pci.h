@@ -5,7 +5,7 @@
 #ifndef KERNEL_PCI_H
 #define KERNEL_PCI_H
 #pragma once
-#include <include/architecture/x86_64/acpi.h>
+#include "../../architecture/x86_64/acpi.h"
 #include <stdint.h>
 #include <stdbool.h>
 

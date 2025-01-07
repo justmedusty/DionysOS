@@ -5,7 +5,7 @@
 /*
 	Dustyn's fair scheduler
  */
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 #include <include/architecture/arch_asm_functions.h>
 #include <include/architecture/arch_timer.h>

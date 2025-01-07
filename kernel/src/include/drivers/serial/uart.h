@@ -6,7 +6,7 @@
 #define KERNEL_UART_H
 #define BASE_SERIAL_DEVICE 0
 #pragma once
-#include "include/device/display/framebuffer.h"
+#include "include/drivers/display/framebuffer.h"
 extern struct device serial_device;
 
 struct serial_device {

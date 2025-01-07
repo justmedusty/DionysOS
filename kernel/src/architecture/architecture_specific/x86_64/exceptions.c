@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <include/architecture/arch_cpu.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 #include "include/architecture/x86_64/asm_functions.h"
 

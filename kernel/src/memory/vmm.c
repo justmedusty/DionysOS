@@ -5,7 +5,7 @@
 #include "include/memory/vmm.h"
 
 #include <include/data_structures/doubly_linked_list.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 
 #include "include/architecture/arch_vmm.h"
 #include "include/memory/kalloc.h"

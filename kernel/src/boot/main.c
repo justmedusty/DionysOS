@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include "limine.h"
 #include "kernel_bootstrap.h"
-#include "include/device/display/font.h"
+#include "include/drivers/display/font.h"
 
 
 // Set the base revision to 2, this is recommended as this is the latest

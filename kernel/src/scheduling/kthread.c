@@ -8,7 +8,7 @@
 #include <include/architecture/arch_asm_functions.h>
 #include <include/architecture/arch_timer.h>
 #include <include/data_structures/doubly_linked_list.h>
-#include <include/device/display/framebuffer.h>
+#include <include/drivers/display/framebuffer.h>
 #include <include/filesystem/vfs.h>
 #include <include/scheduling/sched.h>
 
