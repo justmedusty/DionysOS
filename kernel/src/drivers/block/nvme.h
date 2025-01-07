@@ -6,6 +6,7 @@
 #define _NVME_H_
 
 #include <stdint.h>
+
 // NVMe command opcodes
 enum nvme_command_set {
     NVME_FLUSH = 0x00,
@@ -20,12 +21,13 @@ enum nvme_command_set {
     NVME_RESERVATION_REPORT = 0x0E,
     NVME_RESERVATION_ACQUIRE = 0x11,
     NVME_RESERVATION_RELEASE = 0x15,
+    NVME_CANCEL = 0x18,
     NVME_COPY = 0x19,
     NVME_GET_LOG_PAGE = 0x06,
     NVME_GET_LOG_PAGE_SIZE = 0x02,
     NVME_IDENTIFY = 0x06,
     NVME_ASYNC_EVENT_CONFIGURATION = 0x01,
-    NVME_GET_LOG_PAGE_SIZE_EXT = 0x03
+    NVME_GET_LOG_PAGE_SIZE_EXT = 0x03,
 };
 
 // NVMe Status Codes
@@ -53,7 +55,7 @@ enum nvme_status_codes {
     NVME_SC_INVALID_CONTROLLER_MEM_BUFFER = 0x14,
     NVME_SC_INVALID_COMMAND_SIZE = 0x15,
     NVME_SC_ABORTED_COMMAND_IN_PROGRESS = 0x16,
-    NVME_SC_ABORTED_COMMAND_QUEUE_ERROR = 0x17
+    NVME_SC_ABORTED_COMMAND_QUEUE_ERROR = 0x17,
 };
 
 // NVMe Command structure
@@ -88,5 +90,5 @@ struct nvme_completion {
 #define NVME_PAGE_SHIFT 12
 #define NVME_PAGE_SIZE (1 << NVME_PAGE_SHIFT)
 #define NVME_MAX_DATA_SIZE (NVME_PAGE_SIZE * NVME_IO_QUEUE_SIZE)
-
-#endif // NVME_H
+#define NVME_LB_SIZE 512 // Logical Block Size (common value)
+#endif // _NVME_H_
