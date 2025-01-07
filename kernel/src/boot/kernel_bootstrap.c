@@ -50,8 +50,10 @@ void kernel_bootstrap() {
     init_system_device_tree();
     insert_device_into_kernel_tree(&serial_device); // this is done late because memory is not setup yet until here and will just crash the system if we try to do this any earlier
     framebuffer_init();
+#ifdef __x86_64__
     acpi_init();
     lapic_init();
+#endif
     vfs_init();
     diosfs_init(0);
     bsp = false;
