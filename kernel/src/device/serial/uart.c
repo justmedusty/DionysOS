@@ -49,7 +49,7 @@ struct device_ops main_serial_ops = {
 
 void init_serial() {
 
-#ifdef _SERIAL_
+
 #ifdef __x86_64__
     write_port(BASE + 1, 0x00); // Disable all interrupts
     write_port(BASE + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -70,7 +70,6 @@ void init_serial() {
     serial_device.pci_driver = NULL;
     serial_device.device_type = DEVICE_TYPE_CHAR;
     kprintf("Serial Initialized\n");
-#endif
 }
 
 static int is_transmit_empty() {
@@ -159,7 +158,7 @@ static char get_hex_char(uint8_t nibble) {
  * if I find it necessary later I'll add ones compliment support
  */
 void serial_printf(char *str, ...) {
-#ifdef _SERIAL_
+
     va_list args;
     va_start(args, str);
     acquire_spinlock(&serial_lock);
@@ -269,5 +268,4 @@ void serial_printf(char *str, ...) {
 
     release_spinlock(&serial_lock);
     va_end(args);
-    #endif
 }

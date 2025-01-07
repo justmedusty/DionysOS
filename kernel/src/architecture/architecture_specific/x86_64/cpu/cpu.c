@@ -55,7 +55,6 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     gdt_reload();
     idt_reload();
     reload_vmm();
-
     lapic_init();
     serial_printf("CPU %x.8  online, LAPIC ID %x.8 \n",smp_info->processor_id,get_lapid_id());
 

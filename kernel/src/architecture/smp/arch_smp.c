@@ -6,6 +6,7 @@
 #include "include/definitions/types.h"
 #include "limine.h"
 #include "include/drivers/serial/uart.h"
+#include "include/architecture/arch_asm_functions.h"
 #include <include/architecture/arch_paging.h>
 #include <include/architecture/arch_smp.h>
 #include <include/data_structures/spinlock.h>
@@ -49,16 +50,18 @@ void smp_init() {
     while (i < cpu_count) {
         if (i == MAX_CPUS) {
             warn_printf("DionysOS only supports up to %i processors!\n", MAX_CPUS);
-            //cpu_count = MAX_CPUS;
-           // break;
+            cpu_count = MAX_CPUS;
+            break;
         }
         /*
          *  Index into the cpu array based on the LAPIC ID which should be easier to get in the case that they do not line up with processor id
          */
         cpu_list[smp_info[i]->lapic_id].cpu_number = smp_info[i]->processor_id;
+
+#ifdef __x86_64__
         cpu_list[smp_info[i]->lapic_id].cpu_id = smp_info[i]->lapic_id;
-        serial_printf("  CPU %x.8  LAPIC %x.8  initialized inside cpu_list\n", smp_info[i]->processor_id,
-                      smp_info[i]->lapic_id);
+#endif
+
         cpu_list[smp_info[i]->lapic_id].scheduler_state = kmalloc(sizeof(struct register_state));
         //puts rest of CPUs online, works so will leave this commented out for now since I need to create or refactor functions for this
         smp_info[i]->goto_address = arch_initialise_cpu;
@@ -67,7 +70,7 @@ void smp_init() {
     release_spinlock(&bootstrap_lock);
 
     while ((volatile uint8_t) cpus_online != cpu_count) {
-        asm volatile("nop");
+        nop();
     }
     smp_enabled = 1;
     kprintf("All CPUs Online\n");
