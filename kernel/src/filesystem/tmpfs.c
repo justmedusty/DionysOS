@@ -234,6 +234,7 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
 }
 
 void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
+    kprintf("Creating tmpfs filesystem...\n");
     if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
         return;
@@ -251,15 +252,15 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     context->superblock = root->superblock;
     root->superblock->magic = TMPFS_MAGIC;
     root->superblock->tmpfs_node_count = 1;
-    root->node_type = DIRECTORY;
+    root->node_type = VNODE_DIRECTORY;
     root->directory_entries.entries = kmalloc(DIRECTORY_ENTRY_ARRAY_SIZE);
     root->parent_tmpfs_node = NULL;
     root->tmpfs_node_number = tmpfs_node_bitmap_get();
     safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
-
-
-
+    vnode_mount(vnode_to_be_mounted,tmpfs_root);
+    vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
+    kprintf("Tmpfs filesystem created, procfs subdirectory created.");
 }
 
 /*
@@ -294,7 +295,7 @@ static struct tmpfs_page_list_entry *tmpfs_find_page_list_entry(const struct tmp
  * Find a child node inside the given tmpfs directory
  */
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) {
-    if (node->node_type != DIRECTORY) {
+    if (node->node_type != VNODE_DIRECTORY) {
         return NULL;
     }
 
@@ -369,7 +370,7 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
  */
 static void insert_tmpfs_node_into_parent_directory_entries(struct tmpfs_node *node) {
     struct tmpfs_node *parent = node->parent_tmpfs_node;
-    if (parent->node_type != DIRECTORY) {
+    if (parent->node_type != VNODE_DIRECTORY) {
         panic("insert_tmpfs_node_into_parent_directory_entries: parent is not a directory");
     }
 
@@ -387,14 +388,14 @@ static struct tmpfs_node *conjure_new_tmpfs_node(char *name, const uint8_t type)
     tmpfs_node->node_type = type;
 
     switch (type) {
-        case DIRECTORY:
+        case VNODE_DIRECTORY:
             tmpfs_node->directory_entries.entries = kmalloc(sizeof(uintptr_t) * MAX_TMPFS_ENTRIES);
             break;
-        case FILE:
+        case VNODE_FILE:
             tmpfs_node->page_list = kmalloc(sizeof(struct doubly_linked_list));
             doubly_linked_list_init(tmpfs_node->page_list);
             break;
-        case SYM_LINK:
+        case VNODE_SYM_LINK:
             break;
         default:
             panic("conjure_new_tmpfs_node: unknown type");
@@ -496,7 +497,7 @@ static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
         tmpfs_node_bitmap_free(node->tmpfs_node_number);
 
         switch (current->node_type) {
-            case DIRECTORY:
+            case VNODE_DIRECTORY:
                 tmpfs_delete_directory_recursively(current);
                 break;
             case FILE:
