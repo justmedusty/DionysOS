@@ -9,6 +9,8 @@
 #include <include/definitions/string.h>
 #include <include/drivers/display/framebuffer.h>
 
+static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node);
+
 static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name);
 
 static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnode *vnode,
@@ -44,17 +46,18 @@ uint8_t tmpfs_node_number_bitmap[PAGE_SIZE]; // only 1 since we won't support mu
 struct tmpfs_superblock superblock[TMPFS_NUM_SUPERBLOCKS] = {0};
 
 struct vnode_operations tmpfs_ops = {
-    .close = tmpfs_close,
-    .create = tmpfs_create,
-    .link = tmpfs_link,
-    .lookup = tmpfs_lookup,
-    .open = tmpfs_open,
-    .read = tmpfs_read,
-    .remove = tmpfs_remove,
-    .rename = tmpfs_rename,
-    .unlink = tmpfs_unlink,
-    .write = tmpfs_write
+        .close = tmpfs_close,
+        .create = tmpfs_create,
+        .link = tmpfs_link,
+        .lookup = tmpfs_lookup,
+        .open = tmpfs_open,
+        .read = tmpfs_read,
+        .remove = tmpfs_remove,
+        .rename = tmpfs_rename,
+        .unlink = tmpfs_unlink,
+        .write = tmpfs_write
 };
+
 /*
  * lookup a node inside the directory passed as the vnode argument
  */
@@ -64,7 +67,7 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
         // not a huge deal but a logic bug nonetheless so panic for visibility
     }
     const struct tmpfs_filesystem_context *tmpfs = vnode->filesystem_object;
-    struct tmpfs_node *target_node = lookup_tree(&tmpfs->superblock->node_tree, vnode->vnode_inode_number,false);
+    struct tmpfs_node *target_node = lookup_tree(&tmpfs->superblock->node_tree, vnode->vnode_inode_number, false);
 
     if (target_node == NULL) {
         panic("tmpfs_lookup vnode exists but not corresponding tmpfs node found in tree");
@@ -74,7 +77,7 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
 
 
     struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
-        vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
+            vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
     vnode->num_children = target_node->tmpfs_node_size;
     return child;
 }
@@ -105,7 +108,7 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
  */
 void tmpfs_rename(const struct vnode *vnode, char *name) {
     struct tmpfs_node *tmpfs_node = find_tmpfs_node_from_vnode(vnode);
-    safe_strcpy(tmpfs_node->node_name, name,VFS_MAX_NAME_LENGTH);
+    safe_strcpy(tmpfs_node->node_name, name, VFS_MAX_NAME_LENGTH);
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
@@ -230,9 +233,14 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
     nop();
 }
 
-void tmpfs_mkfs(const uint64_t filesystem_id) {
+void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
+        return;
+    }
+    struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
+    if(vnode_to_be_mounted == NULL){
+        warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
@@ -247,6 +255,11 @@ void tmpfs_mkfs(const uint64_t filesystem_id) {
     root->directory_entries.entries = kmalloc(DIRECTORY_ENTRY_ARRAY_SIZE);
     root->parent_tmpfs_node = NULL;
     root->tmpfs_node_number = tmpfs_node_bitmap_get();
+    safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
+    struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
+
+
+
 }
 
 /*
@@ -289,7 +302,7 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
 
     for (size_t i = 0; i < node->tmpfs_node_size; i++) {
         struct tmpfs_node *entry = entries->entries[i];
-        if (safe_strcmp(entry->node_name, name,VFS_MAX_NAME_LENGTH)) {
+        if (safe_strcmp(entry->node_name, name, VFS_MAX_NAME_LENGTH)) {
             return entry;
         }
     }
@@ -309,7 +322,7 @@ static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     vnode->vnode_ops = &tmpfs_ops;
     vnode->vnode_size = node->tmpfs_node_size;
     vnode->vnode_type = node->node_type;
-    safe_strcpy(vnode->vnode_name, node->node_name,VFS_MAX_NAME_LENGTH);
+    safe_strcpy(vnode->vnode_name, node->node_name, VFS_MAX_NAME_LENGTH);
     return vnode;
 }
 
@@ -467,7 +480,7 @@ static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *nod
  */
 static void tmpfs_delete_reg_file(struct tmpfs_node *node) {
     tmpfs_remove_all_data_pages(node);
-    remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node,NULL);
+    remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node, NULL);
     tmpfs_node_bitmap_free(node->tmpfs_node_number);
 }
 
@@ -479,7 +492,7 @@ static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
     for (size_t i = 0; i < node->tmpfs_node_size; i++) {
         struct tmpfs_node *current = node->directory_entries.entries[i];
 
-        remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node,NULL);
+        remove_tree_node(&node->superblock->node_tree, node->tmpfs_node_number, node, NULL);
         tmpfs_node_bitmap_free(node->tmpfs_node_number);
 
         switch (current->node_type) {

@@ -97,5 +97,5 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle);
 
 void tmpfs_remove(const struct vnode *vnode);
 
-void tmpfs_mkfs(uint64_t filesystem_id);
+void tmpfs_mkfs(uint64_t filesystem_id,char *directory_to_mount_onto);
 #endif //KERNEL_TMPFS_H

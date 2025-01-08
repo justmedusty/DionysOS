@@ -316,7 +316,6 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     struct vnode *vnode7 = vnode_create("/", "home", VNODE_DIRECTORY);
     serial_printf("DiosFS : Directory home created\n");
     struct vnode *vnode12 = vnode_create("/dev", "rd0", VNODE_BLOCK_DEV);
-    struct vnode *vnode13 = vnode_create("/", "proc", VNODE_DIRECTORY);
     serial_printf("DiosFS : Device file rd0 (Ramdisk 0) created\n");
 
     struct vnode *vnode9 = vnode_create("/etc", "passwd", VNODE_FILE);
