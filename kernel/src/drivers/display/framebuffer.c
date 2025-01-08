@@ -227,8 +227,10 @@ static char get_hex_char(uint8_t nibble) {
 }
 
 static void draw_hex(struct device *fb, uint64_t num, uint8_t size, uint32_t color) {
+
+
     fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
-    for (uint8_t i = size - 4; i >= 0; i -= 4) {
+    for (int8_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
         fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
@@ -377,7 +379,6 @@ void err_printf(char *str, ...) {
                          * %x.16 = print 16 bit hex
                          * %x.32 = print 32 bit hex
                          * %x.64 = print 64 bit hex
-                         *
                          */
 
                         switch (*str) {
@@ -404,9 +405,6 @@ void err_printf(char *str, ...) {
                                 str++;
                                 break;
                             default:
-                                uint64_t value = va_arg(args, uint64_t);
-                                draw_hex(&framebuffer_device, value64, 64, RED);
-
                                 break;
                         }
                     } else {
@@ -458,11 +456,9 @@ void err_printf(char *str, ...) {
         }
         str++;
     }
-
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
-
 void warn_printf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
