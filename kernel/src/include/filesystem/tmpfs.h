@@ -15,18 +15,6 @@
 #define MAX_TMPFS_ENTRIES VNODE_MAX_DIRECTORY_ENTRIES
 
 
-enum tmpfs_types {
-    DIRECTORY = 0,
-    REG_FILE = 1,
-    HARD_LINK = 2,
-    BLOCK_DEV = 3,
-    CHAR_DEV = 4,
-    NET_DEV = 5,
-    SPECIAL = 6,
-    SPECIAL_FILE = 7,
-    SYM_LINK = 8,
-};
-
 struct tmpfs_directory_entries {
     struct tmpfs_node **entries;
 };

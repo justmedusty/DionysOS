@@ -20,6 +20,7 @@
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include "include/scheduling/sched.h"
 #include "include/filesystem/diosfs.h"
+#include "include/filesystem/tmpfs.h"
 
 /*
  *  BSP boostrapping.
@@ -56,6 +57,7 @@ void kernel_bootstrap() {
 #endif
     vfs_init();
     diosfs_init(0);
+    tmpfs_mkfs(0,"/temp");
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();

@@ -9,19 +9,6 @@
 #include "stdint.h"
 #include "include/filesystem/vfs.h"
 
-
-enum diosfs_types {
-    DIRECTORY = 0,
-    REG_FILE = 1,
-    HARD_LINK = 2,
-    BLOCK_DEV = 3,
-    CHAR_DEV = 4,
-    NET_DEV = 5,
-    SPECIAL = 6,
-    SPECIAL_FILE = 7,
-    SYM_LINK = 8,
-};
-
 #define INITIAL_FILESYSTEM 0 /* Just for ramdisk 0 id purposes*/
 
 #define DIOSFS_BLOCKSIZE 1024
