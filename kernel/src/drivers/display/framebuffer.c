@@ -226,11 +226,10 @@ static char get_hex_char(uint8_t nibble) {
     }
 }
 
-static void draw_hex(struct device *fb, uint64_t num, uint8_t size, uint32_t color) {
-
+static void draw_hex(struct device *fb, uint64_t num, int32_t size, uint32_t color) {
 
     fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
-    for (int8_t i = (size - 4); i >= 0; i -= 4) {
+    for (int32_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
         fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);

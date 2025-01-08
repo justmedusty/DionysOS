@@ -373,13 +373,12 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-            kprintf("NAME %s\n",child->vnode_name);
         if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
             release_spinlock(&vfs_lock);
             return child;
         }
 
-        child = vnode->vnode_children[index++];
+        child = vnode->vnode_children[++index];
     }
     release_spinlock(&vfs_lock);
     return NULL;;
