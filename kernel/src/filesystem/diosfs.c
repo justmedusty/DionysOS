@@ -317,7 +317,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     serial_printf("DiosFS : Directory home created\n");
     struct vnode *vnode12 = vnode_create("/dev", "rd0", VNODE_BLOCK_DEV);
     serial_printf("DiosFS : Device file rd0 (Ramdisk 0) created\n");
-    struct vnode *vnode13 = vnode_create("/", "temp", VNODE_BLOCK_DEV);
+    struct vnode *vnode13 = vnode_create("/", "temp", VNODE_DIRECTORY);
 
     struct vnode *vnode9 = vnode_create("/etc", "passwd", VNODE_FILE);
     serial_printf("DiosFS : File /etc/passwd created\n");
@@ -543,6 +543,7 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
     new_vnode->is_cached = false;
     new_vnode->vnode_type = vnode_type;
     new_vnode->vnode_inode_number = inode.inode_number;
+    kprintf("INODE NUMBER %i NAME %s\n",new_vnode->vnode_inode_number,name);
     new_vnode->filesystem_object = parent->filesystem_object;
     new_vnode->vnode_refcount = 1;
     new_vnode->vnode_children = NULL;

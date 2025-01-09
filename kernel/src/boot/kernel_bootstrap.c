@@ -1,8 +1,6 @@
 //
 // Created by dustyn on 6/17/24.
 //
-#include <include/architecture/x86_64/asm_functions.h>
-#include <include/architecture/x86_64/idt.h>
 #include <include/drivers/display/framebuffer.h>
 #include <include/scheduling/kthread.h>
 #include "include/filesystem/vfs.h"
@@ -23,16 +21,17 @@
 #include "include/filesystem/tmpfs.h"
 
 /*
- *  BSP boostrapping.
+ *  BSP bootstrapping.
  */
 int32_t ready = 0;
 
 void welcome_message() {
     kprintf_color(RED, DIONYSOS_ASCII_STRING);
-    kprintf_color(RED,AUTHOR_ASCII_STRING);
+    kprintf_color(RED, AUTHOR_ASCII_STRING);
+
     kprintf_color(
-        WHITE,
-        "Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
+            WHITE,
+            "Welcome to the DionysOS Operating System, written by Dustyn Gibb. If you wish to contribute you are free to open PRs however you should speak with me first.\n");
     kprintf_color(CYAN, "DionysOS Booting...\n");
 }
 
@@ -49,21 +48,24 @@ void kernel_bootstrap() {
     mem_bounds_init();
     arch_vmm_init();
     init_system_device_tree();
-    insert_device_into_kernel_tree(&serial_device); // this is done late because memory is not setup yet until here and will just crash the system if we try to do this any earlier
+    insert_device_into_kernel_tree(
+            &serial_device); // this is done late because memory is not setup yet until here and will just crash the system if we try to do this any earlier
     framebuffer_init();
+
 #ifdef __x86_64__
     acpi_init();
     lapic_init();
 #endif
+
     vfs_init();
     diosfs_init(0);
-    tmpfs_mkfs(0,"/temp");
+    tmpfs_mkfs(0, "/temp");
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init();
-    info_printf( "Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
-                  (usable_pages * (PAGE_SIZE / 1024)) / 1024);
+    info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
+                (usable_pages * (PAGE_SIZE / 1024)) / 1024);
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();
     ready = 1;

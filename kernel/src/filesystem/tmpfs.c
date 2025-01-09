@@ -40,7 +40,7 @@ static void tmpfs_delete_reg_file(struct tmpfs_node *node);
 
 static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove);
 
-uint8_t tmpfs_node_number_bitmap[PAGE_SIZE]; // only 1 since we won't support multiple distinct tmpfs filesystems
+uint8_t tmpfs_node_number_bitmap[PAGE_SIZE] = {0}; // only 1 since we won't support multiple distinct tmpfs filesystems
 
 #define TMPFS_NUM_SUPERBLOCKS 10
 struct tmpfs_superblock superblock[TMPFS_NUM_SUPERBLOCKS] = {0};
@@ -242,7 +242,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     serial_printf("GOING IN\n");
     struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
     if(vnode_to_be_mounted == NULL){
-        panic("");
+
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
@@ -260,7 +260,9 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     root->tmpfs_node_number = tmpfs_node_bitmap_get();
     safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
+    kprintf("HERE\n");
     vnode_mount(vnode_to_be_mounted,tmpfs_root);
+    kprintf("THERE\n");
     vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
     kprintf("Tmpfs filesystem created, procfs subdirectory created.");
 }
@@ -413,7 +415,7 @@ static uint64_t tmpfs_node_bitmap_get() {
     for (size_t i = 0; i < PAGE_SIZE; i++) {
         if (tmpfs_node_number_bitmap[i] != 0xFF) {
             for (size_t j = 0; j < 8; j++) {
-                if (tmpfs_node_number_bitmap[i] & BIT(j)) {
+                if (!(tmpfs_node_number_bitmap[i] & BIT(j))) {
                     tmpfs_node_number_bitmap[i] |= BIT(j);
                     return (i * 8) + j;
                 }
