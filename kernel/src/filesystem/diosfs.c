@@ -543,7 +543,6 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
     new_vnode->is_cached = false;
     new_vnode->vnode_type = vnode_type;
     new_vnode->vnode_inode_number = inode.inode_number;
-    kprintf("INODE NUMBER %i NAME %s\n",new_vnode->vnode_inode_number,name);
     new_vnode->filesystem_object = parent->filesystem_object;
     new_vnode->vnode_refcount = 1;
     new_vnode->vnode_children = NULL;

@@ -252,19 +252,23 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
     memset(context, 0, sizeof(struct tmpfs_filesystem_context));
     context->superblock = root->superblock;
+    root->superblock->tmpfs_node_count = 0;
+    root->superblock->filesystem = context;
     root->superblock->magic = TMPFS_MAGIC;
     root->superblock->tmpfs_node_count = 1;
+    init_tree(&root->superblock->node_tree,REGULAR_TREE,0);
+
     root->node_type = VNODE_DIRECTORY;
     root->directory_entries.entries = kmalloc(DIRECTORY_ENTRY_ARRAY_SIZE);
     root->parent_tmpfs_node = NULL;
     root->tmpfs_node_number = tmpfs_node_bitmap_get();
+    insert_tree_node(&root->superblock->node_tree,root,root->tmpfs_node_number);
     safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
-    kprintf("HERE\n");
     vnode_mount(vnode_to_be_mounted,tmpfs_root);
-    kprintf("THERE\n");
     vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
-    kprintf("Tmpfs filesystem created, procfs subdirectory created.");
+    vnode_create(directory_to_mount_onto,"tmp",VNODE_DIRECTORY);
+    kprintf("Tmpfs filesystem created.\n");
 }
 
 /*
@@ -355,9 +359,9 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
  */
 static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) {
     struct tmpfs_node *ret = NULL;
-    const struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    const struct tmpfs_filesystem_context
+            *context = vnode->filesystem_object;
     ret = lookup_tree(&context->superblock->node_tree, vnode->vnode_inode_number, false);
-
     if (ret == NULL) {
         /*
          * A state in which a vnode exists for a tmpfs object but no object exists underneath is invalid and should

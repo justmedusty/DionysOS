@@ -310,12 +310,10 @@ void *lookup_tree(struct binary_tree *tree, uint64_t key, uint8_t remove /* Flag
     while (1) {
         // Sanity checks below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
-            void *return_value = 0;
+            void *return_value = current->data.head->data;;
             if (remove) {
-                return_value = current->data.head->data;
                 remove_tree_node(tree, key, current->data.head->data, current);
             }
-
             return return_value;
         }
 
