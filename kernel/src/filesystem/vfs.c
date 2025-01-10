@@ -228,6 +228,8 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
         new_vnode->is_cached = true;
     }
 
+    new_vnode->vnode_parent = parent_directory;
+
     parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
     return new_vnode;
 }
@@ -428,7 +430,7 @@ int64_t vnode_unmount(struct vnode *vnode) {
     }
     //only going to allow mounting of whole filesystems so this works
     vnode->mounted_vnode->vnode_parent = NULL;
-    vnode->is_mount_point = FALSE;
+    vnode->is_mount_point = false;
     // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
     vnode->mounted_vnode = NULL;
     release_spinlock(&vfs_lock);
@@ -462,13 +464,18 @@ int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t b
 char *vnode_get_canonical_path(struct vnode *vnode) {
     char *buffer = kmalloc(PAGE_SIZE);
     char *final_buffer = kmalloc(PAGE_SIZE);
+    memset(final_buffer,0,PAGE_SIZE);
     struct vnode *pointer = vnode;
-    struct vnode *pointer2 = &vfs_root;
+
 
 
     while (pointer && pointer != &vfs_root) {
         strcat(buffer, "/");
-        strcat(buffer, pointer->vnode_name);
+
+        if(*pointer->vnode_name != '/' ){
+            strcat(buffer, pointer->vnode_name);
+
+        }
         pointer = pointer->vnode_parent;
     }
 
@@ -481,8 +488,8 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
         strtok(buffer, '/', temp, i);
         strcat(final_buffer, "/");
         strcat(final_buffer, temp);
-        memset(temp, 0, PAGE_SIZE);
-        // bit heavy? I will leave it for now Id rather this then the 1024 byte stack allocs since that is a risky move
+        memset(temp, 0, strlen(temp));
+        // a bit heavy? I will leave it for now Id rather this then the 1024 byte stack allocs since that is a risky move
     }
 
     kfree(buffer);
@@ -513,6 +520,10 @@ static struct vnode *parse_path(char *path) {
         /* This isn't implemented yet so it will be garbage until I finish it up */
         current_vnode = current_process()->current_working_dir;
     } else {
+        path++;
+    }
+
+    if(*path == '/'){
         path++;
     }
 

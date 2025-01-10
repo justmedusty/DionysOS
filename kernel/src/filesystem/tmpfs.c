@@ -86,8 +86,7 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
  * Create a new tmpfs node , the parent parameter is the parent directory.
  */
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
-    struct vnode *vnode = vnode_alloc();
-    memset(vnode, 0, sizeof(*vnode));
+
 
     struct tmpfs_node *parent_tmpfs_node = find_tmpfs_node_from_vnode(parent);
     struct tmpfs_node *child = conjure_new_tmpfs_node(name, type);
@@ -100,7 +99,7 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     insert_tree_node(&child->superblock->node_tree, child, child->tmpfs_node_number);
     insert_tmpfs_node_into_parent_directory_entries(child);
 
-    return vnode;
+    return tmpfs_node_to_vnode(child);
 }
 
 /*
@@ -239,7 +238,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
         return;
     }
-    serial_printf("GOING IN\n");
+
     struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
     if(vnode_to_be_mounted == NULL){
 
@@ -265,8 +264,11 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     insert_tree_node(&root->superblock->node_tree,root,root->tmpfs_node_number);
     safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
+
     vnode_mount(vnode_to_be_mounted,tmpfs_root);
-    vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
+    struct vnode *procfs = vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
+    kprintf("NEW NAME %s PARENT NAME %s\n",procfs->vnode_name,procfs->vnode_parent->vnode_name);
+    struct vnode *sched = vnode_create(vnode_get_canonical_path(procfs),"sched",VNODE_DIRECTORY);
     vnode_create(directory_to_mount_onto,"tmp",VNODE_DIRECTORY);
     kprintf("Tmpfs filesystem created.\n");
 }
