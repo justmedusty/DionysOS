@@ -288,11 +288,6 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     kprintf("Tmpfs filesystem created.\n");
 
     vnode_write(kernel_messages,0,sizeof("Kernel Tmpfs Initialized\n"),"Kernel Tmpfs Initialized\n");
-
-    char *buf = kmalloc(PAGE_SIZE);
-    vnode_read(kernel_messages,0,kernel_messages->vnode_size,buf);
-
-    kprintf("BUF %s\n",buf);
 }
 
 /*
