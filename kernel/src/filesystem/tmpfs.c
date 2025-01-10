@@ -41,6 +41,10 @@ static void tmpfs_delete_reg_file(struct tmpfs_node *node);
 static void tmpfs_remove_dirent_in_parent_directory(const struct tmpfs_node *node_to_remove);
 
 uint8_t tmpfs_node_number_bitmap[PAGE_SIZE] = {0}; // only 1 since we won't support multiple distinct tmpfs filesystems
+/*
+ * Store the procfs root so when I implement it's usage later we can access it directly without worrying where it is
+ */
+struct vnode *procfs_root = 0;
 
 #define TMPFS_NUM_SUPERBLOCKS 10
 struct tmpfs_superblock superblock[TMPFS_NUM_SUPERBLOCKS] = {0};
@@ -240,7 +244,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     }
 
     struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
-    if(vnode_to_be_mounted == NULL){
+    if (vnode_to_be_mounted == NULL) {
 
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
@@ -255,25 +259,31 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     root->superblock->filesystem = context;
     root->superblock->magic = TMPFS_MAGIC;
     root->superblock->tmpfs_node_count = 1;
-    init_tree(&root->superblock->node_tree,REGULAR_TREE,0);
+    init_tree(&root->superblock->node_tree, REGULAR_TREE, 0);
 
     root->node_type = VNODE_DIRECTORY;
     root->directory_entries.entries = kmalloc(DIRECTORY_ENTRY_ARRAY_SIZE);
     root->parent_tmpfs_node = NULL;
     root->tmpfs_node_number = tmpfs_node_bitmap_get();
-    insert_tree_node(&root->superblock->node_tree,root,root->tmpfs_node_number);
+    insert_tree_node(&root->superblock->node_tree, root, root->tmpfs_node_number);
     safe_strcpy(root->node_name, "tmpfs", VFS_MAX_NAME_LENGTH);
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
 
-    vnode_mount(vnode_to_be_mounted,tmpfs_root);
-    struct vnode *procfs = vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
-    kprintf("NEW NAME %s PARENT NAME %s\n",procfs->vnode_name,procfs->vnode_parent->vnode_name);
+    serial_printf("TMPFS: Created tmpfs root directory\n");
+    vnode_mount(vnode_to_be_mounted, tmpfs_root);
+    serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
+    struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
+    procfs_root = procfs;
+    serial_printf("TMPFS: Created procfs directory\n");
     char *path = vnode_get_canonical_path(procfs);
-    struct vnode *sched = vnode_create(path,"sched",VNODE_DIRECTORY);
-    vnode_create(directory_to_mount_onto,"tmp",VNODE_DIRECTORY);
-    kprintf("Tmpfs filesystem created. Sched name %s Sched parent name %s Sched parent num children %i\n",sched->vnode_name,sched->vnode_parent->vnode_name,sched->vnode_parent->num_children);
+    struct vnode *sched = vnode_create(path, "sched", VNODE_DIRECTORY);
+    serial_printf("TMPFS: Created sched directory under procfs\n");
+    struct vnode *kernel_messages = vnode_create(path, "kernel_messages", VNODE_FILE);
+    serial_printf("TMPFS: Created kernel_messages file under procfs\n");
+    vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
+    serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
+    kprintf("Tmpfs filesystem created.\n");
 }
-
 /*
  * Finds a given node where the sought-after page is found
  * If the node is not found this means we are reaching a new area and will allocate a new page list entry, allocating the first page as a courtesy
