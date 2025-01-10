@@ -84,6 +84,7 @@ struct vnode {
     //Will be used to hold how many processes have this either open or have it as their CWD so I can free when it gets to 0
     uint64_t vnode_device_id;
     uint16_t is_mount_point;
+    uint16_t is_mounted;
     uint64_t is_cached;
 };
 

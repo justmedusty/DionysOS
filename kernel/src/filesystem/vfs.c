@@ -206,6 +206,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     struct vnode *parent_directory = vnode_lookup(path);
 
     if (parent_directory == NULL) {
+        kprintf("PATH %s\n",path);
         //handle null response, maybe want to return something descriptive later
         return NULL;
     }
@@ -411,8 +412,9 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
         return KERN_EXISTS;
     }
 
-    mounted_vnode->vnode_parent = mount_point->vnode_parent;
-    mount_point->is_mount_point = TRUE;
+    mounted_vnode->vnode_parent = mount_point;
+    mounted_vnode->is_mounted = true;
+    mount_point->is_mount_point = true;
     mount_point->mounted_vnode = mounted_vnode;
 
     release_spinlock(&vfs_lock);
@@ -470,9 +472,17 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
 
 
     while (pointer && pointer != &vfs_root) {
+
+        if(pointer->is_mounted){
+            pointer = pointer->vnode_parent;
+        }
+
         strcat(buffer, "/");
 
-        if(*pointer->vnode_name != '/' ){
+        /*
+         * This check exits because other you end up with // when you get to root, which will cause issues with the way I implemented searching
+         */
+        if(*pointer->vnode_name != '/'){
             strcat(buffer, pointer->vnode_name);
 
         }
@@ -484,7 +494,7 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
     char *temp = kmalloc(PAGE_SIZE);
     memset(temp, 0, PAGE_SIZE);
 
-    for (size_t i = token_length; i > 0; i--) {
+    for (size_t i = token_length + 1; i > 0; i--) {
         strtok(buffer, '/', temp, i);
         strcat(final_buffer, "/");
         strcat(final_buffer, temp);

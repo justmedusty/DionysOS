@@ -268,9 +268,10 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     vnode_mount(vnode_to_be_mounted,tmpfs_root);
     struct vnode *procfs = vnode_create(directory_to_mount_onto,"procfs",VNODE_DIRECTORY);
     kprintf("NEW NAME %s PARENT NAME %s\n",procfs->vnode_name,procfs->vnode_parent->vnode_name);
-    struct vnode *sched = vnode_create(vnode_get_canonical_path(procfs),"sched",VNODE_DIRECTORY);
+    char *path = vnode_get_canonical_path(procfs);
+    struct vnode *sched = vnode_create(path,"sched",VNODE_DIRECTORY);
     vnode_create(directory_to_mount_onto,"tmp",VNODE_DIRECTORY);
-    kprintf("Tmpfs filesystem created.\n");
+    kprintf("Tmpfs filesystem created. Sched name %s Sched parent name %s Sched parent num children %i\n",sched->vnode_name,sched->vnode_parent->vnode_name,sched->vnode_parent->num_children);
 }
 
 /*
