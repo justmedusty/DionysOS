@@ -99,7 +99,6 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     child->parent_tmpfs_node = parent_tmpfs_node;
     child->superblock = parent_tmpfs_node->superblock;
     child->superblock->tmpfs_node_count++;
-
     insert_tree_node(&child->superblock->node_tree, child, child->tmpfs_node_number);
     insert_tmpfs_node_into_parent_directory_entries(child);
 
@@ -179,6 +178,8 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
         }
     }
 
+    vnode->vnode_size += total_bytes - bytes;
+
     return (int64_t) (total_bytes - bytes);
 }
 
@@ -188,15 +189,16 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
  *
  */
 int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
-    const struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
+    struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
     offset = offset % PAGE_SIZE;
     const uint64_t total_bytes = bytes;
     uint64_t copy_index = 0;
-    const struct tmpfs_page_list_entry *target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
+    struct tmpfs_page_list_entry *target = tmpfs_find_page_list_entry(node, page / PAGES_PER_TMPFS_ENTRY);
 
     while (bytes > 0) {
-        buffer[copy_index] = (char) target->page_list[page / PAGES_PER_TMPFS_ENTRY][offset];
+        char *data_page = (char *) target->page_list[page / PAGES_PER_TMPFS_ENTRY];
+        buffer[copy_index] = data_page[offset];
 
         copy_index++;
         offset = offset + 1 == PAGE_SIZE ? 0 : offset + 1;
@@ -210,7 +212,7 @@ int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t 
         }
     }
 
-    return total_bytes - bytes;
+    return total_bytes - (int64_t) bytes;
 }
 
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type) {
@@ -249,11 +251,12 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
+
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
     memset(root, 0, sizeof(struct tmpfs_node));
+
     root->superblock = &superblock[filesystem_id];
-    struct tmpfs_filesystem_context *context = kmalloc(sizeof(struct tmpfs_filesystem_context));
-    memset(context, 0, sizeof(struct tmpfs_filesystem_context));
+    struct tmpfs_filesystem_context *context = kzmalloc(sizeof(struct tmpfs_filesystem_context));
     context->superblock = root->superblock;
     root->superblock->tmpfs_node_count = 0;
     root->superblock->filesystem = context;
@@ -283,7 +286,15 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
     serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
     kprintf("Tmpfs filesystem created.\n");
+
+    vnode_write(kernel_messages,0,sizeof("Kernel Tmpfs Initialized\n"),"Kernel Tmpfs Initialized\n");
+
+    char *buf = kmalloc(PAGE_SIZE);
+    vnode_read(kernel_messages,0,kernel_messages->vnode_size,buf);
+
+    kprintf("BUF %s\n",buf);
 }
+
 /*
  * Finds a given node where the sought-after page is found
  * If the node is not found this means we are reaching a new area and will allocate a new page list entry, allocating the first page as a courtesy
@@ -344,6 +355,7 @@ static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     vnode->vnode_ops = &tmpfs_ops;
     vnode->vnode_size = node->tmpfs_node_size;
     vnode->vnode_type = node->node_type;
+    vnode->vnode_inode_number = node->tmpfs_node_number;
     safe_strcpy(vnode->vnode_name, node->node_name, VFS_MAX_NAME_LENGTH);
     return vnode;
 }
@@ -382,7 +394,7 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
          */
         panic("tmpfs_node_from_vnode: tmpfs node does not exist");
     }
-
+    kprintf("NODE %s %i RET NAME %s %i\n",vnode->vnode_name,vnode->vnode_inode_number,ret->node_name,ret->tmpfs_node_number);
     return ret;
 }
 
