@@ -44,7 +44,9 @@ uint8_t tmpfs_node_number_bitmap[PAGE_SIZE] = {0}; // only 1 since we won't supp
 /*
  * Store the procfs root so when I implement it's usage later we can access it directly without worrying where it is
  */
-struct vnode *procfs_root = 0;
+struct vnode *procfs_root = NULL;
+struct vnode *kernel_message = NULL;
+bool procfs_online = false;
 
 #define TMPFS_NUM_SUPERBLOCKS 10
 struct tmpfs_superblock superblock[TMPFS_NUM_SUPERBLOCKS] = {0};
@@ -238,6 +240,14 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
     nop();
 }
 
+void log_kernel_message(const char *message) {
+    if (procfs_online) {
+        uint64_t len = strlen(message);
+        uint64_t offset = kernel_message->vnode_size;
+        vnode_write(kernel_message, offset, len, message);
+    }
+}
+
 void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     kprintf("Creating tmpfs filesystem...\n");
     if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
@@ -276,18 +286,23 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
     struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
-    procfs_root = procfs;
+
     serial_printf("TMPFS: Created procfs directory\n");
     char *path = vnode_get_canonical_path(procfs);
     struct vnode *sched = vnode_create(path, "sched", VNODE_DIRECTORY);
     serial_printf("TMPFS: Created sched directory under procfs\n");
     struct vnode *kernel_messages = vnode_create(path, "kernel_messages", VNODE_FILE);
+
     serial_printf("TMPFS: Created kernel_messages file under procfs\n");
     vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
     serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
     kprintf("Tmpfs filesystem created.\n");
 
-    vnode_write(kernel_messages,0,sizeof("Kernel Tmpfs Initialized\n"),"Kernel Tmpfs Initialized\n");
+    procfs_root = procfs;
+    kernel_message = kernel_messages;
+    procfs_online = true;
+
+    log_kernel_message("Tmpfs initialized.");
 }
 
 /*
@@ -389,7 +404,8 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
          */
         panic("tmpfs_node_from_vnode: tmpfs node does not exist");
     }
-    kprintf("NODE %s %i RET NAME %s %i\n",vnode->vnode_name,vnode->vnode_inode_number,ret->node_name,ret->tmpfs_node_number);
+    kprintf("NODE %s %i RET NAME %s %i\n", vnode->vnode_name, vnode->vnode_inode_number, ret->node_name,
+            ret->tmpfs_node_number);
     return ret;
 }
 
