@@ -786,8 +786,8 @@ int64_t get_size(uint64_t handle) {
     if (!handle_vnode) {
         return KERN_NOT_FOUND;
     }
-
-    return handle_vnode->vnode_size;
+    uint64_t size = handle_vnode->vnode_size;
+    return (int64_t) size;
 }
 
 int64_t seek(uint64_t handle, uint64_t whence) {

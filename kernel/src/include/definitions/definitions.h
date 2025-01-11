@@ -29,6 +29,8 @@
 #define FRAME_LOCK 12
 #define QUEUE_LOCK 13
 
+#define SPRINTF_MAX_LEN 4096
+
 enum seek_values {
     SEEK_BEGIN = 0,
     SEEK_CUR = 1,
@@ -129,6 +131,7 @@ int64_t get_size(uint64_t handle);
 
 int64_t seek(uint64_t handle, uint64_t whence);
 
+char *sprintf(char *str, ...);
 
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\

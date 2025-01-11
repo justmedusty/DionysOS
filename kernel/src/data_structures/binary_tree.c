@@ -446,9 +446,6 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
              */
 
             if (current->right == NULL) {
-                if (current->parent->key == 256) {
-                    panic("[ERROR] RIGHT NULL KEY 256\n");
-                }
 
                 if (current->parent->left == current) {
                     current->parent->left = current->left;
@@ -502,9 +499,6 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
                 }
             }
 
-            if (right_min->left == right_min || right_min->parent == right_min) {
-                panic("Circular Reference NUMBA 2");
-            }
             NODE_FREE(current);
             tree->node_count--;
             release_spinlock(&tree->lock);

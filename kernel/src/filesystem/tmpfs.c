@@ -68,6 +68,9 @@ struct vnode_operations tmpfs_ops = {
  * lookup a node inside the directory passed as the vnode argument
  */
 struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
+    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
+
     if (vnode->is_cached && vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
         panic("tmpfs_lookup: vnode is cached already");
         // not a huge deal but a logic bug nonetheless so panic for visibility
@@ -85,6 +88,7 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
     struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
             vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
     vnode->num_children = target_node->tmpfs_node_size;
+    release_spinlock(&context->fs_lock);
     return child;
 }
 
@@ -93,6 +97,8 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
  */
 struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
 
+    struct tmpfs_filesystem_context *context = parent->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
 
     struct tmpfs_node *parent_tmpfs_node = find_tmpfs_node_from_vnode(parent);
     struct tmpfs_node *child = conjure_new_tmpfs_node(name, type);
@@ -104,6 +110,7 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
     insert_tree_node(&child->superblock->node_tree, child, child->tmpfs_node_number);
     insert_tmpfs_node_into_parent_directory_entries(child);
 
+    release_spinlock(&context->fs_lock);
     return tmpfs_node_to_vnode(child);
 }
 
@@ -111,17 +118,22 @@ struct vnode *tmpfs_create(struct vnode *parent, char *name, uint8_t type) {
  * Rename a given tmpfs_node
  */
 void tmpfs_rename(const struct vnode *vnode, char *name) {
+    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *tmpfs_node = find_tmpfs_node_from_vnode(vnode);
     safe_strcpy(tmpfs_node->node_name, name, VFS_MAX_NAME_LENGTH);
+    release_spinlock(&context->fs_lock);
 }
 
 void tmpfs_remove(const struct vnode *vnode) {
-
+    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     if (vnode->vnode_type == VNODE_FILE) {
         tmpfs_delete_reg_file(node);
         tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
+        release_spinlock(&context->fs_lock);
         return;
     }
 
@@ -129,6 +141,7 @@ void tmpfs_remove(const struct vnode *vnode) {
         tmpfs_delete_directory_recursively(node);
         tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
+        release_spinlock(&context->fs_lock);
         return;
     }
 
@@ -136,6 +149,7 @@ void tmpfs_remove(const struct vnode *vnode) {
         kfree(node->sym_link_path.path);
         tmpfs_remove_dirent_in_parent_directory(node);
         kfree(node);
+        release_spinlock(&context->fs_lock);
         return;
     }
 
@@ -148,6 +162,8 @@ void tmpfs_remove(const struct vnode *vnode) {
  * it is required to do so.
  */
 int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
     offset = offset % PAGE_SIZE;
@@ -181,7 +197,7 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
     }
 
     vnode->vnode_size += total_bytes - bytes;
-
+    release_spinlock(&context->fs_lock);
     return (int64_t) (total_bytes - bytes);
 }
 
@@ -191,6 +207,8 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
  *
  */
 int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
+    struct tmpfs_filesystem_context *context = vnode->filesystem_object;
+    acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
     uint64_t page = offset > PAGE_SIZE ? offset / PAGE_SIZE : 0;
     offset = offset % PAGE_SIZE;
@@ -213,8 +231,10 @@ int64_t tmpfs_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t 
             }
         }
     }
+    release_spinlock(&context->fs_lock);
+    uint64_t result = total_bytes - bytes;
 
-    return total_bytes - (int64_t) bytes;
+    return (int64_t) result; // the amount of bytes you would have to write for this to be a problem is so gargantuan that this is ok in my eyes
 }
 
 struct vnode *tmpfs_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type) {
@@ -404,8 +424,6 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
          */
         panic("tmpfs_node_from_vnode: tmpfs node does not exist");
     }
-    kprintf("NODE %s %i RET NAME %s %i\n", vnode->vnode_name, vnode->vnode_inode_number, ret->node_name,
-            ret->tmpfs_node_number);
     return ret;
 }
 

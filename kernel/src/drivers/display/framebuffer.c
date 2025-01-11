@@ -8,7 +8,7 @@
 #include "include/data_structures/spinlock.h"
 #include "include/definitions/definitions.h"
 #include "include/drivers/serial/uart.h"
-
+#include "include/definitions/string.h"
 #include "include/memory/mem.h"
 #include "include/drivers/display/font.h"
 #include "include/architecture/arch_timer.h"
@@ -89,7 +89,7 @@ void draw_char(const struct framebuffer *fb,
     }
 }
 
-void reset_x_value(struct framebuffer *fb){
+void reset_x_value(struct framebuffer *fb) {
     fb->context.current_x_pos = 0;
     fb->context.current_y_pos += fb->font_height;
 }
@@ -105,7 +105,7 @@ void draw_cursor_box(struct framebuffer *fb, uint32_t color) {
     }
 }
 
-static void scroll_framebuffer(struct framebuffer *fb){
+static void scroll_framebuffer(struct framebuffer *fb) {
     const uint64_t rows_size = fb->pitch * (fb->height - fb->font_height);
     const uint64_t row_size = fb->pitch * fb->font_height;
 
@@ -143,20 +143,20 @@ static void scroll_framebuffer(struct framebuffer *fb){
 }
 
 void current_pos_cursor(struct framebuffer *fb) {
-    if(!try_lock(&fb->lock)){
+    if (!try_lock(&fb->lock)) {
         return;
     }
-    if(fb->context.current_x_pos >= fb->width){
+    if (fb->context.current_x_pos >= fb->width) {
         reset_x_value(fb);
     }
     if (fb->context.current_y_pos >= fb->height) {
         scroll_framebuffer(fb);
     }
 
-    for(size_t i = 0; i < 3; i++){
-        draw_cursor_box(fb,WHITE);
+    for (size_t i = 0; i < 3; i++) {
+        draw_cursor_box(fb, WHITE);
         timer_sleep(250);
-        draw_cursor_box(fb,BLACK);
+        draw_cursor_box(fb, BLACK);
         timer_sleep(250);
     }
 
@@ -215,9 +215,10 @@ void draw_string(struct framebuffer *fb, const char *str, uint64_t color) {
     uint64_t index_y = fb->context.current_y_pos;
 
     while (*str) {
-        draw_char_with_context(fb,*str++,color);
+        draw_char_with_context(fb, *str++, color);
     }
 }
+
 static char get_hex_char(uint8_t nibble) {
     if (nibble <= 16) {
         return characters[nibble];
@@ -233,6 +234,20 @@ static void draw_hex(struct device *fb, uint64_t num, int32_t size, uint32_t col
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
         fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
+    }
+}
+
+static void insert_hex(char *buffer, uint64_t num, int32_t size, uint64_t *index) {
+    if(buffer == NULL){
+        return;
+    }
+    memcpy((void *) &buffer[*index], "0x", 2);
+    *index += 2;
+    for (int32_t i = (size - 4); i >= 0; i -= 4) {
+        uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
+        char c = get_hex_char(nibble);
+        buffer[*index] = c;
+        *index +=1;
     }
 }
 
@@ -348,10 +363,147 @@ void kprintf(char *str, ...) {
 }
 
 /*
+ * It doesn't QUITE belong here but the others are here and it makes it easier to put it in the same header file.
+ */
+char *sprintf(char *str, ...) {
+    char *buffer = kmalloc(SPRINTF_MAX_LEN * 2);
+    uint64_t index = 0;
+    va_list args;
+    va_start(args, str);
+    while (*str) {
+        if (*str != '%') {
+            buffer[index++] = *str;
+        } else {
+            str++;
+            switch (*str) {
+                case 'x': {
+                    if (*(str + 1) == '.') {
+                        str = str + 2;
+
+                        /*
+                         * We will check the length of the hex number, because I am lazy I will only check the first char and skip the second. No need to check the second anyway.
+                         * You will still be expected to put the second number there even though the internals do not require it, makes your code more readable anyway.
+                         * Usage looks like this :
+                         * %x.8 = print 8 bit hex
+                         * %x.16 = print 16 bit hex
+                         * %x.32 = print 32 bit hex
+                         * %x.64 = print 64 bit hex
+                         */
+
+                        switch (*str) {
+                            case '8':
+                                uint64_t value8 = va_arg(args, uint32_t);
+                                insert_hex(buffer, value8, 8, &index);
+                                break;
+                            case '1':
+                                uint64_t value16 = va_arg(args, uint32_t);
+                                insert_hex(buffer, value16, 16, &index);
+
+                                str++;
+                                break;
+                            case '3':
+                                uint64_t value32 = va_arg(args, uint32_t);
+                                insert_hex(buffer, value32, 32, &index);
+                                str++;
+                                break;
+                            case '6':
+                                uint64_t value64 = va_arg(args, uint64_t);
+                                insert_hex(buffer, value64, 64, &index);
+
+                                str++;
+                                break;
+                            default:
+                                uint64_t value = va_arg(args, uint64_t);
+                                insert_hex(buffer, value, 64, &index);
+
+
+                                break;
+                        }
+                    } else {
+                        uint64_t value = va_arg(args, uint64_t);
+                        insert_hex(buffer, value, 64, &index);
+
+                    }
+
+                    if(index > SPRINTF_MAX_LEN){
+                        kfree(buffer);
+                        return NULL;
+                    }
+                    break;
+                }
+
+                case 's': {
+                    char *value = va_arg(args,
+                                         char*);
+                    uint64_t len = strlen(value);
+                    memcpy(&buffer[index], value, len);
+                    index += len;
+
+                    if(index > SPRINTF_MAX_LEN){
+                        kfree(buffer);
+                        return NULL;
+                    }
+
+                    break;
+                }
+
+                case 'i': {
+                    uint64_t value = va_arg(args, uint64_t);
+
+                    if (value == 0) {
+                        buffer[index++] = 0;
+                        break;
+                    }
+
+                    char num_buffer[20]; // Enough to hold the maximum 64 bit value
+                    int i_index = 0;
+
+                    while (value > 0) {
+                        num_buffer[i_index++] = characters[value % 10];
+                        value /= 10;
+                    }
+
+                    // Write digits in reverse order
+                    while (i_index > 0) {
+                        buffer[index++] = num_buffer[--i_index];
+                    }
+
+                    if(index > SPRINTF_MAX_LEN){
+                        kfree(buffer);
+                        return NULL;
+                    }
+
+                    break;
+                }
+
+                default:
+                    buffer[index++] = '%';
+                    break;
+            }
+        }
+        str++;
+
+        if(index > SPRINTF_MAX_LEN){
+            kfree(buffer);
+            return NULL;
+        }
+    }
+
+    va_end(args);
+
+
+    uint64_t len = strlen(buffer);
+    char *final = kmalloc(len);
+    strcpy(final,buffer);
+    kfree(buffer);
+    return final;
+}
+
+/*
  * Exception version, lockless in case another thread is holding the lock and all text is RED
  */
 void err_printf(char *str, ...) {
-    if(panicked){
+    if (panicked) {
         return;
     }
     acquire_spinlock(&main_framebuffer.lock);
@@ -461,6 +613,7 @@ void err_printf(char *str, ...) {
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
 }
+
 void warn_printf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
