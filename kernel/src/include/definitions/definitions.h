@@ -4,6 +4,7 @@
 #ifndef _DEFINITIONS_H_
 #define _DEFINITIONS_H_
 #pragma once
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -107,6 +108,7 @@ enum kernel_error_codes {
     KERN_BAD_DESCRIPTOR = -137,    // Bad file descriptor (EBADF)
     KERN_OVERLOADED = -138,        // System overloaded (custom)
 };
+
 /*
  * Core function prototypes
  */
@@ -132,6 +134,17 @@ int64_t get_size(uint64_t handle);
 int64_t seek(uint64_t handle, uint64_t whence);
 
 char *sprintf(char *str, ...);
+
+void warn_printf(char *str, ...);
+
+void info_printf(char *str, ...);
+
+void kprintf(char *str, ...);
+
+void kprintf_color(uint32_t color, char *str, ...);
+
+void err_printf(char *str, ...);
+
 
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\

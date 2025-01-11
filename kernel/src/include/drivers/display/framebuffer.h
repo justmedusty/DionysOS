@@ -101,23 +101,13 @@ void clear(struct framebuffer *fb);
 
 void draw_string(struct framebuffer *fb, const char *str, uint64_t color);
 
-void kprintf(char *str, ...);
-
-void kprintf_color(uint32_t color, char *str, ...);
-
 void fb_ops_draw_char(struct device *dev, uint8_t c, uint32_t color);
-
-void err_printf(char *str, ...);
 
 void fb_ops_clear(struct device *dev);
 
 void fb_ops_draw_string(struct device *dev, uint32_t color, char *s);
 
 void framebuffer_init();
-
-void warn_printf(char *str, ...);
-
-void info_printf(char *str, ...);
 
 void current_pos_cursor(struct framebuffer *fb);
 #endif //FRAMEBUFFER_H
