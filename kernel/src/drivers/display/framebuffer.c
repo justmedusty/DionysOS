@@ -351,6 +351,9 @@ void kprintf(char *str, ...) {
  * Exception version, lockless in case another thread is holding the lock and all text is RED
  */
 void err_printf(char *str, ...) {
+    if(panicked){
+        return;
+    }
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);

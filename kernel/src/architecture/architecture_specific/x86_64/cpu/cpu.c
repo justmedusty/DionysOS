@@ -29,7 +29,8 @@ struct queue local_run_queues[MAX_CPUS];
 struct spinlock bootstrap_lock;
 #ifdef __x86_64__
 
-void panic(const char* str) {
+
+__attribute__((noreturn)) void panic(const char* str) {
     cli();
     err_printf("Panic!\n%s\n",str);
     serial_printf("\nPanic! %s ",str);
