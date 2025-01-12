@@ -562,7 +562,7 @@ static void tmpfs_delete_directory_recursively(struct tmpfs_node *node) {
             case VNODE_DIRECTORY:
                 tmpfs_delete_directory_recursively(current);
                 break;
-            case FILE:
+            case VNODE_FILE:
                 tmpfs_delete_reg_file(current);
                 break;
             default:
