@@ -224,6 +224,21 @@ struct nvme_command {
     };
 };
 
+struct nvme_bar {
+    uint64_t capabilities;       // Controller Capabilities
+    uint32_t version;            // Version
+    uint32_t interrupt_mask_set; // Interrupt Mask Set
+    uint32_t interrupt_mask_clear; // Interrupt Mask Clear
+    uint32_t controller_config;  // Controller Configuration
+    uint32_t reserved1;          // Reserved
+    uint32_t controller_status;  // Controller Status
+    uint32_t reserved2;          // Reserved
+    uint32_t admin_queue_attrs;  // Admin Queue Attributes
+    uint64_t admin_sq_base_addr; // Admin Submission Queue Base Address
+    uint64_t admin_cq_base_addr; // Admin Completion Queue Base Address
+};
+
+
 // Struct representing an NVMe completion queue entry
 struct nvme_completion {
     uint32_t command_specific;  // Command specific information
@@ -258,9 +273,33 @@ struct nvme_queue {
     unsigned long cmdid_data[];        // Command ID data array
 };
 
-// Struct representing an NVMe device
+/* Represents an NVM Express device. Each nvme_dev is a PCI function. */
 struct nvme_device {
-    struct device *device;  // Associated device structure
+    struct device *device;             // Pointer to the associated U-Boot device
+    struct doubly_linked_list *node;        // Linked list node for device list
+    struct nvme_queue **queue_list;      // Pointer to an array of NVMe queue pointers
+    volatile uint32_t *doorbells;        // Pointer to doorbell registers
+    int device_instance;                 // Instance identifier of the device
+    unsigned int total_queues;           // Total number of queues
+    unsigned int active_queues;          // Number of online queues
+    unsigned int max_queue_id;           // Maximum queue identifier
+    int queue_depth;                     // Depth of each queue
+    uint32_t doorbell_stride;            // Stride between doorbell registers
+    uint32_t controller_config;          // Controller configuration
+    struct nvme_bar *bar;                // Pointer to Base Address Register (BAR) structure
+    struct doubly_linked_list *namespace_list;     // Linked list of namespaces
+    char vendor_id[8];                   // Vendor identifier
+    char serial_number[20];              // Serial number
+    char model_number[40];               // Model number
+    char firmware_revision[8];           // Firmware revision
+    uint32_t max_transfer_shift;         // Maximum transfer size shift
+    uint64_t capabilities;               // Controller capabilities
+    uint32_t stripe_size;                // Size of stripes for striping
+    uint32_t page_size;                  // Page size
+    uint8_t volatile_write_cache;        // Volatile write cache support
+    uint64_t *prp_pool;                  // PRP (Physical Region Page) pool
+    uint32_t prp_entry_count;            // Number of entries in the PRP pool
+    uint32_t namespace_count;            // Number of namespaces
 };
 
 // Struct containing NVMe operations
