@@ -8,6 +8,68 @@
 #include <stdint.h>
 #include "include/data_structures/doubly_linked_list.h"
 
+
+enum {
+    // Generic Command Statuses
+    NVME_SC_CMDID_CONFLICT = 0x3,   // Command identifier conflict
+    NVME_SC_DATA_XFER_ERROR = 0x4,   // Data transfer error
+    NVME_SC_POWER_LOSS = 0x5,   // Power loss or reset occurred
+    NVME_SC_INTERNAL = 0x6,   // Internal error
+    NVME_SC_ABORT_REQ = 0x7,   // Command aborted by request
+    NVME_SC_ABORT_QUEUE = 0x8,   // Command aborted due to queue deletion
+    NVME_SC_FUSED_FAIL = 0x9,   // Fused command failure
+    NVME_SC_FUSED_MISSING = 0xa,   // Fused command missing
+    NVME_SC_INVALID_NS = 0xb,   // Invalid namespace or format
+    NVME_SC_CMD_SEQ_ERROR = 0xc,   // Command sequence error
+    NVME_SC_SGL_INVALID_LAST = 0xd,   // Invalid last SGL segment descriptor
+    NVME_SC_SGL_INVALID_COUNT = 0xe,   // Invalid SGL segment descriptor count
+    NVME_SC_SGL_INVALID_DATA = 0xf,   // Invalid data in SGL
+    NVME_SC_SGL_INVALID_METADATA = 0x10,  // Invalid metadata in SGL
+    NVME_SC_SGL_INVALID_TYPE = 0x11,  // Invalid SGL segment descriptor type
+
+    // Command Specific Statuses
+    NVME_SC_LBA_RANGE = 0x80,  // LBA range error
+    NVME_SC_CAP_EXCEEDED = 0x81,  // Capacity exceeded
+    NVME_SC_NS_NOT_READY = 0x82,  // Namespace not ready
+    NVME_SC_RESERVATION_CONFLICT = 0x83,  // Reservation conflict
+
+    // Queue Management Statuses
+    NVME_SC_CQ_INVALID = 0x100, // Completion queue invalid
+    NVME_SC_QID_INVALID = 0x101, // Invalid queue identifier
+    NVME_SC_QUEUE_SIZE = 0x102, // Queue size exceeds limit
+    NVME_SC_ABORT_LIMIT = 0x103, // Abort command limit exceeded
+    NVME_SC_ABORT_MISSING = 0x104, // Missing abort command
+    NVME_SC_ASYNC_LIMIT = 0x105, // Asynchronous event request limit exceeded
+    NVME_SC_FIRMWARE_SLOT = 0x106, // Invalid firmware slot
+    NVME_SC_FIRMWARE_IMAGE = 0x107, // Invalid firmware image
+    NVME_SC_INVALID_VECTOR = 0x108, // Invalid interrupt vector
+    NVME_SC_INVALID_LOG_PAGE = 0x109, // Invalid log page
+    NVME_SC_INVALID_FORMAT = 0x10a, // Invalid format
+    NVME_SC_FIRMWARE_NEEDS_RESET = 0x10b, // Firmware activation requires reset
+    NVME_SC_INVALID_QUEUE = 0x10c, // Invalid queue
+    NVME_SC_FEATURE_NOT_SAVEABLE = 0x10d, // Feature identifier not saveable
+    NVME_SC_FEATURE_NOT_CHANGEABLE = 0x10e, // Feature identifier not changeable
+    NVME_SC_FEATURE_NOT_PER_NS = 0x10f, // Feature identifier not namespace-specific
+    NVME_SC_FW_NEEDS_RESET_SUBSYS = 0x110, // Firmware activation requires subsystem reset
+
+    // Metadata and Protection Information Statuses
+    NVME_SC_BAD_ATTRIBUTES = 0x180, // Bad attributes
+    NVME_SC_INVALID_PI = 0x181, // Invalid Protection Information (PI)
+    NVME_SC_READ_ONLY = 0x182, // Write operation attempted on read-only resource
+
+    // Media Errors
+    NVME_SC_WRITE_FAULT = 0x280, // Write fault
+    NVME_SC_READ_ERROR = 0x281, // Unrecovered read error
+    NVME_SC_GUARD_CHECK = 0x282, // Guard check error
+    NVME_SC_APPTAG_CHECK = 0x283, // Application tag check error
+    NVME_SC_REFTAG_CHECK = 0x284, // Reference tag check error
+    NVME_SC_COMPARE_FAILED = 0x285, // Compare operation failed
+    NVME_SC_ACCESS_DENIED = 0x286, // Access denied
+
+    // Do Not Retry Status
+    NVME_SC_DNR = 0x4000 // Do Not Retry: Fatal error, do not retry command
+};
+
 // NVMe command opcodes
 enum nvme_command_set {
     NVME_FLUSH = 0x00,
