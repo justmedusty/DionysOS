@@ -464,8 +464,8 @@ int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t b
  * Gets a canonical path, whether it be for a symlink or something else
  */
 char *vnode_get_canonical_path(struct vnode *vnode) {
-    char *buffer = kmalloc(PAGE_SIZE);
-    char *final_buffer = kmalloc(PAGE_SIZE);
+    char *buffer = kzmalloc(PAGE_SIZE);
+    char *final_buffer = kzmalloc(PAGE_SIZE);
     memset(final_buffer,0,PAGE_SIZE);
     struct vnode *pointer = vnode;
 
