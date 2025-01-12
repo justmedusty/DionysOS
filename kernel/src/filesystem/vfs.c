@@ -470,7 +470,6 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
     struct vnode *pointer = vnode;
 
 
-
     while (pointer && pointer != &vfs_root) {
 
         if(pointer->is_mounted){
@@ -721,7 +720,7 @@ int64_t mount(char *mount_point, char *mounted_filesystem) {
     }
 
     struct vnode *vnode_to_mount = vnode_lookup(mounted_filesystem);
-    int64_t get_size(uint64_t handle);
+
     if (!vnode_to_mount) {
         return KERN_NOT_FOUND;
     }

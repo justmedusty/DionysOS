@@ -6,6 +6,7 @@
 #define NVME_H_
 
 #include <stdint.h>
+#include "include/data_structures/doubly_linked_list.h"
 
 // NVMe command opcodes
 enum nvme_command_set {
@@ -28,6 +29,44 @@ enum nvme_command_set {
     NVME_IDENTIFY = 0x06,
     NVME_ASYNC_EVENT_CONFIGURATION = 0x01,
     NVME_GET_LOG_PAGE_SIZE_EXT = 0x03,
+};
+
+enum nvme_admin_opcode {
+    NVME_ADMIN_OPCODE_DELETE_SQ         = 0x00, // Delete Submission Queue
+    NVME_ADMIN_OPCODE_CREATE_SQ         = 0x01, // Create Submission Queue
+    NVME_ADMIN_OPCODE_GET_LOG_PAGE      = 0x02, // Get Log Page
+    NVME_ADMIN_OPCODE_DELETE_CQ         = 0x04, // Delete Completion Queue
+    NVME_ADMIN_OPCODE_CREATE_CQ         = 0x05, // Create Completion Queue
+    NVME_ADMIN_OPCODE_IDENTIFY          = 0x06, // Identify
+    NVME_ADMIN_OPCODE_ABORT_CMD         = 0x08, // Abort Command
+    NVME_ADMIN_OPCODE_SET_FEATURES      = 0x09, // Set Features
+    NVME_ADMIN_OPCODE_GET_FEATURES      = 0x0A, // Get Features
+    NVME_ADMIN_OPCODE_ASYNC_EVENT       = 0x0C, // Asynchronous Event
+    NVME_ADMIN_OPCODE_ACTIVATE_FW       = 0x10, // Activate Firmware
+    NVME_ADMIN_OPCODE_DOWNLOAD_FW       = 0x11, // Download Firmware
+    NVME_ADMIN_OPCODE_FORMAT_NVM        = 0x80, // Format NVM
+    NVME_ADMIN_OPCODE_SECURITY_SEND     = 0x81, // Security Send
+    NVME_ADMIN_OPCODE_SECURITY_RECEIVE  = 0x82, // Security Receive
+};
+
+enum {
+    NVME_NS_FEATURE_THIN_PROVISIONING   = 1 << 0, // Namespace supports thin provisioning
+    NVME_NS_FLBAS_LBA_MASK              = 0xF,    // LBA format mask
+    NVME_NS_FLBAS_METADATA_EXTENDED     = 0x10,   // Metadata extended LBA
+    NVME_LBAF_RELIABILITY_BEST          = 0,      // Best reliability level
+    NVME_LBAF_RELIABILITY_BETTER        = 1,      // Better reliability level
+    NVME_LBAF_RELIABILITY_GOOD          = 2,      // Good reliability level
+    NVME_LBAF_RELIABILITY_DEGRADED      = 3,      // Degraded reliability level
+    NVME_NS_DPC_PROTECTION_INFO_LAST    = 1 << 4, // Data Protection Capability: PI last
+    NVME_NS_DPC_PROTECTION_INFO_FIRST   = 1 << 3, // Data Protection Capability: PI first
+    NVME_NS_DPC_PROTECTION_INFO_TYPE3   = 1 << 2, // Data Protection Capability: PI type 3
+    NVME_NS_DPC_PROTECTION_INFO_TYPE2   = 1 << 1, // Data Protection Capability: PI type 2
+    NVME_NS_DPC_PROTECTION_INFO_TYPE1   = 1 << 0, // Data Protection Capability: PI type 1
+    NVME_NS_DPS_PROTECTION_INFO_FIRST   = 1 << 3, // Data Protection Settings: PI first
+    NVME_NS_DPS_PROTECTION_INFO_MASK    = 0x7,    // Data Protection Settings: PI mask
+    NVME_NS_DPS_PROTECTION_INFO_TYPE1   = 1,      // Data Protection Settings: PI type 1
+    NVME_NS_DPS_PROTECTION_INFO_TYPE2   = 2,      // Data Protection Settings: PI type 2
+    NVME_NS_DPS_PROTECTION_INFO_TYPE3   = 3,      // Data Protection Settings: PI type 3
 };
 
 // NVMe Status Codes
@@ -71,6 +110,34 @@ enum nvme_opcode {
     nvme_cmd_resv_report = 0x0e,    // Reservation Report command
     nvme_cmd_resv_acquire = 0x11,   // Reservation Acquire command
     nvme_cmd_resv_release = 0x15,   // Reservation Release command
+};
+
+enum {
+    // Controller Configuration (CC) Register Flags
+    NVME_CC_ENABLE        = 1 << 0,  // Enable controller
+    NVME_CC_CSS_NVM       = 0 << 4,  // Command Set Selected: NVM Command Set
+    NVME_CC_MPS_SHIFT     = 7,       // Memory Page Size Shift
+    NVME_CC_ARB_RR        = 0 << 11, // Arbitration Mechanism: Round Robin
+    NVME_CC_ARB_WRRU      = 1 << 11, // Arbitration Mechanism: Weighted Round Robin with Urgent
+    NVME_CC_ARB_VS        = 7 << 11, // Arbitration Mechanism: Vendor Specific
+
+    // Shutdown Notification (SHN) Flags
+    NVME_CC_SHN_NONE      = 0 << 14, // No shutdown notification
+    NVME_CC_SHN_NORMAL    = 1 << 14, // Normal shutdown notification
+    NVME_CC_SHN_ABRUPT    = 2 << 14, // Abrupt shutdown notification
+    NVME_CC_SHN_MASK      = 3 << 14, // Mask for shutdown notification
+
+    // I/O Submission and Completion Queue Entry Sizes
+    NVME_CC_IOSQES        = 6 << 16, // I/O Submission Queue Entry Size
+    NVME_CC_IOCQES        = 4 << 20, // I/O Completion Queue Entry Size
+
+    // Controller Status (CSTS) Register Flags
+    NVME_CSTS_RDY         = 1 << 0,  // Controller Ready
+    NVME_CSTS_CFS         = 1 << 1,  // Controller Fatal Status
+    NVME_CSTS_SHST_NORMAL = 0 << 2,  // Shutdown Status: Normal operation
+    NVME_CSTS_SHST_OCCUR  = 1 << 2,  // Shutdown Status: Shutdown in progress
+    NVME_CSTS_SHST_CMPLT  = 2 << 2,  // Shutdown Status: Shutdown completed
+    NVME_CSTS_SHST_MASK   = 3 << 2,  // Mask for shutdown status
 };
 
 // Struct representing a common NVMe command
@@ -256,6 +323,15 @@ enum nvme_queue_id {
     NVME_Q_NUM,    // Total number of queues
 };
 
+struct nvme_namespace {
+    struct doubly_linked_list list;       // Linked listfor maintaining a list of namespaces.
+    struct nvme_device *device;           // Pointer to the associated NVMe device.
+    unsigned int namespace_id;            // Identifier for the namespace.
+    uint8_t eui64[8];                     // Extended Unique Identifier (EUI-64) for the namespace.
+    int device_number;                    // Device number assigned to the namespace.
+    int logical_block_address_shift;      // Shift value for calculating logical block address size.
+    uint8_t formatted_lba_size;           // Formatted LBA size and metadata settings.
+};
 // Struct representing an NVMe queue
 struct nvme_queue {
     struct nvme_dev *dev;              // Associated NVMe device
@@ -275,7 +351,7 @@ struct nvme_queue {
 
 /* Represents an NVM Express device. Each nvme_dev is a PCI function. */
 struct nvme_device {
-    struct device *device;             // Pointer to the associated U-Boot device
+    struct device *device;             // Pointer to the associated device
     struct doubly_linked_list *node;        // Linked list node for device list
     struct nvme_queue **queue_list;      // Pointer to an array of NVMe queue pointers
     volatile uint32_t *doorbells;        // Pointer to doorbell registers
