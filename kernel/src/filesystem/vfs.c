@@ -480,11 +480,10 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
         strcat(buffer, "/");
 
         /*
-         * This check exits because other you end up with // when you get to root, which will cause issues with the way I implemented searching
+         * This check exists because otherwise you end up with // when you get to root, which will cause issues with the way I implemented searching
          */
         if(*pointer->vnode_name != '/'){
             strcat(buffer, pointer->vnode_name);
-
         }
         pointer = pointer->vnode_parent;
     }
