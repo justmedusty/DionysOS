@@ -5,7 +5,8 @@
 #ifndef KERNEL_PCI_H
 #define KERNEL_PCI_H
 #pragma once
-#include "../../architecture/x86_64/acpi.h"
+
+#include "include/architecture/arch_cpu.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -99,14 +100,26 @@
 struct pci_driver {
     char *name;
     const struct pci_device *device;
+
     int32_t (*probe)(struct pci_device *device);
+
     void (*remove)(struct pci_device *device);
+
     int32_t (*suspend)(struct pci_device *device);
+
     int32_t (*resume)(struct pci_device *device);
+
     uint32_t (*shutdown)(struct pci_device *device);
     // Skip the SRIOV stuff since I don't plan on supporting virtualization of devices
     bool driver_managed_dma;
 
+};
+
+
+struct pci_bus_information {
+    uintptr_t pci_mmio_address;
+    uint8_t start_bus;
+    uint8_t end_bus;
 };
 
 // Generic PCI Device AKA not a bridge
@@ -182,14 +195,66 @@ struct pci_slot {
 };
 
 
-
 struct pci_bus {
     uint8_t bus_id;
     struct pci_slot pci_slots[SLOTS_PER_BUS];
 };
 
+struct pci_bus_information get_pci_info();
 
 void pci_enumerate_devices(bool print);
-char* pci_get_class_name(uint8_t class);
+
+char *pci_get_class_name(uint8_t class);
+
+
+#ifdef __x86_64__
+
+#include "include/architecture/x86_64/acpi.h"
+
 void set_pci_mmio_address(struct mcfg_entry *entry);
+// PCI configuration space offset masks and shifts
+#define PCI_BUS_SHIFT      20  // Shift for the PCI bus number in the MMIO address
+#define PCI_DEVICE_SHIFT   15  // Shift for the PCI device number in the MMIO address
+#define PCI_FUNCTION_SHIFT 12  // Shift for the PCI function number in the MMIO address
+#define PCI_OFFSET_MASK    ~0x3  // Mask for the PCI offset to ensure it's DWORD aligned
+
+static inline uint32_t pci_read32(int32_t bus, int32_t device, int32_t function, uint32_t offset) {
+    struct pci_bus_information info = get_pci_info();
+
+    uint64_t base = (uint64_t) info.pci_mmio_address;
+    volatile uint32_t *address = (uint32_t *) ((uintptr_t) base +
+                                               (((bus - info.start_bus) << PCI_BUS_SHIFT) |
+                                                (device << PCI_DEVICE_SHIFT) |
+                                                (function << PCI_FUNCTION_SHIFT) |
+                                                (offset & PCI_OFFSET_MASK)));
+
+    return *address;
+}
+
+static inline void pci_write32(int bus, int device, int function, uint32_t offset, uint32_t value) {
+    struct pci_bus_information info = get_pci_info();
+
+    volatile uint32_t *address = (uint32_t *) ((uintptr_t) info.pci_mmio_address +
+                                               (((bus - info.start_bus) << PCI_BUS_SHIFT) |
+                                                (device << PCI_DEVICE_SHIFT) |
+                                                (function << PCI_FUNCTION_SHIFT) |
+                                                (offset & PCI_OFFSET_MASK)));
+
+    *address = value;
+}
+
+// Message Signaled Interrupts (MSI) format message flags
+#define MSI_EDGE_TRIGGER  (1 << 15)  // Edge-triggered interrupt bit
+#define MSI_DEASSERT      (1 << 14)  // Deassert interrupt bit
+#define MSI_BASE_ADDR     0xfee00000 // Base address for MSI
+
+static inline uint64_t msi_format_message(uint32_t *data, int32_t vector, bool edgetrigger, bool deassert) {
+    *data = (edgetrigger ? 0 : MSI_EDGE_TRIGGER) |
+            (deassert ? 0 : MSI_DEASSERT) |
+            vector;
+    return MSI_BASE_ADDR | (my_cpu()->cpu_id << 12);
+}
+
+#endif
+
 #endif //KERNEL_PCI_H
