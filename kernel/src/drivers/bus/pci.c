@@ -3,7 +3,6 @@
 //
 
 #include "include/drivers/bus/pci.h"
-#include "include/architecture/x86_64/acpi.h"
 #include "include/data_structures/binary_tree.h"
 #include "include/drivers/display/framebuffer.h"
 #include"include/data_structures/doubly_linked_list.h"
@@ -42,6 +41,9 @@ static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
     return *(volatile uint32_t *) address;
 }
 
+#ifdef __x86_64__
+
+#include "include/architecture/x86_64/acpi.h"
 
 void set_pci_mmio_address(struct mcfg_entry *entry) {
     doubly_linked_list_init(&registered_pci_devices);
@@ -50,6 +52,8 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
     pci_info.end_bus = entry->end_bus;
     serial_printf("PCIe MMIO address is %x.64 , start bus %i end bus %i\n", pci_info.pci_mmio_address, pci_info.start_bus, pci_info.end_bus);
 }
+
+#endif
 
 struct pci_bus_information get_pci_info() {
     return pci_info;

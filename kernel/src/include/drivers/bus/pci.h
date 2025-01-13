@@ -212,6 +212,7 @@ char *pci_get_class_name(uint8_t class);
 #include "include/architecture/x86_64/acpi.h"
 
 void set_pci_mmio_address(struct mcfg_entry *entry);
+
 // PCI configuration space offset masks and shifts
 #define PCI_BUS_SHIFT      20  // Shift for the PCI bus number in the MMIO address
 #define PCI_DEVICE_SHIFT   15  // Shift for the PCI device number in the MMIO address
@@ -231,7 +232,7 @@ static inline uint32_t pci_read32(int32_t bus, int32_t device, int32_t function,
     return *address;
 }
 
-static inline void pci_write32(int bus, int device, int function, uint32_t offset, uint32_t value) {
+static inline void pci_write32(int32_t bus, int32_t device, int32_t function, uint32_t offset, uint32_t value) {
     struct pci_bus_information info = get_pci_info();
 
     volatile uint32_t *address = (uint32_t *) ((uintptr_t) info.pci_mmio_address +
