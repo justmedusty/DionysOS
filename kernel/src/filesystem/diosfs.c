@@ -693,7 +693,7 @@ static uint64_t diosfs_symlink_check(struct diosfs_filesystem_context *fs, struc
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
-    uint8_t temp_buffer[DIOSFS_BLOCKSIZE] = {0};
+    char *temp_buffer = kzmalloc(PAGE_SIZE);
     diosfs_read_block_by_number(inode.blocks[0], temp_buffer, fs, 0, DIOSFS_BLOCKSIZE);
     struct vnode *link = vnode_lookup(temp_buffer);
 
@@ -715,7 +715,7 @@ static struct vnode *diosfs_follow_link(struct diosfs_filesystem_context *fs, co
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
 
-    uint8_t temp_buffer[DIOSFS_BLOCKSIZE] = {0};
+    char *temp_buffer = kzmalloc(PAGE_SIZE);
     diosfs_read_block_by_number(inode.blocks[0], temp_buffer, fs, 0, DIOSFS_BLOCKSIZE);
     struct vnode *link = vnode_lookup(temp_buffer);
     return link;
@@ -937,7 +937,7 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
-    buffer[BYTE(number)] &= ~BIT(bit);
+    buffer[BYTE(number)] &= (uint64_t)~BIT(bit);
     fs->device->device_ops->block_device_ops->block_write(block * fs->superblock->block_size + 0,
                                                           fs->superblock->block_size, buffer, fs->device);
     kfree(buffer);
