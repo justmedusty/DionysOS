@@ -34,6 +34,7 @@ void madt_init() {
 
     while (1) {
         struct madt_header *header = (struct madt_header *) (madt->table + offset);
+        // this weird break condition at the end is solely because one of my laptops has a zero length header that causes an infinite loop otherwise , lol.
         if (offset > madt->header.len - (sizeof(struct acpi_madt) - 1) || header->len == 0)
             break;
         switch (header->type) {

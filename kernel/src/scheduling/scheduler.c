@@ -157,6 +157,11 @@ void sched_preempt() {
     context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state);
 }
 
+/*
+ * This is naive and should follow the Linux impl of checking a condition occasionally so
+ * you don't end up with the classic sleep on condition but condition already changed before you went to sleep.
+ *  This is fine for now but I'm commenting so it is visible both for others and for me later
+ */
 void sched_sleep(void *sleep_channel) {
     struct process *process = current_process();
     doubly_linked_list_insert_head(&global_sleep_queue, process);
