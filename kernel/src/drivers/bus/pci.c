@@ -11,7 +11,6 @@
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
 #include "include/memory/mem.h"
-
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
  */

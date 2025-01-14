@@ -102,6 +102,8 @@ struct contiguous_page_range contiguous_pages[PAGE_RANGE_SIZE] = {};
  *
  */
 uint64_t highest_address = 0;
+uint64_t highest_user_phys_addr = 0;
+uint64_t lowest_user_phys_addr = UINT64_MAX;
 int phys_init() {
     kprintf("Initializing Physical Memory Manager...\n");
     initlock(&buddy_lock, BUDDY_LOCK);
@@ -226,6 +228,13 @@ int phys_init() {
                 buddy_block_static_pool[index].zone = KERNEL_POOL;
                 kcount++;
             }else {
+                if(lowest_user_phys_addr > (uint64_t )buddy_block_static_pool[index].start_address ){
+                    lowest_user_phys_addr = (uint64_t )buddy_block_static_pool[index].start_address;
+                }
+                if(highest_user_phys_addr < (uint64_t )buddy_block_static_pool[index].start_address + ((1 << MAX_ORDER) * PAGE_SIZE)){
+
+                    highest_user_phys_addr = (uint64_t )buddy_block_static_pool[index].start_address + ((1 << MAX_ORDER) * PAGE_SIZE) ;
+                }
                 tree = &buddy_free_list_zone[USER_POOL];
                 buddy_block_static_pool[index].zone = USER_POOL;
                 ucount++;

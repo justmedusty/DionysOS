@@ -70,6 +70,7 @@ void map_kernel_address_space(p4d_t* pgdir){
      * Just map the entire physical range
      * I will just have 2 trees in the PMM one for user pages one for kernel pages
      */
+
     if (map_pages(pgdir, 0, 0 + (uint64_t*)hhdm_offset, PTE_RW | PTE_NX , highest_address) == -1){
         panic("Mapping address space!");
     }

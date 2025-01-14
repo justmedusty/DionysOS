@@ -25,7 +25,8 @@ extern uint64_t highest_address;
 #define UNUSED 0xFFFFFFFFFFFFFFFFUL
 
 #define DEFAULT_SLAB_SIZE_PAGES 32
-
+extern uint64_t lowest_user_phys_addr;
+extern uint64_t highest_user_phys_addr;
 extern uint64_t hhdm_offset;
 extern uint64_t total_allocated;
 extern uint64_t usable_pages;
