@@ -18,7 +18,7 @@
  *  I will probably change this as time goes on and I get an idea how many collisions this causes
  */
 
-struct singly_linked_list hash_bucket_static_pool[300];
+struct singly_linked_list hash_bucket_static_pool[HASH_TABLE_STATIC_POOL_SIZE];
 uint32_t full = 0;
 /*
  * A simple xor shift hash function. Obviously a non cryptographic hash. Modulus to ensure
@@ -51,7 +51,7 @@ uint64_t hash(uint64_t key, uint64_t modulus) {
  * allocate all of the static pool hash buckets.
  *Init all of the lists
  */
-void hash_table_init(struct hash_table* table, uint64_t size) {
+void static_hash_table_init(struct static_hash_table* table, uint64_t size) {
 
     if (table == NULL) {
         panic("hash_table_init: table is NULL");
@@ -69,7 +69,6 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
         return;
     }
 
-    table =kmalloc(sizeof(struct singly_linked_list) * table->size);
     for (uint64_t i = 0; i < size; i++) {
         singly_linked_list_init(&table->table[i],0);
     }
@@ -80,21 +79,75 @@ void hash_table_init(struct hash_table* table, uint64_t size) {
 /*
  * Free the tables buckets and the entire table
  */
-void hash_table_destroy(struct hash_table* table) {
-    kfree(table->table);
+void static_hash_table_destroy(struct static_hash_table* table) {
+
     kfree(table);
 }
 /*
  * Hashes the passed value, and inserts into the list at the hash index
  */
-void hash_table_insert(struct hash_table* table, uint64_t key, void* data) {
+void static_hash_table_insert(struct static_hash_table* table, uint64_t key, void* data) {
     uint64_t hash_key = hash(key, table->size);
     singly_linked_list_insert_head(&table->table[hash_key], data);
 }
 /*
  * Retrieve a hash bucket based on a key passed
  */
-struct singly_linked_list* hash_table_retrieve(struct hash_table* table, uint64_t hash_key) {
+struct singly_linked_list* static_hash_table_retrieve(struct static_hash_table* table, uint64_t hash_key) {
     struct singly_linked_list* hash_bucket = &table->table[hash_key];
     return hash_bucket;
+}
+
+
+void hash_table_init(struct hash_table *table, uint64_t size) {
+    if (table == NULL) {
+        panic("hash_table_init: table is NULL");
+    }
+
+    table->size = size;
+    table->table = kmalloc(sizeof(struct singly_linked_list) * size);
+    if (table->table == NULL) {
+        panic("hash_table_init: Memory allocation failed");
+    }
+
+    for (uint64_t i = 0; i < size; i++) {
+        singly_linked_list_init(&table->table[i], 0);
+    }
+}
+
+void hash_table_destroy(struct hash_table *table) {
+    if (table == NULL) {
+        return;
+    }
+
+    for (uint64_t i = 0; i < table->size; i++) {
+        singly_linked_list_destroy(&table->table[i]); // Assuming a destroy function exists for cleanup
+    }
+
+    kfree(table->table);
+    kfree(table);
+}
+
+void hash_table_insert(struct hash_table *table, uint64_t key, void *data) {
+    if (table == NULL || table->table == NULL) {
+        panic("hash_table_insert: table is NULL or not initialized");
+        return;
+    }
+
+    uint64_t hash_key = hash(key, table->size);
+    singly_linked_list_insert_head(&table->table[hash_key], data);
+}
+
+struct singly_linked_list *hash_table_retrieve(struct hash_table *table, uint64_t hash_key) {
+    if (table == NULL || table->table == NULL) {
+        panic("hash_table_retrieve: table is NULL or not initialized");
+        return NULL;
+    }
+
+    if (hash_key >= table->size) {
+        panic("hash_table_retrieve: hash_key out of bounds");
+        return NULL;
+    }
+
+    return &table->table[hash_key];
 }

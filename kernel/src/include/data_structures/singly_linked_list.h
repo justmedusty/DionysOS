@@ -37,4 +37,5 @@ void singly_linked_list_insert_head(struct singly_linked_list *list, void *data)
 void *singly_linked_list_remove_tail(struct singly_linked_list *list);
 void *singly_linked_list_remove_head(struct singly_linked_list *list);
 uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* list, void* data);
+void singly_linked_list_destroy(struct singly_linked_list *list); // NOTE if the nodes hold allocated memory it will be leaked! don't call this if there's allocated memory and you only have the one reference!
 #endif

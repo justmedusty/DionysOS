@@ -62,7 +62,7 @@ struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
 
 struct singly_linked_list unused_buddy_blocks_list;
 
-struct hash_table used_buddy_hash_table;
+struct static_hash_table used_buddy_hash_table;
 
 uint64_t highest_page_index = 0;
 uint64_t last_used_index = 0;
@@ -239,7 +239,7 @@ int phys_init() {
     }
     info_printf("Kernel Page Pool Page Count: %i User Page Pool Page Count: %i\n", kcount * 1 << MAX_ORDER, ucount * 1 << MAX_ORDER);
 
-    hash_table_init(&used_buddy_hash_table,BUDDY_HASH_TABLE_SIZE);
+    static_hash_table_init(&used_buddy_hash_table,HASH_TABLE_STATIC_POOL_SIZE);
 
     serial_printf("%i free block objects\n", unused_buddy_blocks_list.node_count);
     highest_page_index = highest_address / PAGE_SIZE;
@@ -417,7 +417,7 @@ static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone) {
                             }
                         }
 
-                        hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
+                        static_hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
                         return block;
                     }
                     //find out where pointers are being manipulated so I can take this out
@@ -432,7 +432,7 @@ static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone) {
                     index++;
                 }
             } else {
-                hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
+                static_hash_table_insert(&used_buddy_hash_table, (uint64_t) block->start_address, block);
                 block->flags &= ~IN_TREE_FLAG;
                 return block;
             }
@@ -450,8 +450,8 @@ static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone) {
  * Once it is found, buddy_coalesce is called, the function returns.
  */
 static void buddy_free(void *address) {
-    struct singly_linked_list *bucket = hash_table_retrieve(&used_buddy_hash_table,
-                                                            hash((uint64_t) address, BUDDY_HASH_TABLE_SIZE));
+    struct singly_linked_list *bucket = static_hash_table_retrieve(&used_buddy_hash_table,
+                                                            hash((uint64_t) address, HASH_TABLE_STATIC_POOL_SIZE));
 
     if (bucket == NULL) {
         panic("Buddy Dealloc: Buddy hash table not found");

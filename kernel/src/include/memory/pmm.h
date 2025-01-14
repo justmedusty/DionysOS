@@ -25,7 +25,6 @@ extern uint64_t highest_address;
 #define UNUSED 0xFFFFFFFFFFFFFFFFUL
 
 #define DEFAULT_SLAB_SIZE_PAGES 32
-#define BUDDY_HASH_TABLE_SIZE 300
 
 extern uint64_t hhdm_offset;
 extern uint64_t total_allocated;

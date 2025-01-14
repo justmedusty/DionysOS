@@ -52,7 +52,6 @@ void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
     list->node_count = 0;
 
 }
-
 static struct singly_linked_list_node *singly_linked_list_node_alloc() {
     acquire_spinlock(&sll_lock);
     struct singly_linked_list_node* new_node = singly_linked_list_remove_head(&free_nodes);
@@ -81,6 +80,19 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
     _kfree(node);
     release_spinlock(&sll_lock);
 }
+//NOTE Do not call this if there is allocated memory to which you only have the one reference! It will be leaked!
+void singly_linked_list_destroy(struct singly_linked_list *list){
+    struct singly_linked_list_node *pointer = list->head;
+    for (size_t i = 0; i < list->node_count; ++i) {
+        if(pointer == NULL){
+            return;
+        }
+        struct singly_linked_list_node *current = pointer;
+        pointer = pointer->next;
+        singly_linked_list_node_free(current);
+    }
+}
+
 void singly_linked_list_insert_tail(struct singly_linked_list* list, void* data) {
     acquire_spinlock(&list->lock);
     struct singly_linked_list_node *new_node;
