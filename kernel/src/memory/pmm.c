@@ -56,6 +56,7 @@ struct spinlock buddy_lock;
 
  /* will just use one zone until it's all allocated then increment the zone pointer */
 struct binary_tree buddy_free_list_zone[2];
+struct singly_linked_list spare_page_list;
 
 struct buddy_block buddy_block_static_pool[STATIC_POOL_SIZE];
 // should be able to handle ~8 GB of memory in 2 << max order size blocks and the rest can be taken from a slab
@@ -108,7 +109,7 @@ int phys_init() {
     kprintf("Initializing Physical Memory Manager...\n");
     initlock(&buddy_lock, BUDDY_LOCK);
     initlock(&pmm_lock, PMM_LOCK);
-
+    singly_linked_list_init(&spare_page_list,0);
     struct limine_memmap_response *memmap = memmap_request.response;
     struct limine_hhdm_response *hhdm = hhdm_request.response;
     struct limine_memmap_entry **entries = memmap->entries;
@@ -178,11 +179,17 @@ int phys_init() {
             /*
              * Safety checks to avoid possibly dishing out invalid memory
              */
-            if (contiguous_pages[i].pages < 1 << MAX_ORDER){
+            if (contiguous_pages[i].pages < (1 << MAX_ORDER)){
+                for(size_t k = 0; i < contiguous_pages[i].pages; k++){
+                    singly_linked_list_insert_head(&spare_page_list,(void *) contiguous_pages[i].start_address + (k * PAGE_SIZE));
+                }
                 continue;
             }
-
-            if((contiguous_pages[i].pages - (j * 1<< MAX_ORDER)) < 1 << MAX_ORDER){
+        //any runoff just collect it as spare pages
+            if((contiguous_pages[i].pages - j) < (1 << MAX_ORDER)){
+                for(size_t k = j; k < contiguous_pages[i].pages; k++){
+                    singly_linked_list_insert_head(&spare_page_list,(void *) contiguous_pages[i].start_address + (k * PAGE_SIZE));
+                }
                 continue;
             }
 
@@ -260,7 +267,7 @@ int phys_init() {
             index++;
         }
     }
-    info_printf("Kernel Page Pool Page Count: %i User Page Pool Page Count: %i\n", kcount * 1 << MAX_ORDER, ucount * 1 << MAX_ORDER);
+    info_printf("Kernel Page Pool Page Count: %i User Page Pool Page Count: %i Spare Page Count : %i\n", kcount * 1 << MAX_ORDER, ucount * 1 << MAX_ORDER,spare_page_list.node_count);
 
     static_hash_table_init(&used_buddy_hash_table,HASH_TABLE_STATIC_POOL_SIZE);
 
