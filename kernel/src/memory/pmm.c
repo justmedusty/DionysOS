@@ -174,6 +174,19 @@ int phys_init() {
             continue;
         }
         for (uint64_t j = 0; j < contiguous_pages[i].pages; j += (1 << MAX_ORDER)) {
+
+            /*
+             * Safety checks to avoid possibly dishing out invalid memory
+             */
+            if (contiguous_pages[i].pages < 1 << MAX_ORDER){
+                continue;
+            }
+
+            if((contiguous_pages[i].pages - (j * 1<< MAX_ORDER)) < 1 << MAX_ORDER){
+                continue;
+            }
+
+
             buddy_block_static_pool[index].start_address = (void *) (
                 contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~(PAGE_SIZE -1));
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
@@ -217,6 +230,7 @@ int phys_init() {
     init_tree(&buddy_free_list_zone[KERNEL_POOL],REGULAR_TREE, 0);
     init_tree(&buddy_free_list_zone[USER_POOL],REGULAR_TREE, 0);
     struct binary_tree *tree;
+
     uint64_t kcount = 0;
     uint64_t ucount = 0;
     for (size_t i = 0; i < page_range_index; i++) {
