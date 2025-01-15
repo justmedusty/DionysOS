@@ -66,24 +66,8 @@ void map_kernel_address_space(p4d_t *pgdir) {
         panic("Mapping data!");
     }
 
-    /*
-     * We are no longer mapping the entire address space into the kernel. Cut out of the physical memory allocated in the user pool in our pmm construct. This will keep the kernel page table leaner.
-     */
-    if (map_pages(pgdir, highest_user_phys_addr,
-                  (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
-                  highest_address - highest_user_phys_addr) == -1) {
-        panic("Mapping address space!");
-    }
-/*
- *  So as memory increases this eventually causes TF or PF so we will need to set up some logic depending on the size of memory. I am not sure why this is happening but I will need to investigate
- *  This appears to work so we will let it be for now. It is strange but if there is more than 4 or so GB phys mem we need to map an extra ~4MB on top of lowest user phys. This likely means I need to take those lower
- *  4MB of user phys out of the user pool.
- */
-
-    uint64_t extra_to_map = ((usable_pages * PAGE_SIZE )>> 30) > 4 ? 0x100000000 : 0;
-
     if (map_pages(pgdir, 0, (uint64_t *) ((uint64_t) 0 + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
-                  lowest_user_phys_addr + extra_to_map) == -1) {
+                  highest_address) == -1) {
         panic("Mapping address space!");
     }
 }
