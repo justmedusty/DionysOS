@@ -23,7 +23,7 @@
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
 
-
+#define FOUR_GB 0x100000000
 p4d_t *global_pg_dir = 0;
 
 void switch_page_table(p4d_t *page_dir) {
@@ -67,13 +67,21 @@ void map_kernel_address_space(p4d_t *pgdir) {
                   PTE_NX | PTE_RW, data_end - data_start) == -1) {
         panic("Mapping data!");
     }
-
+    /*
+     * Map the first 4 GB since there is important stuff there
+     */
     if (map_pages(pgdir, 0, (uint64_t *) ((uint64_t) 0 + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
-                  highest_address) == -1) {
-        panic("Mapping address space!");
+                  FOUR_GB) == -1) {
+        panic("Mapping First four gb!");
     }
 
-
+    /*
+     * Map only the end of user physical memory up to the highest address so the the kernel does not need to map all of user memory
+     */
+    if (map_pages(pgdir, highest_user_phys_addr, (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
+                  highest_address - highest_user_phys_addr) == -1) {
+        panic("Mapping address space!");
+    }
 }
 
 /*

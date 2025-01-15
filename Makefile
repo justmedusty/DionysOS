@@ -14,7 +14,7 @@ define DEFAULT_VAR =
 endef
 DEFAULT_CPU_COUNT := 8
 CPUS := $(shell nproc)
-MEMORY := 4G
+MEMORY := 12G
 
 .PHONY: all
 all: $(IMAGE_NAME).iso
