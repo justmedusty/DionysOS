@@ -56,10 +56,12 @@ void map_kernel_address_space(p4d_t *pgdir) {
         panic("Mapping text!");
     }
 
+
     if (map_pages(pgdir, (uint64_t) (rodata_start - kernel_min) + kernel_phys_min, (uint64_t *) rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1) {
         panic("Mapping rodata!");
     }
+
 
     if (map_pages(pgdir, (uint64_t) (data_start - kernel_min) + kernel_phys_min, (uint64_t *) data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1) {
@@ -70,6 +72,8 @@ void map_kernel_address_space(p4d_t *pgdir) {
                   highest_address) == -1) {
         panic("Mapping address space!");
     }
+
+
 }
 
 /*

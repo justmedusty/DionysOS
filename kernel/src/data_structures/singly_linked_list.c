@@ -23,7 +23,7 @@ struct spinlock sll_lock;
 uint8_t static_pool_setup = 0;
 uint8_t pool_full = 0;
 struct singly_linked_list free_nodes;
-struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE]; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
+struct singly_linked_list_node singly_linked_list_node_static_pool[SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE] = {0}; /* Since data structures needed during phys_init require list nodes and tree nodes, and they cannot be dynamically allocated yet, we need static pools*/
 
 void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
 
@@ -43,6 +43,7 @@ void singly_linked_list_init(struct singly_linked_list* list,uint64_t flags) {
             singly_linked_list_insert_head(&free_nodes, &singly_linked_list_node_static_pool[i]);
 
         }
+
 
     }
 
@@ -72,7 +73,7 @@ static void singly_linked_list_node_free(struct singly_linked_list_node* node) {
         node->flags &= ~STATIC_POOL_FREE_NODE;
         node->data = NULL;
         node->next = NULL;
-        singly_linked_list_insert_tail(&free_nodes, node);
+        singly_linked_list_insert_head(&free_nodes, node);
         release_spinlock(&sll_lock);
         return;
     }

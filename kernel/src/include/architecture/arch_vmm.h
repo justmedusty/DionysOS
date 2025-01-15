@@ -5,10 +5,14 @@
 #pragma once
 #include "include/definitions/types.h"
 #include "include/architecture/arch_paging.h"
-#define USER_SPAN_SIZE (((usable_pages * PAGE_SIZE) / 2) + ((usable_pages * PAGE_SIZE) / 2))
+#define USER_SPAN_SIZE (((highest_address / 2)) + ((highest_address) / 4))
 //walk_page_directory flags , going to ad a flag for debugging
-#define ALLOC 0x1
-#define DEBUG 0x2
+
+enum {
+    ALLOC = 1,
+    DEBUG
+};
+
 
 static void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)" ::"r" (vaddr) : "memory");

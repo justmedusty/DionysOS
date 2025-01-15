@@ -74,7 +74,7 @@ uint64_t hhdm_offset = 0;
 uint64_t page_range_index = 0;
 
 //Need to handle sizing of this better but for now this should be fine statically allocating a semi-arbitrary amount I doubt there will be more than 10 page runs for this
-#define PAGE_RANGE_SIZE 100
+#define PAGE_RANGE_SIZE 20
 struct contiguous_page_range contiguous_pages[PAGE_RANGE_SIZE] = {};
 
 
@@ -163,7 +163,8 @@ int phys_init() {
 
 
     /*
-     *  Set up the buddy blocks which we will use later to replace our bitmap allocation scheme, reason being buddy
+     *  Set up the buddy blocks which we will use
+     *  later to replace our bitmap allocation scheme, reason being buddy
      *  makes for easier contiguous allocation whereas bitmap or freelist can get pretty out-of-order pretty quickly
      *
      */
@@ -171,21 +172,21 @@ int phys_init() {
     size_t index = 0; /* Index into the static buddy block pool */
 
     for (size_t i = 0; i < page_range_index; i++) {
-        if(contiguous_pages[i].pages < 1 << MAX_ORDER){
+
+        if (contiguous_pages[i].pages < (1 << MAX_ORDER)){
+            for(size_t k = 0; k < contiguous_pages[i].pages; k++){
+              singly_linked_list_insert_head(&spare_page_list,(void *) contiguous_pages[i].start_address + (k * PAGE_SIZE));
+            }
             continue;
         }
+
         for (uint64_t j = 0; j < contiguous_pages[i].pages; j += (1 << MAX_ORDER)) {
 
             /*
              * Safety checks to avoid possibly dishing out invalid memory
              */
-            if (contiguous_pages[i].pages < (1 << MAX_ORDER)){
-                for(size_t k = 0; i < contiguous_pages[i].pages; k++){
-                    singly_linked_list_insert_head(&spare_page_list,(void *) contiguous_pages[i].start_address + (k * PAGE_SIZE));
-                }
-                continue;
-            }
-        //any runoff just collect it as spare pages
+
+            //any runoff just collect it as spare pages
             if((contiguous_pages[i].pages - j) < (1 << MAX_ORDER)){
                 for(size_t k = j; k < contiguous_pages[i].pages; k++){
                     singly_linked_list_insert_head(&spare_page_list,(void *) contiguous_pages[i].start_address + (k * PAGE_SIZE));
@@ -197,6 +198,7 @@ int phys_init() {
             buddy_block_static_pool[index].start_address = (void *) (
                 contiguous_pages[i].start_address + (j * (PAGE_SIZE)) & ~(PAGE_SIZE -1));
             buddy_block_static_pool[index].flags = STATIC_POOL_FLAG;
+
             buddy_block_static_pool[index].order = MAX_ORDER;
             buddy_block_static_pool[index].zone = i;
             buddy_block_static_pool[index].is_free = FREE;
@@ -212,15 +214,16 @@ int phys_init() {
                 panic("Phys_init : Static pool size hit"); /* A panic is excessive but it's fine for now*/
             }
         }
+
         buddy_block_static_pool[index - 1].next = &buddy_block_static_pool[index];
         /* Since the logic above will not apply for the last entry putting this here */
     }
-
 
     singly_linked_list_init(&unused_buddy_blocks_list, 0);
     for (uint64_t i = index; i < STATIC_POOL_SIZE; i++) {
         buddy_block_static_pool[i].is_free = FREE;
         buddy_block_static_pool[i].zone = UNUSED;
+
         buddy_block_static_pool[i].next = NULL;
         buddy_block_static_pool[i].zone = UNUSED;
         buddy_block_static_pool[i].start_address = 0;
@@ -252,9 +255,9 @@ int phys_init() {
                 if(lowest_user_phys_addr > (uint64_t )buddy_block_static_pool[index].start_address ){
                     lowest_user_phys_addr = (uint64_t )buddy_block_static_pool[index].start_address;
                 }
-                if(highest_user_phys_addr < (uint64_t )buddy_block_static_pool[index].start_address + ((1 << MAX_ORDER) * PAGE_SIZE)){
+                if(highest_user_phys_addr < (uint64_t )buddy_block_static_pool[index].start_address + (((1 << MAX_ORDER) * PAGE_SIZE))){
 
-                    highest_user_phys_addr = (uint64_t )buddy_block_static_pool[index].start_address + ((1 << MAX_ORDER) * PAGE_SIZE) ;
+                    highest_user_phys_addr = (uint64_t )buddy_block_static_pool[index].start_address + (((1 << MAX_ORDER) * PAGE_SIZE)) ;
                 }
                 tree = &buddy_free_list_zone[USER_POOL];
                 buddy_block_static_pool[index].zone = USER_POOL;
@@ -368,9 +371,14 @@ uint64_t next_power_of_two(uint64_t x) {
  */
 
 static struct buddy_block *buddy_alloc_large_range(uint64_t pages, uint8_t zone) {
+    uint64_t retry_count = 0;
     uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
     struct buddy_block *block = NULL;
 retry:
+    if(retry_count > 500){
+        panic("Cannot allocate a large enough contiguous span of memory!");
+    }
+    retry_count++;
     uint64_t current_blocks = 1;
     block = lookup_tree(&buddy_free_list_zone[zone], MAX_ORDER,REMOVE_FROM_TREE);
     struct buddy_block *pointer = block;

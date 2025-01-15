@@ -30,6 +30,8 @@ extern uint64_t highest_user_phys_addr;
 extern uint64_t hhdm_offset;
 extern uint64_t total_allocated;
 extern uint64_t usable_pages;
+
+extern uint64_t page_range_index;
 int phys_init();
 void *phys_alloc(uint64_t pages,uint8_t zone);
 void phys_dealloc(void *address);
@@ -42,7 +44,7 @@ struct contiguous_page_range {
       uint64_t pages;
       uint64_t reserved;
   };
-
+extern struct contiguous_page_range contiguous_pages[20];
 
 struct buddy_block {
     struct buddy_block *next;

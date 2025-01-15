@@ -49,6 +49,9 @@ void kthread_init() {
      * Create dedicated region, share kernel page table but have their own region for stack
      */
     void *stack = kmalloc(DEFAULT_STACK_SIZE);
+    /*
+     * A lot of the flags here are not actually needed since there is no new mappings
+     */
     struct virtual_region *stack_region = create_region((uint64_t) stack, DEFAULT_STACK_SIZE / PAGE_SIZE, STACK, READWRITE, true);
     attach_region(proc->page_map,stack_region);
     proc->stack =stack;
