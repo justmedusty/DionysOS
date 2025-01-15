@@ -198,13 +198,15 @@ void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list *l
 }
 
 
-void doubly_linked_list_destroy(struct doubly_linked_list* list) {
+void doubly_linked_list_destroy(struct doubly_linked_list* list,bool free_data) {
     if (list == NULL) return;
     acquire_spinlock(&list->lock);
     struct doubly_linked_list_node* current = list->head;
     while (current != NULL) {
         struct doubly_linked_list_node* next = current->next;
-        kfree(current->data);
+        if(free_data){
+            kfree(current->data); // this is really iffy since we do not know what data is so I will put it behind a bool
+        }
         kfree(current);
         current = next;
     }

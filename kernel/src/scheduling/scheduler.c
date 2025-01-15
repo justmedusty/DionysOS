@@ -47,15 +47,19 @@ static void free_process(struct process *process) {
     kfree(process->stack);
 
     kfree(process->current_register_state);
-    doubly_linked_list_destroy(process->handle_list->handle_list);
+    doubly_linked_list_destroy(process->handle_list->handle_list, true);
 
     kfree(process->handle_list);
 
-    if (process->page_map != kernel_pg_map) {
+    if (process->page_map->top_level != kernel_pg_map->top_level) {
         arch_dealloc_page_table(process->page_map->top_level);
         kfree(P2V(process->page_map->top_level)); // we do this because kfree is locked, phys_dealloc is not
-        kfree(process->page_map);
     }
+
+    doubly_linked_list_destroy(process->page_map->vm_regions, true);
+    kfree(process->page_map->vm_regions);
+    kfree(process->page_map);
+
 }
 
 /*
@@ -194,33 +198,33 @@ void sched_wakeup(const void *wakeup_channel) {
  */
 void sched_claim_process() {
     struct cpu *this_cpu = my_cpu();
-        for(size_t i = 0; i < cpus_online; i++){
+    for (size_t i = 0; i < cpus_online; i++) {
 
-            if(cpu_list[i].cpu_id == this_cpu->cpu_id){
-                continue;
-            }
+        if (cpu_list[i].cpu_id == this_cpu->cpu_id) {
+            continue;
+        }
 
-            acquire_spinlock(cpu_list[i].local_run_queue->spinlock);
+        acquire_spinlock(cpu_list[i].local_run_queue->spinlock);
 
-            struct queue *queue = cpu_list[i].local_run_queue;
+        struct queue *queue = cpu_list[i].local_run_queue;
 
-            if(queue->node_count == 0){
-                goto done;
-            }
+        if (queue->node_count == 0) {
+            goto done;
+        }
 
-            if(queue->node_count > 2){
+        if (queue->node_count > 2) {
 
-                enqueue(this_cpu->local_run_queue,queue->tail,queue->tail->priority);
-                this_cpu->local_run_queue->tail = this_cpu->local_run_queue->tail->prev;
-                this_cpu->local_run_queue->node_count--;
-                goto done;
-
-            }
-
-            done:
-            release_spinlock(cpu_list[i].local_run_queue->spinlock);
+            enqueue(this_cpu->local_run_queue, queue->tail, queue->tail->priority);
+            this_cpu->local_run_queue->tail = this_cpu->local_run_queue->tail->prev;
+            this_cpu->local_run_queue->node_count--;
+            goto done;
 
         }
+
+        done:
+        release_spinlock(cpu_list[i].local_run_queue->spinlock);
+
+    }
 }
 
 /*

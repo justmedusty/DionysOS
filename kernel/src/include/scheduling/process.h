@@ -4,6 +4,7 @@
 
 #ifndef _PROCESS_H_
 #define _PROCESS_H_
+
 #include "include/filesystem/vfs.h"
 #include <include/memory/kalloc.h>
 #include "include/architecture/arch_cpu.h"
@@ -26,15 +27,15 @@ enum process_state {
 /*
  *  Process types
  */
+enum process_type {
+    KERNEL_THREAD,
+    USER_THREAD,
+    USER_PROCESS
+};
 
-#define KERNEL_THREAD 0
-#define USER_THREAD 1
-#define USER_PROCESS 2
 
 //16 pages
 #define DEFAULT_STACK_SIZE 0x16000
-
-
 
 struct process {
     uint8_t current_state;
@@ -47,15 +48,15 @@ struct process {
     uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
     uint64_t process_type;
     uint8_t file_descriptors[16];
+    bool inside_kernel;
     void *stack;
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
-    struct virt_map* page_map;
-    struct cpu* current_cpu; /* Which run queue , if any is this process on? */
-    struct register_state* current_register_state;
-    struct vnode* current_working_dir;
+    struct virt_map *page_map;
+    struct cpu *current_cpu; /* Which run queue , if any is this process on? */
+    struct register_state *current_register_state;
+    struct vnode *current_working_dir;
 };
-
 
 
 struct register_state {

@@ -19,27 +19,48 @@
  * Initialize a kthread and add it to the local run-queue
  */
 void kthread_init() {
-    struct process *proc = kmalloc(sizeof(struct process));
-    memset(proc, 0, sizeof(struct process));
+    struct process *proc = kzmalloc(sizeof(struct process));
+
     proc->current_cpu = my_cpu();
+
     proc->current_working_dir = &vfs_root;
+
     vfs_root.vnode_active_references++;
+
     proc->handle_list = kmalloc(sizeof(struct virtual_handle_list));
+
     proc->handle_list->handle_list = kmalloc(sizeof(struct doubly_linked_list));
+
     doubly_linked_list_init(proc->handle_list->handle_list);
+
     proc->handle_list->handle_id_bitmap = 0;
     proc->handle_list->num_handles = 0;
-    proc->page_map = kernel_pg_map;
+
+    struct virt_map *kthread_map = kmalloc(sizeof(struct virt_map));
+    kthread_map->top_level = kernel_pg_map->top_level;
+    proc->page_map = kthread_map;
+
     proc->parent_process_id = 0;
     proc->process_type = KERNEL_THREAD;
     proc->current_register_state = kmalloc(sizeof(struct register_state));
     memset(proc->current_register_state, 0, sizeof(struct register_state));
-    proc->stack = kmalloc(DEFAULT_STACK_SIZE);
 
+    /*
+     * Create dedicated region, share kernel page table but have their own region for stack
+     */
+    void *stack = kmalloc(DEFAULT_STACK_SIZE);
+    struct virtual_region *stack_region = create_region((uint64_t) stack, DEFAULT_STACK_SIZE / PAGE_SIZE, STACK, READWRITE, true);
+    attach_region(proc->page_map,stack_region);
+    proc->stack =stack;
+
+    /*
+     * Set the architecture specific registers ahead of time the stack is set up as well as the instruction pointer
+     * The instruction pointer points to kthread main
+     */
 #ifdef __x86_64__
     proc->current_register_state->rip = (uint64_t) kthread_main; // it's grabbing a junk value if not called from an interrupt so overwriting rip with kthread main
     proc->current_register_state->rsp = (uintptr_t)(proc->stack )+ DEFAULT_STACK_SIZE; /* Allocate a private stack */
-    proc->current_register_state->rbp = proc->current_register_state->rsp - 8; /* Set base pointer to the new stack pointer, -8 for return address*/
+    proc->current_register_state->rbp = proc->current_register_state->rsp - 8; /* Set base pointer to the new stack pointer, -8 for return address */
 #endif
 
     proc->current_register_state->interrupts_enabled = are_interrupts_enabled();

@@ -4,25 +4,34 @@
 #ifndef _VMM_H_
 #define _VMM_H_
 #pragma once
-#include <stdbool.h>
 
+#include <stdbool.h>
+#include "include/architecture/arch_paging.h"
 #include "include/definitions/types.h"
-extern struct virt_map* kernel_pg_map;
+
+extern struct virt_map *kernel_pg_map;
 
 /*
  * x = value, y = align by
  */
 
 #define KERNEL_MEM 0x100000000
-#define DIV_ROUND_UP(x,y) (x + (y -1)) / y
-#define ALIGN_UP(x,y) DIV_ROUND_UP(x,y) * y
-#define ALIGN_DOWN(x,y) (x / y) * y
+#define DIV_ROUND_UP(x, y) (x + (y -1)) / y
+#define ALIGN_UP(x, y) DIV_ROUND_UP(x,y) * y
+#define ALIGN_DOWN(x, y) (x / y) * y
 
 enum region_type {
     STACK,
     HEAP,
     TEXT,
     FILE
+};
+
+enum permissions {
+    READWRITE = PTE_RW,
+    NO_EXECUTE = PTE_NX,
+    USER = PTE_U,
+
 };
 struct virtual_region {
     uint64_t va;
@@ -41,12 +50,17 @@ struct virt_map {
 };
 
 
-
 void arch_kvm_init(p4d_t *pgdir);
+
 void arch_vmm_init();
-struct virtual_region* arch_create_region(const uint64_t start_address, const uint64_t size_pages,uint64_t type,uint64_t perms,bool contiguous);
-void arch_attach_region(struct virt_map *map,struct virtual_region *region);
-void arch_detach_region(struct virt_map *map,struct virtual_region *region);
-void arch_dealloc_page_table(p4d_t* pgdir);
+
+struct virtual_region *
+create_region(uint64_t start_address, uint64_t size_pages, uint64_t type, uint64_t perms, bool contiguous);
+
+void attach_region(struct virt_map *map, struct virtual_region *region);
+
+void detach_region(struct virt_map *map, struct virtual_region *region);
+
+void arch_dealloc_page_table(p4d_t *pgdir);
 
 #endif

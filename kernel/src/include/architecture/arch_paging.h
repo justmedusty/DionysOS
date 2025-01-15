@@ -9,7 +9,7 @@
 #define V2P(addr) (void *)(((uint64_t)addr) - (uint64_t)hhdm_offset)
 
 void arch_paging_init();
-
+#ifdef __x86_64__
 // A virtual address has  5 parts, 6 if we were using 5 level paging structure as follows:
 //
 // +-------9--------+----------9--------+---------9---------+---------9---------+---------12---------+
@@ -60,10 +60,11 @@ extern p4d_t *global_pg_dir;
 #define PTE_U           (uint64_t)0x004UL   // User
 #define PTE_A           (uint64_t)0x020UL  //accessed , for demand paging
 #define PTE_PS          (uint64_t)0x080UL   // Page Size
-#define PTE_NX          (uint64_t) BIT(63UL) // no execute
+#define PTE_NX          (uint64_t) (1UL << 63UL) // no execute
 
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFUL)
 #define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFFUL)
 
+#endif

@@ -25,5 +25,5 @@ void doubly_linked_list_insert_head(struct doubly_linked_list *list, void* data)
 void doubly_linked_list_remove_tail(struct doubly_linked_list* list);
 void doubly_linked_list_remove_head(struct doubly_linked_list* list);
 void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,struct doubly_linked_list_node* node);
-void doubly_linked_list_destroy(struct doubly_linked_list* list);
+void doubly_linked_list_destroy(struct doubly_linked_list* list,bool free_data);
 void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list *list, const void *data);

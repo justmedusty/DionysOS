@@ -67,8 +67,7 @@ void map_kernel_address_space(p4d_t *pgdir) {
     }
 
     /*
-     * Just map the entire physical range
-     * I will just have 2 trees in the PMM one for user pages one for kernel pages
+     * We are no longer mapping the entire address space into the kernel. Cut out of the physical memory allocated in the user pool in our pmm construct. This will keep the kernel page table leaner.
      */
     if (map_pages(pgdir, highest_user_phys_addr,
                   (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
@@ -83,7 +82,6 @@ void map_kernel_address_space(p4d_t *pgdir) {
 
     uint64_t extra_to_map = ((usable_pages * PAGE_SIZE )>> 30) > 4 ? 0x100000000 : 0;
 
-    kprintf("EXTRA TO MAP %x.64 MEMORY GIGS %i",extra_to_map, (usable_pages * PAGE_SIZE )>> 30);
     if (map_pages(pgdir, 0, (uint64_t *) ((uint64_t) 0 + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
                   lowest_user_phys_addr + extra_to_map) == -1) {
         panic("Mapping address space!");

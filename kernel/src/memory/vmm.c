@@ -35,7 +35,8 @@ void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_
  * Creates a virtual memory region , takes size, start, type (stack heap memmap etc) , perms, contiguous (do one big contiguous range or a lot of single page allocs)
  *
  */
-struct virtual_region* arch_create_region(const uint64_t start_address, const uint64_t size_pages, const uint64_t type, const uint64_t perms,const bool contiguous){
+struct virtual_region* create_region(const uint64_t start_address, const uint64_t size_pages, const uint64_t type, const uint64_t perms,const bool contiguous){
+
     struct virtual_region* virtual_region = (struct virtual_region*)kmalloc(sizeof(struct virtual_region));
     virtual_region->va = start_address;
     virtual_region->end_addr = start_address + (size_pages * PAGE_SIZE);
@@ -49,8 +50,21 @@ struct virtual_region* arch_create_region(const uint64_t start_address, const ui
 /*
  * Attach a passed region to a virt map structure. Will map it into memory
  */
-void arch_attach_region(struct virt_map *map,struct virtual_region *region){
+void attach_region(struct virt_map *map,struct virtual_region *region){
+    if(map->vm_regions == NULL){
+        map->vm_regions = kmalloc(sizeof(struct doubly_linked_list));
+        doubly_linked_list_init(map->vm_regions);
+    }
     doubly_linked_list_insert_tail(map->vm_regions,region);
+
+    if(map->top_level == kernel_pg_map->top_level){
+        /*
+         * Kernel thread page maps are shared with the main kernel map aside from having independent stack regions, so we do not want to map anything here
+         * just return.
+         */
+        return;
+    }
+
     if (region->contiguous) {
         /*
          * Using kmalloc and removing the offset because kmalloc is locked phys_alloc is not
@@ -68,7 +82,7 @@ void arch_attach_region(struct virt_map *map,struct virtual_region *region){
 /*
  * detach a passed region to a virt map structure. Will free the region
  */
-void arch_detach_region(struct virt_map *map,struct virtual_region *region){
+void detach_region(struct virt_map *map,struct virtual_region *region){
     doubly_linked_list_remove_node_by_data_address(map->vm_regions,region);
     if (region->contiguous) {
         dealloc_va_range(map->top_level,region->va,region->num_pages);

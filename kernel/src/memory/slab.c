@@ -23,7 +23,7 @@ struct slab slabs[10];
 struct hash_table slab_hash;
 
 void heap_create_slab(struct slab *slab, uint64_t entry_size, uint64_t pages) {
-    slab->first_free = P2V(phys_alloc(pages,KERNEL_POOL));
+    slab->first_free = P2V(phys_alloc(pages,KERNEL_POOL)); // direct calls to phys_alloc are allowed because this is always called inside a locked context
     slab->entry_size = entry_size;
     slab->start_address = slab->first_free;
     slab->end_address = (slab->first_free + (pages * (PAGE_SIZE)));
