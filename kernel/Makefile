@@ -61,7 +61,7 @@ override KCFLAGS += \
     -mno-sse2 \
     -mno-red-zone \
    	-g \
-   	-D_DPS_ \
+   	-D_DFS_ \
    	-D_SERIAL_\
    	-D_CREATE_RAMDISK_\
    	-DMAX_CPUS=32\

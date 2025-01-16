@@ -42,11 +42,12 @@ struct process {
     uint8_t priority;
     uint16_t process_id;
     uint16_t parent_process_id;
-    uint64_t signal; /* This will probably end up being some sort of queue but I will put this here for now */
+    uint64_t signal; /* This will probably end up being some sort of queue, but I will put this here for now */
     uint64_t signal_mask;
     uint64_t time_quantum;
     uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
-    uint64_t process_type;
+    uint8_t process_type;
+    uint64_t start_time;
     uint8_t file_descriptors[16];
     bool inside_kernel;
     void *stack;

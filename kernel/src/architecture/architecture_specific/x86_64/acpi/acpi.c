@@ -88,6 +88,10 @@ void acpi_init() {
         panic("Cannot find mcfg header to set up PCI\n");
     }
 
+
+    struct description_table_header *hpet_header = find_acpi_table("HPET");
+
+
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
     set_pci_mmio_address((struct mcfg_entry *) &mcfg_header->entry);
     pci_enumerate_devices(true);

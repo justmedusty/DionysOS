@@ -146,7 +146,9 @@ void sched_run() {
     cpu->running_process->current_cpu = cpu;
     cpu->running_process->current_state = PROCESS_RUNNING;
     dequeue(cpu->local_run_queue);
+   cpu->running_process->start_time = timer_get_current_count(); // will be used for timekeeping
     context_switch(cpu->scheduler_state, cpu->running_process->current_register_state);
+
 }
 
 /*
@@ -156,6 +158,8 @@ void sched_run() {
 void sched_preempt() {
     struct cpu *cpu = my_cpu();
     struct process *process = cpu->running_process;
+    process->ticks_taken += process->start_time;
+    process->start_time = 0;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
     process->current_state = PROCESS_READY;
     context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state);
@@ -171,6 +175,8 @@ void sched_sleep(void *sleep_channel) {
     doubly_linked_list_insert_head(&global_sleep_queue, process);
     process->sleep_channel = sleep_channel;
     process->current_state = PROCESS_SLEEPING;
+    process->ticks_taken += process->start_time;
+    process->start_time = 0;
     context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state);
 }
 
