@@ -33,6 +33,7 @@ void pit_interrupt() {
 
     //Do preemption stuff, only count ticks on processor 0
     lapic_eoi();
+
 }
 /*
  * Get the current internal PIT ticks, you need to read the low and high byte and concat to a short and return

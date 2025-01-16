@@ -51,6 +51,7 @@ enum register_offsets {
 #define HPET_TN_INT_ENB_CNF_MASK 0x0000000000000004
 #define HPET_TN_INT_TYPE_CNF_MASK 0x0000000000000002
 
+extern struct hpet hpet;
 struct address_structure {
     uint8_t address_space_id;
     uint8_t register_bit_width;

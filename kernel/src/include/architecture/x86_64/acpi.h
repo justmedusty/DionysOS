@@ -4,7 +4,7 @@
 
 #pragma once
 #include "include/definitions/types.h"
-
+#include "include/architecture/x86_64/hpet.h"
 struct acpi_rsdp{
     int8_t signature[8];
     uint8_t checksum;
@@ -68,6 +68,7 @@ struct description_table_header {
     uint32_t oem_revision;
     uint32_t creator_id;
     uint32_t creator_revision;
+    struct hpet hpet[];
 } __attribute__((packed));
 
 

@@ -94,8 +94,11 @@ void acpi_init() {
 
     struct description_table_header *hpet_header = find_acpi_table("HPET");
 
-    if(!hpet_header){
-        info_printf("No HPET found!\n");
+    if(hpet_header){
+        info_printf("Using HPET Timer\n");
+        hpet = hpet_header->hpet[0];
+
+
     }
 
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
