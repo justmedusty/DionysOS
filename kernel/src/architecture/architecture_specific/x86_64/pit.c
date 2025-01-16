@@ -10,7 +10,7 @@
 #include "include/architecture/arch_local_interrupt_controller.h"
 
 static uint64_t pit_ticks = 0;
-
+bool use_pit = true;
 /*
  * The timer interrupt for the x86 PIT timer.
  * Only the BSP will be interrupted, after which it will invoke a broadcast interrupt after incrementing the tick counter.

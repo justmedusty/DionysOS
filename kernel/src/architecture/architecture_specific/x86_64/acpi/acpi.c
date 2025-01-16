@@ -85,12 +85,18 @@ void acpi_init() {
     struct mcfg_header *mcfg_header = (struct mcfg_header *) find_acpi_table("MCFG");
 
     if (!mcfg_header) {
+        /*
+         * this shoots a legacy machine in the face but that is okay
+         */
         panic("Cannot find mcfg header to set up PCI\n");
     }
 
 
     struct description_table_header *hpet_header = find_acpi_table("HPET");
 
+    if(!hpet_header){
+        info_printf("No HPET found!\n");
+    }
 
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
     set_pci_mmio_address((struct mcfg_entry *) &mcfg_header->entry);
