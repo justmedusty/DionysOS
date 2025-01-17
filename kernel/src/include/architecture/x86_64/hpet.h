@@ -52,26 +52,7 @@ enum register_offsets {
 #define HPET_TN_INT_TYPE_CNF_MASK 0x0000000000000002
 
 extern struct hpet hpet;
-struct address_structure {
-    uint8_t address_space_id;
-    uint8_t register_bit_width;
-    uint8_t register_bit_offset;
-    uint8_t reserved;
-    uint64_t address;
-} __attribute__((packed));
 
+void hpet_initialize_and_enable_interrupts(uint64_t hz);
 
-
-struct hpet {
-    uint8_t hardware_rev_id;
-    uint8_t comparator_count: 5;
-    uint8_t counter_size: 1;
-    uint8_t reserved: 1;
-    uint8_t legacy_replacement: 1;
-    uint16_t pci_vendor_id;
-    struct address_structure address;
-    uint8_t hpet_number;
-    uint16_t minimum_tick;
-    uint8_t page_protection;
-} __attribute__((packed));
 #endif //KERNEL_HPET_H

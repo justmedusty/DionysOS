@@ -9,7 +9,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 
-static uint64_t pit_ticks = 0;
+uint64_t timer_ticks = 0;
 bool use_pit = true;
 /*
  * The timer interrupt for the x86 PIT timer.
@@ -18,9 +18,9 @@ bool use_pit = true;
  * Later this will also do scheduler preemption and the like.
  */
 
-void pit_interrupt() {
+void x86_timer_interrupt() {
     if(my_cpu()->cpu_id == 0) {
-        pit_ticks++;
+        timer_ticks++;
         lapic_broadcast_interrupt(32 + 0 /* Broadcast IPI to all other processes so they can do their own preemption checks or panic checks */);
     }
 
@@ -45,12 +45,7 @@ uint16_t pit_get_current_count() {
     return (uint16_t) high << 8 | low;
 }
 
-/*
- *  Get current pit ticks
- */
-uint64_t get_pit_ticks() {
-    return pit_ticks;
-}
+
 
 /*
  * Set the PIT frequency (in HZ)
@@ -78,7 +73,7 @@ void pit_set_reload_value(uint16_t new_reload_value) {
  */
 void pit_init() {
     pit_set_freq(18);
-    irq_register(0,pit_interrupt);
+    irq_register(0,x86_timer_interrupt);
     serial_printf("Timer inititialized\n");
 }
 
@@ -86,8 +81,8 @@ void pit_init() {
  * Sleep until x Pit ticks have passed
  */
 void pit_sleep(uint64_t ms) {
-    uint64_t start = pit_ticks;
-    while ((pit_ticks - start) < ms) {
+    uint64_t start = timer_ticks;
+    while ((timer_ticks - start) < ms) {
         asm volatile("nop");
     }
 }

@@ -11,6 +11,7 @@
 #include "include/drivers/bus/pci.h"
 #include "include/architecture/x86_64/madt.h"
 #include "limine.h"
+#include "include/architecture/x86_64/pit.h"
 
 __attribute__((used, section(".requests")))
 static volatile struct limine_rsdp_request rsdp_request = {
@@ -95,10 +96,11 @@ void acpi_init() {
     struct description_table_header *hpet_header = find_acpi_table("HPET");
 
     if(hpet_header){
-        info_printf("Using HPET Timer\n");
+
         hpet = hpet_header->hpet[0];
-
-
+        info_printf("Using HPET Timer\n");
+        info_printf("Base Address of HEPT : %x.32\n",hpet.address.address);
+        use_pit = false;
     }
 
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));

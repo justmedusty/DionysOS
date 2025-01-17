@@ -6,17 +6,13 @@
 
 #include "include/architecture/x86_64/pit.h"
 #include "stdint.h"
+#include "include/architecture/x86_64/hpet.h"
 
 /*
  *  We can use function pointers instead of branches but this is okay for now.
  */
 uint16_t timer_get_current_count() {
-    if (use_pit) {
-        return get_pit_ticks();
-    } else {
-
-    }
-
+   return timer_ticks;
 }
 
 void timer_set_frequency_hz(uint64_t freq) {
@@ -29,11 +25,11 @@ void timer_set_frequency_hz(uint64_t freq) {
 
 }
 
-void timer_init() {
+void timer_init(uint64_t hz) {
     if (use_pit) {
         pit_init();
     } else {
-
+        hpet_initialize_and_enable_interrupts(hz);
     }
 }
 
