@@ -9,7 +9,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 
-uint64_t timer_ticks = 0;
+volatile uint64_t timer_ticks = 0;
 bool use_pit = true;
 /*
  * The timer interrupt for the x86 PIT timer.
@@ -74,7 +74,7 @@ void pit_set_reload_value(uint16_t new_reload_value) {
 void pit_init() {
     pit_set_freq(18);
     irq_register(0,x86_timer_interrupt);
-    serial_printf("Timer inititialized\n");
+    serial_printf("HPET initialized\n");
 }
 
 /*

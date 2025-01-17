@@ -20,7 +20,7 @@ enum register_offsets {
 
 // Macros for Timer N registers, where N is the timer number (0, 1, 2, ...)
 #define TIMER_N_CONFIG_CAPABILITY(N) (0x100 + 0x20 * (N))
-#define TIMER_N_COMPARATOR_VALUE(N) (0x108 + 0x20 * (N))
+#define TIMER_N_COMPARATOR_VALUE(N) (timer_n_comparator_value + 0x20 * (N))
 #define TIMER_N_FSB_INTERRUPT_ROUTE(N) (0x110 + 0x20 * (N))
 
 // Bit masks for General Capabilities and ID Register

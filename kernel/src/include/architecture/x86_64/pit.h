@@ -13,7 +13,7 @@
 #define CMD 0x43
 
 extern bool use_pit;
-extern uint64_t timer_ticks;
+extern volatile uint64_t timer_ticks;
 void x86_timer_interrupt();
 void pit_init();
 void pit_sleep(uint64_t ms);

@@ -101,6 +101,7 @@ void acpi_init() {
         info_printf("Using HPET Timer\n");
         info_printf("Base Address of HEPT : %x.32\n",hpet.address.address);
         use_pit = false;
+
     }
 
     serial_printf("Number of MCFG entries : %i\n",NUM_MCFG_ENTRIES(mcfg_header));
