@@ -63,7 +63,7 @@ void kernel_bootstrap() {
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
-    timer_init(20);
+    timer_init(1000);
     info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
                 (usable_pages * (PAGE_SIZE / 1024)) / 1024);
     kprintf_color(CYAN, "Kernel Boot Complete\n");

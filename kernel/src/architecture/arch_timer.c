@@ -12,7 +12,7 @@
  *  We can use function pointers instead of branches but this is okay for now.
  */
 uint16_t timer_get_current_count() {
-   return timer_ticks;
+    return timer_ticks;
 }
 
 void timer_set_frequency_hz(uint64_t freq) {
@@ -43,13 +43,7 @@ void timer_set_reload_value(uint16_t value) {
 }
 
 void timer_sleep(uint16_t millis) {
-    if (use_pit) {
-        pit_sleep(millis);
-    } else {
-
-    }
-
-
+    pit_sleep(millis);
 }
 
 #endif

@@ -25,7 +25,8 @@ void hpet_init() {
     address = (uint64_t) P2V(hpet.address.address);
 
     uint64_t config = hpet_read(general_config);
-    config &= ~HPET_ENABLE_CNF_MASK;
+    config |= HPET_ENABLE_CNF_MASK;
+    config |= HPET_LEG_RT_CNF_MASK;
     hpet_write(general_config, config);
 
 
