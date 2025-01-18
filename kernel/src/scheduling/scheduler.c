@@ -100,7 +100,7 @@ void sched_init() {
 /*
  * Infinite loop so when we jump back into the scheduler from a task exit or preempt, it will continually attempt to run tasks over and over again
  */
-void scheduler_main(void) {
+_Noreturn void scheduler_main(void) {
     for (;;) {
         sched_run();
     }
@@ -165,7 +165,6 @@ void sched_preempt() {
     enqueue(my_cpu()->local_run_queue, process, process->priority);
     process->current_state = PROCESS_READY;
     context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state);
-
 }
 
 /*
@@ -261,14 +260,10 @@ static void purge_dead_processes() {
     const struct singly_linked_list_node *node = dead_processes.head;
     while (node != NULL) {
         struct process *p = node->data;
-        /*
-         * Only purge processes from your own local queue!
-         */
-        if(p->current_cpu->cpu_id == current_cpu->cpu_id){
-            free_process(node->data);
-            singly_linked_list_remove_head(&dead_processes);
-            node = dead_processes.head;
-        }
+
+        free_process(node->data);
+        singly_linked_list_remove_head(&dead_processes);
+        node = dead_processes.head;
 
     }
     release_spinlock(&purge_lock);
