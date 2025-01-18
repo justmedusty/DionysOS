@@ -40,12 +40,14 @@ enum process_type {
 struct process {
     uint8_t current_state;
     uint8_t priority;
+    uint8_t effective_priority; // Going to use a base priority and an effective priority similar to the real and effective uid idea in linux so that you can promote processes who are being passed over.
     uint16_t process_id;
     uint16_t parent_process_id;
     uint64_t signal; /* This will probably end up being some sort of queue, but I will put this here for now */
     uint64_t signal_mask;
     uint64_t time_quantum;
-    uint64_t ticks_taken; /* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
+    uint64_t ticks_taken;
+    uint64_t ticks_slept;/* How many timer ticks has this process ran ? Will inherently be somewhat approximate since it won't know half ticks, quarter ticks etc*/
     uint8_t process_type;
     uint64_t start_time;
     uint8_t file_descriptors[16];

@@ -365,8 +365,7 @@ void kprintf(char *str, ...) {
 /*
  * It doesn't QUITE belong here but the others are here and it makes it easier to put it in the same header file.
  */
-char *sprintf(char *str, ...) {
-    char *buffer = kmalloc(SPRINTF_MAX_LEN * 2);
+void sprintf(char *buffer, char *str, ...) {
     uint64_t index = 0;
     va_list args;
     va_start(args, str);
@@ -425,10 +424,6 @@ char *sprintf(char *str, ...) {
 
                     }
 
-                    if(index > SPRINTF_MAX_LEN){
-                        kfree(buffer);
-                        return NULL;
-                    }
                     break;
                 }
 
@@ -438,11 +433,6 @@ char *sprintf(char *str, ...) {
                     uint64_t len = strlen(value);
                     memcpy(&buffer[index], value, len);
                     index += len;
-
-                    if(index > SPRINTF_MAX_LEN){
-                        kfree(buffer);
-                        return NULL;
-                    }
 
                     break;
                 }
@@ -468,10 +458,6 @@ char *sprintf(char *str, ...) {
                         buffer[index++] = num_buffer[--i_index];
                     }
 
-                    if(index > SPRINTF_MAX_LEN){
-                        kfree(buffer);
-                        return NULL;
-                    }
 
                     break;
                 }
@@ -483,20 +469,9 @@ char *sprintf(char *str, ...) {
         }
         str++;
 
-        if(index > SPRINTF_MAX_LEN){
-            kfree(buffer);
-            return NULL;
-        }
     }
 
     va_end(args);
-
-
-    uint64_t len = strlen(buffer);
-    char *final = kmalloc(len);
-    strcpy(final,buffer);
-    kfree(buffer);
-    return final;
 }
 
 /*

@@ -145,10 +145,12 @@ void sched_run() {
     cpu->running_process = cpu->local_run_queue->head->data;
     cpu->running_process->current_cpu = cpu;
     cpu->running_process->current_state = PROCESS_RUNNING;
-    dequeue(cpu->local_run_queue);
-   cpu->running_process->start_time = timer_get_current_count(); // will be used for timekeeping
-    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state);
 
+    dequeue(cpu->local_run_queue);
+    cpu->running_process->start_time = timer_get_current_count(); // will be used for timekeeping
+
+
+    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state);
 }
 
 /*
@@ -163,6 +165,7 @@ void sched_preempt() {
     enqueue(my_cpu()->local_run_queue, process, process->priority);
     process->current_state = PROCESS_READY;
     context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state);
+
 }
 
 /*
@@ -176,7 +179,7 @@ void sched_sleep(void *sleep_channel) {
     process->sleep_channel = sleep_channel;
     process->current_state = PROCESS_SLEEPING;
     process->ticks_taken += process->start_time;
-    process->start_time = 0;
+    process->start_time = timer_get_current_count();
     context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state);
 }
 
@@ -192,6 +195,8 @@ void sched_wakeup(const void *wakeup_channel) {
 
         if (process->sleep_channel == wakeup_channel) {
             process->sleep_channel = 0;
+            process->ticks_slept += process->start_time;
+            process->start_time = 0;
             doubly_linked_list_remove_node_by_address(&global_sleep_queue, node);
         }
         node = node->next;
@@ -200,7 +205,7 @@ void sched_wakeup(const void *wakeup_channel) {
 };
 
 /*
- * Under construction
+ * Attempts to steal a process from a rival processor, only bother stealing if a run-queue is longer than 2 nodes
  */
 void sched_claim_process() {
     struct cpu *this_cpu = my_cpu();
@@ -248,15 +253,23 @@ void sched_exit() {
  * Purge dead processes from the dead list, this will not be kept if I decide to add the posix wait() functionality
  */
 static void purge_dead_processes() {
+    struct cpu *current_cpu = my_cpu();
     if (dead_processes.node_count == 0) {
         return;
     }
     acquire_spinlock(&purge_lock);
     const struct singly_linked_list_node *node = dead_processes.head;
     while (node != NULL) {
-        free_process(node->data);
-        singly_linked_list_remove_head(&dead_processes);
-        node = dead_processes.head;
+        struct process *p = node->data;
+        /*
+         * Only purge processes from your own local queue!
+         */
+        if(p->current_cpu->cpu_id == current_cpu->cpu_id){
+            free_process(node->data);
+            singly_linked_list_remove_head(&dead_processes);
+            node = dead_processes.head;
+        }
+
     }
     release_spinlock(&purge_lock);
 }
@@ -280,3 +293,17 @@ static void look_for_process() {
     release_spinlock(&sched_global_lock);
 }
 
+//#ifdef _DPS_
+static void promote_processes() {
+    struct cpu *cpu = my_cpu();
+    struct queue *local_runqueue = cpu->local_run_queue;
+    acquire_spinlock(local_runqueue->spinlock);
+    struct queue_node *current = local_runqueue->head;
+
+    if (current == NULL) {
+        release_spinlock(local_runqueue->spinlock);
+        return;
+    }
+
+}
+//#endif
