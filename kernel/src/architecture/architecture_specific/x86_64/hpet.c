@@ -6,6 +6,7 @@
 #include "include/architecture/x86_64/acpi.h"
 #include "include/architecture/x86_64/idt.h"
 #include "include/architecture/x86_64/pit.h"
+#include "include/drivers/serial/uart.h"
 
 struct hpet hpet;
 
@@ -58,9 +59,10 @@ void hpet_initialize_and_enable_interrupts(uint64_t hz) {
     //To get the HZ value we will take 1 second worth of femto-seconds (10^15) and divide by the period of the timer, then by the passed number
     uint64_t second = 1000000000000000 / period;
     uint64_t counter_value = second / hz;
-    hpet_configure_timer(0, HPET_TN_INT_ENB_CNF_MASK | HPET_TN_VAL_SET_CNF_MASK | HPET_ENABLE_CNF_MASK | HPET_TN_INT_ROUTE_CNF_MASK | HPET_TN_TYPE_CNF_MASK);
+    hpet_configure_timer(0, HPET_TN_INT_ENB_CNF_MASK | HPET_TN_VAL_SET_CNF_MASK  | HPET_TN_TYPE_CNF_MASK);
 
     hpet_write_main_counter(0);
     hpet_set_comparator(0, counter_value);
     irq_register(0, x86_timer_interrupt);
+    serial_printf("HPET Initialized\n");
 }

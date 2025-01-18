@@ -72,9 +72,9 @@ void pit_set_reload_value(uint16_t new_reload_value) {
  * Init the PIT timer to 18HZ, and register it at IRQ 0, passing a pointer to the pit_intterupt function to be called on interrupt
  */
 void pit_init() {
-    pit_set_freq(18);
+    pit_set_freq(1000);
     irq_register(0,x86_timer_interrupt);
-    serial_printf("HPET initialized\n");
+    serial_printf("PIT initialized\n");
 }
 
 /*
