@@ -23,67 +23,66 @@ void debug_exception() {
 
 // Exception 2: Non-Maskable Interrupt
 void nmi_interrupt() {
-    serial_printf("Non-Maskable Interrupt Occurred\n");
-    asm("hlt");
+    panic("Non-Maskable Interrupt Occurred\n");
+    
 }
 
 // Exception 3: Breakpoint
 void breakpoint() {
-    serial_printf("Breakpoint Occurred\n");
+    panic("Breakpoint Occurred\n");
 }
 
 // Exception 4: Overflow
 void overflow() {
-    serial_printf("Overflow Occurred\n");
-    asm("hlt");
+    panic("Overflow Occurred\n");
+    
 }
 
 // Exception 5: Bounds Check
 void bounds_check() {
-    serial_printf("Bounds Check Exception Occurred\n");
+    panic("Bounds Check Exception Occurred\n");
 }
 
 // Exception 6: Illegal Opcode
 void illegal_opcode() {
-    serial_printf("Illegal Opcode Exception Occurred\n");
-    asm("hlt");
+    panic("Illegal Opcode Exception Occurred\n");
+    
 }
 
 // Exception 7: Device Not Available
 void device_not_available() {
-    serial_printf("Device Not Available Exception Occurred\n");
-    asm("hlt");
+    panic("Device Not Available Exception Occurred\n");
+    
 }
 
 // Exception 8: Double Fault
 void double_fault() {
-    serial_printf("Double Fault Occurred\n");
-    asm("hlt");
+    panic("Double Fault Occurred\n");
+    
 }
 
 // Exception 10: Invalid Task Switch Segment
 void invalid_tss() {
-    serial_printf("Invalid Task Switch Segment Occurred\n");
-    asm("hlt");
+    panic("Invalid Task Switch Segment Occurred\n");
+    
 }
 
 // Exception 11: Segment Not Present
 void segment_not_present() {
-    serial_printf("Segment Not Present Exception Occurred\n");
-    asm("hlt");
+    panic("Segment Not Present Exception Occurred\n");
+    
 }
 
 // Exception 12: Stack Exception
 void stack_exception() {
-    serial_printf("Stack Exception Occurred\n");
-    asm("hlt");
+    panic("Stack Exception Occurred\n");
+    
 }
 
 // Exception 13: General Protection Fault
 void general_protection_fault(int32_t error_code) {
     err_printf("Error Code %i\n",error_code);
     panic("General Protection Fault Occurred");
-    asm("hlt");
 }
 
 // Exception 14: Page Fault
@@ -96,24 +95,23 @@ void page_fault() {
 
 // Exception 16: Floating Point Error
 void floating_point_error() {
-    serial_printf("Floating Point Error Occurred\n");
-    asm("hlt");
+    panic("Floating Point Error Occurred\n");
 }
 
 // Exception 17: Alignment Check
 void alignment_check() {
-    serial_printf("Alignment Check Occurred\n");
-    asm("hlt");
+    panic("Alignment Check Occurred\n");
+    
 }
 
 // Exception 18: Machine Check
 void machine_check() {
-    serial_printf("Machine Check Occurred\n");
-    asm("hlt");
+    panic("Machine Check Occurred\n");
+    
 }
 
 // Exception 19: SIMD Floating Point Error
 void simd_floating_point_error() {
-    serial_printf("SIMD Floating Point Error Occurred\n");
-    asm("hlt");
+    panic("SIMD Floating Point Error Occurred\n");
+    
 }

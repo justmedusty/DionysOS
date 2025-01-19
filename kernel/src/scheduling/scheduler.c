@@ -28,8 +28,8 @@ struct doubly_linked_list global_sleep_queue;
 
 struct spinlock sched_global_lock;
 struct spinlock sched_sleep_lock;
-struct spinlock purge_lock;
-struct singly_linked_list dead_processes;
+struct spinlock purge_lock[MAX_CPUS];
+struct singly_linked_list dead_processes[MAX_CPUS];
 
 static void purge_dead_processes();
 
@@ -67,9 +67,17 @@ static void free_process(struct process *process) {
  */
 void sched_init() {
     kprintf("Initializing Scheduler...\n");
-    singly_linked_list_init(&dead_processes, 0);
+
+    for(size_t i = 0; i <= cpus_online; i++ ){
+        singly_linked_list_init(&dead_processes[i], 0);
+    }
+
     initlock(&sched_global_lock, sched_LOCK);
-    initlock(&purge_lock, sched_LOCK);
+
+    for(size_t i = 0; i <= cpus_online; i++ ){
+        initlock(&purge_lock[i], sched_LOCK);
+    }
+
     initlock(&sched_sleep_lock, sched_LOCK);
     doubly_linked_list_init(&global_sleep_queue);
     for (uint32_t i = 0; i < cpu_count; i++) {
@@ -243,7 +251,7 @@ void sched_claim_process() {
 void sched_exit() {
     struct cpu *cpu = my_cpu();
     struct process *process = cpu->running_process;
-    singly_linked_list_insert_head(&dead_processes, process);
+    singly_linked_list_insert_head(&dead_processes[cpu->cpu_id], process);
     my_cpu()->running_process = NULL;
     context_switch(process->current_register_state, cpu->scheduler_state);
 }
@@ -253,20 +261,20 @@ void sched_exit() {
  */
 static void purge_dead_processes() {
     struct cpu *current_cpu = my_cpu();
-    if (dead_processes.node_count == 0) {
+    if (dead_processes[current_cpu->cpu_id].node_count == 0) {
         return;
     }
-    acquire_spinlock(&purge_lock);
-    const struct singly_linked_list_node *node = dead_processes.head;
+    acquire_spinlock(&purge_lock[current_cpu->cpu_id]);
+    const struct singly_linked_list_node *node = dead_processes[current_cpu->cpu_id].head;
     while (node != NULL) {
         struct process *p = node->data;
 
         free_process(node->data);
-        singly_linked_list_remove_head(&dead_processes);
-        node = dead_processes.head;
+        singly_linked_list_remove_head(&dead_processes[current_cpu->cpu_id]);
+        node = dead_processes[current_cpu->cpu_id].head;
 
     }
-    release_spinlock(&purge_lock);
+    release_spinlock(&purge_lock[current_cpu->cpu_id]);
 }
 
 /*

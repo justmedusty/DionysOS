@@ -77,12 +77,4 @@ void pit_init() {
     serial_printf("PIT initialized\n");
 }
 
-/*
- * Sleep until x Pit ticks have passed
- */
-void pit_sleep(uint64_t ms) {
-    uint64_t start = timer_ticks;
-    while ((timer_ticks - start) < ms) {
-        asm volatile("nop");
-    }
-}
+

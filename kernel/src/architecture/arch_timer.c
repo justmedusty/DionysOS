@@ -43,7 +43,9 @@ void timer_set_reload_value(uint16_t value) {
 }
 
 void timer_sleep(uint16_t millis) {
-    pit_sleep(millis);
+    uint64_t start = timer_ticks;
+    while ((timer_ticks - start) < millis);
 }
+
 
 #endif
