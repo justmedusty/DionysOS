@@ -457,7 +457,7 @@ struct nvme_queue {
 struct nvme_device {
     struct device *device;             // Pointer to the associated device
     struct doubly_linked_list *node;        // Linked list node for device list
-    struct nvme_queue *queue;      // Pointer to an array of NVMe queue pointers
+    struct nvme_queue **queues;      // Pointer to an array of NVMe queue pointers
     volatile uint32_t *doorbells;        // Pointer to doorbell registers
     int device_instance;                 // Instance identifier of the device
     unsigned int total_queues;           // Total number of queues
@@ -467,7 +467,7 @@ struct nvme_device {
     uint32_t doorbell_stride;            // Stride between doorbell registers
     uint32_t controller_config;          // Controller configuration
     struct nvme_bar *bar;                // Pointer to Base Address Register (BAR) structure
-    struct nvme_namespace namespace;     // Linked list of namespaces
+    struct doubly_linked_list namespaces;     // Linked list of namespaces
     char vendor_id[8];                   // Vendor identifier
     char serial_number[20];              // Serial number
     char model_number[40];               // Model number
