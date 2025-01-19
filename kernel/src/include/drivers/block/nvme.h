@@ -428,9 +428,9 @@ enum nvme_queue_id {
 };
 
 struct nvme_namespace {
-    struct doubly_linked_list list;       // Linked listfor maintaining a list of namespaces.
+    struct doubly_linked_list list;       // Linked list for maintaining a list of namespaces.
     struct nvme_device *device;           // Pointer to the associated NVMe device.
-    unsigned int namespace_id;            // Identifier for the namespace.
+    uint32_t namespace_id;            // Identifier for the namespace.
     uint8_t eui64[8];                     // Extended Unique Identifier (EUI-64) for the namespace.
     int device_number;                    // Device number assigned to the namespace.
     int logical_block_address_shift;      // Shift value for calculating logical block address size.
@@ -450,14 +450,14 @@ struct nvme_queue {
     uint16_t qid;                      // Queue identifier
     uint8_t cq_phase;                  // Completion queue phase bit
     uint8_t cqe_seen;                  // Indicates if a CQE was seen
-    unsigned long cmdid_data[];        // Command ID data array
+    uint32_t cmdid_data[];        // Command ID data array
 };
 
 /* Represents an NVM Express device. Each nvme_dev is a PCI function. */
 struct nvme_device {
     struct device *device;             // Pointer to the associated device
     struct doubly_linked_list *node;        // Linked list node for device list
-    struct nvme_queue **queue_list;      // Pointer to an array of NVMe queue pointers
+    struct nvme_queue *queue;      // Pointer to an array of NVMe queue pointers
     volatile uint32_t *doorbells;        // Pointer to doorbell registers
     int device_instance;                 // Instance identifier of the device
     unsigned int total_queues;           // Total number of queues
@@ -467,7 +467,7 @@ struct nvme_device {
     uint32_t doorbell_stride;            // Stride between doorbell registers
     uint32_t controller_config;          // Controller configuration
     struct nvme_bar *bar;                // Pointer to Base Address Register (BAR) structure
-    struct doubly_linked_list *namespace_list;     // Linked list of namespaces
+    struct nvme_namespace namespace;     // Linked list of namespaces
     char vendor_id[8];                   // Vendor identifier
     char serial_number[20];              // Serial number
     char model_number[40];               // Model number
