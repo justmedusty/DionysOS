@@ -8,7 +8,12 @@
 #include <stdint.h>
 #include "include/data_structures/doubly_linked_list.h"
 
-
+#define NVME_QUEUE_DEPTH 2
+#define ADMIN_TIMEOUT 60
+#define IO_TIMEOUT 30
+#define MAX_PRP_POOL 512
+#define NVME_CQ_SIZE(depth) (depth * sizeof(struct nvme_command))
+#define NVME_SQ_SIZE(depth) (depth * sizeof(struct nvme_command))
 enum {
     // Generic Command Statuses
     NVME_SC_CMDID_CONFLICT = 0x3,   // Command identifier conflict
@@ -438,10 +443,10 @@ struct nvme_namespace {
 };
 // Struct representing an NVMe queue
 struct nvme_queue {
-    struct nvme_dev *dev;              // Associated NVMe device
+    struct nvme_device *dev;              // Associated NVMe device
     struct nvme_command *sq_cmds;      // Submission queue commands
     struct nvme_completion *cqes;      // Completion queue entries
-    uint32_t *q_db;                    // Doorbell register
+    volatile uint32_t *q_db;                    // Doorbell register
     uint16_t q_depth;                  // Queue depth
     int16_t cq_vector;                 // Completion queue interrupt vector
     uint16_t sq_head;                  // Submission queue head pointer
