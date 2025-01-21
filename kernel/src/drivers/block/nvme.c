@@ -146,10 +146,6 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
 
 }
 
-static int32_t
-nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *command, uint32_t *result) {
-
-}
 
 /*
  * Submit a command to the controllers submission queue, handle wraparound if the queue goes beyond the depth
@@ -309,6 +305,13 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     return status; // Return the status of the command
 }
 
+/*
+ * Submit a command in the admin queue, the timeouts are meant to be us not ms but for now I don't care this is fine
+ */
+static int32_t
+nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *command, uint32_t *result) {
+    return nvme_submit_sync_command(nvme_device->queues[NVME_ADMIN_Q], command, result, ADMIN_TIMEOUT);
+}
 
 static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
 
@@ -344,8 +347,39 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     nvme_dev->active_queues++;
 }
 
+/*
+ * Send an admin command to delete a queue
+ */
+static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, uint16_t id) {
+
+    struct nvme_command command;
+    memset(&command, 0, sizeof(command));
+    command.delete_queue.opcode = opcode;
+    command.delete_queue.qid = id;
+
+    return nvme_submit_admin_command(nvme_dev, &command, NULL);
+
+
+}
+
+/*
+ * Deletes a submission queue of the passed id on the passed nvme device
+ */
+static int32_t nvme_delete_submission_queue(struct nvme_device *nvme_dev, uint16_t submission_queue_id) {
+    return nvme_delete_queue(nvme_dev, NVME_ADMIN_OPCODE_CREATE_SQ, submission_queue_id);
+}
+
+/*
+ * Deletes a completion queue of the passed id on the passed nvme device
+ */
+static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16_t completion_queue_id) {
+    return nvme_delete_queue(nvme_dev, NVME_ADMIN_OPCODE_DELETE_CQ, completion_queue_id);
+}
+
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
-                      uint64_t dma_address);
+                      uint64_t dma_address) {
+
+}
 
 int32_t nvme_init(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
