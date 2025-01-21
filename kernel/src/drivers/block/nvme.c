@@ -2,6 +2,7 @@
 // Created by dustyn on 9/17/24.
 //
 
+#include <limits.h>
 #include "include/drivers/block/nvme.h"
 #include "include/device/device.h"
 #include "include/memory/mem.h"
@@ -20,6 +21,9 @@ static uint64_t nvme_write_raw_block(struct device *dev, uint64_t block_number, 
 
 }
 
+/*
+ * Wait for the NVMe device to either be enabled or disabled on a 500 millis timeout
+ */
 static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     uint32_t bit = enabled ? NVME_CSTS_RDY : 0;
     int32_t timeout_millis;
@@ -40,6 +44,44 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
 
 }
 
+/*
+ * Allocate a new nvme queue and attach it to the nvme device we have attached,
+ *
+ */
+static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t queue_id, int32_t depth) {
+    struct nvme_ops *ops;
+    struct nvme_queue *queue = kzmalloc(sizeof(struct nvme_queue));
+
+    queue->cqes = kzmalloc(PAGE_SIZE);
+
+    queue->sq_cmds = kzmalloc(PAGE_SIZE);
+
+    queue->dev = nvme_dev;
+
+    queue->cq_head = 0;
+    queue->cq_phase = 1;
+    queue->q_db = &nvme_dev->doorbells[queue_id * 2 * nvme_dev->doorbell_stride];
+
+    queue->q_depth = depth;
+
+    queue->qid = queue_id;
+
+    nvme_dev->active_queues++;
+    nvme_dev->queues[queue_id] = queue;
+
+    ops = (struct nvme_ops *) nvme_dev->device->device_ops;
+
+    if (ops && ops->setup_queue) {
+        ops->setup_queue(queue);
+    }
+
+    return queue;
+}
+
+/*
+ * Enable nvme controller
+ * returns KERN_SUCCESS (0) on success, KERN_TIMOUT on failure
+ */
 static int32_t nvme_enable_control(struct nvme_device *nvme_dev) {
 
     nvme_dev->controller_config &= ~NVME_CC_SHN_MASK;
@@ -52,6 +94,10 @@ static int32_t nvme_enable_control(struct nvme_device *nvme_dev) {
 
 }
 
+/*
+ * Disable nvme controller
+ * returns KERN_SUCCESS (0) on success, KERN_TIMOUT on failure
+ */
 static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
 
 
@@ -77,11 +123,24 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     uint64_t device_page_max = NVME_CAP_MPSMAX(capabilities) + 12;
 
     if (page_shift < device_page_min) {
-
+        return KERN_NO_DEVICE;
     }
 
 
     if (page_shift < device_page_max) {
+        page_shift = device_page_max;
+    }
+
+
+    result = nvme_disable_control(nvme_dev);
+
+    if (result < 0) {
+        return result;
+    }
+
+    queue = nvme_dev->queues[NVME_ADMIN_Q];
+
+    if (!queue) {
 
     }
 
@@ -92,9 +151,31 @@ nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *
 
 }
 
-
+/*
+ * Submit a command to the controllers submission queue, handle wraparound if the queue goes beyond the depth
+ */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
 
+    struct nvme_ops *ops;
+
+    uint64_t tail = queue->sq_tail;
+
+    memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
+
+
+    ops = (struct nvme_ops *) queue->dev->device->device_ops->nvme_ops;
+
+    if (ops && ops->submit_cmd) {
+        ops->submit_cmd(queue, command);
+        return;
+    }
+
+    if (++tail == queue->q_depth) {
+        tail = 0;
+    }
+    *queue->q_db = tail;
+
+    queue->sq_tail = tail;
 }
 
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count) {
@@ -111,7 +192,18 @@ nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *physica
 
 }
 
+/*
+ * Read the status index in the completion queue to so we can see what is going on, hopefully no alignment issues but we will see won't we
+ */
 static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index) {
+
+    uint64_t start = (uint64_t) &queue->cqes[0];
+
+    uint64_t stop = start + NVME_CQ_SIZE(
+            queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
+
+    return queue->cqes[index].status;
+
 
 }
 
@@ -126,15 +218,97 @@ int32_t nvme_get_features(struct nvme_device *device, uint64_t feature_id, uint6
 
 }
 
+/*
+ * Just get a command id and wraparound once we hit max
+ */
+static uint16_t nvme_get_command_id() {
+    static uint16_t command_id;
+
+    return command_id < USHRT_MAX ? command_id++ : 0;
+}
+
+/*
+ * Submits a synchronous nvme command to the controller's queue.
+ * Waits for the command to complete or times out after the specified duration.
+ * Handles the wraparound of the completion queue (CQ) head and phase.
+ */
 static int32_t
-nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t result, uint64_t timeout) {
+nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout) {
 
+    struct nvme_ops *ops;
+    uint16_t head = queue->cq_head; // Current head of the completion queue
+    uint16_t phase = queue->cq_phase; // Current phase of the  completion queue
 
+    uint16_t status; // Status of the command
+    uint64_t start_time; // Start time for timeout tracking
+
+    // Assign a unique command ID to the command and handle wraparound if necessary
+    command->common.command_id = nvme_get_command_id();
+
+    // Get the current timer count to track the timeout
+    start_time = timer_get_current_count();
+
+    for (;;) {
+        // Read the status of the command completion
+        status = nvme_read_completion_status(queue, head);
+
+        // Check if the status phase matches the current phase
+        if ((status & 1) == phase) {
+            break;
+        }
+
+        // Check for timeout
+        if (timeout > 0 && (timer_get_current_count() - start_time) >= timeout) {
+            return KERN_TIMEOUT; // Return timeout error if elapsed time exceeds the specified timeout
+        }
+    }
+
+    // Check for custom nvme operations to complete the command
+    ops = queue->dev->device->device_ops->nvme_ops;
+    if (ops && ops->complete_cmd) {
+        ops->complete_cmd(queue, command); // Use the custom operation if available
+    }
+
+    // Shift the status to get the actual status code
+    status >>= 1;
+    if (status) {
+        // Print error details if status indicates an error
+        err_printf("status = %x, phase = %i, head = %i\n", status, phase, head);
+        status = 0;
+
+        // Update the CQ head and phase, wrapping around if necessary
+        if (++head == queue->q_depth) {
+            head = 0;
+            phase = !phase;
+        }
+
+        // Update the  completion queue doorbell with the new head position
+        *(queue->q_db + queue->dev->doorbell_stride) = head;
+        queue->cq_head = head;
+        queue->cq_phase = phase;
+
+        return KERN_IO_ERROR; // Return IO error if status indicates failure
+    }
+
+    // If result pointer is provided, store the command result
+    if (result) {
+        *result = queue->cqes[head].result;
+    }
+
+    // Update the  completion queue  head and phase, wrapping around if necessary
+    if (++head == queue->q_depth) {
+        head = 0;
+        phase = !phase;
+    }
+
+    // Update the  completion queue  doorbell with the new head position
+    *(queue->q_db + queue->dev->doorbell_stride) = head;
+    queue->cq_head = head;
+    queue->cq_phase = phase;
+
+    return status; // Return the status of the command
 }
 
-static struct nvme_queue *nvme_alloc_queue(struct nvme_device *device, int32_t queue_id, int32_t depth) {
-
-}
 
 static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
 

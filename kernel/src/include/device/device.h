@@ -124,6 +124,8 @@ struct device_ops {
         struct network_device_ops *network_device_ops;
 
         struct framebuffer_ops *framebuffer_ops;
+
+        struct nvme_ops *nvme_ops;
     };
 };
 

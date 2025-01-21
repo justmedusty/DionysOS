@@ -417,7 +417,7 @@ struct nvme_bar {
 
 // Struct representing an NVMe completion queue entry
 struct nvme_completion {
-    uint32_t command_specific;  // Command specific information
+    uint32_t result;  // Command specific information
     uint32_t reserved;          // Reserved
     uint16_t sq_head;           // Submission queue head pointer
     uint16_t sq_id;             // Submission queue identifier
