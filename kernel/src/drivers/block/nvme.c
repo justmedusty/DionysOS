@@ -8,12 +8,125 @@
 #include "include/memory/mem.h"
 #include "include/architecture/arch_timer.h"
 
-static uint64_t nvme_read_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
-    struct nvme_device *nvme_dev = dev->device_info;
+static int32_t
+nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout);
+
+
+static int nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
+                           int32_t total_len, uint64_t dma_addr) {
+    uint32_t page_size = nvme_dev->page_size;
+    uint32_t offset = dma_addr & (page_size - 1);
+    uint64_t *prp_pool;
+    int32_t length = total_len;
+    uint32_t i, number_prps;
+    uint32_t prps_per_page = page_size >> 3;
+    uint32_t num_pages;
+
+    length -= (page_size - offset);
+
+    if (length <= 0) {
+        *prp2 = 0;
+        return 0;
+    }
+
+    if (length)
+        dma_addr += (page_size - offset);
+
+    if (length <= page_size) {
+        *prp2 = dma_addr;
+        return 0;
+    }
+
+    number_prps = DIV_ROUND_UP(length, page_size);
+    num_pages = DIV_ROUND_UP(number_prps, prps_per_page);
+
+    if (number_prps > nvme_dev->prp_entry_count) {
+        kfree(nvme_dev->prp_pool);
+        /*
+         * Always increase in increments of pages.  It doesn't waste
+         * much memory and reduces the number of allocations.
+         */
+        nvme_dev->prp_pool = V2P(kzmalloc(num_pages * page_size));
+        if (!nvme_dev->prp_pool) {
+            err_printf("kmalloc prp_pool fail\n");
+            return KERN_NO_MEM;
+        }
+        nvme_dev->prp_entry_count = prps_per_page * num_pages;
+    }
+
+    prp_pool = nvme_dev->prp_pool;
+    i = 0;
+    while (number_prps) {
+        if (i == ((page_size >> 3) - 1)) {
+            *(prp_pool + i) = (uint64_t) prp_pool + page_size;
+            i = 0;
+            prp_pool += page_size;
+        }
+        *(prp_pool + i++) = dma_addr;
+        dma_addr += page_size;
+        number_prps--;
+    }
+    *prp2 = (uint64_t) nvme_dev->prp_pool;
+
+
+    return 0;
+}
+
+static uint64_t
+nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer, bool write) {
+    struct nvme_namespace *ns = dev->device_info;
+    struct nvme_device *nvme_dev = ns->device;
     struct nvme_command command;
     uint32_t status;
 
+    uint64_t prp2;
+    uint64_t total_len = block_count;
+    uint64_t temp_len = total_len;
+    uintptr_t temp_buffer = (uintptr_t) buffer;
 
+    uint64_t slba = block_number;
+    uint16_t lbas = 1 << (nvme_dev->max_transfer_shift - ns->logical_block_address_shift);
+    uint64_t total_lbas = block_count;
+
+
+    command.rw.opcode = write ? nvme_cmd_write : nvme_cmd_read;
+    command.rw.flags = 0;
+    command.rw.nsid = ns->namespace_id;
+    command.rw.control = 0;
+    command.rw.dsmgmt = 0;
+    command.rw.reftag = 0;
+    command.rw.apptag = 0;
+    command.rw.appmask = 0;
+    command.rw.metadata = 0;
+
+    while (total_lbas) {
+        if (total_lbas < lbas) {
+            lbas = (uint16_t) total_lbas;
+            total_lbas = 0;
+        } else {
+            total_lbas -= lbas;
+        }
+
+        if (nvme_setup_prps(nvme_dev, &prp2,
+                            lbas << ns->logical_block_address_shift, temp_buffer)) {
+            return KERN_IO_ERROR;
+        }
+
+        command.rw.slba = slba;
+        slba += lbas;
+        command.rw.length = lbas - 1;
+        command.rw.prp1 = temp_buffer;
+        command.rw.prp2 = prp2;
+        status = nvme_submit_sync_command(nvme_dev->queues[NVME_IO_Q],
+                                          &command, NULL, IO_TIMEOUT);
+        if (status)
+            break;
+        temp_len -= (uint32_t) lbas << ns->logical_block_address_shift;
+        temp_buffer += lbas << ns->logical_block_address_shift;
+    }
+
+
+    return (total_len - temp_len);
 }
 
 
@@ -381,6 +494,16 @@ int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint6
 
 }
 
+static uint64_t
+nvme_read_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
+    return nvme_raw_block(dev, block_number, block_count, buffer, false);
+}
+
+static uint64_t
+nvme_write_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
+    return nvme_raw_block(dev, block_number, block_count, buffer, true);
+}
+
 int32_t nvme_init(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
 
@@ -393,5 +516,12 @@ int32_t nvme_init(struct device *dev) {
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
 
+
+}
+
+int32_t nvme_shutdown(struct device *dev) {
+    struct nvme_device *nvme_dev = dev->device_info;
+
+    return nvme_disable_control(nvme_dev);
 
 }
