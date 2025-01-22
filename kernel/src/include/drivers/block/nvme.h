@@ -117,6 +117,37 @@ enum nvme_admin_opcode {
 };
 
 enum {
+    NVME_QUEUE_PHYS_CONTIG	= (1 << 0),
+    NVME_CQ_IRQ_ENABLED	= (1 << 1),
+    NVME_SQ_PRIO_URGENT	= (0 << 1),
+    NVME_SQ_PRIO_HIGH	= (1 << 1),
+    NVME_SQ_PRIO_MEDIUM	= (2 << 1),
+    NVME_SQ_PRIO_LOW	= (3 << 1),
+    NVME_FEAT_ARBITRATION	= 0x01,
+    NVME_FEAT_POWER_MGMT	= 0x02,
+    NVME_FEAT_LBA_RANGE	= 0x03,
+    NVME_FEAT_TEMP_THRESH	= 0x04,
+    NVME_FEAT_ERR_RECOVERY	= 0x05,
+    NVME_FEAT_VOLATILE_WC	= 0x06,
+    NVME_FEAT_NUM_QUEUES	= 0x07,
+    NVME_FEAT_IRQ_COALESCE	= 0x08,
+    NVME_FEAT_IRQ_CONFIG	= 0x09,
+    NVME_FEAT_WRITE_ATOMIC	= 0x0a,
+    NVME_FEAT_ASYNC_EVENT	= 0x0b,
+    NVME_FEAT_AUTO_PST	= 0x0c,
+    NVME_FEAT_SW_PROGRESS	= 0x80,
+    NVME_FEAT_HOST_ID	= 0x81,
+    NVME_FEAT_RESV_MASK	= 0x82,
+    NVME_FEAT_RESV_PERSIST	= 0x83,
+    NVME_LOG_ERROR		= 0x01,
+    NVME_LOG_SMART		= 0x02,
+    NVME_LOG_FW_SLOT	= 0x03,
+    NVME_LOG_RESERVATION	= 0x80,
+    NVME_FWACT_REPL		= (0 << 3),
+    NVME_FWACT_REPL_ACTV	= (1 << 3),
+    NVME_FWACT_ACTV		= (2 << 3),
+};
+enum {
     NVME_NS_FEATURE_THIN_PROVISIONING = 1 << 0, // Namespace supports thin provisioning
     NVME_NS_FLBAS_LBA_MASK = 0xF,    // LBA format mask
     NVME_NS_FLBAS_METADATA_EXTENDED = 0x10,   // Metadata extended LBA
