@@ -117,39 +117,39 @@ enum nvme_admin_opcode {
 };
 
 enum {
-    NVME_QUEUE_PHYS_CONTIG	= (1 << 0),
-    NVME_CQ_IRQ_ENABLED	= (1 << 1),
-    NVME_SQ_PRIO_URGENT	= (0 << 1),
-    NVME_SQ_PRIO_HIGH	= (1 << 1),
-    NVME_SQ_PRIO_MEDIUM	= (2 << 1),
-    NVME_SQ_PRIO_LOW	= (3 << 1),
-    NVME_FEAT_ARBITRATION	= 0x01,
-    NVME_FEAT_POWER_MGMT	= 0x02,
-    NVME_FEAT_LBA_RANGE	= 0x03,
-    NVME_FEAT_TEMP_THRESH	= 0x04,
-    NVME_FEAT_ERR_RECOVERY	= 0x05,
-    NVME_FEAT_VOLATILE_WC	= 0x06,
-    NVME_FEAT_NUM_QUEUES	= 0x07,
-    NVME_FEAT_IRQ_COALESCE	= 0x08,
-    NVME_FEAT_IRQ_CONFIG	= 0x09,
-    NVME_FEAT_WRITE_ATOMIC	= 0x0a,
-    NVME_FEAT_ASYNC_EVENT	= 0x0b,
-    NVME_FEAT_AUTO_PST	= 0x0c,
-    NVME_FEAT_SW_PROGRESS	= 0x80,
-    NVME_FEAT_HOST_ID	= 0x81,
-    NVME_FEAT_RESV_MASK	= 0x82,
-    NVME_FEAT_RESV_PERSIST	= 0x83,
-    NVME_LOG_ERROR		= 0x01,
-    NVME_LOG_SMART		= 0x02,
-    NVME_LOG_FW_SLOT	= 0x03,
-    NVME_LOG_RESERVATION	= 0x80,
-    NVME_FWACT_REPL		= (0 << 3),
-    NVME_FWACT_REPL_ACTV	= (1 << 3),
-    NVME_FWACT_ACTV		= (2 << 3),
+    NVME_QUEUE_PHYS_CONTIG = (1 << 0),
+    NVME_CQ_IRQ_ENABLED = (1 << 1),
+    NVME_SQ_PRIO_URGENT = (0 << 1),
+    NVME_SQ_PRIO_HIGH = (1 << 1),
+    NVME_SQ_PRIO_MEDIUM = (2 << 1),
+    NVME_SQ_PRIO_LOW = (3 << 1),
+    NVME_FEAT_ARBITRATION = 0x01,
+    NVME_FEAT_POWER_MGMT = 0x02,
+    NVME_FEAT_LBA_RANGE = 0x03,
+    NVME_FEAT_TEMP_THRESH = 0x04,
+    NVME_FEAT_ERR_RECOVERY = 0x05,
+    NVME_FEAT_VOLATILE_WC = 0x06,
+    NVME_FEAT_NUM_QUEUES = 0x07,
+    NVME_FEAT_IRQ_COALESCE = 0x08,
+    NVME_FEAT_IRQ_CONFIG = 0x09,
+    NVME_FEAT_WRITE_ATOMIC = 0x0a,
+    NVME_FEAT_ASYNC_EVENT = 0x0b,
+    NVME_FEAT_AUTO_PST = 0x0c,
+    NVME_FEAT_SW_PROGRESS = 0x80,
+    NVME_FEAT_HOST_ID = 0x81,
+    NVME_FEAT_RESV_MASK = 0x82,
+    NVME_FEAT_RESV_PERSIST = 0x83,
+    NVME_LOG_ERROR = 0x01,
+    NVME_LOG_SMART = 0x02,
+    NVME_LOG_FW_SLOT = 0x03,
+    NVME_LOG_RESERVATION = 0x80,
+    NVME_FWACT_REPL = (0 << 3),
+    NVME_FWACT_REPL_ACTV = (1 << 3),
+    NVME_FWACT_ACTV = (2 << 3),
 };
 enum {
-    NVME_NS_FEATURE_THIN_PROVISIONING = 1 << 0, // Namespace supports thin provisioning
-    NVME_NS_FLBAS_LBA_MASK = 0xF,    // LBA format mask
+    NVME_NS_FEATURE_THIN_PROVISIONING = 1 << 0 // Namespace supports thin provisioning
+    ,    // LBA format mask
     NVME_NS_FLBAS_METADATA_EXTENDED = 0x10,   // Metadata extended LBA
     NVME_LBAF_RELIABILITY_BEST = 0,      // Best reliability level
     NVME_LBAF_RELIABILITY_BETTER = 1,      // Better reliability level
@@ -237,6 +237,211 @@ enum {
     NVME_CSTS_SHST_CMPLT = 2 << 2,  // Shutdown Status: Shutdown completed
     NVME_CSTS_SHST_MASK = 3 << 2,  // Mask for shutdown status
 };
+
+#include <stdint.h>
+
+struct nvme_id_power_state {
+    uint16_t max_power_cw;          /* Max power in centiwatts */
+    uint8_t reserved2;
+    uint8_t flags;
+    uint32_t entry_latency_us;      /* Entry latency in microseconds */
+    uint32_t exit_latency_us;       /* Exit latency in microseconds */
+    uint8_t read_throughput;
+    uint8_t read_latency;
+    uint8_t write_throughput;
+    uint8_t write_latency;
+    uint16_t idle_power;
+    uint8_t idle_power_scale;
+    uint8_t reserved19;
+    uint16_t active_power;
+    uint8_t active_work_scale;
+    uint8_t reserved23[9];
+};
+
+// NVMe Power State Flags
+enum {
+    NVME_PS_FLAGS_MAX_POWER_SCALE = 1 << 0, // Indicates the max power is scaled
+    NVME_PS_FLAGS_NON_OP_STATE = 1 << 1,    // Non-operational state
+};
+
+// NVMe Controller Identification Structure
+struct nvme_id_ctrl {
+    uint16_t vendor_id;                  // Vendor ID
+    uint16_t subsystem_vendor_id;        // Subsystem Vendor ID
+    char serial_number[20];              // Serial Number
+    char model_number[40];               // Model Number
+    char firmware_revision[8];           // Firmware Revision
+    uint8_t recommended_arbitration_burst; // Recommended Arbitration Burst
+    uint8_t ieee_oui[3];                 // IEEE Organizationally Unique Identifier
+    uint8_t max_data_transfer_size;      // Max Data Transfer Size
+    uint8_t max_directive_transfer_size; // Max Directive Transfer Size
+    uint16_t controller_id;              // Controller ID
+    uint32_t version;                    // NVM Express version
+    uint8_t reserved84[172];             // Reserved
+    uint16_t optional_admin_command_support; // Optional Admin Command Support
+    uint8_t abort_command_limit;         // Abort Command Limit
+    uint8_t async_event_request_limit;   // Asynchronous Event Request Limit
+    uint8_t firmware_updates;            // Firmware Updates Support
+    uint8_t log_page_attributes;         // Log Page Attributes
+    uint8_t error_log_page_entries;      // Error Log Page Entries
+    uint8_t num_power_states_supported;  // Number of Power States Supported
+    uint8_t admin_vendor_specific_command_config; // Vendor-specific Admin Command Config
+    uint8_t autonomous_power_state_transition;    // Autonomous Power State Transition Support
+    uint16_t warning_temperature_threshold;       // Warning Temperature Threshold
+    uint16_t critical_temperature_threshold;      // Critical Temperature Threshold
+    uint8_t reserved270[242];            // Reserved
+    uint8_t submission_queue_entry_size; // Submission Queue Entry Size
+    uint8_t completion_queue_entry_size; // Completion Queue Entry Size
+    uint8_t reserved514[2];              // Reserved
+    uint32_t namespace_count;            // Number of Namespaces
+    uint16_t oncs;                       // Optional NVM Command Support
+    uint16_t fuses;                      // Fused Operation Support
+    uint8_t format_nvm_attributes;       // Format NVM Attributes
+    uint8_t volatile_write_cache;        // Volatile Write Cache Support
+    uint16_t atomic_write_unit_normal;   // Atomic Write Unit Normal
+    uint16_t atomic_write_unit_power_fail; // Atomic Write Unit Power Fail
+    uint8_t namespace_capabilities;      // Namespace Capabilities
+    uint8_t reserved531;                 // Reserved
+    uint16_t atomic_compare_and_write_unit; // Atomic Compare and Write Unit
+    uint8_t reserved534[2];              // Reserved
+    uint32_t sgls_support;               // Scatter-Gather List Support
+    uint8_t reserved540[1508];           // Reserved
+    struct nvme_id_power_state power_states[32]; // Power State Descriptors
+    uint8_t vendor_specific[1024];       // Vendor Specific
+};
+
+// NVMe Controller Optional NVM Command Support Flags
+enum {
+    NVME_CTRL_ONCS_COMPARE = 1 << 0,              // Compare Command Supported
+    NVME_CTRL_ONCS_WRITE_UNCORRECTABLE = 1 << 1, // Write Uncorrectable Command Supported
+    NVME_CTRL_ONCS_DSM = 1 << 2,                 // Dataset Management Supported
+    NVME_CTRL_VWC_PRESENT = 1 << 0,              // Volatile Write Cache Present
+};
+
+// LBA Format Description
+struct nvme_lbaf {
+    uint16_t metadata_size;        // Metadata Size (bytes)
+    uint8_t data_size;             // LBA Data Size (log2 of bytes)
+    uint8_t relative_performance;  // Relative Performance Indicator
+};
+
+// Namespace Identification Structure
+struct nvme_id_ns {
+    uint64_t namespace_size;          // Namespace Size (in blocks)
+    uint64_t namespace_capacity;      // Namespace Capacity (in blocks)
+    uint64_t namespace_utilization;   // Namespace Utilization (in blocks)
+    uint8_t namespace_features;       // Namespace Features
+    uint8_t num_lba_formats;          // Number of LBA Formats
+    uint8_t formatted_lba_size;       // Formatted LBA Size
+    uint8_t metadata_capabilities;    // Metadata Capabilities
+    uint8_t data_protection_caps;     // Data Protection Capabilities
+    uint8_t data_protection_settings; // Data Protection Settings
+    uint8_t namespace_multi_path_io_cap; // Multi-path IO and Namespace Sharing Capabilities
+    uint8_t reservation_capabilities; // Reservation Capabilities
+    uint8_t format_progress_indicator; // Format Progress Indicator
+    uint8_t reserved33;               // Reserved
+    uint16_t nawun;                   // Namespace Atomic Write Unit Normal
+    uint16_t nawupf;                  // Namespace Atomic Write Unit Power Fail
+    uint16_t nacwu;                   // Namespace Atomic Compare and Write Unit
+    uint16_t nab_sn;                  // Namespace Atomic Boundary Size Normal
+    uint16_t nab_o;                   // Namespace Atomic Boundary Offset
+    uint16_t nab_spf;                 // Namespace Atomic Boundary Size Power Fail
+    uint16_t reserved46;              // Reserved
+    uint64_t nvm_capacity[2];         // Namespace NVM Capacity
+    uint8_t reserved64[40];           // Reserved
+    uint8_t nguid[16];                // Namespace Globally Unique Identifier
+    uint8_t eui64[8];                 // IEEE Extended Unique Identifier
+    struct nvme_lbaf lba_formats[16]; // LBA Format Support
+    uint8_t reserved192[192];         // Reserved
+    uint8_t vendor_specific[3712];    // Vendor Specific
+};
+
+enum {
+    NVME_NS_FLBAS_LBA_MASK = 0xf,
+    NVME_NS_FLBAS_META_EXT = 0x10,
+    NVME_LBAF_RP_BEST = 0,
+    NVME_LBAF_RP_BETTER = 1,
+    NVME_LBAF_RP_GOOD = 2,
+    NVME_LBAF_RP_DEGRADED = 3,
+    NVME_NS_DPC_PI_LAST = 1 << 4,
+    NVME_NS_DPC_PI_FIRST = 1 << 3,
+    NVME_NS_DPC_PI_TYPE3 = 1 << 2,
+    NVME_NS_DPC_PI_TYPE2 = 1 << 1,
+    NVME_NS_DPC_PI_TYPE1 = 1 << 0,
+    NVME_NS_DPS_PI_FIRST = 1 << 3,
+    NVME_NS_DPS_PI_MASK = 0x7,
+    NVME_NS_DPS_PI_TYPE1 = 1,
+    NVME_NS_DPS_PI_TYPE2 = 2,
+    NVME_NS_DPS_PI_TYPE3 = 3,
+};
+
+struct nvme_smart_log {
+    uint8_t critical_warning;
+    uint16_t temperature;
+    uint8_t available_spare;
+    uint8_t spare_threshold;
+    uint8_t percent_used;
+    uint8_t reserved6[26];
+    uint8_t data_units_read[16];
+    uint8_t data_units_written[16];
+    uint8_t host_reads[16];
+    uint8_t host_writes[16];
+    uint8_t controller_busy_time[16];
+    uint8_t power_cycles[16];
+    uint8_t power_on_hours[16];
+    uint8_t unsafe_shutdowns[16];
+    uint8_t media_errors[16];
+    uint8_t num_error_log_entries[16];
+    uint32_t warning_temp_time;
+    uint32_t critical_comp_time;
+    uint16_t temp_sensor[8];
+    uint8_t reserved216[296];
+};
+
+enum {
+    NVME_SMART_CRIT_SPARE = 1 << 0,
+    NVME_SMART_CRIT_TEMPERATURE = 1 << 1,
+    NVME_SMART_CRIT_RELIABILITY = 1 << 2,
+    NVME_SMART_CRIT_MEDIA = 1 << 3,
+    NVME_SMART_CRIT_VOLATILE_MEMORY = 1 << 4,
+};
+
+struct nvme_lba_range_type {
+    uint8_t type;
+    uint8_t attributes;
+    uint8_t reserved2[14];
+    uint64_t starting_lba;
+    uint64_t num_lba;
+    uint8_t guid[16];
+    uint8_t reserved48[16];
+};
+
+enum {
+    NVME_LBART_TYPE_FS = 0x01,
+    NVME_LBART_TYPE_RAID = 0x02,
+    NVME_LBART_TYPE_CACHE = 0x03,
+    NVME_LBART_TYPE_SWAP = 0x04,
+
+    NVME_LBART_ATTRIB_TEMP = 1 << 0,
+    NVME_LBART_ATTRIB_HIDE = 1 << 1,
+};
+
+struct nvme_reservation_status {
+    uint32_t generation;
+    uint8_t reservation_type;
+    uint8_t registered_controller[2];
+    uint8_t reserved5[2];
+    uint8_t persist_through_power_loss_state;
+    uint8_t reserved10[13];
+    struct {
+        uint16_t controller_id;
+        uint8_t registration_status;
+        uint8_t reserved3[5];
+        uint64_t host_id;
+        uint64_t reservation_key;
+    } registered_controllers[];
+};
+
 
 // Struct representing a common NVMe command
 struct nvme_common_command {
