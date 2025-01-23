@@ -9,16 +9,91 @@
 #include "include/architecture/arch_timer.h"
 
 
-
 static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout);
+
+static uint64_t
+nvme_write_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer);
+
+static uint64_t
+nvme_read_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer);
+
+int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
+                      uint64_t dma_address);
+
+static int32_t nvme_setup_io_queues(struct nvme_device *device);
+
+static int32_t nvme_create_io_queues(struct nvme_device *device);
+
+static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16_t completion_queue_id);
+
+static int32_t nvme_delete_submission_queue(struct nvme_device *nvme_dev, uint16_t submission_queue_id);
+
+static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id);
+
+static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t queue_id,
+                                           struct nvme_queue *queue);
+
+static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t queue_id,
+                                           struct nvme_queue *queue);
+
+static int32_t nvme_delete_cq(struct nvme_device *dev, uint16_t completion_queue_id);
+
+static int32_t nvme_delete_sq(struct nvme_device *dev, uint16_t submission_queue_id);
+
+static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, uint16_t id);
+
+static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id);
+
+static int32_t
+nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *command, uint32_t *result);
+
+static void nvme_free_queues(struct nvme_device *nvme_dev, int32_t lowest);
+
+static void nvme_free_queue(struct nvme_queue *queue);
+
+int32_t nvme_get_features(struct nvme_device *device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
+                          uint32_t *result);
+
+int32_t
+nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
+                  uint32_t *result);
+
+static int32_t
+nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *physical_region_pool, int32_t total_length,
+                                 uint64_t dma_address);
+
+static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count);
+
+
+static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index);
+
+static uint16_t nvme_get_command_id();
+
+static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command);
+
+static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev);
+
+static int32_t nvme_disable_control(struct nvme_device *nvme_dev);
+
+static int32_t nvme_enable_control(struct nvme_device *nvme_dev);
+
+static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t queue_id, int32_t depth);
+
+static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled);
+
+static uint64_t
+nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer, bool write);
+
+static int32_t nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
+                               int32_t total_len, uint64_t dma_addr);
 
 /*
  * sets up prp entries for the given nvme device, handles allocation if needed.
  * fills out physical region pool 2 with the final address or null if not needed.
  */
-static int nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
-                           int32_t total_len, uint64_t dma_addr) {
+static int32_t nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
+                               int32_t total_len, uint64_t dma_addr) {
     uint32_t page_size = nvme_dev->page_size;
     uint32_t offset = dma_addr & (page_size - 1);
     uint64_t *prp_pool;
@@ -143,10 +218,6 @@ nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, 
 }
 
 
-static uint64_t nvme_write_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
-
-}
-
 /*
  * Wait for the NVMe device to either be enabled or disabled on a 500 millis timeout
  */
@@ -203,7 +274,6 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     return queue;
 }
-
 
 
 /*
@@ -434,6 +504,30 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
 }
 
 /*
+ * Frees an individual queue, free the completion queue entries, the submission queue commands, then finally the queue itself
+ */
+static void nvme_free_queue(struct nvme_queue *queue) {
+    kfree(queue->cqes);
+    kfree(queue->sq_cmds);
+    kfree(queue);
+}
+
+/*
+ * Iteratively free queues in the nvme device object
+ */
+static void nvme_free_queues(struct nvme_device *nvme_dev, int32_t lowest) {
+    int32_t i;
+
+    for (i = nvme_dev->active_queues; i >= lowest; i--) {
+        struct nvme_queue *queue = nvme_dev->queues[i];
+        nvme_dev->active_queues--;
+        nvme_dev->queues[i] = NULL; // so we dont have a dangling pointer
+        nvme_free_queue(queue);
+    }
+}
+
+
+/*
  * Submit a command in the admin queue, the timeouts are meant to be us not ms but for now I don't care this is fine
  */
 static int32_t
@@ -442,19 +536,10 @@ nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *
 }
 
 
-
 static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
 
 }
 
-static int32_t nvme_setup_io_queues(struct nvme_device *device) {
-
-}
-
-
-static int32_t nvme_create_io_queues(struct nvme_device *device) {
-
-}
 
 /*
  * Set up an nvme queue, set the submission queue head and tail to 0, set the completion queue phase bit to 1, set the doorbell register, and clear the completion queue entries
@@ -488,25 +573,22 @@ static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, u
 
 }
 
-static int32_t nvme_delete_sq(struct nvme_device *dev, uint16_t submission_queue_id)
-{
+static int32_t nvme_delete_sq(struct nvme_device *dev, uint16_t submission_queue_id) {
     return nvme_delete_queue(dev, NVME_ADMIN_OPCODE_DELETE_SQ, submission_queue_id);
 }
 
-static int32_t nvme_delete_cq(struct nvme_device *dev, uint16_t completion_queue_id)
-{
+static int32_t nvme_delete_cq(struct nvme_device *dev, uint16_t completion_queue_id) {
     return nvme_delete_queue(dev, NVME_ADMIN_OPCODE_DELETE_CQ, completion_queue_id);
 }
 
 static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t queue_id,
-                                           struct nvme_queue *queue)
-{
+                                           struct nvme_queue *queue) {
     struct nvme_command command;
-    int32_t flags =  NVME_QUEUE_PHYS_CONTIG | NVME_CQ_IRQ_ENABLED;
+    int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_CQ_IRQ_ENABLED;
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = ((uint64_t)queue->cqes);
+    command.create_cq.prp1 = ((uint64_t) queue->cqes);
     command.create_cq.cqid = (queue_id);
     command.create_cq.qsize = (queue->q_depth - 1);
     command.create_cq.cq_flags = (flags);
@@ -516,14 +598,13 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 }
 
 static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t queue_id,
-                         struct nvme_queue *queue)
-{
+                                           struct nvme_queue *queue) {
     struct nvme_command command;
-    int32_t flags =  NVME_QUEUE_PHYS_CONTIG | NVME_CQ_IRQ_ENABLED;
+    int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_CQ_IRQ_ENABLED;
 
     memset(&command, 0, sizeof(command));
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
-    command.create_sq.prp1 = ((uint64_t)queue->sq_cmds);
+    command.create_sq.prp1 = ((uint64_t) queue->sq_cmds);
     command.create_sq.sqid = (queue_id);
     command.create_sq.qsize = (queue->q_depth - 1);
     command.create_sq.sq_flags = (flags);
@@ -531,6 +612,7 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
 
     return nvme_submit_admin_command(dev, &command, NULL);
 }
+
 static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
 
     struct nvme_device *dev = queue->dev;
@@ -572,10 +654,46 @@ static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16
     return nvme_delete_queue(nvme_dev, NVME_ADMIN_OPCODE_DELETE_CQ, completion_queue_id);
 }
 
+static int32_t nvme_create_io_queues(struct nvme_device *device) {
+
+    uint32_t i;
+
+    for (i = device->total_queues; i <= device->max_queue_id; i++) {
+        if (!nvme_alloc_queue(device, i, device->queue_depth)) {
+            break;
+        }
+    }
+
+    for (i = device->active_queues; i <= device->total_queues; i++) {
+        if (nvme_create_queue(device->queues[i], i)) {
+            break;
+        }
+    }
+}
+
+static int32_t nvme_setup_io_queues(struct nvme_device *device) {
+
+    int32_t number_io_queues;
+    int32_t result;
+
+    number_io_queues = 1;
+    result = nvme_set_queue_count(device, number_io_queues);
+
+    if (result <= 0) {
+        return result;
+    }
+    //free previously allocated queues
+    nvme_free_queues(device, number_io_queues + 1);
+    nvme_create_io_queues(device);
+
+    return 0;
+}
+
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address) {
 
 }
+
 /*
  * Read and write to/from buffers respectively
  */

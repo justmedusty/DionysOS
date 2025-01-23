@@ -528,6 +528,7 @@ struct nvme_ops {
 // Function prototypes
 int32_t nvme_init(struct device *dev);        // Initialize NVMe device
 int32_t nvme_shutdown(struct device *dev);    // Shutdown NVMe device
+int32_t nvme_scan_namespace();
 
 // Helper macros for NVMe queue and data size
 #define NVME_ADMIN_QUEUE_SIZE 64                // Admin queue size
