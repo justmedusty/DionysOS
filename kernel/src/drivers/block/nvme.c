@@ -263,7 +263,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     queue->qid = queue_id;
 
-    nvme_dev->active_queues++;
+    nvme_dev->total_queues++;
     nvme_dev->queues[queue_id] = queue;
 
     ops = (struct nvme_ops *) nvme_dev->device->device_ops;
@@ -518,9 +518,9 @@ static void nvme_free_queue(struct nvme_queue *queue) {
 static void nvme_free_queues(struct nvme_device *nvme_dev, int32_t lowest) {
     int32_t i;
 
-    for (i = nvme_dev->active_queues; i >= lowest; i--) {
+    for (i = nvme_dev->total_queues; i >= lowest; i--) {
         struct nvme_queue *queue = nvme_dev->queues[i];
-        nvme_dev->active_queues--;
+        nvme_dev->total_queues--;
         nvme_dev->queues[i] = NULL; // so we dont have a dangling pointer
         nvme_free_queue(queue);
     }
@@ -572,15 +572,22 @@ static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, u
 
 
 }
-
+/*
+ * Delete a submission queue
+ */
 static int32_t nvme_delete_sq(struct nvme_device *dev, uint16_t submission_queue_id) {
     return nvme_delete_queue(dev, NVME_ADMIN_OPCODE_DELETE_SQ, submission_queue_id);
 }
-
+/*
+ * Delete a command queue
+ */
 static int32_t nvme_delete_cq(struct nvme_device *dev, uint16_t completion_queue_id) {
     return nvme_delete_queue(dev, NVME_ADMIN_OPCODE_DELETE_CQ, completion_queue_id);
 }
 
+/*
+ * allocates a new completion queue via submission of an admin command
+ */
 static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t queue_id,
                                            struct nvme_queue *queue) {
     struct nvme_command command;
@@ -597,6 +604,9 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
     return nvme_submit_admin_command(dev, &command, NULL);
 }
 
+/*
+ * allocates a new submission queue via submission of an admin command
+ */
 static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t queue_id,
                                            struct nvme_queue *queue) {
     struct nvme_command command;
