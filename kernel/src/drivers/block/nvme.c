@@ -2,6 +2,11 @@
 // Created by dustyn on 9/17/24.
 //
 
+
+/*
+ * It should be noted that I am not including any sort of cache invalidation here which will obviously affect performance and may even cause bugs that I am not aware of
+ * but we will leave that as is unless I am proven to be wrong in making this decison for reasons other than just performance.
+ */
 #include <limits.h>
 #include "include/drivers/block/nvme.h"
 #include "include/device/device.h"
@@ -373,6 +378,22 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 }
 
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count) {
+    int32_t status;
+    uint32_t result;
+    uint32_t queue_count = (count - 1) | ((count - 1) << 16);
+    status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
+
+    if (status < 0) {
+        return status;
+    }
+    if (status > 1) {
+        return KERN_SUCCESS;
+    }
+    if ((result & 0xffff) > (result >> 16)) {
+        return (result >> 16) + 1;
+    }
+    return (result & 0xffff) + 1;
+
 
 }
 
@@ -401,14 +422,45 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
 
 }
 
+/*
+ * Submits a SET_FEATURES admin command with the passed command specific double word
+ */
 int32_t
 nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
                   uint32_t *result) {
+    struct nvme_command command;
+    memset(&command, 0, sizeof(command));
+    int32_t ret;
+
+    command.features.opcode = NVME_ADMIN_OPCODE_SET_FEATURES;
+    command.features.dword11 = double_word11;
+    command.features.prp1 = dma_address;
+    command.features.fid = feature_id;
+
+    ret = nvme_submit_admin_command(nvme_device, &command, result);
+
+    return ret;
 
 }
 
-int32_t nvme_get_features(struct nvme_device *device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
-                          uint32_t *result) {
+/*
+ * Submit a GET_FEATURES admin command
+ */
+int32_t
+nvme_get_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
+                  uint32_t *result) {
+    struct nvme_command command;
+    memset(&command, 0, sizeof(command));
+    int32_t ret;
+
+    command.features.opcode = NVME_ADMIN_OPCODE_GET_FEATURES;
+    command.features.nsid = namespace_id;
+    command.features.prp1 = dma_address;
+    command.features.fid = feature_id;
+
+    ret = nvme_submit_admin_command(nvme_device, &command, result);
+
+    return ret;
 
 }
 
@@ -573,12 +625,14 @@ static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, u
 
 
 }
+
 /*
  * Delete a submission queue
  */
 static int32_t nvme_delete_sq(struct nvme_device *dev, uint16_t submission_queue_id) {
     return nvme_delete_queue(dev, NVME_ADMIN_OPCODE_DELETE_SQ, submission_queue_id);
 }
+
 /*
  * Delete a command queue
  */
@@ -596,11 +650,11 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = ((uint64_t) queue->cqes);
-    command.create_cq.cqid = (queue_id);
-    command.create_cq.qsize = (queue->q_depth - 1);
-    command.create_cq.cq_flags = (flags);
-    command.create_cq.irq_vector = (queue->cq_vector);
+    command.create_cq.prp1 = (uint64_t) queue->cqes;
+    command.create_cq.cqid = queue_id;
+    command.create_cq.qsize = queue->q_depth - 1;
+    command.create_cq.cq_flags = flags;
+    command.create_cq.irq_vector = queue->cq_vector;
 
     return nvme_submit_admin_command(dev, &command, NULL);
 }
@@ -703,6 +757,27 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address) {
 
+    struct nvme_command command;
+    memset(&command, 0, sizeof(command));
+    uint64_t page_size = nvme_dev->page_size;
+    int32_t offset = dma_address & (page_size - 1);
+    int32_t length = sizeof(struct nvme_id_ctrl);
+    int32_t ret;
+
+    command.identify.opcode = NVME_ADMIN_OPCODE_IDENTIFY;
+    command.identify.nsid = namespace_id;
+    command.identify.prp1 = dma_address;
+    length -= (page_size - offset);
+    if (length <= 0) {
+        command.identify.prp2 = 0;
+    } else {
+        dma_address += (page_size - offset);
+    }
+    command.identify.cns = controller_or_namespace_identifier;
+
+    ret = nvme_submit_admin_command(nvme_dev, &command, NULL);
+
+    return ret;
 }
 
 /*
