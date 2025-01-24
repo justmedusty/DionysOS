@@ -64,9 +64,6 @@ int32_t
 nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
                   uint32_t *result);
 
-static int32_t
-nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *physical_region_pool, int32_t total_length,
-                                 uint64_t dma_address);
 
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count);
 
@@ -90,15 +87,15 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled);
 static uint64_t
 nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer, bool write);
 
-static int32_t nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
-                               int32_t total_len, uint64_t dma_addr);
+static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *prp2,
+                                                int32_t total_len, uint64_t dma_addr);
 
 /*
  * sets up prp entries for the given nvme device, handles allocation if needed.
  * fills out physical region pool 2 with the final address or null if not needed.
  */
-static int32_t nvme_setup_prps(struct nvme_device *nvme_dev, uint64_t *prp2,
-                               int32_t total_len, uint64_t dma_addr) {
+static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *prp2,
+                                                int32_t total_len, uint64_t dma_addr) {
     uint32_t page_size = nvme_dev->page_size;
     uint32_t offset = dma_addr & (page_size - 1);
     uint64_t *prp_pool;
@@ -200,8 +197,8 @@ nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, 
             total_lbas -= lbas;
         }
 
-        if (nvme_setup_prps(nvme_dev, &prp2,
-                            lbas << ns->logical_block_address_shift, temp_buffer)) {
+        if (nvme_setup_physical_region_pools(nvme_dev, &prp2,
+                                             lbas << ns->logical_block_address_shift, temp_buffer)) {
             return KERN_IO_ERROR;
         }
 
@@ -399,13 +396,9 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
 
 int32_t nvme_scan_namespace() {
 
-}
-
-static int32_t
-nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *physical_region_pool, int32_t total_length,
-                                 uint64_t dma_address) {
 
 }
+
 
 /*
  * Read the status index in the completion queue to so we can see what is going on, hopefully no alignment issues but we will see won't we
