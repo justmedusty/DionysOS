@@ -12,6 +12,7 @@
 #include "include/device/device.h"
 #include "include/memory/mem.h"
 #include "include/architecture/arch_timer.h"
+#include "include/definitions/string.h"
 
 
 static int32_t
@@ -788,7 +789,8 @@ nvme_write_block(struct device *dev, uint64_t block_number, uint64_t block_count
 
 int32_t nvme_init(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
-
+    struct nvme_id_ns *nsid;
+    int32_t ret;
     nvme_dev->device = dev;
     doubly_linked_list_init(&nvme_dev->namespaces);
 
@@ -797,6 +799,41 @@ int32_t nvme_init(struct device *dev) {
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
+
+    ret = nvme_configure_admin_queue(nvme_dev);
+    if(ret){
+        goto free_queue;
+    }
+    nvme_get_info_from_identify(nvme_dev);
+
+    nsid = kzmalloc(sizeof(struct nvme_id_ns));
+
+    for (int32_t i = 1; i <= nvme_dev->namespace_count; i++){
+        struct device *namespace_device;
+        char name[20];
+
+        if(nvme_identify(nvme_dev, i, 0, (uint64_t) nsid)) {
+            ret = KERN_IO_ERROR;
+            goto free_id;
+        }
+
+        if(!nsid->namespace_size){
+            //if this ns size is 0 continue
+            continue;
+        }
+
+        sprintf(name,"blockdev#%i",i);
+
+
+        insert_device_into_kernel_tree(namespace_device);
+    }
+
+
+
+
+    free_queue:
+    free_nvme:
+    free_id:
 
 
 }

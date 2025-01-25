@@ -9,7 +9,7 @@
 #include "include/drivers/bus/pci.h"
 
 #define DEVICE_GROUP_SIZE 32
-
+#define DEVICE_NAME_LEN 30
 #define NUM_DEVICE_MAJOR_CLASSIFICATIONS 11
 
 enum major {
