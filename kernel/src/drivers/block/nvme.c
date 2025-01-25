@@ -311,6 +311,9 @@ static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
 
 }
 
+/*
+ * Setup the admin queue
+ */
 static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
 
     int32_t result;
@@ -342,9 +345,47 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     queue = nvme_dev->queues[NVME_ADMIN_Q];
 
     if (!queue) {
-
+        nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
+        if (!queue) {
+            panic("NVMe : Cannot allocate admin queue");
+        }
     }
 
+    aqa = queue->q_depth - 1;
+
+    aqa |= aqa << 16;
+    //Set up the device page_size with the page_size value derived above
+    nvme_dev->page_size = 1 << page_shift;
+    nvme_dev->controller_config = NVME_CC_CSS_NVM;
+    // Set the Controller Configuration to use NVM Command Set.
+    nvme_dev->controller_config |= (page_shift - 12) << NVME_CC_MPS_SHIFT;
+    // Configure the memory page size (MPS) based on page_shift. Shifts by 12 because the MPS is expressed as a power of 2 in the spec.
+    nvme_dev->controller_config |= NVME_CC_ARB_RR | NVME_CC_SHN_NONE;
+    // Set arbitration method to Round Robin (RR) and configure shutdown notification (SHN) to 'None'.
+    nvme_dev->controller_config |= NVME_CC_IOSQES | NVME_CC_IOCQES;
+    // Specify the sizes of I/O Submission and Completion Queue Entries.
+    nvme_dev->bar->admin_queue_attrs = aqa;
+    // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
+    nvme_write_q((uint64_t) queue->sq_cmds, &nvme_dev->bar->admin_sq_base_addr);
+    // Write the physical base address of the Admin Submission Queue to its Base Address Register.
+    nvme_write_q((uint64_t) queue->cqes, &nvme_dev->bar->admin_cq_base_addr);
+    // Write the physical base address of the Admin Completion Queue to its Base Address Register.
+
+
+    result = nvme_enable_control(nvme_dev);
+    if (result)
+        goto free_queue;
+
+    queue->cq_vector = 0;
+
+    nvme_init_queue(nvme_dev->queues[NVME_ADMIN_Q], 0);
+
+    return result;
+
+    free_queue:
+    nvme_free_queues(nvme_dev, 0);
+
+    return result;
 }
 
 
@@ -801,34 +842,33 @@ int32_t nvme_init(struct device *dev) {
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
-    if(ret){
+    if (ret) {
         goto free_queue;
     }
     nvme_get_info_from_identify(nvme_dev);
 
     nsid = kzmalloc(sizeof(struct nvme_id_ns));
 
-    for (int32_t i = 1; i <= nvme_dev->namespace_count; i++){
+    for (int32_t i = 1; i <= nvme_dev->namespace_count; i++) {
         struct device *namespace_device;
         char name[20];
 
-        if(nvme_identify(nvme_dev, i, 0, (uint64_t) nsid)) {
+        if (nvme_identify(nvme_dev, i, 0, (uint64_t) nsid)) {
             ret = KERN_IO_ERROR;
             goto free_id;
         }
 
-        if(!nsid->namespace_size){
+        if (!nsid->namespace_size) {
             //if this ns size is 0 continue
             continue;
         }
 
-        sprintf(name,"blockdev#%i",i);
+        sprintf(name, "blockdev#%i", i);
+
 
 
         insert_device_into_kernel_tree(namespace_device);
     }
-
-
 
 
     free_queue:
