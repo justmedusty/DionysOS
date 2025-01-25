@@ -11,6 +11,8 @@
 
 struct binary_tree system_device_tree;
 
+uint64_t device_minor_map[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {0};
+
 const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
         [DEVICE_MAJOR_NETWORK_CARD] = "NETWORK_CARD",
         [DEVICE_MAJOR_SSD] = "SSD",
@@ -105,6 +107,13 @@ struct device *query_device(const uint64_t device_major, const uint64_t device_m
 
 void create_device(struct device *device, uint64_t device_major, char *name, struct device_ops *device_ops,
                          void *device_info, struct device *parent) {
+    if(device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS){
+        /*
+         * This is an extremist response but that is fine because it shouldnt ever happen anyway and if something causes it
+         * to happen I want visibility above all else, later I can change this to a kernel log call.
+         */
+        panic("Bad device major passed");
+    }
     device->device_major = device_major;
     safe_strcpy(device->name, name, DEVICE_NAME_LEN);
     device->name[DEVICE_NAME_LEN + 1] = '\0'; // just in case there was any fuckery going on with the passed buffer

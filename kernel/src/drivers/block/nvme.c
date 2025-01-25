@@ -92,6 +92,26 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
                                                 int32_t total_len, uint64_t dma_addr);
 
 /*
+ * Not completed yet will need to make some abstracted functions to use this
+ */
+struct nvme_ops nvme_ops = {
+        .submit_cmd = nvme_submit_command,
+        .complete_cmd = NULL,
+        .setup_queue = NULL,
+};
+
+struct device_ops nvme_device_ops = {
+        .nvme_ops = &nvme_ops,
+        .shutdown = NULL,
+        .reset = NULL,
+        .get_status = NULL,
+        .init = NULL,
+        .configure = NULL,
+
+};
+
+
+/*
  * sets up prp entries for the given nvme device, handles allocation if needed.
  * fills out physical region pool 2 with the final address or null if not needed.
  */
@@ -864,16 +884,23 @@ int32_t nvme_init(struct device *dev) {
         }
 
         sprintf(name, "blockdev#%i", i);
-
+        namespace_device = kzmalloc(sizeof(struct device));
+        create_device(namespace_device, DEVICE_MAJOR_SSD, name, &nvme_device_ops, nvme_dev, NULL);
 
 
         insert_device_into_kernel_tree(namespace_device);
     }
 
+    kfree(nsid);
+    return KERN_SUCCESS;
 
-    free_queue:
-    free_nvme:
     free_id:
+    kfree(nsid);
+    free_queue:
+    kfree(nvme_dev->queues);
+
+    return KERN_IO_ERROR; // does io make sense ? maybe,  but placeholder for now
+
 
 
 }

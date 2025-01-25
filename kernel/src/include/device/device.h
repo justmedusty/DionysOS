@@ -5,6 +5,7 @@
 #ifndef DIONYSOS_DEVICE_H
 #define DIONYSOS_DEVICE_H
 #pragma once
+
 #include <stddef.h>
 #include "include/drivers/bus/pci.h"
 
@@ -131,7 +132,11 @@ struct device_ops {
 
 void init_system_device_tree();
 
+void create_device(struct device *device, uint64_t device_major, char *name, struct device_ops *device_ops,
+                   void *device_info, struct device *parent);
+
 void insert_device_into_kernel_tree(struct device *device);
 
 struct device *query_device(uint64_t device_major, uint64_t device_minor);
+
 #endif //DIONYSOS_DEVICE_H
