@@ -95,18 +95,18 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
  * Not completed yet will need to make some abstracted functions to use this
  */
 struct nvme_ops nvme_ops = {
-        .submit_cmd = nvme_submit_command,
-        .complete_cmd = NULL,
-        .setup_queue = NULL,
+    .submit_cmd = nvme_submit_command,
+    .complete_cmd = NULL,
+    .setup_queue = NULL,
 };
 
 struct device_ops nvme_device_ops = {
-        .nvme_ops = &nvme_ops,
-        .shutdown = NULL,
-        .reset = NULL,
-        .get_status = NULL,
-        .init = NULL,
-        .configure = NULL,
+    .nvme_ops = &nvme_ops,
+    .shutdown = NULL,
+    .reset = NULL,
+    .get_status = NULL,
+    .init = NULL,
+    .configure = NULL,
 
 };
 
@@ -121,9 +121,8 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
     uint32_t offset = dma_addr & (page_size - 1);
     uint64_t *prp_pool;
     int32_t length = total_len;
-    uint32_t i, number_prps;
+    uint32_t i;
     uint32_t prps_per_page = page_size >> 3;
-    uint32_t num_pages;
 
     length -= (page_size - offset);
 
@@ -140,8 +139,8 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
         return 0;
     }
 
-    number_prps = DIV_ROUND_UP(length, page_size);
-    num_pages = DIV_ROUND_UP(number_prps, prps_per_page);
+    uint32_t number_prps = DIV_ROUND_UP(length, page_size);
+    const uint32_t num_pages = DIV_ROUND_UP(number_prps, prps_per_page);
 
     if (number_prps > nvme_dev->prp_entry_count) {
         kfree(nvme_dev->prp_pool);
@@ -187,7 +186,7 @@ static uint64_t
 nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer, bool write) {
     struct nvme_namespace *ns = dev->device_info;
     struct nvme_device *nvme_dev = ns->device;
-    struct nvme_command command;
+    struct nvme_command command = {0};
     uint32_t status;
 
     uint64_t prp2;
@@ -201,14 +200,7 @@ nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, 
 
 
     command.rw.opcode = write ? nvme_cmd_write : nvme_cmd_read;
-    command.rw.flags = 0;
     command.rw.nsid = ns->namespace_id;
-    command.rw.control = 0;
-    command.rw.dsmgmt = 0;
-    command.rw.reftag = 0;
-    command.rw.apptag = 0;
-    command.rw.appmask = 0;
-    command.rw.metadata = 0;
 
     while (total_lbas) {
         if (total_lbas < lbas) {
@@ -246,13 +238,10 @@ nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, 
  */
 static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     uint32_t bit = enabled ? NVME_CSTS_RDY : 0;
-    int32_t timeout_millis;
 
-    int64_t start;
+    int32_t timeout_millis = NVME_CAP_TIMEOUT(nvme_dev->capabilities) * 500;
 
-    timeout_millis = NVME_CAP_TIMEOUT(nvme_dev->capabilities) * 500;
-
-    start = timer_get_current_count();
+    const int64_t start = timer_get_current_count();
 
     while (timer_get_current_count() - start < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
@@ -261,7 +250,6 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     }
 
     return KERN_TIMEOUT;
-
 }
 
 /*
@@ -304,15 +292,12 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
  * returns KERN_SUCCESS (0) on success, KERN_TIMOUT on failure
  */
 static int32_t nvme_enable_control(struct nvme_device *nvme_dev) {
-
     nvme_dev->controller_config &= ~NVME_CC_SHN_MASK;
     nvme_dev->controller_config |= NVME_CC_ENABLE;
 
     nvme_dev->bar->controller_config = nvme_dev->controller_config;
 
     return nvme_wait_ready(nvme_dev, true);
-
-
 }
 
 /*
@@ -320,27 +305,20 @@ static int32_t nvme_enable_control(struct nvme_device *nvme_dev) {
  * returns KERN_SUCCESS (0) on success, KERN_TIMOUT on failure
  */
 static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
-
-
     nvme_dev->controller_config &= ~NVME_CC_SHN_MASK;
     nvme_dev->controller_config &= ~NVME_CC_ENABLE;
 
     nvme_dev->bar->controller_config = nvme_dev->controller_config;
 
     return nvme_wait_ready(nvme_dev, false);
-
 }
 
 /*
  * Setup the admin queue
  */
 static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
-
-    int32_t result;
     uint32_t aqa;
     uint64_t capabilities = nvme_dev->capabilities;
-
-    struct nvme_queue *queue;
 
     uint64_t page_shift = 12;
     uint64_t device_page_min = NVME_CAP_MPSMIN(capabilities) + 12;
@@ -356,13 +334,13 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     }
 
 
-    result = nvme_disable_control(nvme_dev);
+    int32_t result = nvme_disable_control(nvme_dev);
 
     if (result < 0) {
         return result;
     }
 
-    queue = nvme_dev->queues[NVME_ADMIN_Q];
+    struct nvme_queue *queue = nvme_dev->queues[NVME_ADMIN_Q];
 
     if (!queue) {
         nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
@@ -402,7 +380,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
 
     return result;
 
-    free_queue:
+free_queue:
     nvme_free_queues(nvme_dev, 0);
 
     return result;
@@ -413,7 +391,6 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
  * Submit a command to the controllers submission queue, handle wraparound if the queue goes beyond the depth
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
-
     struct nvme_ops *ops;
 
     uint64_t tail = queue->sq_tail;
@@ -436,11 +413,19 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     queue->sq_tail = tail;
 }
 
+/*
+ *  Sets the queue count for the nvme device passed
+ *
+ *  If the status is negative just return the error,
+ *
+ *  If status is above 1 just return the result (result is the number you set the count to)
+ *  otherwise return the maximum amount supported by the controller.
+ *  This could be in the upper or lower 16 bits depending on the configuration
+ */
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count) {
-    int32_t status;
     uint32_t result;
-    uint32_t queue_count = (count - 1) | ((count - 1) << 16);
-    status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
+    const uint32_t queue_count = (count - 1) | ((count - 1) << 16);
+    const int32_t status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
 
     if (status < 0) {
         return status;
@@ -452,13 +437,9 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
         return (result >> 16) + 1;
     }
     return (result & 0xffff) + 1;
-
-
 }
 
 int32_t nvme_scan_namespace() {
-
-
 }
 
 
@@ -466,15 +447,12 @@ int32_t nvme_scan_namespace() {
  * Read the status index in the completion queue to so we can see what is going on, hopefully no alignment issues but we will see won't we
  */
 static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index) {
-
     uint64_t start = (uint64_t) &queue->cqes[0];
 
     uint64_t stop = start + NVME_CQ_SIZE(
-            queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
+                        queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
     return queue->cqes[index].status;
-
-
 }
 
 /*
@@ -495,7 +473,6 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
     ret = nvme_submit_admin_command(nvme_device, &command, result);
 
     return ret;
-
 }
 
 /*
@@ -516,7 +493,6 @@ nvme_get_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
     ret = nvme_submit_admin_command(nvme_device, &command, result);
 
     return ret;
-
 }
 
 /*
@@ -535,7 +511,6 @@ static uint16_t nvme_get_command_id() {
  */
 static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout) {
-
     struct nvme_ops *ops;
     uint16_t head = queue->cq_head; // Current head of the completion queue
     uint16_t phase = queue->cq_phase; // Current phase of the  completion queue
@@ -644,8 +619,6 @@ nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *
 
 
 static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
-
-
 }
 
 
@@ -653,14 +626,14 @@ static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
  * Set up an nvme queue, set the submission queue head and tail to 0, set the completion queue phase bit to 1, set the doorbell register, and clear the completion queue entries
  */
 static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
-
     struct nvme_device *nvme_dev = queue->dev;
 
     queue->sq_head = 0; //set submission queue header pointer to 0
     queue->sq_tail = 0; // set submission queue tail pointer to zero
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
-                                       nvme_dev->doorbell_stride]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
+                                       nvme_dev->doorbell_stride];
+    // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
     memset(queue->cqes, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
@@ -670,15 +643,12 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
  * Send an admin command to delete a queue
  */
 static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, uint16_t id) {
-
     struct nvme_command command;
     memset(&command, 0, sizeof(command));
     command.delete_queue.opcode = opcode;
     command.delete_queue.qid = id;
 
     return nvme_submit_admin_command(nvme_dev, &command, NULL);
-
-
 }
 
 /*
@@ -734,7 +704,6 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
 }
 
 static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
-
     struct nvme_device *dev = queue->dev;
     int result;
 
@@ -751,13 +720,12 @@ static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
 
     return result;
 
-    release_sq:
+release_sq:
     nvme_delete_sq(dev, queue_id);
-    release_cq:
+release_cq:
     nvme_delete_cq(dev, queue_id);
 
     return result;
-
 }
 
 /*
@@ -775,7 +743,6 @@ static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16
 }
 
 static int32_t nvme_create_io_queues(struct nvme_device *device) {
-
     uint32_t i;
 
     for (i = device->total_queues; i <= device->max_queue_id; i++) {
@@ -792,7 +759,6 @@ static int32_t nvme_create_io_queues(struct nvme_device *device) {
 }
 
 static int32_t nvme_setup_io_queues(struct nvme_device *device) {
-
     int32_t number_io_queues;
     int32_t result;
 
@@ -811,7 +777,6 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
 
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address) {
-
     struct nvme_command command;
     memset(&command, 0, sizeof(command));
     uint64_t page_size = nvme_dev->page_size;
@@ -894,20 +859,16 @@ int32_t nvme_init(struct device *dev) {
     kfree(nsid);
     return KERN_SUCCESS;
 
-    free_id:
+free_id:
     kfree(nsid);
-    free_queue:
+free_queue:
     kfree(nvme_dev->queues);
 
     return KERN_IO_ERROR; // does io make sense ? maybe,  but placeholder for now
-
-
-
 }
 
 int32_t nvme_shutdown(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
 
     return nvme_disable_control(nvme_dev);
-
 }
