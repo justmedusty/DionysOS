@@ -883,7 +883,7 @@ int32_t nvme_init(struct device *dev) {
             continue;
         }
 
-        sprintf(name, "blockdev#%i", i);
+        sprintf(name, "blockdev #%i", i);
         namespace_device = kzmalloc(sizeof(struct device));
         create_device(namespace_device, DEVICE_MAJOR_SSD, name, &nvme_device_ops, nvme_dev, NULL);
 
