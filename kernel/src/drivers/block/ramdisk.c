@@ -169,17 +169,17 @@ uint64_t ramdisk_write(const char *buffer, uint64_t block, uint64_t offset, uint
 }
 
 
-uint64_t ramdisk_device_ops_read(uint64_t byte_offset, size_t bytes_to_read, char *buffer, struct device *device) {
+uint64_t ramdisk_device_ops_read(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
     struct ramdisk *rd = device->device_info;
-    uint64_t ret = ramdisk_read(buffer, byte_offset / rd->block_size, byte_offset % rd->block_size, bytes_to_read,
+    uint64_t ret = ramdisk_read(buffer, block_number, 0 , block_count * rd->block_size,
                                 PAGE_SIZE * 100, device->device_minor);
     return ret;
 }
 
 uint64_t
-ramdisk_device_ops_write(uint64_t byte_offset, size_t bytes_to_write, const char *buffer, struct device *device) {
+ramdisk_device_ops_write(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
     struct ramdisk *rd = device->device_info;
-    uint64_t ret = ramdisk_write(buffer, byte_offset / rd->block_size, byte_offset % rd->block_size, bytes_to_write,
+    uint64_t ret = ramdisk_write(buffer, block_number, 0, block_count * rd->block_size,
                                  PAGE_SIZE * 100, device->device_minor);
     return ret;
 }

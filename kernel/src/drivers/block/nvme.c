@@ -19,10 +19,10 @@ static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout);
 
 static uint64_t
-nvme_write_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer);
+nvme_write_block(uint64_t byte_offset, size_t bytes_to_read, char *buffer, struct device *device);
 
 static uint64_t
-nvme_read_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer);
+nvme_read_block(uint64_t byte_offset, size_t bytes_to_read, char *buffer, struct device *device);
 
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address);
@@ -98,6 +98,11 @@ struct nvme_ops nvme_ops = {
         .submit_cmd = nvme_submit_command,
         .complete_cmd = NULL,
         .setup_queue = NULL,
+};
+
+struct block_device_ops nvme_block_ops = {
+        .block_read = nvme_read_block,
+        .block_write = nvme_write_block
 };
 
 struct device_ops nvme_device_ops = {
@@ -483,8 +488,7 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
 int32_t
 nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
                   uint32_t *result) {
-    struct nvme_command command;
-    memset(&command, 0, sizeof(command));
+    struct nvme_command command = {0};
     int32_t ret;
 
     command.features.opcode = NVME_ADMIN_OPCODE_SET_FEATURES;
@@ -504,8 +508,7 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
 int32_t
 nvme_get_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
                   uint32_t *result) {
-    struct nvme_command command;
-    memset(&command, 0, sizeof(command));
+    struct nvme_command command = {0};
     int32_t ret;
 
     command.features.opcode = NVME_ADMIN_OPCODE_GET_FEATURES;
@@ -671,8 +674,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
  */
 static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, uint16_t id) {
 
-    struct nvme_command command;
-    memset(&command, 0, sizeof(command));
+    struct nvme_command command =  {0};
     command.delete_queue.opcode = opcode;
     command.delete_queue.qid = id;
 
@@ -812,8 +814,7 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address) {
 
-    struct nvme_command command;
-    memset(&command, 0, sizeof(command));
+    struct nvme_command command = {0};
     uint64_t page_size = nvme_dev->page_size;
     int32_t offset = dma_address & (page_size - 1);
     int32_t length = sizeof(struct nvme_id_ctrl);
@@ -839,15 +840,21 @@ int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint6
  * Read and write to/from buffers respectively
  */
 static uint64_t
-nvme_read_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
-    return nvme_raw_block(dev, block_number, block_count, buffer, false);
+nvme_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
+
+    return nvme_raw_block(device, block_number, block_count, buffer, false);
 }
 
 static uint64_t
-nvme_write_block(struct device *dev, uint64_t block_number, uint64_t block_count, void *buffer) {
-    return nvme_raw_block(dev, block_number, block_count, buffer, true);
+nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
+    return nvme_raw_block(device,block_number, block_count, buffer, true);
 }
 
+/*
+ * Notice that we just have one nvme device and create many logical devices from it, this is due to the fact that obviously,
+ * an NVMe controller and contain many namespaces which can be though of as logical devices so we will split each one up into
+ * its own logical device that share the same nvme_device struct.
+ */
 int32_t nvme_init(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
     struct nvme_id_ns *nsid;
@@ -862,6 +869,7 @@ int32_t nvme_init(struct device *dev) {
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
+
     if (ret) {
         goto free_queue;
     }
@@ -869,7 +877,7 @@ int32_t nvme_init(struct device *dev) {
 
     nsid = kzmalloc(sizeof(struct nvme_id_ns));
 
-    for (int32_t i = 1; i <= nvme_dev->namespace_count; i++) {
+    for (uint32_t i = 1; i <= nvme_dev->namespace_count; i++) {
         struct device *namespace_device;
         char name[20];
 

@@ -74,7 +74,7 @@ static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_nu
 
 static void diosfs_write_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode);
 
-static void diosfs_write_block_by_number(uint64_t block_number, const char *buffer,
+static void diosfs_write_block_by_number(uint64_t block_number, char *buffer,
                                          const struct diosfs_filesystem_context *fs,
                                          uint64_t offset, uint64_t write_size);
 
@@ -236,7 +236,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     memcpy(buffer, &diosfs_superblock, sizeof(struct diosfs_superblock));
 
     //Write the new superblock to the ramdisk
-    fs->device->device_ops->block_device_ops->block_write(DIOSFS_SUPERBLOCK, fs->superblock->block_size, buffer,
+    fs->device->device_ops->block_device_ops->block_write(DIOSFS_SUPERBLOCK, 1, buffer,
                                                           fs->device);
 
     memset(buffer, 0, PAGE_SIZE);
@@ -246,17 +246,17 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      */
     for (size_t i = 0; i < fs->superblock->inode_bitmap_size; i++) {
         fs->device->device_ops->block_device_ops->block_write(
-                (fs->superblock->inode_bitmap_pointers_start * fs->superblock->block_size) +
-                (fs->superblock->block_size * i), fs->superblock->block_size, buffer, fs->device);
+                fs->superblock->inode_bitmap_pointers_start +
+                i, 1, buffer, fs->device);
     }
 
     /*
      * Fill in block bitmap with zerod blocks
      */
-    for (size_t i = 0; i < fs->superblock->block_bitmap_pointers_start; i++) {
+    for (size_t i = 0; i < fs->superblock->block_bitmap_size; i++) {
         fs->device->device_ops->block_device_ops->block_write(
-                (fs->superblock->block_bitmap_pointers_start * fs->superblock->block_size) +
-                (fs->superblock->block_size * i), fs->superblock->block_size, buffer, fs->device);
+                fs->superblock->block_bitmap_pointers_start +
+                i, 1, buffer, fs->device);
     }
 
     /*
@@ -265,8 +265,8 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     for (size_t i = 0;
          i < fs->superblock->num_inodes / (fs->superblock->block_size / sizeof(struct diosfs_inode)); i++) {
         fs->device->device_ops->block_device_ops->block_write(
-                (fs->superblock->inode_start_pointer * fs->superblock->block_size) + (fs->superblock->block_size * i),
-                fs->superblock->block_size, buffer, fs->device);
+                fs->superblock->inode_start_pointer + i,
+                1, buffer, fs->device);
     }
 
     /*
@@ -274,8 +274,8 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      */
     for (size_t i = 0; i < fs->superblock->num_blocks; i++) {
         fs->device->device_ops->block_device_ops->block_write(
-                (fs->superblock->block_start_pointer * fs->superblock->block_size) + (fs->superblock->block_size * i),
-                fs->superblock->block_size, buffer, fs->device);
+                fs->superblock->block_start_pointer + i,
+                1, buffer, fs->device);
     }
 
     struct diosfs_inode root;
@@ -367,7 +367,7 @@ int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, co
     acquire_spinlock(fs->lock);
 
     if (vnode->vnode_type == VNODE_HARD_LINK) {
-        if (diosfs_symlink_check(fs, vnode,  VNODE_FILE) != DIOSFS_SUCCESS) {
+        if (diosfs_symlink_check(fs, vnode, VNODE_FILE) != DIOSFS_SUCCESS) {
             return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
     }
@@ -390,7 +390,7 @@ int64_t diosfs_write(struct vnode *vnode, const uint64_t offset, const char *buf
     }
 
     if (vnode->vnode_type == VNODE_SYM_LINK) {
-        if (diosfs_symlink_check(fs, vnode,  VNODE_FILE) != DIOSFS_SUCCESS) {
+        if (diosfs_symlink_check(fs, vnode, VNODE_FILE) != DIOSFS_SUCCESS) {
             return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
         }
 
@@ -754,7 +754,7 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem_context *fs
         if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number == inode_to_remove) {
             if (entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].type == VNODE_DIRECTORY) {
                 diosfs_recursive_directory_entry_free(fs, &entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK], 0);
-            } else if (entries[i].type ==  VNODE_FILE) {
+            } else if (entries[i].type == VNODE_FILE) {
                 struct diosfs_inode temp_inode;
                 diosfs_read_inode(fs, &temp_inode, entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number);
 
@@ -871,7 +871,7 @@ static void diosfs_recursive_directory_entry_free(struct diosfs_filesystem_conte
                                         fs->superblock->block_size);
         }
 
-        if (entries[i].type ==  VNODE_FILE) {
+        if (entries[i].type == VNODE_FILE) {
             struct diosfs_inode temp_inode;
             diosfs_read_inode(fs, &temp_inode, entries[i % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK].inode_number);
             /*
@@ -931,15 +931,15 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
 
     char *buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
-    fs->device->device_ops->block_device_ops->block_read(block * fs->superblock->block_size + 0,
-                                                         fs->superblock->block_size, buffer, fs->device);
+    fs->device->device_ops->block_device_ops->block_read(block,
+                                                         1, buffer, fs->device);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
-    buffer[BYTE(number)] &= (uint64_t)~BIT(bit);
-    fs->device->device_ops->block_device_ops->block_write(block * fs->superblock->block_size + 0,
-                                                          fs->superblock->block_size, buffer, fs->device);
+    buffer[BYTE(number)] &= (uint64_t) ~BIT(bit); //TODO handle impl defined behavior here
+    fs->device->device_ops->block_device_ops->block_write(block,
+                                                          1, buffer, fs->device);
     kfree(buffer);
 }
 
@@ -969,8 +969,8 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
     uint64_t inode_number;
 
     uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
-            fs->superblock->inode_bitmap_pointers_start * fs->superblock->block_size,
-            fs->superblock->block_size * (fs->superblock->inode_bitmap_size), buffer, fs->device);
+            fs->superblock->inode_bitmap_pointers_start,
+            fs->superblock->inode_bitmap_size, buffer, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
@@ -1013,8 +1013,8 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
     inode_to_be_filled->inode_number = inode_number;
 
     ret = fs->device->device_ops->block_device_ops->block_write(
-            fs->superblock->inode_bitmap_pointers_start * fs->superblock->block_size,
-            fs->superblock->block_size * (fs->superblock->inode_bitmap_size), buffer, fs->device);
+            fs->superblock->inode_bitmap_pointers_start,
+            (fs->superblock->inode_bitmap_size), buffer, fs->device);
 
 
     if (ret != DIOSFS_SUCCESS) {
@@ -1066,8 +1066,8 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
      *
      */
     uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
-            fs->superblock->block_bitmap_pointers_start * fs->superblock->block_size,
-            fs->superblock->block_size * fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
+            fs->superblock->block_bitmap_pointers_start,
+            fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_get_free_inode_and_mark_bitmap");
@@ -1103,8 +1103,8 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
 
     found_free:
     ret = fs->device->device_ops->block_device_ops->block_write(
-            fs->superblock->block_bitmap_pointers_start * fs->superblock->block_size,
-            fs->superblock->block_size * fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
+            fs->superblock->block_bitmap_pointers_start,
+            fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
 
 
     if (ret != DIOSFS_SUCCESS) {
@@ -1390,7 +1390,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs
                                             const uint64_t buffer_size,
                                             const uint64_t offset,
                                             const uint64_t write_size_bytes) {
-    if (inode->type !=  VNODE_FILE) {
+    if (inode->type != VNODE_FILE) {
         panic("diosfs_write_bytes_to_inode bad type");
     }
 
@@ -1547,7 +1547,7 @@ uint64_t diosfs_inode_allocate_new_blocks(struct diosfs_filesystem_context *fs, 
 
     // Do not allocate blocks for a directory since they hold enough entries (90 or so at the time of writing)
     if (inode->type == VNODE_DIRECTORY && (num_blocks_to_allocate + (inode->size / fs->superblock->block_size)) >
-                                    NUM_BLOCKS_DIRECT) {
+                                          NUM_BLOCKS_DIRECT) {
         serial_printf("diosfs_inode_allocate_new_block inode type not directory!\n");
         kfree(buffer);
         return DIOSFS_ERROR;
@@ -1691,32 +1691,46 @@ static struct diosfs_byte_offset_indices diosfs_indirection_indices_for_block_nu
  */
 static void diosfs_write_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode) {
     uint64_t inode_number_in_block = inode->inode_number % NUM_INODES_PER_BLOCK;
-    uint64_t block_number = fs->superblock->inode_start_pointer + inode->inode_number / NUM_INODES_PER_BLOCK;
+    uint64_t block_number = fs->superblock->inode_start_pointer + (inode->inode_number / NUM_INODES_PER_BLOCK);
+    char *block = kzmalloc(fs->superblock->block_size);
+
+    fs->device->device_ops->block_device_ops->block_read(
+            block_number,
+            1, block, fs->device);
+
+    memcpy(&block[inode_number_in_block * sizeof(struct diosfs_inode)], inode, sizeof(struct diosfs_inode));
+
     uint64_t ret = fs->device->device_ops->block_device_ops->block_write(
-            (block_number * fs->superblock->block_size) + inode_number_in_block * sizeof(struct diosfs_inode),
-            sizeof(struct diosfs_inode), (char *) inode, fs->device);
+            block_number,
+            1, block, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_write_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
     }
+    kfree(block);
 }
 
 static void diosfs_read_inode(const struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                               uint64_t inode_number) {
     uint64_t inode_number_in_block = inode_number % NUM_INODES_PER_BLOCK;
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
+    char *block = kzmalloc(fs->superblock->block_size);
+
     uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
-            (block_number * fs->superblock->block_size) + (inode_number_in_block * sizeof(struct diosfs_inode)),
-            sizeof(struct diosfs_inode), (char *) inode, fs->device);
+            block_number,
+            1, block, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
-        HANDLE_DISK_ERROR(ret, "diosfs_write_inode");
+        HANDLE_DISK_ERROR(ret, "diosfs_read_inode");
         panic("diosfs_write_inode"); /* For diagnostic purposes */
     }
+
+    memcpy(inode, &block[inode_number_in_block * sizeof(struct diosfs_inode)], sizeof(struct diosfs_inode));
+    kfree(block);
 }
 
-static void diosfs_write_block_by_number(const uint64_t block_number, const char *buffer,
+static void diosfs_write_block_by_number(const uint64_t block_number, char *buffer,
                                          const struct diosfs_filesystem_context *fs,
                                          uint64_t offset, uint64_t write_size) {
     if (write_size > fs->superblock->block_size) {
@@ -1734,8 +1748,8 @@ static void diosfs_write_block_by_number(const uint64_t block_number, const char
         write_size_bytes = fs->superblock->block_size - offset;
     }
     uint64_t ret = fs->device->device_ops->block_device_ops->block_write(
-            (fs->superblock->block_start_pointer * fs->superblock->block_size) +
-            (block_number * fs->superblock->block_size), fs->superblock->block_size, buffer, fs->device);
+            fs->superblock->block_start_pointer +
+            block_number, 1, buffer, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_write_block_by_number");
@@ -1759,8 +1773,8 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char *buffe
         read_size_bytes = fs->superblock->block_size - offset;
     }
     uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
-            (fs->superblock->block_start_pointer * fs->superblock->block_size) +
-            (block_number * fs->superblock->block_size), fs->superblock->block_size, buffer, fs->device);
+            fs->superblock->block_start_pointer +
+            block_number, 1, buffer, fs->device);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_read_block_by_number");
