@@ -194,7 +194,6 @@ void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list *l
     node->next->prev = node->prev;
     list->node_count--;
     release_spinlock(&list->lock);
-    return;
 }
 
 
