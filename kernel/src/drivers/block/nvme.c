@@ -902,7 +902,8 @@ nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct
  * its own logical device that share the same nvme_device struct.
  */
 int32_t nvme_init(struct device *dev) {
-    struct nvme_device *nvme_dev = dev->device_info;
+    struct nvme_namespace *namespace = dev->device_info;
+    struct nvme_device *nvme_dev = namespace->device;
     struct nvme_id_ns *nsid;
     int32_t ret;
     nvme_dev->device = dev;
@@ -960,7 +961,8 @@ int32_t nvme_init(struct device *dev) {
 }
 
 int32_t nvme_shutdown(struct device *dev) {
-    struct nvme_device *nvme_dev = dev->device_info;
+    struct nvme_namespace *namespace = dev->device_info;
+    struct nvme_device *nvme_dev = namespace->device;
 
     return nvme_disable_control(nvme_dev);
 
