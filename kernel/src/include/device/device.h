@@ -17,8 +17,8 @@ enum major {
     DEVICE_MAJOR_RAMDISK,
     DEVICE_MAJOR_FRAMEBUFFER,
     DEVICE_MAJOR_NETWORK_CARD,
-    DEVICE_MAJOR_SSD,
-    DEVICE_MAJOR_HARD_DISK,
+    DEVICE_MAJOR_NVME,
+    DEVICE_MAJOR_AHCI,
     DEVICE_MAJOR_KEYBOARD,
     DEVICE_MAJOR_MOUSE,
     DEVICE_MAJOR_SERIAL,
@@ -67,7 +67,7 @@ struct device_driver {
 struct block_device_ops {
     uint64_t (*block_read)(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
-    uint64_t (*block_write)(uint64_t block_number, size_t block_count,  char *buffer, struct device *device);
+    uint64_t (*block_write)(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
     int32_t (*flush)(struct device *dev);
 };

@@ -15,9 +15,9 @@ uint64_t device_minor_map[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {0};
 
 const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
         [DEVICE_MAJOR_NETWORK_CARD] = "NETWORK_CARD",
-        [DEVICE_MAJOR_SSD] = "SSD",
+        [DEVICE_MAJOR_NVME] = "NVME",
         [DEVICE_MAJOR_RAMDISK] = "RAMDISK",
-        [DEVICE_MAJOR_HARD_DISK] = "HARD_DISK",
+        [DEVICE_MAJOR_AHCI] = "AHCI",
         [DEVICE_MAJOR_KEYBOARD] = "KEYBOARD",
         [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
         [DEVICE_MAJOR_MOUSE] = "MOUSE",
@@ -106,8 +106,8 @@ struct device *query_device(const uint64_t device_major, const uint64_t device_m
 }
 
 void create_device(struct device *device, uint64_t device_major, char *name, struct device_ops *device_ops,
-                         void *device_info, struct device *parent) {
-    if(device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS){
+                   void *device_info, struct device *parent) {
+    if (device_major > NUM_DEVICE_MAJOR_CLASSIFICATIONS) {
         /*
          * This is an extremist response but that is fine because it shouldnt ever happen anyway and if something causes it
          * to happen I want visibility above all else, later I can change this to a kernel log call.

@@ -462,6 +462,9 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
 
 }
 
+static int32_t nvme_block_probe(){
+
+}
 int32_t nvme_scan_namespace() {
 
 
@@ -940,7 +943,7 @@ int32_t nvme_init(struct device *dev) {
 
         sprintf(name, "blockdev #%i", i);
         namespace_device = kzmalloc(sizeof(struct device));
-        create_device(namespace_device, DEVICE_MAJOR_SSD, name, &nvme_device_ops, nvme_dev, NULL);
+        create_device(namespace_device, DEVICE_MAJOR_NVME, name, &nvme_device_ops, nvme_dev, NULL);
 
 
         insert_device_into_kernel_tree(namespace_device);
@@ -955,8 +958,6 @@ int32_t nvme_init(struct device *dev) {
     kfree(nvme_dev->queues);
 
     return KERN_IO_ERROR; // does io make sense ? maybe,  but placeholder for now
-
-
 
 }
 
