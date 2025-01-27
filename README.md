@@ -59,9 +59,9 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🟢Implement a simple memory-only tmpfs filesystem
 
-🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
+🟢Write an NVMe driver.
 
-🟡Write an NVMe driver.
+🟡Decide how to abstract devices. UNIX likes usually go for a /dev virtual filesystem containing device nodes and use ioctl() alongside standard FS calls to do operations on them.
 
 🔴Write an AHCI driver.
 
