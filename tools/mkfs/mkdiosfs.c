@@ -297,7 +297,7 @@ uint64_t strtoll_wrapper(const char* arg) {
 }
 
 void write_block(const uint64_t block_number, char* block_buffer, const uint64_t offset, uint64_t write_size) {
-    memcpy(disk_buffer + (block_number * DIOSFS_BLOCKSIZE + offset), block_buffer, write_size);
+    memcpy(disk_buffer + (block_number * DIOSFS_BLOCKSIZE) + offset, block_buffer, write_size);
 
 }
 

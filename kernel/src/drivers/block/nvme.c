@@ -14,6 +14,7 @@
 #include "include/architecture/arch_timer.h"
 #include "include/definitions/string.h"
 
+static int32_t nvme_get_info_from_identify(struct nvme_device *device);
 
 static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout);
@@ -647,8 +648,37 @@ nvme_submit_admin_command(struct nvme_device *nvme_device, struct nvme_command *
 
 
 static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
+    struct nvme_id_ctrl *control;
+    int32_t ret;
+    int32_t shift = NVME_CAP_MPSMIN(device->capabilities) + 12;
 
+    control = kzmalloc(sizeof(struct nvme_id_ctrl));
 
+    ret = nvme_identify(device, 0, 1, (uint64_t) control);
+
+    if (ret > 0) {
+        kfree(control);
+        return KERN_IO_ERROR;
+    }
+
+    device->namespace_count - control->namespace_count;
+
+    memcpy(device->serial_number, control->serial_number, sizeof(control->serial_number));
+    memcpy(device->model_number, control->model_number, sizeof(control->model_number));
+    memcpy(device->firmware_revision, control->firmware_revision, sizeof(control->firmware_revision));
+
+    /*
+     * The max data transfer field indicates how much data can be moved between host and controller at a time, obviously it is a power of two.
+     * If it is 0 then there is no limit
+     */
+    if (control->max_data_transfer_size) {
+        device->max_transfer_shift = control->max_data_transfer_size + shift;
+    } else {
+        device->max_transfer_shift = 20;
+    }
+
+    kfree(control);
+    return KERN_SUCCESS;
 }
 
 
@@ -674,7 +704,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
  */
 static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, uint16_t id) {
 
-    struct nvme_command command =  {0};
+    struct nvme_command command = {0};
     command.delete_queue.opcode = opcode;
     command.delete_queue.qid = id;
 
@@ -836,6 +866,22 @@ int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint6
     return ret;
 }
 
+
+int32_t nvme_get_namespace_id(struct device *device, uint32_t *namespace_id, uint8_t *extended_unique_identifier) {
+    struct nvme_namespace *namespace = device->device_info;
+
+    if (namespace_id) {
+        *namespace_id = namespace->namespace_id;
+    }
+
+    if (extended_unique_identifier) {
+        memcpy(extended_unique_identifier, namespace->eui64, sizeof(namespace->eui64));
+    }
+
+    return KERN_SUCCESS;
+
+}
+
 /*
  * Read and write to/from buffers respectively
  */
@@ -846,8 +892,8 @@ nvme_read_block(uint64_t block_number, size_t block_count, char *buffer, struct 
 }
 
 static uint64_t
-nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
-    return nvme_raw_block(device,block_number, block_count, buffer, true);
+nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
+    return nvme_raw_block(device, block_number, block_count, buffer, true);
 }
 
 /*

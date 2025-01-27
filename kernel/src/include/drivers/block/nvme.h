@@ -735,6 +735,8 @@ int32_t nvme_init(struct device *dev);        // Initialize NVMe device
 int32_t nvme_shutdown(struct device *dev);    // Shutdown NVMe device
 int32_t nvme_scan_namespace();
 
+int32_t nvme_get_namespace_id(struct device *device, uint32_t *namespace_id, uint8_t *extended_unique_identifier);
+
 // Helper macros for NVMe queue and data size
 #define NVME_ADMIN_QUEUE_SIZE 64                // Admin queue size
 #define NVME_IO_QUEUE_SIZE 128                  // I/O queue size

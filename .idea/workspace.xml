@@ -27,8 +27,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Laying out device.h among other things.">
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,12 +54,12 @@
     &quot;assignee&quot;: &quot;justmedusty&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/justmedusty/DionysOS.git&quot;,
-    &quot;accountId&quot;: &quot;48dccaa7-6a6e-4b81-bd27-e7aaca5265c8&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/justmedusty/DionysOS.git",
+    "accountId": "e2b1b2ad-035b-4f66-8c92-326f785b0dec"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/kernel/src/arch/smp/arch_smp.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c" root0="FORCE_HIGHLIGHTING" />
@@ -81,32 +80,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/kernel/Makefile&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Embedded GDB Server.run-gdb.executor": "Debug",
+    "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run.executor": "Run",
+    "Remote Debug.GDB Kernel.executor": "Debug",
+    "Remote Debug.Unnamed.executor": "Debug",
+    "Remote GDB Server.run-gdb.executor": "Debug",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/kernel",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "MakefileSettings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
@@ -402,6 +401,7 @@
       <workItem from="1734679695306" duration="31905000" />
       <workItem from="1735560263482" duration="196000" />
       <workItem from="1736845755835" duration="167000" />
+      <workItem from="1737966288939" duration="119000" />
     </task>
     <task id="LOCAL-00211" summary="Wild goose chase going on on but fixing bugs left and right.">
       <option name="closed" value="true" />
@@ -878,13 +878,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -895,7 +895,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -942,31 +942,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" />
+          <dependency id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="0" />
+          <dependency id="0" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="3" />
+          <dependency id="2" master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="1" />
+          <dependency id="3" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
