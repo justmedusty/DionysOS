@@ -117,7 +117,7 @@ void create_device(struct device *device, uint64_t device_major, char *name, str
     device->device_major = device_major;
     safe_strcpy(device->name, name, DEVICE_NAME_LEN);
     device->name[DEVICE_NAME_LEN + 1] = '\0'; // just in case there was any fuckery going on with the passed buffer
-    device->device_ops = device_ops;
+    device->driver->device_ops = device_ops;
     device->device_minor = device_minor_map[device_major]++;
     device->device_info = device_info;
     device->parent = parent;

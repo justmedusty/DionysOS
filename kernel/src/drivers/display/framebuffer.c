@@ -16,6 +16,7 @@
 struct framebuffer main_framebuffer;
 #define MAIN_FB 0
 
+
 struct framebuffer_ops framebuffer_ops = {
         .clear = fb_ops_clear,
         .draw_string = fb_ops_draw_string,
@@ -32,7 +33,11 @@ struct device_ops framebuffer_device_ops = {
         .reset = NULL
 };
 
-
+struct device_driver framebuffer_driver = {
+        .device_ops = &framebuffer_device_ops,
+        .probe = NULL,
+        .pci_driver = NULL
+};
 struct device framebuffer_device = {
         .device_major = DEVICE_MAJOR_FRAMEBUFFER,
         .device_minor = MAIN_FB,
@@ -40,7 +45,7 @@ struct device framebuffer_device = {
         .parent = NULL,
         .device_type = DEVICE_TYPE_BLOCK,
         .device_info = &main_framebuffer,
-        .device_ops = &framebuffer_device_ops
+        .driver = &framebuffer_driver
 };
 
 char characters[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -60,7 +65,9 @@ void fb_ops_clear(struct device *dev) {
     struct framebuffer *fb = dev->device_info;
     clear(fb);
 }
-
+/*
+ *  No longer used since it doesn't update context but it will stay for now, it will come in handy at some point
+ */
 void draw_char(const struct framebuffer *fb,
                const uint8_t c, const uint64_t x, const uint64_t y, const uint32_t color) {
     if (c < 0 || c >= 255) return; // Ensure the character is within the font bounds
@@ -229,11 +236,11 @@ static char get_hex_char(uint8_t nibble) {
 
 static void draw_hex(struct device *fb, uint64_t num, int32_t size, uint32_t color) {
 
-    fb->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
+    fb->driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0x");
     for (int32_t i = (size - 4); i >= 0; i -= 4) {
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
-        fb->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
+        fb->driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
     }
 }
 
@@ -257,12 +264,12 @@ void kprintf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     while (*str) {
         if (*str == '\n') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', GREEN);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', GREEN);
             str++;
             continue;
         }
         if (*str != '%') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, GREEN);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, GREEN);
         } else {
             str++;
             switch (*str) {
@@ -319,7 +326,7 @@ void kprintf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, value);
                     break;
                 }
 
@@ -327,7 +334,7 @@ void kprintf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0");
                         break;
                     }
 
@@ -341,17 +348,17 @@ void kprintf(char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
                                 &framebuffer_device, buffer[--index], GREEN);
                     }
                     break;
                 }
 
                 default:
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "%");
 
                     char c = *str;
-                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
 
                     break;
             }
@@ -484,15 +491,15 @@ void err_printf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);
-    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "[ERROR] ");
+    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "[ERROR] ");
     while (*str) {
         if (*str == '\n') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', RED);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', RED);
             str++;
             continue;
         }
         if (*str != '%') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, RED);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, RED);
         } else {
             str++;
             switch (*str) {
@@ -546,7 +553,7 @@ void err_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, value);
                     break;
                 }
 
@@ -554,7 +561,7 @@ void err_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "0");
                         break;
                     }
 
@@ -568,17 +575,17 @@ void err_printf(char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
                                 &framebuffer_device, buffer[--index], RED);
                     }
                     break;
                 }
 
                 default:
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "%");
 
                     char c = *str;
-                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, RED);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, RED);
 
                     break;
             }
@@ -593,15 +600,15 @@ void warn_printf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);
-    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "[WARN] ");
+    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "[WARN] ");
     while (*str) {
         if (*str == '\n') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', ORANGE);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', ORANGE);
             str++;
             continue;
         }
         if (*str != '%') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, ORANGE);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, ORANGE);
         } else {
             str++;
             switch (*str) {
@@ -659,7 +666,7 @@ void warn_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, value);
                     break;
                 }
 
@@ -667,7 +674,7 @@ void warn_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "0");
                         break;
                     }
 
@@ -681,17 +688,17 @@ void warn_printf(char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
                                 &framebuffer_device, buffer[--index], ORANGE);
                     }
                     break;
                 }
 
                 default:
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "%");
 
                     char c = *str;
-                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, ORANGE);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, ORANGE);
 
                     break;
             }
@@ -707,15 +714,15 @@ void info_printf(char *str, ...) {
     acquire_spinlock(&main_framebuffer.lock);
     va_list args;
     va_start(args, str);
-    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "[INFO] ");
+    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "[INFO] ");
     while (*str) {
         if (*str == '\n') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', YELLOW);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', YELLOW);
             str++;
             continue;
         }
         if (*str != '%') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, YELLOW);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, YELLOW);
         } else {
             str++;
             switch (*str) {
@@ -773,7 +780,7 @@ void info_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, value);
                     break;
                 }
 
@@ -781,7 +788,7 @@ void info_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "0");
                         break;
                     }
 
@@ -795,17 +802,17 @@ void info_printf(char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
                                 &framebuffer_device, buffer[--index], YELLOW);
                     }
                     break;
                 }
 
                 default:
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "%");
 
                     char c = *str;
-                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, YELLOW);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, YELLOW);
 
                     break;
             }
@@ -826,12 +833,12 @@ void kprintf_color(uint32_t color, char *str, ...) {
     va_start(args, str);
     while (*str) {
         if (*str == '\n') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', color);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', color);
             str++;
             continue;
         }
         if (*str != '%') {
-            framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, color);
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, color);
         } else {
             str++;
             switch (*str) {
@@ -888,7 +895,7 @@ void kprintf_color(uint32_t color, char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, value);
                     break;
                 }
 
@@ -896,7 +903,7 @@ void kprintf_color(uint32_t color, char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0");
                         break;
                     }
 
@@ -910,17 +917,17 @@ void kprintf_color(uint32_t color, char *str, ...) {
 
                     // Write digits in reverse order
                     while (index > 0) {
-                        framebuffer_device.device_ops->framebuffer_ops->draw_char(
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
                                 &framebuffer_device, buffer[--index], color);
                     }
                     break;
                 }
 
                 default:
-                    framebuffer_device.device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "%");
 
                     char c = *str;
-                    framebuffer_device.device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);
 
                     break;
             }

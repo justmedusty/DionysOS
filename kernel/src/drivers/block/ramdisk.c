@@ -201,5 +201,5 @@ struct block_device_ops ramdisk_ops = {
 };
 
 struct device_ops ramdisk_device_ops = {
-        .block_device_ops = &ramdisk_ops
+        .block_device_ops = &ramdisk_ops,
 };

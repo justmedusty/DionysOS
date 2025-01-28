@@ -46,6 +46,11 @@ struct device_ops main_serial_ops = {
     .char_device_ops = &serial_ops
 };
 
+struct device_driver serial_driver = {
+        .device_ops = &main_serial_ops,
+        .pci_driver = NULL
+};
+
 
 void init_serial() {
 
@@ -64,10 +69,9 @@ void init_serial() {
     serial_device.device_minor = BASE_SERIAL_DEVICE;
     serial_device.lock = &serial_lock;
     serial_device.parent = NULL;
-    serial_device.device_ops = &main_serial_ops;
     serial_device.uses_dma = false;
     serial_device.device_info = NULL;
-    serial_device.driver = NULL;
+    serial_device.driver = &serial_driver;
     serial_device.device_type = DEVICE_TYPE_CHAR;
     kprintf("Serial Initialized\n");
 }

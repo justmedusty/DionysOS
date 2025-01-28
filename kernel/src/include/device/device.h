@@ -74,7 +74,6 @@ struct device {
     uint64_t device_type;
     char name[32];
     bool uses_dma;
-    struct device_ops *device_ops;
     struct device_driver *driver;
     void *device_info;
 };

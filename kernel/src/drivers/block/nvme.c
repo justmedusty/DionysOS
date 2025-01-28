@@ -295,7 +295,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     nvme_dev->total_queues++;
     nvme_dev->queues[queue_id] = queue;
 
-    ops = (struct nvme_ops *) nvme_dev->device->device_ops;
+    ops = (struct nvme_ops *) nvme_dev->device->driver->device_ops;
 
     if (ops && ops->setup_queue) {
         ops->setup_queue(queue);
@@ -427,7 +427,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
 
 
-    ops = (struct nvme_ops *) queue->dev->device->device_ops->nvme_ops;
+    ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->nvme_ops;
 
     if (ops && ops->submit_cmd) {
         ops->submit_cmd(queue, command);
@@ -572,7 +572,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     }
 
     // Check for custom nvme operations to complete the command
-    ops = queue->dev->device->device_ops->nvme_ops;
+    ops = queue->dev->device->driver->device_ops->nvme_ops;
     if (ops && ops->complete_cmd) {
         ops->complete_cmd(queue, command); // Use the custom operation if available
     }

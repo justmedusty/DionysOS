@@ -21,6 +21,15 @@
 struct spinlock diosfs_lock[10] = {0};
 struct diosfs_superblock diosfs_superblock[10] = {0};
 
+struct device_driver driver[10] = {
+        [0] = {
+                .device = NULL,
+                .pci_driver = NULL,
+                .device_ops = &ramdisk_device_ops,
+                .probe = NULL
+        }
+};
+
 /*
  * Hardcode the main device in
  */
@@ -32,11 +41,11 @@ struct device block_dev[10] = {
                 .device_minor = INITIAL_FILESYSTEM,
                 .uses_dma = false,
                 .device_type = DEVICE_TYPE_BLOCK,
-                .driver = NULL,
                 .device_info = &ramdisk[0],
-                .device_ops = &ramdisk_device_ops
+                .driver = &driver[0]
         }
 };
+
 
 
 //Set up initial  filesystem object
@@ -236,7 +245,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     memcpy(buffer, &diosfs_superblock, sizeof(struct diosfs_superblock));
 
     //Write the new superblock to the ramdisk
-    fs->device->device_ops->block_device_ops->block_write(DIOSFS_SUPERBLOCK, 1, buffer,
+    fs->device->driver->device_ops->block_device_ops->block_write(DIOSFS_SUPERBLOCK, 1, buffer,
                                                           fs->device);
 
     memset(buffer, 0, PAGE_SIZE);
@@ -245,7 +254,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      * Fill in inode bitmap with zeros blocks
      */
     for (size_t i = 0; i < fs->superblock->inode_bitmap_size; i++) {
-        fs->device->device_ops->block_device_ops->block_write(
+        fs->device->driver->device_ops->block_device_ops->block_write(
                 fs->superblock->inode_bitmap_pointers_start +
                 i, 1, buffer, fs->device);
     }
@@ -254,7 +263,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      * Fill in block bitmap with zerod blocks
      */
     for (size_t i = 0; i < fs->superblock->block_bitmap_size; i++) {
-        fs->device->device_ops->block_device_ops->block_write(
+        fs->device->driver->device_ops->block_device_ops->block_write(
                 fs->superblock->block_bitmap_pointers_start +
                 i, 1, buffer, fs->device);
     }
@@ -264,7 +273,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      */
     for (size_t i = 0;
          i < fs->superblock->num_inodes / (fs->superblock->block_size / sizeof(struct diosfs_inode)); i++) {
-        fs->device->device_ops->block_device_ops->block_write(
+        fs->device->driver->device_ops->block_device_ops->block_write(
                 fs->superblock->inode_start_pointer + i,
                 1, buffer, fs->device);
     }
@@ -273,7 +282,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
      *Write zerod blocks for the blocks
      */
     for (size_t i = 0; i < fs->superblock->num_blocks; i++) {
-        fs->device->device_ops->block_device_ops->block_write(
+        fs->device->driver->device_ops->block_device_ops->block_write(
                 fs->superblock->block_start_pointer + i,
                 1, buffer, fs->device);
     }
@@ -931,14 +940,14 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
 
     char *buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
-    fs->device->device_ops->block_device_ops->block_read(block,
+    fs->device->driver->device_ops->block_device_ops->block_read(block,
                                                          1, buffer, fs->device);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
     buffer[BYTE(number)] &= (uint64_t) ~BIT(bit); //TODO handle impl defined behavior here
-    fs->device->device_ops->block_device_ops->block_write(block,
+    fs->device->driver->device_ops->block_device_ops->block_write(block,
                                                           1, buffer, fs->device);
     kfree(buffer);
 }
@@ -968,7 +977,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
     uint64_t bit = 0;
     uint64_t inode_number;
 
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             fs->superblock->inode_bitmap_pointers_start,
             fs->superblock->inode_bitmap_size, buffer, fs->device);
 
@@ -1012,7 +1021,7 @@ static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem
     memset(inode_to_be_filled, 0, sizeof(struct diosfs_inode));
     inode_to_be_filled->inode_number = inode_number;
 
-    ret = fs->device->device_ops->block_device_ops->block_write(
+    ret = fs->device->driver->device_ops->block_device_ops->block_write(
             fs->superblock->inode_bitmap_pointers_start,
             (fs->superblock->inode_bitmap_size), buffer, fs->device);
 
@@ -1065,7 +1074,7 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
      *many blocks here so we will work with ramdisk functions directly.
      *
      */
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             fs->superblock->block_bitmap_pointers_start,
             fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
 
@@ -1102,7 +1111,7 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap(const struct diosfs_filesy
 
 
     found_free:
-    ret = fs->device->device_ops->block_device_ops->block_write(
+    ret = fs->device->driver->device_ops->block_device_ops->block_write(
             fs->superblock->block_bitmap_pointers_start,
             fs->superblock->block_bitmap_pointers_start, buffer, fs->device);
 
@@ -1694,13 +1703,13 @@ static void diosfs_write_inode(const struct diosfs_filesystem_context *fs, struc
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode->inode_number / NUM_INODES_PER_BLOCK);
     char *block = kzmalloc(fs->superblock->block_size);
 
-    fs->device->device_ops->block_device_ops->block_read(
+    fs->device->driver->device_ops->block_device_ops->block_read(
             block_number,
             1, block, fs->device);
 
     memcpy(&block[inode_number_in_block * sizeof(struct diosfs_inode)], inode, sizeof(struct diosfs_inode));
 
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_write(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_write(
             block_number,
             1, block, fs->device);
 
@@ -1717,7 +1726,7 @@ static void diosfs_read_inode(const struct diosfs_filesystem_context *fs, struct
     uint64_t block_number = fs->superblock->inode_start_pointer + (inode_number / NUM_INODES_PER_BLOCK);
     char *block = kzmalloc(fs->superblock->block_size);
 
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             block_number,
             1, block, fs->device);
 
@@ -1747,7 +1756,7 @@ static void diosfs_write_block_by_number(const uint64_t block_number, char *buff
     if (write_size_bytes + offset > fs->superblock->block_size) {
         write_size_bytes = fs->superblock->block_size - offset;
     }
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_write(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_write(
             fs->superblock->block_start_pointer +
             block_number, 1, buffer, fs->device);
 
@@ -1772,7 +1781,7 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char *buffe
     if (read_size_bytes + offset > fs->superblock->block_size) {
         read_size_bytes = fs->superblock->block_size - offset;
     }
-    uint64_t ret = fs->device->device_ops->block_device_ops->block_read(
+    uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             fs->superblock->block_start_pointer +
             block_number, 1, buffer, fs->device);
 
