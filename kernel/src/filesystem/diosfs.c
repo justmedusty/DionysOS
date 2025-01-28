@@ -32,7 +32,7 @@ struct device block_dev[10] = {
                 .device_minor = INITIAL_FILESYSTEM,
                 .uses_dma = false,
                 .device_type = DEVICE_TYPE_BLOCK,
-                .pci_driver = NULL,
+                .driver = NULL,
                 .device_info = &ramdisk[0],
                 .device_ops = &ramdisk_device_ops
         }

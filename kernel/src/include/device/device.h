@@ -43,6 +43,28 @@ struct device_group {
     struct device **devices;
 };
 
+struct usb_driver {
+    struct device_driver *generic_driver; // Base driver struct for common operations
+    uint8_t interface_class;     // USB interface class (e.g., HID, Mass Storage)
+    uint8_t subclass;            // Subclass code
+    uint8_t protocol;            // Protocol code
+};
+
+struct i2c_driver {
+    struct device_driver *generic_driver; // Base driver struct for common operations
+    uint32_t i2c_address; // I2C device address
+    uint32_t speed;       // Communication speed
+};
+
+struct rs232_driver {
+    struct device_driver *generic_driver; // Base driver struct for common operations
+    uint32_t baud_rate;   // Baud rate for serial communication
+    uint8_t parity;       // Parity (e.g., none, even, odd)
+    uint8_t stop_bits;    // Number of stop bits
+    uint8_t data_bits;    // Data bits (e.g., 7, 8)
+};
+
+
 struct device {
     struct device *parent;
     struct spinlock *lock;
@@ -53,14 +75,23 @@ struct device {
     char name[32];
     bool uses_dma;
     struct device_ops *device_ops;
-    struct pci_driver *pci_driver;
+    struct device_driver *driver;
     void *device_info;
 };
+
 
 //not sure if I will use this yet
 struct device_driver {
     struct device *device;
-    struct pci_driver *pci_driver;
+    union {
+        struct pci_driver *pci_driver;
+        struct usb_driver *usb_driver;
+        struct i2c_driver *i2c_driver;
+        struct rs232_driver *rs232_driver;
+    };
+
+    int32_t (*probe)(struct device *device);
+
     struct device_ops *device_ops;
 };
 
@@ -125,7 +156,9 @@ struct device_ops {
         struct network_device_ops *network_device_ops;
 
         struct framebuffer_ops *framebuffer_ops;
-
+    };
+    //will have more specific ops down here
+    union {
         struct nvme_ops *nvme_ops;
     };
 };

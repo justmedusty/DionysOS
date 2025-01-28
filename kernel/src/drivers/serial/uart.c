@@ -67,7 +67,7 @@ void init_serial() {
     serial_device.device_ops = &main_serial_ops;
     serial_device.uses_dma = false;
     serial_device.device_info = NULL;
-    serial_device.pci_driver = NULL;
+    serial_device.driver = NULL;
     serial_device.device_type = DEVICE_TYPE_CHAR;
     kprintf("Serial Initialized\n");
 }
