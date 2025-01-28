@@ -13,7 +13,7 @@
 
 #define RAMDISK_COUNT 5
 
-#define SUCCESS 0
+
 
 #define SIZE_TOO_SMALL 0x4
 #define ID_OUT_OF_RANGE 0x8

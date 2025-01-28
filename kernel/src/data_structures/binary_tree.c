@@ -140,11 +140,11 @@ uint64_t init_tree(struct binary_tree *tree, uint64_t mode, uint64_t flags) {
     switch (mode) {
         case REGULAR_TREE:
             init_binary_tree(tree);
-            return SUCCESS;
+            return KERN_SUCCESS;
 
         case RED_BLACK_TREE:
             init_red_black_tree(tree);
-            return SUCCESS;
+            return KERN_SUCCESS;
 
         default:
             return BAD_TREE_MODE;
@@ -192,7 +192,7 @@ uint64_t destroy_tree(struct binary_tree *tree) {
 
     if (current == NULL) {
         kfree(tree);
-        return SUCCESS;
+        return KERN_SUCCESS;
     }
     while (tree->node_count != 0) {
         /* Leaf node ? */
@@ -222,7 +222,7 @@ uint64_t destroy_tree(struct binary_tree *tree) {
     }
 
     kfree(tree);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -242,14 +242,14 @@ uint64_t insert_binary_tree(struct binary_tree *tree, void *data, uint64_t key) 
         tree->root = new_node;
         tree->root->parent = NULL;
         tree->node_count++;
-        return SUCCESS;
+        return KERN_SUCCESS;
     }
 
     while (1) {
         // Sanity checks above and below mean that there shouldn't be any null nodes showing up here
         if (key == current->key) {
             singly_linked_list_insert_tail(&current->data, data);
-            return SUCCESS;
+            return KERN_SUCCESS;
         }
 
         if (key < current->key) {
@@ -269,7 +269,7 @@ uint64_t insert_binary_tree(struct binary_tree *tree, void *data, uint64_t key) 
                 }
 
                 tree->node_count++;
-                return SUCCESS;
+                return KERN_SUCCESS;
             }
             current = current->left;
         } else {
@@ -289,7 +289,7 @@ uint64_t insert_binary_tree(struct binary_tree *tree, void *data, uint64_t key) 
                     serial_printf("[ERROR] Binary tree node already exists\n");
                 }
 
-                return SUCCESS;
+                return KERN_SUCCESS;
             }
             current = current->right;
         }
@@ -385,7 +385,7 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
             panic("Here");
         }
         release_spinlock(&tree->lock);
-        return SUCCESS;
+        return KERN_SUCCESS;
     }
     uint8_t depth = 0; /* Not sure if I am going to use this yet */
     while (1) {
@@ -399,9 +399,9 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
              *  Handle case where it is in a non-empty bucket
              */
             if (current->data.node_count > 1) {
-                if (singly_linked_list_remove_node_by_address(&current->data, address) == SUCCESS) {
+                if (singly_linked_list_remove_node_by_address(&current->data, address) == KERN_SUCCESS) {
                     release_spinlock(&tree->lock);
-                    return SUCCESS;
+                    return KERN_SUCCESS;
                 }
                 release_spinlock(&tree->lock);
                 return VALUE_NOT_FOUND;
@@ -418,7 +418,7 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
                 NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
-                return SUCCESS;
+                return KERN_SUCCESS;
             }
 
 
@@ -439,7 +439,7 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
                 NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
-                return SUCCESS;
+                return KERN_SUCCESS;
             }
             /*
              *  Handle left child is non-null while right child is
@@ -459,7 +459,7 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
                 NODE_FREE(current);
                 tree->node_count--;
                 release_spinlock(&tree->lock);
-                return SUCCESS;
+                return KERN_SUCCESS;
             }
             /*
              *
@@ -502,7 +502,7 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
             NODE_FREE(current);
             tree->node_count--;
             release_spinlock(&tree->lock);
-            return SUCCESS;
+            return KERN_SUCCESS;
         }
 
         if (key < current->key) {

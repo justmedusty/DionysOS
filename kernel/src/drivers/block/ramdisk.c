@@ -52,7 +52,7 @@ uint64_t ramdisk_mkfs(const char *initramfs_img, const uint64_t size_bytes, cons
         return SIZE_TOO_SMALL;
     }
     memcpy(ramdisk[ramdisk_id].ramdisk_start, initramfs_img, size_bytes);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -101,7 +101,7 @@ uint64_t ramdisk_read(char *buffer, uint64_t block, uint64_t offset, uint64_t re
         buffer[index] = read_start[index];
         index++;
     }
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -147,7 +147,7 @@ uint64_t ramdisk_write(const char *buffer, uint64_t block, uint64_t offset, uint
             index++;
             total_transferred++;
         }
-        return SUCCESS;
+        return KERN_SUCCESS;
     }
 
     if (write_size > buffer_size) {
@@ -165,7 +165,7 @@ uint64_t ramdisk_write(const char *buffer, uint64_t block, uint64_t offset, uint
         index++;
     }
 
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 

@@ -48,7 +48,7 @@ struct device_ops main_serial_ops = {
 
 struct device_driver serial_driver = {
         .device_ops = &main_serial_ops,
-        .pci_driver = NULL
+        .rs232_driver = NULL
 };
 
 

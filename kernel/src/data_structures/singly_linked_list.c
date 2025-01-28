@@ -267,7 +267,7 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
     if(node->data == data) {
         release_spinlock(&list->lock);
         singly_linked_list_remove_head(list);
-        return SUCCESS;
+        return KERN_SUCCESS;
     }
 
     node = node->next; // Handle head and increment node pointer so that we can track prev properly
@@ -278,7 +278,7 @@ uint64_t singly_linked_list_remove_node_by_address(struct singly_linked_list* li
             singly_linked_list_node_free(node);
             list->node_count--;
             release_spinlock(&list->lock);
-            return SUCCESS;
+            return KERN_SUCCESS;
         }
 
         node = node->next;

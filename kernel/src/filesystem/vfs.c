@@ -172,7 +172,7 @@ int64_t vnode_unlink(struct vnode *link) {
     }
 
     link->vnode_ops->unlink(link);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 struct vnode *vnode_create_special(struct vnode *parent, char *name, uint8_t vnode_type) {
@@ -261,7 +261,7 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
     target->vnode_ops->remove(target);
     vnode_update_children_array(target);
     vnode_free(target);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -418,7 +418,7 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     mount_point->mounted_vnode = mounted_vnode;
 
     release_spinlock(&vfs_lock);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -436,7 +436,7 @@ int64_t vnode_unmount(struct vnode *vnode) {
     // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
     vnode->mounted_vnode = NULL;
     release_spinlock(&vfs_lock);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 /*
@@ -587,7 +587,7 @@ static int64_t vnode_update_children_array(const struct vnode *vnode) {
             parent->vnode_children[index] = parent->vnode_children[size];
             parent->num_children--;
             release_spinlock(&vfs_lock);
-            return SUCCESS;
+            return KERN_SUCCESS;
         }
     }
     panic("Vnode does not exist"); // panic since this means invalid state and needs to be investigated
@@ -758,7 +758,7 @@ int64_t rename(char *path, char *new_name) {
     }
 
     vnode_rename(vnode, new_name);
-    return SUCCESS;
+    return KERN_SUCCESS;
 }
 
 int64_t create(char *path, char *name, uint64_t type) {

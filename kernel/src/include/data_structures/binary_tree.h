@@ -21,7 +21,7 @@
 #define BAD_TREE_MODE 0xF1F
 #define INSERTION_ERROR 0x1234
 
-#define SUCCESS 0
+#define KERN_SUCCESS 0
 #define EMPTY_TREE 1
 #define VALUE_NOT_FOUND 2
 

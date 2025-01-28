@@ -580,7 +580,7 @@ static struct buddy_block *buddy_split(struct buddy_block *block) {
     new_block->flags |= IN_TREE_FLAG;
     const uint64_t ret = insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], new_block, new_block->order);
 
-    if (ret == SUCCESS) {
+    if (ret == KERN_SUCCESS) {
         return block;
     } else {
         panic("NULL");

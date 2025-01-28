@@ -5,7 +5,7 @@
 #define SINGLY_LINKED_LIST_H
 #include "spinlock.h"
 
-#define SUCCESS 0
+#define KERN_SUCCESS 0
 #define NODE_NOT_FOUND 1
 
 #define SINGLY_LINKED_LIST_NODE_STATIC_POOL_SIZE 80000UL
