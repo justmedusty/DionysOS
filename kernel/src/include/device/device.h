@@ -75,13 +75,15 @@ struct device {
     char name[32];
     bool uses_dma;
     struct device_driver *driver;
-    void *device_info;
+    void *device_info; /* Just so it is clear, this holds the specific device struct */
 };
 
 
 //not sure if I will use this yet
 struct device_driver {
+
     struct device *device;
+
     union {
         struct pci_driver *pci_driver;
         struct usb_driver *usb_driver;
@@ -100,6 +102,11 @@ struct block_device_ops {
     uint64_t (*block_write)(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
     int32_t (*flush)(struct device *dev);
+
+    //will have more specific ops down here
+    union {
+        struct nvme_ops *nvme_ops;
+    };
 };
 
 struct char_device_ops {
@@ -155,10 +162,6 @@ struct device_ops {
         struct network_device_ops *network_device_ops;
 
         struct framebuffer_ops *framebuffer_ops;
-    };
-    //will have more specific ops down here
-    union {
-        struct nvme_ops *nvme_ops;
     };
 };
 

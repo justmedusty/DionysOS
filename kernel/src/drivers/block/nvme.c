@@ -103,11 +103,16 @@ struct nvme_ops nvme_ops = {
 
 struct block_device_ops nvme_block_ops = {
         .block_read = nvme_read_block,
-        .block_write = nvme_write_block
+        .block_write = nvme_write_block,
+        .nvme_ops = &nvme_ops
+};
+
+struct device_driver nvme_driver = {
+
 };
 
 struct device_ops nvme_device_ops = {
-        .nvme_ops = &nvme_ops,
+        .block_device_ops = &nvme_block_ops,
         .shutdown = NULL,
         .reset = NULL,
         .get_status = NULL,
@@ -427,7 +432,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
 
 
-    ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->nvme_ops;
+    ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
     if (ops && ops->submit_cmd) {
         ops->submit_cmd(queue, command);
@@ -572,7 +577,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     }
 
     // Check for custom nvme operations to complete the command
-    ops = queue->dev->device->driver->device_ops->nvme_ops;
+    ops = queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
     if (ops && ops->complete_cmd) {
         ops->complete_cmd(queue, command); // Use the custom operation if available
     }
