@@ -971,5 +971,5 @@ int32_t nvme_shutdown(struct device *dev) {
     struct nvme_device *nvme_dev = namespace->device;
 
     return nvme_disable_control(nvme_dev);
-
 }
+

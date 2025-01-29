@@ -11,6 +11,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
 #include "include/memory/mem.h"
+
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
  */
@@ -28,7 +29,7 @@ struct pci_bus_information pci_info = {
 
 
 /*
- * PCIe still uses the oldschool bus:slot:function layout so we use the those values + the shift macros in order to
+ * PCIe still uses the oldschool bus:slot:function layout so we use the those values + the shift macros in order to get information
  */
 static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
     uintptr_t address = (uintptr_t) P2V(pci_info.pci_mmio_address)
@@ -40,6 +41,16 @@ static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
     return *(volatile uint32_t *) address;
 }
 
+static void pci_write_config(struct pci_device *device, uint16_t offset, uint32_t value) {
+    uintptr_t address = (uintptr_t) P2V(pci_info.pci_mmio_address)
+                        + (uintptr_t) (device->bus << BUS_SHIFT)
+                        + (uintptr_t) (device->slot << SLOT_SHIFT)
+                        + (uintptr_t) (device->function << FUNCTION_SHIFT)
+                        + (uintptr_t) offset;
+
+    *(volatile uint32_t *) address = value;
+}
+
 #ifdef __x86_64__
 
 #include "include/architecture/x86_64/acpi.h"
@@ -49,7 +60,8 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
     pci_info.pci_mmio_address = entry->base_address;
     pci_info.start_bus = entry->start_bus;
     pci_info.end_bus = entry->end_bus;
-    serial_printf("PCIe MMIO address is %x.64 , start bus %i end bus %i\n", pci_info.pci_mmio_address, pci_info.start_bus, pci_info.end_bus);
+    serial_printf("PCIe MMIO address is %x.64 , start bus %i end bus %i\n", pci_info.pci_mmio_address,
+                  pci_info.start_bus, pci_info.end_bus);
 }
 
 #endif
@@ -255,4 +267,25 @@ char *pci_get_class_name(uint8_t class) {
             return "Unknown";
 
     }
+}
+
+uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number) {
+
+    uint32_t bar = pci_info.pci_mmio_address + base_address_register_number * 4;
+
+    uint32_t address = pci_read_config(device->pci_device, bar) & WORD_MASK;
+
+    if (address == WORD_MASK) {
+        return address;
+    } else if (address & PCI_BASE_ADDRESS_SPACE_IO) {
+        return address & PCI_BASE_ADDRESS_IO_MASK;
+    } else {
+        return address & PCI_BASE_ADDRESS_MEM_MASK;
+    }
+
+}
+
+void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address) {
+    uint32_t base_address_register = pci_info.pci_mmio_address + base_address_register_number * 4;
+    pci_write_config(device->pci_device,base_address_register,address);
 }

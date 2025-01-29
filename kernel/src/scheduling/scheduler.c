@@ -296,7 +296,7 @@ static void look_for_process() {
     release_spinlock(&sched_global_lock);
 }
 
-#ifdef _DPS_
+//#ifdef _DPS_
 static void promote_processes() {
     struct cpu *cpu = my_cpu();
     struct queue *local_runqueue = cpu->local_run_queue;
@@ -309,4 +309,4 @@ static void promote_processes() {
     }
 
 }
-#endif
+//#endif

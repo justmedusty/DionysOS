@@ -94,6 +94,11 @@
 #define PCI_FUNCTION_MASK 0x7
 #define PCI_REG_MASK 0xFC
 
+
+#define PCI_BASE_ADDRESS_SPACE_IO 0x01
+#define PCI_BASE_ADDRESS_IO_MASK (~0x03ULL)
+#define PCI_BASE_ADDRESS_MEM_MASK (~0x0FULL)
+
 /*
  * PCI driver abstraction, taking the simpler stuff out of the linux implementation
  */
@@ -115,6 +120,16 @@ struct pci_driver {
 
 };
 
+struct pci_controller {
+    struct device *bus;
+    struct device *controller;
+
+    uint32_t first_bus;
+    uint32_t last_bus;
+
+    volatile uint32_t configuration_address;
+    volatile int8_t  *configuration_data;
+};
 
 struct pci_bus_information {
     uintptr_t pci_mmio_address;

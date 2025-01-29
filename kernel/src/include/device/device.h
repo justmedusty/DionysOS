@@ -75,6 +75,7 @@ struct device {
     char name[32];
     bool uses_dma;
     struct device_driver *driver;
+    struct pci_device *pci_device;
     void *device_info; /* Just so it is clear, this holds the specific device struct */
 };
 
@@ -106,6 +107,7 @@ struct block_device_ops {
     //will have more specific ops down here
     union {
         struct nvme_ops *nvme_ops;
+        struct ahci_ops *ahci_ops;
     };
 };
 
