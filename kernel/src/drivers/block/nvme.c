@@ -92,6 +92,9 @@ nvme_raw_block(struct device *dev, uint64_t block_number, uint64_t block_count, 
 static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, uint64_t *prp2,
                                                 int32_t total_len, uint64_t dma_addr);
 
+static void nvme_bind(struct device *device);
+static int32_t nvme_probe(struct device *device);
+
 /*
  * Not completed yet will need to make some abstracted functions to use this
  */
@@ -110,7 +113,15 @@ struct block_device_ops nvme_block_ops = {
 struct device_driver nvme_driver = {
 
 };
-
+struct pci_driver nvme_pci_driver = {
+        .probe = nvme_probe,
+        .bind = nvme_bind,
+        .shutdown = NULL,
+        .name = "nvmedriver",
+        .driver_managed_dma = false,
+        .resume = NULL,
+        .device = NULL,// this struct can be copied for use later and then have fields reassigned
+};
 struct device_ops nvme_device_ops = {
         .block_device_ops = &nvme_block_ops,
         .shutdown = NULL,
@@ -971,5 +982,36 @@ int32_t nvme_shutdown(struct device *dev) {
     struct nvme_device *nvme_dev = namespace->device;
 
     return nvme_disable_control(nvme_dev);
+}
+
+/*
+ * *****************************************************************************************
+ * NVME PCIe Functions Below :
+ * *****************************************************************************************
+ *
+ */
+
+static void nvme_bind(struct device *device){
+    static int32_t nvme_number;
+    char name[32];
+
+    sprintf(name,"nvmedevice_%i",nvme_number++);
+
+    safe_strcpy(device->name,name,30);
+    device->name[31] = '\0'; // call it paranoia but im doing this anyway
+}
+
+static int32_t nvme_probe(struct device *device){
+
+    struct nvme_namespace *nvme_ns = device->device_info;
+    struct nvme_device *nvme_device = nvme_ns->device;
+    struct pci_device *pci_dev = device->pci_device;
+    if(!pci_dev){
+        return KERN_NOT_FOUND;
+    }
+    nvme_device->bar = (struct nvme_bar *) &pci_dev->generic.base_address_registers[0];
+
+    return nvme_init(device);
+
 }
 

@@ -700,7 +700,7 @@ struct nvme_device {
     struct doubly_linked_list *node;        // Linked list node for device list
     struct nvme_queue **queues;      // Pointer to an array of NVMe queue pointers
     volatile uint32_t *doorbells;        // Pointer to doorbell registers
-    int device_instance;                 // Instance identifier of the device
+    int32_t device_instance;                 // Instance identifier of the device
     unsigned int total_queues;           // Total number of queues
     unsigned int active_queues;          // Number of online queues
     unsigned int max_queue_id;           // Maximum queue identifier

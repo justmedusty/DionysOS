@@ -9,6 +9,7 @@
 #include "include/architecture/arch_cpu.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "include/device/device.h"
 
 #define PCI_MAX_BUSES 256
 #define SLOTS_PER_BUS 32
@@ -106,15 +107,17 @@ struct pci_driver {
     char *name;
     const struct pci_device *device;
 
-    int32_t (*probe)(struct pci_device *device);
+    int32_t (*probe)(struct device *device);
 
-    void (*remove)(struct pci_device *device);
+    void (*remove)(struct device *device);
 
-    int32_t (*suspend)(struct pci_device *device);
+    int32_t (*suspend)(struct device *device);
 
-    int32_t (*resume)(struct pci_device *device);
+    int32_t (*resume)(struct device *device);
 
-    uint32_t (*shutdown)(struct pci_device *device);
+    uint32_t (*shutdown)(struct device *device);
+
+    void (*bind)(struct device *device);
     // Skip the SRIOV stuff since I don't plan on supporting virtualization of devices
     bool driver_managed_dma;
 
@@ -128,7 +131,7 @@ struct pci_controller {
     uint32_t last_bus;
 
     volatile uint32_t configuration_address;
-    volatile int8_t  *configuration_data;
+    volatile int8_t *configuration_data;
 };
 
 struct pci_bus_information {
@@ -221,43 +224,15 @@ void pci_enumerate_devices(bool print);
 
 char *pci_get_class_name(uint8_t class);
 
+uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number);
+
+void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address);
 
 #ifdef __x86_64__
 
 #include "include/architecture/x86_64/acpi.h"
 
 void set_pci_mmio_address(struct mcfg_entry *entry);
-
-// PCI configuration space offset masks and shifts
-#define PCI_BUS_SHIFT      20  // Shift for the PCI bus number in the MMIO address
-#define PCI_DEVICE_SHIFT   15  // Shift for the PCI device number in the MMIO address
-#define PCI_FUNCTION_SHIFT 12  // Shift for the PCI function number in the MMIO address
-#define PCI_OFFSET_MASK    ~0x3  // Mask for the PCI offset to ensure it's DWORD aligned
-
-static inline uint32_t pci_read32(int32_t bus, int32_t device, int32_t function, uint32_t offset) {
-    struct pci_bus_information info = get_pci_info();
-
-    uint64_t base = (uint64_t) info.pci_mmio_address;
-    volatile uint32_t *address = (uint32_t *) ((uintptr_t) base +
-                                               (((bus - info.start_bus) << PCI_BUS_SHIFT) |
-                                                (device << PCI_DEVICE_SHIFT) |
-                                                (function << PCI_FUNCTION_SHIFT) |
-                                                (offset & PCI_OFFSET_MASK)));
-
-    return *address;
-}
-
-static inline void pci_write32(int32_t bus, int32_t device, int32_t function, uint32_t offset, uint32_t value) {
-    struct pci_bus_information info = get_pci_info();
-
-    volatile uint32_t *address = (uint32_t *) ((uintptr_t) info.pci_mmio_address +
-                                               (((bus - info.start_bus) << PCI_BUS_SHIFT) |
-                                                (device << PCI_DEVICE_SHIFT) |
-                                                (function << PCI_FUNCTION_SHIFT) |
-                                                (offset & PCI_OFFSET_MASK)));
-
-    *address = value;
-}
 
 // Message Signaled Interrupts (MSI) format message flags
 #define MSI_EDGE_TRIGGER  (1 << 15)  // Edge-triggered interrupt bit
