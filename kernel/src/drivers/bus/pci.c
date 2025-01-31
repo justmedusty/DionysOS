@@ -199,15 +199,15 @@ void pci_enumerate_devices(bool print) {
 
                 if (print) {
                     serial_printf(
-                            "Found device on bus %i, device %i, function %i, vendor id %i device id %i class %s\n", bus,
+                            "Found device on bus %i, device %i, function %i, vendor id %i device id %i type %s\n", bus,
                             slot, function, pci_device->vendor_id, pci_device->device_id,
-                            pci_get_class_name(pci_device->class));
+                           pci_get_subclass_name(pci_device->class,pci_device->subclass));
                 }
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
-                info_printf("PCI device of class %s inserted into registered device list\n",
-                            pci_get_class_name(pci_device->class));
+                info_printf("PCI device of type %s inserted into registered device list\n",
+                            pci_get_subclass_name(pci_device->class,pci_device->subclass));
 
             }
         }
@@ -269,6 +269,170 @@ char *pci_get_class_name(uint8_t class) {
     }
 }
 
+char *pci_get_subclass_name(uint8_t class, uint8_t subclass) {
+    switch (class) {
+        case 0x01: // Mass Storage Controller
+            switch (subclass) {
+                case 0x00:
+                    return "SCSI Bus Controller";
+                case 0x01:
+                    return "IDE Controller";
+                case 0x02:
+                    return "Floppy Disk Controller";
+                case 0x03:
+                    return "IPI Bus Controller";
+                case 0x04:
+                    return "RAID Controller";
+                case 0x05:
+                    return "ATA Controller";
+                case 0x06:
+                    return "Serial ATA Controller";
+                case 0x07:
+                    return "Serial Attached SCSI Controller";
+                case 0x08:
+                    return "Non-Volatile Memory Controller";
+                case 0x80:
+                    return "Other Mass Storage Controller";
+                default:
+                    return "Unknown Mass Storage Subclass";
+            }
+
+        case 0x02: // Network Controller
+            switch (subclass) {
+                case 0x00:
+                    return "Ethernet Controller";
+                case 0x01:
+                    return "Token Ring Controller";
+                case 0x02:
+                    return "FDDI Controller";
+                case 0x03:
+                    return "ATM Controller";
+                case 0x04:
+                    return "ISDN Controller";
+                case 0x05:
+                    return "WorldFip Controller";
+                case 0x06:
+                    return "PICMG Controller";
+                case 0x80:
+                    return "Other Network Controller";
+                default:
+                    return "Unknown Network Subclass";
+            }
+
+        case 0x03: // Display Controller
+            switch (subclass) {
+                case 0x00:
+                    return "VGA Compatible Controller";
+                case 0x01:
+                    return "XGA Controller";
+                case 0x02:
+                    return "3D Controller";
+                case 0x80:
+                    return "Other Display Controller";
+                default:
+                    return "Unknown Display Subclass";
+            }
+
+        case 0x04: // Multimedia Controller
+            switch (subclass) {
+                case 0x00:
+                    return "Multimedia Video Controller";
+                case 0x01:
+                    return "Multimedia Audio Controller";
+                case 0x02:
+                    return "Computer Telephony Device";
+                case 0x03:
+                    return "Audio Device";
+                case 0x80:
+                    return "Other Multimedia Controller";
+                default:
+                    return "Unknown Multimedia Subclass";
+            }
+
+        case 0x06: // Bridge Device
+            switch (subclass) {
+                case 0x00:
+                    return "Host Bridge";
+                case 0x01:
+                    return "ISA Bridge";
+                case 0x02:
+                    return "EISA Bridge";
+                case 0x03:
+                    return "MCA Bridge";
+                case 0x04:
+                    return "PCI-to-PCI Bridge";
+                case 0x05:
+                    return "PCMCIA Bridge";
+                case 0x06:
+                    return "NuBus Bridge";
+                case 0x07:
+                    return "CardBus Bridge";
+                case 0x08:
+                    return "RACEway Bridge";
+                case 0x09:
+                    return "PCI-to-PCI Bridge (Secondary)";
+                case 0x0A:
+                    return "InfiniBand-to-PCI Host Bridge";
+                case 0x80:
+                    return "Other Bridge Device";
+                default:
+                    return "Unknown Bridge Subclass";
+            }
+
+        case 0x0C: // Serial Bus Controller
+            switch (subclass) {
+                case 0x00:
+                    return "FireWire (IEEE 1394) Controller";
+                case 0x01:
+                    return "ACCESS Bus";
+                case 0x02:
+                    return "SSA";
+                case 0x03:
+                    return "USB Controller";
+                case 0x04:
+                    return "Fibre Channel";
+                case 0x05:
+                    return "SMBus Controller";
+                case 0x06:
+                    return "InfiniBand Controller";
+                case 0x07:
+                    return "IPMI Interface";
+                case 0x08:
+                    return "SERCOS Interface";
+                case 0x09:
+                    return "CANbus Controller";
+                case 0x80:
+                    return "Other Serial Bus Controller";
+                default:
+                    return "Unknown Serial Bus Subclass";
+            }
+
+        case 0x0D: // Wireless Controller
+            switch (subclass) {
+                case 0x00:
+                    return "iRDA Controller";
+                case 0x01:
+                    return "Consumer IR Controller";
+                case 0x10:
+                    return "RF Controller";
+                case 0x11:
+                    return "Bluetooth Controller";
+                case 0x12:
+                    return "Broadband Controller";
+                case 0x20:
+                    return "Ethernet Controller (802.1a)";
+                case 0x21:
+                    return "Ethernet Controller (802.1b)";
+                case 0x80:
+                    return "Other Wireless Controller";
+                default:
+                    return "Unknown Wireless Subclass";
+            }
+
+        default:
+            return "Unknown Subclass";
+    }
+}
 uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number) {
 
     uint32_t bar = pci_info.pci_mmio_address + base_address_register_number * 4;

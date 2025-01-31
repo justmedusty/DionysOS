@@ -223,7 +223,7 @@ struct pci_bus_information get_pci_info();
 void pci_enumerate_devices(bool print);
 
 char *pci_get_class_name(uint8_t class);
-
+char *pci_get_subclass_name(uint8_t class, uint8_t subclass);
 uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number);
 
 void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address);
