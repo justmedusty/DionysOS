@@ -991,6 +991,9 @@ int32_t nvme_shutdown(struct device *dev) {
  *
  */
 
+static void setup_nvme_device(struct device *device){
+
+}
 static void nvme_bind(struct device *device){
     static int32_t nvme_number;
     char name[32];
@@ -1004,6 +1007,10 @@ static void nvme_bind(struct device *device){
 static int32_t nvme_probe(struct device *device){
 
     struct nvme_namespace *nvme_ns = device->device_info;
+    if(!nvme_ns){
+        setup_nvme_device(device);
+        nvme_ns = device->device_info;
+    }
     struct nvme_device *nvme_device = nvme_ns->device;
     struct pci_device *pci_dev = device->pci_device;
     if(!pci_dev){
@@ -1014,4 +1021,5 @@ static int32_t nvme_probe(struct device *device){
     return nvme_init(device);
 
 }
+
 

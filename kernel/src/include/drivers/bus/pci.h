@@ -118,6 +118,7 @@ struct pci_driver {
     uint32_t (*shutdown)(struct device *device);
 
     void (*bind)(struct device *device);
+
     // Skip the SRIOV stuff since I don't plan on supporting virtualization of devices
     bool driver_managed_dma;
 
