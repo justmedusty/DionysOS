@@ -20,10 +20,10 @@ static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout);
 
 static uint64_t
-nvme_write_block(uint64_t byte_offset, size_t bytes_to_read, char *buffer, struct device *device);
+nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
 static uint64_t
-nvme_read_block(uint64_t byte_offset, size_t bytes_to_read, char *buffer, struct device *device);
+nvme_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
                       uint64_t dma_address);
@@ -93,6 +93,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
                                                 int32_t total_len, uint64_t dma_addr);
 
 static void nvme_bind(struct device *device);
+
 static int32_t nvme_probe(struct device *device);
 
 /*
@@ -478,9 +479,10 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
 
 }
 
-static int32_t nvme_block_probe(){
+static int32_t nvme_block_probe() {
 
 }
+
 int32_t nvme_scan_namespace() {
 
 
@@ -921,8 +923,7 @@ nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct
  * its own logical device that share the same nvme_device struct.
  */
 int32_t nvme_init(struct device *dev) {
-    struct nvme_namespace *namespace = dev->device_info;
-    struct nvme_device *nvme_dev = namespace->device;
+    struct nvme_device *nvme_dev = dev->device_info;
     struct nvme_id_ns *nsid;
     int32_t ret;
     nvme_dev->device = dev;
@@ -978,8 +979,7 @@ int32_t nvme_init(struct device *dev) {
 }
 
 int32_t nvme_shutdown(struct device *dev) {
-    struct nvme_namespace *namespace = dev->device_info;
-    struct nvme_device *nvme_dev = namespace->device;
+    struct nvme_device *nvme_dev = dev->device_info;
 
     return nvme_disable_control(nvme_dev);
 }
@@ -991,29 +991,38 @@ int32_t nvme_shutdown(struct device *dev) {
  *
  */
 
-static void setup_nvme_device(struct device *device){
+static void setup_nvme_device(struct device *device) {
+
+    struct pci_device *nvme_pci_device;
+
 
 }
-static void nvme_bind(struct device *device){
+
+static void nvme_bind(struct device *device) {
     static int32_t nvme_number;
     char name[32];
 
-    sprintf(name,"nvmedevice_%i",nvme_number++);
+    sprintf(name, "nvmedevice_%i", nvme_number++);
 
-    safe_strcpy(device->name,name,30);
+    safe_strcpy(device->name, name, 30);
     device->name[31] = '\0'; // call it paranoia but im doing this anyway
 }
-
-static int32_t nvme_probe(struct device *device){
-
+/*
+ *  I will set it up so that each namespace will be its own device and the device struct parent pointer should point to the nvme device.
+ */
+static int32_t nvme_probe(struct device *device) {
+    if (!device->parent) {
+        return KERN_NO_DEVICE;
+    }
+    struct nvme_device *nvme_device = device->parent->device_info;
     struct nvme_namespace *nvme_ns = device->device_info;
-    if(!nvme_ns){
+    if (!nvme_ns) {
         setup_nvme_device(device);
         nvme_ns = device->device_info;
     }
-    struct nvme_device *nvme_device = nvme_ns->device;
+
     struct pci_device *pci_dev = device->pci_device;
-    if(!pci_dev){
+    if (!pci_dev) {
         return KERN_NOT_FOUND;
     }
     nvme_device->bar = (struct nvme_bar *) &pci_dev->generic.base_address_registers[0];

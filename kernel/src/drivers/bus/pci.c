@@ -201,13 +201,13 @@ void pci_enumerate_devices(bool print) {
                     serial_printf(
                             "Found device on bus %i, device %i, function %i, vendor id %i device id %i type %s\n", bus,
                             slot, function, pci_device->vendor_id, pci_device->device_id,
-                           pci_get_subclass_name(pci_device->class,pci_device->subclass));
+                            pci_get_subclass_name(pci_device->class, pci_device->subclass));
                 }
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
                 info_printf("PCI device of type %s inserted into registered device list\n",
-                            pci_get_subclass_name(pci_device->class,pci_device->subclass));
+                            pci_get_subclass_name(pci_device->class, pci_device->subclass));
 
             }
         }
@@ -433,8 +433,25 @@ char *pci_get_subclass_name(uint8_t class, uint8_t subclass) {
             return "Unknown Subclass";
     }
 }
-uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number) {
 
+/*
+ * This is not very helpful if there is multiple and you want a specific device but that is fine for now
+ */
+struct pci_device *get_pci_device_from_subclass(uint8_t class, uint8_t subclass) {
+    acquire_spinlock(&registered_pci_devices.lock);
+    struct doubly_linked_list_node *current = registered_pci_devices.head;
+
+    while (current) {
+        struct pci_device *dev = current->data;
+        if (dev->class == class && dev->subclass == subclass) {
+            return dev;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number) {
     uint32_t bar = pci_info.pci_mmio_address + base_address_register_number * 4;
 
     uint32_t address = pci_read_config(device->pci_device, bar) & WORD_MASK;
@@ -446,10 +463,9 @@ uint32_t pci_read_base_address_register(struct device *device, int32_t base_addr
     } else {
         return address & PCI_BASE_ADDRESS_MEM_MASK;
     }
-
 }
 
 void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address) {
     uint32_t base_address_register = pci_info.pci_mmio_address + base_address_register_number * 4;
-    pci_write_config(device->pci_device,base_address_register,address);
+    pci_write_config(device->pci_device, base_address_register, address);
 }

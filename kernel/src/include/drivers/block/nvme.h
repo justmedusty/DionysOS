@@ -14,6 +14,9 @@
 #define MAX_PRP_POOL 512
 #define NVME_CQ_SIZE(depth) (depth * sizeof(struct nvme_command))
 #define NVME_SQ_SIZE(depth) (depth * sizeof(struct nvme_command))
+
+#define NVME_PCI_CLASS 1
+#define NVME_PCI_SUBCLASS 8
 enum {
     // Generic Command Statuses
     NVME_SC_CMDID_CONFLICT = 0x3,   // Command identifier conflict
