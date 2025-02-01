@@ -151,8 +151,8 @@ enum {
     NVME_FWACT_ACTV = (2 << 3),
 };
 enum {
-    NVME_NS_FEATURE_THIN_PROVISIONING = 1 << 0 // Namespace supports thin provisioning
-    ,    // LBA format mask
+    NVME_NS_FEATURE_THIN_PROVISIONING = 1 << 0, // Namespace supports thin provisioning
+    NVME_BS_FLBAS_LBA_MASK = 0xf,    // LBA format mask
     NVME_NS_FLBAS_METADATA_EXTENDED = 0x10,   // Metadata extended LBA
     NVME_LBAF_RELIABILITY_BEST = 0,      // Best reliability level
     NVME_LBAF_RELIABILITY_BETTER = 1,      // Better reliability level
