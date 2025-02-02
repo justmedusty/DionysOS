@@ -11,6 +11,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
 #include "include/memory/mem.h"
+#include "include/drivers/block/nvme.h"
 
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
@@ -54,6 +55,7 @@ static void pci_write_config(struct pci_device *device, uint16_t offset, uint32_
 #ifdef __x86_64__
 
 #include "include/architecture/x86_64/acpi.h"
+#include "include/drivers/block/nvme.h"
 
 void set_pci_mmio_address(struct mcfg_entry *entry) {
     doubly_linked_list_init(&registered_pci_devices);
@@ -205,6 +207,10 @@ void pci_enumerate_devices(bool print) {
                 }
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
+                if (IS_NVME_CONTROLLER(pci_device)) {
+                    setup_nvme_device(
+                            pci_device);
+                }
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
                 info_printf("PCI device of type %s inserted into registered device list\n",
                             pci_get_subclass_name(pci_device->class, pci_device->subclass));

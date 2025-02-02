@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include "include/data_structures/doubly_linked_list.h"
-
+#include "include/drivers/bus/pci.h"
 #define NVME_QUEUE_DEPTH 2
 #define ADMIN_TIMEOUT 60
 #define IO_TIMEOUT 30
@@ -17,6 +17,7 @@
 
 #define NVME_PCI_CLASS 1
 #define NVME_PCI_SUBCLASS 8
+#define IS_NVME_CONTROLLER(pci_device) (pci_device->class == NVME_PCI_CLASS && pci_device->subclass == NVME_PCI_SUBCLASS)
 enum {
     // Generic Command Statuses
     NVME_SC_CMDID_CONFLICT = 0x3,   // Command identifier conflict
@@ -734,12 +735,11 @@ struct nvme_ops {
 };
 
 // Function prototypes
-int32_t nvme_init(struct device *dev);        // Initialize NVMe device
+int32_t nvme_init(struct device *dev,void *other_args);        // Initialize NVMe device
 int32_t nvme_shutdown(struct device *dev);    // Shutdown NVMe device
 int32_t nvme_scan_namespace();
-
 int32_t nvme_get_namespace_id(struct device *device, uint32_t *namespace_id, uint8_t *extended_unique_identifier);
-
+void setup_nvme_device(struct pci_device *pci_device);
 // Helper macros for NVMe queue and data size
 #define NVME_ADMIN_QUEUE_SIZE 64                // Admin queue size
 #define NVME_IO_QUEUE_SIZE 128                  // I/O queue size

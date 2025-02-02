@@ -14,6 +14,8 @@
 #include "include/architecture/arch_timer.h"
 #include "include/definitions/string.h"
 
+struct doubly_linked_list nvme_controller_list;
+static bool nvme_initial = false;
 static int32_t nvme_get_info_from_identify(struct nvme_device *device);
 
 static int32_t
@@ -111,9 +113,6 @@ struct block_device_ops nvme_block_ops = {
         .nvme_ops = &nvme_ops
 };
 
-struct device_driver nvme_driver = {
-
-};
 struct pci_driver nvme_pci_driver = {
         .probe = nvme_probe,
         .bind = nvme_bind,
@@ -123,16 +122,22 @@ struct pci_driver nvme_pci_driver = {
         .resume = NULL,
         .device = NULL,// this struct can be copied for use later and then have fields reassigned
 };
+
 struct device_ops nvme_device_ops = {
         .block_device_ops = &nvme_block_ops,
-        .shutdown = NULL,
+        .shutdown = nvme_shutdown,
         .reset = NULL,
         .get_status = NULL,
-        .init = NULL,
+        .init = nvme_init,
         .configure = NULL,
 
 };
 
+struct device_driver nvme_driver = {
+       .pci_driver = &nvme_pci_driver,
+       .device_ops = &nvme_device_ops,
+       .probe = nvme_probe,
+};
 
 /*
  * sets up prp entries for the given nvme device, handles allocation if needed.
@@ -922,7 +927,7 @@ nvme_write_block(uint64_t block_number, size_t block_count, char *buffer, struct
  * an NVMe controller and contain many namespaces which can be though of as logical devices so we will split each one up into
  * its own logical device that share the same nvme_device struct.
  */
-int32_t nvme_init(struct device *dev) {
+int32_t nvme_init(struct device *dev, void *other_args) {
     struct nvme_device *nvme_dev = dev->device_info;
     struct nvme_id_ns *nsid;
     int32_t ret;
@@ -991,19 +996,23 @@ int32_t nvme_shutdown(struct device *dev) {
  *
  */
 
-static void setup_nvme_device(struct device *device) {
-
-    struct pci_device *nvme_pci_device;
-
+void setup_nvme_device(struct pci_device *pci_device) {
+    if(!nvme_initial){
+        doubly_linked_list_init(&nvme_controller_list);
+        nvme_initial = true;
+    }
+    struct device *nvme_controller = kmalloc(sizeof(struct device));
+    struct nvme_device *nvme_dev = kmalloc(sizeof(struct nvme_device));
+    nvme_controller->driver = &nvme_driver;
+    nvme_controller->pci_device = pci_device;
+    nvme_controller->device_info = nvme_dev;
 
 }
 
 static void nvme_bind(struct device *device) {
     static int32_t nvme_number;
     char name[32];
-
     sprintf(name, "nvmedevice_%i", nvme_number++);
-
     safe_strcpy(device->name, name, 30);
     device->name[31] = '\0'; // call it paranoia but im doing this anyway
 }
@@ -1011,23 +1020,14 @@ static void nvme_bind(struct device *device) {
  *  I will set it up so that each namespace will be its own device and the device struct parent pointer should point to the nvme device.
  */
 static int32_t nvme_probe(struct device *device) {
-    if (!device->parent) {
-        return KERN_NO_DEVICE;
-    }
-    struct nvme_device *nvme_device = device->parent->device_info;
-    struct nvme_namespace *nvme_ns = device->device_info;
-    if (!nvme_ns) {
-        setup_nvme_device(device);
-        nvme_ns = device->device_info;
-    }
-
+    struct nvme_device *nvme_device = device->device_info;
     struct pci_device *pci_dev = device->pci_device;
     if (!pci_dev) {
         return KERN_NOT_FOUND;
     }
     nvme_device->bar = (struct nvme_bar *) &pci_dev->generic.base_address_registers[0];
 
-    return nvme_init(device);
+    return nvme_init(device,NULL);
 
 }
 
