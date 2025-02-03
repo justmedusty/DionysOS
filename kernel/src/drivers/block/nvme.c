@@ -3,10 +3,6 @@
 //
 
 
-/*
- * It should be noted that I am not including any sort of cache invalidation here which will obviously affect performance and may even cause bugs that I am not aware of
- * but we will leave that as is unless I am proven to be wrong in making this decison for reasons other than just performance.
- */
 #include <limits.h>
 #include "include/drivers/block/nvme.h"
 #include "include/device/device.h"
@@ -16,6 +12,7 @@
 
 struct doubly_linked_list nvme_controller_list;
 static bool nvme_initial = false;
+
 static int32_t nvme_get_info_from_identify(struct nvme_device *device);
 
 static int32_t
@@ -134,9 +131,9 @@ struct device_ops nvme_device_ops = {
 };
 
 struct device_driver nvme_driver = {
-       .pci_driver = &nvme_pci_driver,
-       .device_ops = &nvme_device_ops,
-       .probe = nvme_probe,
+        .pci_driver = &nvme_pci_driver,
+        .device_ops = &nvme_device_ops,
+        .probe = nvme_probe,
 };
 
 /*
@@ -997,16 +994,31 @@ int32_t nvme_shutdown(struct device *dev) {
  */
 
 void setup_nvme_device(struct pci_device *pci_device) {
-    if(!nvme_initial){
+    if (!nvme_initial) {
         doubly_linked_list_init(&nvme_controller_list);
         nvme_initial = true;
     }
-    struct device *nvme_controller = kmalloc(sizeof(struct device));
-    struct nvme_device *nvme_dev = kmalloc(sizeof(struct nvme_device));
+    struct device *nvme_controller = kzmalloc(sizeof(struct device));
+    struct nvme_device *nvme_dev = kzmalloc(sizeof(struct nvme_device));
     nvme_controller->driver = &nvme_driver;
     nvme_controller->pci_device = pci_device;
     nvme_controller->device_info = nvme_dev;
-
+    nvme_controller->device_major = DEVICE_MAJOR_NVME;
+    nvme_controller->device_minor = device_minor_map[DEVICE_MAJOR_NVME]++;
+    nvme_controller->device_class = NVME_PCI_CLASS;
+    nvme_controller->lock = kmalloc(sizeof(struct spinlock));
+    nvme_controller->device_type = DEVICE_TYPE_BLOCK;
+    //NVMe controller internal struct
+    nvme_dev->bar = (struct nvme_bar *) &pci_device->generic.base_address_registers;
+    nvme_dev->device = nvme_controller;
+    int32_t ret = nvme_controller->driver->probe(nvme_controller);
+    if (ret != KERN_SUCCESS) {
+        warn_printf("NVMe Controller Setup Failed.");
+        kfree(nvme_controller);
+        kfree(nvme_dev);
+        return;
+    }
+    insert_device_into_kernel_tree(nvme_controller);
 }
 
 static void nvme_bind(struct device *device) {
@@ -1016,6 +1028,7 @@ static void nvme_bind(struct device *device) {
     safe_strcpy(device->name, name, 30);
     device->name[31] = '\0'; // call it paranoia but im doing this anyway
 }
+
 /*
  *  I will set it up so that each namespace will be its own device and the device struct parent pointer should point to the nvme device.
  */
@@ -1027,7 +1040,7 @@ static int32_t nvme_probe(struct device *device) {
     }
     nvme_device->bar = (struct nvme_bar *) &pci_dev->generic.base_address_registers[0];
 
-    return nvme_init(device,NULL);
+    return nvme_init(device, NULL);
 
 }
 

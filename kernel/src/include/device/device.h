@@ -28,7 +28,7 @@ enum major {
 };
 
 extern const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS];
-
+extern uint64_t device_minor_map[NUM_DEVICE_MAJOR_CLASSIFICATIONS];
 enum {
     DEVICE_TYPE_BLOCK,
     DEVICE_TYPE_CHAR,
