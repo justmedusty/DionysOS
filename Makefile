@@ -28,7 +28,7 @@ run-gdb: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35 -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d cpu_reset,guest_errors -D qemu_debug.log
 .PHONY: run-x86
 run-x86: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35,smm=off -smp  $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -d cpu_reset,guest_errors,int -D qemu_debug.log
+	qemu-system-x86_64 -M q35,smm=off -smp  $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio -d cpu_reset,guest_errors,int -D qemu_debug.log -device nvme,id=nvme_ctrl_0,serial=deadbeef -drive file=tools/mkfs/image.img,if=none,id=my_nvme
 
 
 .PHONY: run-uefi
