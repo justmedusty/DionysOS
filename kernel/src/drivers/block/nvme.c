@@ -1016,7 +1016,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
 
     if (ret != KERN_SUCCESS) {
-        warn_printf("NVMe Controller Setup Failed.");
+        warn_printf("NVMe Controller Setup Failed.\n");
         kfree(nvme_controller);
         kfree(nvme_dev);
         return;

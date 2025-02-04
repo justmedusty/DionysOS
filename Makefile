@@ -31,7 +31,7 @@ run-x86: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35,smm=off -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) \
   -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio \
   -d cpu_reset,guest_errors,int -D qemu_debug.log \
-  -device nvme,drive=my_nvme,serial=deadbeef \
+  -device nvme,drive=my_nvme,serial=1234 \
   -drive file=tools/mkfs/image.img,if=none,id=my_nvme,format=raw \
 
 

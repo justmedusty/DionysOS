@@ -47,7 +47,6 @@ struct device block_dev[10] = {
 };
 
 
-
 //Set up initial  filesystem object
 struct diosfs_filesystem_context diosfs_filesystem_context[10] = {
         [0] = {
@@ -145,8 +144,8 @@ static void shift_directory_entry(const struct diosfs_filesystem_context *fs, ui
                                   struct diosfs_inode *parent_inode);
 
 static uint64_t diosfs_find_directory_entry_and_update(struct diosfs_filesystem_context *fs,
-                                                       const uint64_t inode_number,
-                                                       const uint64_t directory_inode_number);
+                                                       uint64_t inode_number,
+                                                       uint64_t directory_inode_number);
 
 /*
  * VFS pointer functions for vnodes
@@ -189,9 +188,12 @@ void diosfs_init(uint64_t filesystem_id) {
         return;
     }
     initlock(diosfs_filesystem_context[filesystem_id].lock, DIOSFS_LOCK);
+#ifdef _CREATE_RAMDISK_
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
     dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+#endif
+
 
     insert_device_into_kernel_tree(diosfs_filesystem_context->device);
     kprintf("DiosFS Filesystem Initialized\n");
@@ -246,7 +248,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
 
     //Write the new superblock to the ramdisk
     fs->device->driver->device_ops->block_device_ops->block_write(DIOSFS_SUPERBLOCK, 1, buffer,
-                                                          fs->device);
+                                                                  fs->device);
 
     memset(buffer, 0, PAGE_SIZE);
 
@@ -941,14 +943,14 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
     char *buffer = kmalloc(PAGE_SIZE);
     memset(buffer, 0, PAGE_SIZE);
     fs->device->driver->device_ops->block_device_ops->block_read(block,
-                                                         1, buffer, fs->device);
+                                                                 1, buffer, fs->device);
     /*
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
     buffer[BYTE(number)] &= (uint64_t) ~BIT(bit); //TODO handle impl defined behavior here
     fs->device->driver->device_ops->block_device_ops->block_write(block,
-                                                          1, buffer, fs->device);
+                                                                  1, buffer, fs->device);
     kfree(buffer);
 }
 

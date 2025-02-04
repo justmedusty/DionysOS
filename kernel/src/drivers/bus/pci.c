@@ -117,8 +117,7 @@ void pci_enumerate_devices(bool print) {
                 pci_device->command = pci_read_config(pci_device, PCI_DEVICE_COMMAND_OFFSET) & SHORT_MASK;
                 pci_device->revision_id = pci_read_config(pci_device, PCI_DEVICE_REVISION_OFFSET) & SHORT_MASK;
                 pci_device->header_type = pci_read_config(pci_device, PCI_DEVICE_HEADER_TYPE_OFFSET) & BYTE_MASK;
-                pci_device->class = class;
-
+                pci_device->subclass = pci_read_config(pci_device,PCI_DEVICE_SUB_CLASS_OFFSET) & BYTE_MASK;
                 switch (pci_device->header_type) {
                     case PCI_TYPE_BRIDGE:
                         pci_device->bridge.base_address_registers[0] =
