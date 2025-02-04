@@ -616,7 +616,7 @@ static inline uint64_t nvme_read_q(volatile uint64_t *regs) {
 static inline void nvme_write_q(uint64_t val, volatile uint64_t *regs) {
     uint32_t *ptr = (uint32_t *) regs;
     uint32_t val_lo = (uint32_t) (val & 0xFFFFFFFF);       // Extract lower 32 bits
-    uint32_t val_hi = (uint32_t) (val >> 32);              // Extract higher 32 bits
+    uint32_t val_hi = (uint32_t) (val & 0xFFFFFFFF00000000);              // Extract higher 32 bits
 
     ptr[0] = val_lo;  // Write lower 32 bits first
     ptr[1] = val_hi; // Write higher 32 bits next

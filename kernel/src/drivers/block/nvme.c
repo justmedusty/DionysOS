@@ -279,12 +279,13 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
 
     start = timer_get_current_count();
 
-    while (timer_get_current_count() - start < timeout_millis) {
+    while ((timer_get_current_count() - start) < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
             return KERN_SUCCESS;
         }
     }
-
+    //here for debugging purposes
+    panic("timeout");
     return KERN_TIMEOUT;
 
 }
@@ -1011,7 +1012,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_controller->device_type = DEVICE_TYPE_BLOCK;
     sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
-    nvme_dev->bar = (struct nvme_bar *) &pci_device->generic.base_address_registers;
+    nvme_dev->bar = (struct nvme_bar *) &pci_device->generic.base_address_registers[0];
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
 
