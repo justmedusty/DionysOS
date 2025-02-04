@@ -994,6 +994,7 @@ int32_t nvme_shutdown(struct device *dev) {
  */
 
 void setup_nvme_device(struct pci_device *pci_device) {
+    static uint32_t controller_count = 0;
     if (!nvme_initial) {
         doubly_linked_list_init(&nvme_controller_list);
         nvme_initial = true;
@@ -1008,16 +1009,19 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_controller->device_class = NVME_PCI_CLASS;
     nvme_controller->lock = kmalloc(sizeof(struct spinlock));
     nvme_controller->device_type = DEVICE_TYPE_BLOCK;
+    sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
     nvme_dev->bar = (struct nvme_bar *) &pci_device->generic.base_address_registers;
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
+
     if (ret != KERN_SUCCESS) {
         warn_printf("NVMe Controller Setup Failed.");
         kfree(nvme_controller);
         kfree(nvme_dev);
         return;
     }
+
     insert_device_into_kernel_tree(nvme_controller);
 }
 

@@ -441,7 +441,7 @@ char *pci_get_subclass_name(uint8_t class, uint8_t subclass) {
 }
 
 /*
- * This is not very helpful if there is multiple and you want a specific device but that is fine for now
+ * This is not very helpful if there are multiple and you want a specific device but that is fine for now
  */
 struct pci_device *get_pci_device_from_subclass(uint8_t class, uint8_t subclass) {
     acquire_spinlock(&registered_pci_devices.lock);
@@ -458,7 +458,7 @@ struct pci_device *get_pci_device_from_subclass(uint8_t class, uint8_t subclass)
 }
 
 uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number) {
-    uint32_t bar = pci_info.pci_mmio_address + base_address_register_number * 4;
+    uint32_t bar = pci_info.pci_mmio_address + (base_address_register_number * 4);
 
     uint32_t address = pci_read_config(device->pci_device, bar) & WORD_MASK;
 
@@ -472,6 +472,6 @@ uint32_t pci_read_base_address_register(struct device *device, int32_t base_addr
 }
 
 void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address) {
-    uint32_t base_address_register = pci_info.pci_mmio_address + base_address_register_number * 4;
+    uint32_t base_address_register = pci_info.pci_mmio_address + (base_address_register_number * 4);
     pci_write_config(device->pci_device, base_address_register, address);
 }
