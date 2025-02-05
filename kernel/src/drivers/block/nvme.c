@@ -276,10 +276,11 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     int64_t start;
 
     timeout_millis = NVME_CAP_TIMEOUT(nvme_dev->capabilities) * 500;
-
+    kprintf("TIMEOUT %i\n",timeout_millis);
     start = timer_get_current_count();
-
+    kprintf("START %i\n",start);
     while ((timer_get_current_count() - start) < timeout_millis) {
+        kprintf("STATUS %x.64\n",nvme_dev->bar->controller_status);
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
             return KERN_SUCCESS;
         }
@@ -1012,15 +1013,17 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_controller->device_type = DEVICE_TYPE_BLOCK;
     sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
-    if(pci_device->sixtyfour_bit_bar){
-        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t)pci_device->generic.base_address_registers[0] | ((uintptr_t)pci_device->generic.base_address_registers[1] << 31)) ;
-    }else{
-        nvme_dev->bar = (struct nvme_bar *) (uintptr_t)pci_device->generic.base_address_registers[0];
+    if (pci_device->sixtyfour_bit_bar) {
+        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) pci_device->generic.base_address_registers[0] |
+                                             ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
+    } else {
+        nvme_dev->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];
     }
     nvme_dev->bar = P2V(nvme_dev->bar);
 
-    warn_printf("ADDRESS %x.64\n",nvme_dev->bar);
-    map_pages(kernel_pg_map->top_level, (uint64_t )V2P(nvme_dev->bar), (const uint64_t *) nvme_dev->bar, PTE_RW, PAGE_SIZE);
+    warn_printf("ADDRESS %x.64\n", nvme_dev->bar);
+
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
@@ -1052,13 +1055,6 @@ static int32_t nvme_probe(struct device *device) {
     if (!pci_device) {
         return KERN_NOT_FOUND;
     }
-
-    if(pci_device->sixtyfour_bit_bar){
-        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t)pci_device->generic.base_address_registers[0] | ((uintptr_t)pci_device->generic.base_address_registers[1] << 31)) ;
-    }else{
-        nvme_dev->bar = (struct nvme_bar *) (uintptr_t)pci_device->generic.base_address_registers[0];
-    }
-    nvme_dev->bar = P2V(nvme_dev->bar);
 
     return nvme_init(device, NULL);
 

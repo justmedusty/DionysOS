@@ -26,13 +26,14 @@ enum region_type {
     TEXT,
     FILE
 };
-
+#ifdef __x86_64__
 enum permissions {
     READWRITE = PTE_RW,
     NO_EXECUTE = PTE_NX,
     USER = PTE_U,
 
 };
+#endif
 struct virtual_region {
     uint64_t va;
     uint64_t pa;
@@ -62,5 +63,7 @@ void attach_region(struct virt_map *map, struct virtual_region *region);
 void detach_region(struct virt_map *map, struct virtual_region *region);
 
 void arch_dealloc_page_table(p4d_t *pgdir);
+
+void arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms, uint64_t size);
 
 #endif

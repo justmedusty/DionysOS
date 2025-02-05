@@ -68,6 +68,10 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
 
 #endif
 
+void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions) {
+    arch_map_pages(pgdir, bar_phys_addr, V2P(bar_phys_addr), permissions, PAGE_SIZE);
+    switch_page_table(pgdir); // Should we do this? I will go with yes for now
+}
 
 static bool is_bar_64bit(uint32_t address) {
     if ((address & 0x6) == 0x4) {
@@ -126,6 +130,7 @@ void pci_enumerate_devices(bool print) {
                 pci_device->revision_id = pci_read_config(pci_device, PCI_DEVICE_REVISION_OFFSET) & SHORT_MASK;
                 pci_device->header_type = pci_read_config(pci_device, PCI_DEVICE_HEADER_TYPE_OFFSET) & BYTE_MASK;
                 pci_device->subclass = pci_read_config(pci_device, PCI_DEVICE_SUB_CLASS_OFFSET) & BYTE_MASK;
+
                 if ((pci_read_config(pci_device, PCI_BRIDGE_BAR0_OFFSET) & 0x6) == 0x4) {
                     pci_device->sixtyfour_bit_bar = true;
                 }
