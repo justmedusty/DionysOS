@@ -31,9 +31,6 @@ uint64_t remove_red_black_tree(struct binary_tree *tree, uint64_t key);
 
 static uint8_t static_pool_init = 0;
 
-
-//TODO ADD TREE BALANCING
-
 /*
  * allocate a binary tree node, check if the static pool is free.
  * If any are , allocate from there
@@ -409,7 +406,6 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
 
 
             if (current->left == NULL && current->right == NULL) {
-                //TODO might need to put protection for root node so no deref
                 if (current->parent->left == current) {
                     current->parent->left = NULL;
                 } else {

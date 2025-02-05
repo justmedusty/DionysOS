@@ -194,6 +194,7 @@ struct pci_device {
     uint8_t class;
     uint8_t subclass;
     bool mutlifunction;
+    bool sixtyfour_bit_bar;
     uint16_t msi_offset;
     bool msi_support;
     bool registered;
