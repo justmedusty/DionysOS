@@ -390,7 +390,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     queue = nvme_dev->queues[NVME_ADMIN_Q];
 
     if (!queue) {
-        nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
+        queue = nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
         if (!queue) {
             panic("NVMe : Cannot allocate admin queue");
         }
