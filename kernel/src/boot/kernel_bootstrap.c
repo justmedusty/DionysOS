@@ -53,8 +53,8 @@ void kernel_bootstrap() {
     framebuffer_init();
 
 #ifdef __x86_64__
-    acpi_init();
     lapic_init();
+    acpi_init();
 #endif
 
     vfs_init();

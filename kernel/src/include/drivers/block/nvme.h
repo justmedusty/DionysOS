@@ -734,7 +734,7 @@ struct nvme_ops {
     void (*complete_cmd)(struct nvme_queue *nvme_queue, struct nvme_command *cmd); // Complete command function pointer
 };
 
-// Function prototypes
+
 int32_t nvme_init(struct device *dev,void *other_args);        // Initialize NVMe device
 int32_t nvme_shutdown(struct device *dev);    // Shutdown NVMe device
 int32_t nvme_scan_namespace();

@@ -69,7 +69,7 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
 #endif
 
 void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions) {
-    arch_map_pages(pgdir, bar_phys_addr, V2P(bar_phys_addr), permissions, PAGE_SIZE);
+    arch_map_pages(pgdir, bar_phys_addr, V2P(bar_phys_addr), permissions, PAGE_SIZE * 2);
     switch_page_table(pgdir); // Should we do this? I will go with yes for now
 }
 
