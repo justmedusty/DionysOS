@@ -279,7 +279,6 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     start = timer_get_current_count();
     while ((timer_get_current_count() - start) < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
-            kprintf("SUCCESS\n");
             return KERN_SUCCESS;
         }
     }
@@ -930,7 +929,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     int32_t ret;
     nvme_dev->device = dev;
     doubly_linked_list_init(&nvme_dev->namespaces);
-    kprintf("3\n");
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
 
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
@@ -942,9 +940,9 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     if (ret) {
         goto free_queue;
     }
-    kprintf("1\n");
+
     nvme_get_info_from_identify(nvme_dev);
-    kprintf("1\n");
+
 
     nsid = kzmalloc(sizeof(struct nvme_id_ns));
 

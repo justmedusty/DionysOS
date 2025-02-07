@@ -711,7 +711,7 @@ struct nvme_device {
     int queue_depth;                     // Depth of each queue
     uint32_t doorbell_stride;            // Stride between doorbell registers
     uint32_t controller_config;          // Controller configuration
-    struct nvme_bar *bar;                // Pointer to Base Address Register (BAR) structure
+    volatile struct nvme_bar *bar;                // Pointer to Base Address Register (BAR) structure
     struct doubly_linked_list namespaces;     // Linked list of namespaces
     char vendor_id[8];                   // Vendor identifier
     char serial_number[20];              // Serial number
