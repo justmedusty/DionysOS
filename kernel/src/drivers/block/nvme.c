@@ -373,8 +373,6 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     if (page_shift < device_page_min) {
         return KERN_NO_DEVICE;
     }
-
-
     if (page_shift < device_page_max) {
         page_shift = device_page_max;
     }
@@ -393,6 +391,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
         if (!queue) {
             panic("NVMe : Cannot allocate admin queue");
         }
+        nvme_dev->queues[NVME_ADMIN_Q] = queue;
     }
 
     aqa = queue->q_depth - 1;
@@ -929,27 +928,36 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     int32_t ret;
     nvme_dev->device = dev;
     doubly_linked_list_init(&nvme_dev->namespaces);
+
+
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
 
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
-    kprintf("2\n");
+
     ret = nvme_configure_admin_queue(nvme_dev);
 
     if (ret) {
         goto free_queue;
     }
+    nvme_dev->prp_pool = kzmalloc(nvme_dev->page_size);
+    nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
+
+    ret = nvme_setup_io_queues(nvme_dev);
+    if (ret) {
+        goto free_queue;
+    }
+
 
     nvme_get_info_from_identify(nvme_dev);
 
 
-    nsid = kzmalloc(sizeof(struct nvme_id_ns));
+    nsid = kzmalloc(nvme_dev->page_size);
 
     for (uint32_t i = 1; i <= nvme_dev->namespace_count; i++) {
         struct device *namespace_device;
         char name[20];
-        kprintf("0\n");
         if (nvme_identify(nvme_dev, i, 0, (uint64_t) nsid)) {
             ret = KERN_IO_ERROR;
             goto free_id;
@@ -1012,7 +1020,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
     if (pci_device->sixtyfour_bit_bar) {
-        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) pci_device->generic.base_address_registers[0] |
+        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF) |
                                              ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
     } else {
         nvme_dev->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];

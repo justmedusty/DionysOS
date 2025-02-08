@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "include/data_structures/doubly_linked_list.h"
 #include "include/drivers/bus/pci.h"
+
 #define NVME_QUEUE_DEPTH 2
 #define ADMIN_TIMEOUT 60
 #define IO_TIMEOUT 30
@@ -472,7 +473,7 @@ struct nvme_rw_command {
     uint64_t prp2;         // Second PRP entry
     uint64_t slba;         // Starting LBA
     uint16_t length;       // Length of data transfer
-    uint16_t control;      // Control flags
+    uint16_t control;      // Control flagsvolatile
     uint32_t dsmgmt;       // Dataset management field
     uint32_t reftag;       // Reference tag
     uint16_t apptag;       // Application tag
@@ -640,7 +641,8 @@ static inline void nvme_write_q(uint64_t val, volatile uint64_t *regs) {
  * NVMe Base Address Register (BAR) structure.
  * This structure represents the memory-mapped registers of the NVMe controller.
  */
-struct nvme_bar {
+
+struct __attribute__((packed)) nvme_bar {
     uint64_t capabilities;       // Controller Capabilities
     uint32_t version;            // Version
     uint32_t interrupt_mask_set; // Interrupt Mask Set
@@ -735,10 +737,12 @@ struct nvme_ops {
 };
 
 
-int32_t nvme_init(struct device *dev,void *other_args);        // Initialize NVMe device
+int32_t nvme_init(struct device *dev, void *other_args);        // Initialize NVMe device
 int32_t nvme_shutdown(struct device *dev);    // Shutdown NVMe device
 int32_t nvme_scan_namespace();
+
 int32_t nvme_get_namespace_id(struct device *device, uint32_t *namespace_id, uint8_t *extended_unique_identifier);
+
 void setup_nvme_device(struct pci_device *pci_device);
 // Helper macros for NVMe queue and data size
 #define NVME_ADMIN_QUEUE_SIZE 64                // Admin queue size

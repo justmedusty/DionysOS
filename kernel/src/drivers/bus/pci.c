@@ -131,23 +131,23 @@ void pci_enumerate_devices(bool print) {
                 pci_device->header_type = pci_read_config(pci_device, PCI_DEVICE_HEADER_TYPE_OFFSET) & BYTE_MASK;
                 pci_device->subclass = pci_read_config(pci_device, PCI_DEVICE_SUB_CLASS_OFFSET) & BYTE_MASK;
 
-                if ((pci_read_config(pci_device, PCI_BRIDGE_BAR0_OFFSET) & 0x6) == 0x4) {
+                if ((pci_read_config(pci_device, PCI_GENERIC_BAR0_OFFSET) & 0x6) == 0x4) {
                     pci_device->sixtyfour_bit_bar = true;
                 }
                 switch (pci_device->header_type) {
                     case PCI_TYPE_BRIDGE:
                         pci_device->bridge.base_address_registers[0] =
-                                pci_read_config(pci_device, PCI_BRIDGE_BAR0_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_BAR0_OFFSET) & WORD_MASK;
                         pci_device->bridge.base_address_registers[1] =
-                                pci_read_config(pci_device, PCI_BRIDGE_BAR1_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_BAR1_OFFSET) & WORD_MASK;
                         pci_device->bridge.bus_primary =
-                                pci_read_config(pci_device, PCI_BRIDGE_PRIMARY_BUS_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_PRIMARY_BUS_OFFSET) & WORD_MASK;
                         pci_device->bridge.bus_secondary =
-                                pci_read_config(pci_device, PCI_BRIDGE_SECONDARY_BUS_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_SECONDARY_BUS_OFFSET) & WORD_MASK;
                         pci_device->bridge.bus_subordinate =
-                                pci_read_config(pci_device, PCI_BRIDGE_SUBORDINATE_BUS_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_SUBORDINATE_BUS_OFFSET) & WORD_MASK;
                         pci_device->bridge.latency_timer2 =
-                                pci_read_config(pci_device, PCI_BRIDGE_LATENCY_TIMER_OFFSET) & 0xFFFFFFF0;
+                                pci_read_config(pci_device, PCI_BRIDGE_LATENCY_TIMER_OFFSET) & WORD_MASK;
                         pci_device->bridge.io_base = pci_read_config(pci_device, PCI_BRIDGE_IO_BASE_OFFSET) & BYTE_MASK;
                         pci_device->bridge.io_limit =
                                 pci_read_config(pci_device, PCI_BRIDGE_IO_LIMIT_OFFSET) & BYTE_MASK;
@@ -181,17 +181,17 @@ void pci_enumerate_devices(bool print) {
                         break;
                     case PCI_TYPE_GENERIC_DEVICE:
                         pci_device->generic.base_address_registers[0] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR0_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR0_OFFSET) &WORD_MASK;
                         pci_device->generic.base_address_registers[1] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR1_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR1_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[2] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR2_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR2_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[3] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR3_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR3_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[4] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR4_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR4_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[5] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR5_OFFSET) & (WORD_MASK & ~0xF);
+                                pci_read_config(pci_device, PCI_GENERIC_BAR5_OFFSET) & WORD_MASK;
                         pci_device->generic.capabilities =
                                 pci_read_config(pci_device, PCI_GENERIC_CAPABILITIES_OFFSET) & BYTE_MASK;
                         pci_device->generic.expansion_rom =

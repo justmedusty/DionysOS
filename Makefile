@@ -32,7 +32,7 @@ run-x86: $(IMAGE_NAME).iso
   -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio \
   -d cpu_reset,guest_errors,int -D qemu_debug.log \
   -device nvme,drive=my_nvme,serial=1234 \
-  -drive file=tools/mkfs/image.img,if=none,id=my_nvme,format=raw \
+  -drive file=tools/mkfs/image.img,if=none,id=my_nvme,format=raw -trace "nvme_*"\
 
 
 
