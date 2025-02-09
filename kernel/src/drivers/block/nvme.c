@@ -169,7 +169,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
     num_pages = DIV_ROUND_UP(number_prps, prps_per_page);
 
     if (number_prps > nvme_dev->prp_entry_count) {
-        kfree(nvme_dev->prp_pool);
+        kfree(P2V(nvme_dev->prp_pool));
         /*
          * Always increase in increments of pages.  It doesn't waste
          * much memory and reduces the number of allocations.
@@ -941,7 +941,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     if (ret) {
         goto free_queue;
     }
-    nvme_dev->prp_pool = kzmalloc(nvme_dev->page_size);
+    nvme_dev->prp_pool = V2P(kzmalloc(nvme_dev->page_size));
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     ret = nvme_setup_io_queues(nvme_dev);
