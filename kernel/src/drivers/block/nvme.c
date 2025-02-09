@@ -281,6 +281,11 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
             return KERN_SUCCESS;
         }
+
+        if(nvme_dev->bar->controller_status & NVME_CSTS_CFS){
+            err_printf("NVMe Fatal Controller Status\n");
+            return KERN_DEVICE_FAILED;
+        }
     }
     //here for debugging purposes
     panic("timeout");
