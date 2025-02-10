@@ -421,7 +421,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
 
 
     result = nvme_enable_control(nvme_dev);
-    if (result)
+    if (result == KERN_TIMEOUT || result == KERN_DEVICE_FAILED)
         goto free_queue;
 
     queue->cq_vector = 0;
@@ -936,7 +936,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-
+    nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
     nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
