@@ -939,14 +939,14 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
-    nvme_dev->doorbells = (volatile uint32_t *) (nvme_dev->bar + 4096);
+    nvme_dev->doorbells = (volatile void *) (nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
     if (ret) {
         goto free_queue;
     }
-    nvme_dev->prp_pool = V2P(kzmalloc(nvme_dev->page_size));
+    nvme_dev->prp_pool = V2P(kzmalloc(MAX_PRP_POOL));
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     ret = nvme_setup_io_queues(nvme_dev);
