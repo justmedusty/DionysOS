@@ -378,7 +378,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     if (page_shift < device_page_min) {
         return KERN_NO_DEVICE;
     }
-    if (page_shift < device_page_max) {
+    if (page_shift > device_page_max) {
         page_shift = device_page_max;
     }
 
