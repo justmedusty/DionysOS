@@ -282,7 +282,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
             return KERN_SUCCESS;
         }
 
-        if(nvme_dev->bar->controller_status & NVME_CSTS_CFS){
+        if (nvme_dev->bar->controller_status & NVME_CSTS_CFS) {
             err_printf("NVMe Fatal Controller Status\n");
             return KERN_DEVICE_FAILED;
         }
@@ -446,14 +446,17 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     uint64_t tail = queue->sq_tail;
 
-    memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
+    memcpy(&queue->sq_cmds[tail], command, sizeof(struct nvme_command));
 
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
     if (ops && ops->submit_cmd) {
-        ops->submit_cmd(queue, command);
-        return;
+        if (ops->submit_cmd != nvme_submit_command) {
+            ops->submit_cmd(queue, command);
+            return;
+        }
+
     }
 
     if (++tail == queue->q_depth) {
@@ -553,7 +556,7 @@ nvme_get_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
  * Just get a command id and wraparound once we hit max
  */
 static uint16_t nvme_get_command_id() {
-    static uint16_t command_id;
+    static uint16_t command_id = 0;
 
     return command_id < USHRT_MAX ? command_id++ : 0;
 }
@@ -575,6 +578,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
 
     // Assign a unique command ID to the command and handle wraparound if necessary
     command->common.command_id = nvme_get_command_id();
+    nvme_submit_command(queue, command);
 
     // Get the current timer count to track the timeout
     start_time = timer_get_current_count();
@@ -949,6 +953,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->prp_pool = V2P(kzmalloc(MAX_PRP_POOL));
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
+    //now issues arising here
     ret = nvme_setup_io_queues(nvme_dev);
     if (ret) {
         goto free_queue;
@@ -1025,6 +1030,9 @@ void setup_nvme_device(struct pci_device *pci_device) {
     sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
     if (pci_device->sixtyfour_bit_bar) {
+        /*
+         * Can't blanket mask in the PCI config bookkeeping because you do not mask any of the second bar in the case of a 64 bit bar address
+         */
         nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF) |
                                              ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
     } else {
