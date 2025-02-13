@@ -598,6 +598,8 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         }
     }
 
+    kprintf("BREAK\n");
+
     // Check for custom nvme operations to complete the command
     ops = queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
     if (ops && ops->complete_cmd) {

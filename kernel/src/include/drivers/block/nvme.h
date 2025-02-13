@@ -687,7 +687,7 @@ struct nvme_namespace {
 struct nvme_queue {
     struct nvme_device *dev;              // Associated NVMe device
     struct nvme_command *sq_cmds;      // Submission queue commands
-    struct nvme_completion *cqes;      // Completion queue entries
+    volatile struct nvme_completion *cqes;      // Completion queue entries
     volatile uint32_t *q_db;                    // Doorbell register
     uint16_t q_depth;                  // Queue depth
     int16_t cq_vector;                 // Completion queue interrupt vector
