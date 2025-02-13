@@ -446,7 +446,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     uint64_t tail = queue->sq_tail;
 
-    memcpy(&queue->sq_cmds[tail], command, sizeof(struct nvme_command));
+    memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
 
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
@@ -1040,9 +1040,8 @@ void setup_nvme_device(struct pci_device *pci_device) {
     }
     nvme_dev->bar = P2V(nvme_dev->bar);
 
-    warn_printf("ADDRESS %x.64\n", nvme_dev->bar);
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE,64);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);

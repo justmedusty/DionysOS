@@ -225,10 +225,14 @@ struct pci_bus_information get_pci_info();
 void pci_enumerate_devices(bool print);
 
 char *pci_get_class_name(uint8_t class);
+
 char *pci_get_subclass_name(uint8_t class, uint8_t subclass);
+
 uint32_t pci_read_base_address_register(struct device *device, int32_t base_address_register_number);
-void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions);
+
 void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address);
+
+void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions, uint64_t pages);
 
 #ifdef __x86_64__
 
