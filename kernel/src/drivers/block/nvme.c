@@ -301,6 +301,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     struct nvme_ops *ops;
     struct nvme_queue *queue = kzmalloc(sizeof(struct nvme_queue));
 
+    /*
+     * I think this here is the issue...
+     */
     queue->cqes = kzmalloc(PAGE_SIZE);
 
     queue->sq_cmds = kzmalloc(PAGE_SIZE);
@@ -507,7 +510,7 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
     uint64_t stop = start + NVME_CQ_SIZE(
             queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
-    return queue->cqes[index].status;
+    return (volatile uint16_t)queue->cqes[index].status;
 
 
 }
@@ -582,7 +585,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
 
     // Get the current timer count to track the timeout
     start_time = timer_get_current_count();
-
+    kprintf("GOING INTO COMPLETION STATUS LOOP\n");
     for (;;) {
         // Read the status of the command completion
         status = nvme_read_completion_status(queue, head);
@@ -945,7 +948,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
-    nvme_dev->doorbells = (volatile void *) (nvme_dev->bar + 4096);
+    nvme_dev->doorbells = ((volatile void *) nvme_dev->bar) + 4096;
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
