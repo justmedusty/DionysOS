@@ -659,12 +659,12 @@ struct __attribute__((packed)) nvme_bar {
 
 // Struct representing an NVMe completion queue entry
 struct nvme_completion {
-    uint32_t result;  // Command specific information
+    int32_t result;  // Command specific information
     uint32_t reserved;          // Reserved
-    uint16_t sq_head;           // Submission queue head pointer
-    uint16_t sq_id;             // Submission queue identifier
+    int32_t sq_head;           // Submission queue head pointer
+    int32_t sq_id;             // Submission queue identifier
     uint16_t command_id;        // Command identifier
-    uint16_t status;            // Status code
+    int32_t status;            // Status code
 };
 
 // Enum for identifying queue types
@@ -686,8 +686,8 @@ struct nvme_namespace {
 // Struct representing an NVMe queue
 struct nvme_queue {
     struct nvme_device *dev;              // Associated NVMe device
-    struct nvme_command *sq_cmds;      // Submission queue commands
-    volatile struct nvme_completion *cqes;      // Completion queue entries
+    struct nvme_command *submission_queue_commands;      // Submission queue commands
+    volatile struct nvme_completion *completion_queue_entries;      // Completion queue entries
     volatile uint32_t *q_db;                    // Doorbell register
     uint16_t q_depth;                  // Queue depth
     int16_t cq_vector;                 // Completion queue interrupt vector

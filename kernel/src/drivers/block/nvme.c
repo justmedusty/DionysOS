@@ -303,10 +303,11 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     /*
      * I think this here is the issue...
-     */
-    queue->cqes = kzmalloc(PAGE_SIZE);
+*/
+    uint64_t size = PAGE_SIZE;
+    queue->completion_queue_entries = kzmalloc(size);
 
-    queue->sq_cmds = kzmalloc(PAGE_SIZE);
+    queue->submission_queue_commands = kzmalloc(size);
 
     queue->dev = nvme_dev;
 
@@ -321,7 +322,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     nvme_dev->total_queues++;
     nvme_dev->queues[queue_id] = queue;
 
-    ops = (struct nvme_ops *) nvme_dev->device->driver->device_ops->block_device_ops->nvme_ops;
+    ops = nvme_dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
     if (ops && ops->setup_queue) {
         ops->setup_queue(queue);
@@ -417,13 +418,15 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     // Specify the sizes of I/O Submission and Completion Queue Entries.
     nvme_dev->bar->admin_queue_attrs = aqa;
     // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
-    nvme_write_q((uint64_t) queue->sq_cmds, &nvme_dev->bar->admin_sq_base_addr);
+    nvme_write_q((uint64_t) queue->submission_queue_commands, &nvme_dev->bar->admin_sq_base_addr);
     // Write the physical base address of the Admin Submission Queue to its Base Address Register.
-    nvme_write_q((uint64_t) queue->cqes, &nvme_dev->bar->admin_cq_base_addr);
+    nvme_write_q((uint64_t) queue->completion_queue_entries, &nvme_dev->bar->admin_cq_base_addr);
     // Write the physical base address of the Admin Completion Queue to its Base Address Register.
 
 
     result = nvme_enable_control(nvme_dev);
+
+
     if (result == KERN_TIMEOUT || result == KERN_DEVICE_FAILED)
         goto free_queue;
 
@@ -449,7 +452,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     uint64_t tail = queue->sq_tail;
 
-    memcpy(&queue->sq_cmds[tail], command, sizeof(*command));
+    memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
@@ -459,7 +462,6 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
             ops->submit_cmd(queue, command);
             return;
         }
-
     }
 
     if (++tail == queue->q_depth) {
@@ -505,12 +507,12 @@ int32_t nvme_scan_namespace() {
  */
 static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index) {
 
-    uint64_t start = (uint64_t) &queue->cqes[0];
+    uint64_t start = (uint64_t) &queue->completion_queue_entries[0];
 
     uint64_t stop = start + NVME_CQ_SIZE(
             queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
-    return (volatile uint16_t)queue->cqes[index].status;
+    return (volatile uint16_t) queue->completion_queue_entries[index].status;
 
 
 }
@@ -632,7 +634,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
 
     // If result pointer is provided, store the command result
     if (result) {
-        *result = queue->cqes[head].result;
+        *result = queue->completion_queue_entries[head].result;
     }
 
     // Update the  completion queue  head and phase, wrapping around if necessary
@@ -653,8 +655,8 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
  * Frees an individual queue, free the completion queue entries, the submission queue commands, then finally the queue itself
  */
 static void nvme_free_queue(struct nvme_queue *queue) {
-    kfree(queue->cqes);
-    kfree(queue->sq_cmds);
+    kfree(queue->completion_queue_entries);
+    kfree(queue->submission_queue_commands);
     kfree(queue);
 }
 
@@ -729,7 +731,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
                                        nvme_dev->doorbell_stride]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
-    memset(queue->cqes, 0, NVME_CQ_SIZE(queue->q_depth));
+    memset(queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
 }
@@ -772,7 +774,7 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = (uint64_t) queue->cqes;
+    command.create_cq.prp1 = (uint64_t) queue->completion_queue_entries;
     command.create_cq.cqid = queue_id;
     command.create_cq.qsize = queue->q_depth - 1;
     command.create_cq.cq_flags = flags;
@@ -791,7 +793,7 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
-    command.create_sq.prp1 = ((uint64_t) queue->sq_cmds);
+    command.create_sq.prp1 = ((uint64_t) queue->submission_queue_commands);
     command.create_sq.sqid = (queue_id);
     command.create_sq.qsize = (queue->q_depth - 1);
     command.create_sq.sq_flags = (flags);
@@ -1046,7 +1048,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE,64);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 64);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
