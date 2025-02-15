@@ -304,10 +304,10 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     /*
      * I think this here is the issue...
 */
-    uint64_t size = PAGE_SIZE;
-    queue->completion_queue_entries = kzmalloc(size);
+    void *size = kzmalloc(PAGE_SIZE * 4);
+    queue->completion_queue_entries = (struct nvme_completion*) size;
 
-    queue->submission_queue_commands = kzmalloc(size);
+    queue->submission_queue_commands = (struct nvme_command *) ((uint64_t) size + (PAGE_SIZE * 2));
 
     queue->dev = nvme_dev;
 
@@ -353,7 +353,6 @@ static int32_t nvme_enable_control(struct nvme_device *nvme_dev) {
  * returns KERN_SUCCESS (0) on success, KERN_TIMOUT on failure
  */
 static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
-
 
     nvme_dev->controller_config &= ~NVME_CC_SHN_MASK;
     nvme_dev->controller_config &= ~NVME_CC_ENABLE;
@@ -418,9 +417,9 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     // Specify the sizes of I/O Submission and Completion Queue Entries.
     nvme_dev->bar->admin_queue_attrs = aqa;
     // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
-    nvme_write_q((uint64_t) queue->submission_queue_commands, &nvme_dev->bar->admin_sq_base_addr);
+    nvme_write_q((uint64_t) V2P(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
     // Write the physical base address of the Admin Submission Queue to its Base Address Register.
-    nvme_write_q((uint64_t) queue->completion_queue_entries, &nvme_dev->bar->admin_cq_base_addr);
+    nvme_write_q((uint64_t) V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
     // Write the physical base address of the Admin Completion Queue to its Base Address Register.
 
 
@@ -453,7 +452,6 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     uint64_t tail = queue->sq_tail;
 
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
-
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
