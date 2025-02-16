@@ -303,6 +303,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     /*
      * I think this here is the issue...
+     *
+     * Update: NVMe controllers appear to have 64 bit addressable DMA capability so
+     * I do not think this is the issue. Continuing to investigate
 */
     void *size = kzmalloc(PAGE_SIZE * 4);
     queue->completion_queue_entries = (struct nvme_completion*) size;
@@ -729,7 +732,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
                                        nvme_dev->doorbell_stride]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
-    memset(queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
+    memset((void *)queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
 }
@@ -744,8 +747,6 @@ static int32_t nvme_delete_queue(struct nvme_device *nvme_dev, uint8_t opcode, u
     command.delete_queue.qid = id;
 
     return nvme_submit_admin_command(nvme_dev, &command, NULL);
-
-
 }
 
 /*
@@ -948,6 +949,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
+    kprintf("STRIDE %i\n",nvme_dev->doorbell_stride);
     nvme_dev->doorbells = ((volatile void *) nvme_dev->bar) + 4096;
 
     ret = nvme_configure_admin_queue(nvme_dev);

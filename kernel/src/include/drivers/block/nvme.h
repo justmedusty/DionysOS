@@ -642,7 +642,7 @@ static inline void nvme_write_q(uint64_t val, volatile uint64_t *regs) {
  * This structure represents the memory-mapped registers of the NVMe controller.
  */
 
-struct __attribute__((packed)) nvme_bar {
+struct nvme_bar {
     uint64_t capabilities;       // Controller Capabilities
     uint32_t version;            // Version
     uint32_t interrupt_mask_set; // Interrupt Mask Set
