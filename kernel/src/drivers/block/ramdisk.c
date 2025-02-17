@@ -44,14 +44,14 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
 /*
  * This function will read a filesystem image and copy it into the ramdisk memory to get the party started
  */
-uint64_t ramdisk_mkfs(const char *initramfs_img, const uint64_t size_bytes, const uint64_t ramdisk_id) {
+uint64_t ramdisk_mkfs(const char *filesystem_image, const uint64_t size_bytes, const uint64_t ramdisk_id) {
     if (ramdisk_id > ramdisk_count) {
         return ID_OUT_OF_RANGE;
     }
     if ((size_bytes / PAGE_SIZE) < ramdisk[ramdisk_id].ramdisk_size_pages) {
         return SIZE_TOO_SMALL;
     }
-    memcpy(ramdisk[ramdisk_id].ramdisk_start, initramfs_img, size_bytes);
+    memcpy(ramdisk[ramdisk_id].ramdisk_start, filesystem_image, size_bytes);
     return KERN_SUCCESS;
 }
 

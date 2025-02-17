@@ -308,7 +308,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
     void *size = kzmalloc(PAGE_SIZE * 4);
-    queue->completion_queue_entries = (struct nvme_completion*) size;
+    queue->completion_queue_entries = (struct nvme_completion *) size;
 
     queue->submission_queue_commands = (struct nvme_command *) ((uint64_t) size + (PAGE_SIZE * 2));
 
@@ -425,9 +425,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     nvme_write_q((uint64_t) V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
     // Write the physical base address of the Admin Completion Queue to its Base Address Register.
 
-
     result = nvme_enable_control(nvme_dev);
-
 
     if (result == KERN_TIMEOUT || result == KERN_DEVICE_FAILED)
         goto free_queue;
@@ -486,9 +484,9 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
         return KERN_SUCCESS;
     }
     if ((result & 0xffff) > (result >> 16)) {
-        return (result >> 16) + 1;
+        return (int32_t) (result >> 16) + 1;
     }
-    return (result & 0xffff) + 1;
+    return (int32_t) (result & 0xffff) + 1;
 
 
 }
@@ -732,7 +730,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
                                        nvme_dev->doorbell_stride]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
-    memset((void *)queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
+    memset((void *) queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
 }
@@ -870,6 +868,8 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
     if (result <= 0) {
         return result;
     }
+
+    device->max_queue_id = number_io_queues;
     //free previously allocated queues
     nvme_free_queues(device, number_io_queues + 1);
     nvme_create_io_queues(device);
@@ -949,7 +949,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
-    kprintf("STRIDE %i\n",nvme_dev->doorbell_stride);
     nvme_dev->doorbells = ((volatile void *) nvme_dev->bar) + 4096;
 
     ret = nvme_configure_admin_queue(nvme_dev);
@@ -988,8 +987,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         sprintf(name, "blockdev #%i", i);
         namespace_device = kzmalloc(sizeof(struct device));
         create_device(namespace_device, DEVICE_MAJOR_NVME, name, &nvme_device_ops, nvme_dev, NULL);
-
-
         insert_device_into_kernel_tree(namespace_device);
     }
 
