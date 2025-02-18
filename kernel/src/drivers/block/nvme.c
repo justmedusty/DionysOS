@@ -511,7 +511,7 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
     uint64_t stop = start + NVME_CQ_SIZE(
             queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
-    return (volatile uint16_t) queue->completion_queue_entries[index].status;
+    return (volatile int32_t) queue->completion_queue_entries[index].status;
 
 
 }
@@ -729,7 +729,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->sq_tail = 0; // set submission queue tail pointer to zero
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
-                                       nvme_dev->doorbell_stride]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
+            (nvme_dev->doorbell_stride)]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
     memset((void *) queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
@@ -771,7 +771,7 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = (uint64_t) queue->completion_queue_entries;
+    command.create_cq.prp1 = (uint64_t) V2P(queue->completion_queue_entries);
     command.create_cq.cqid = queue_id;
     command.create_cq.qsize = queue->q_depth - 1;
     command.create_cq.cq_flags = flags;
@@ -790,7 +790,7 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
-    command.create_sq.prp1 = ((uint64_t) queue->submission_queue_commands);
+    command.create_sq.prp1 = ((uint64_t) V2P(queue->submission_queue_commands));
     command.create_sq.sqid = (queue_id);
     command.create_sq.qsize = (queue->q_depth - 1);
     command.create_sq.sq_flags = (flags);
