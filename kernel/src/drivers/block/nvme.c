@@ -450,7 +450,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     struct nvme_ops *ops;
 
-    uint64_t tail = queue->sq_tail;
+    uint16_t tail = queue->sq_tail;
 
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
@@ -466,7 +466,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     if (++tail == queue->q_depth) {
         tail = 0;
     }
-    *queue->q_db = tail;
+    queue->q_db[0] = tail;
 
     queue->sq_tail = tail;
 }
@@ -511,7 +511,7 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
     uint64_t stop = start + NVME_CQ_SIZE(
             queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
-    return (volatile int32_t) queue->completion_queue_entries[index].status;
+    return queue->completion_queue_entries[index].status;
 
 
 }
