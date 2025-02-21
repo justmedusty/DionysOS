@@ -316,7 +316,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     queue->cq_head = 0;
     queue->cq_phase = 1;
-    queue->q_db = &nvme_dev->doorbells[(queue_id * 2  * nvme_dev->doorbell_stride)];
+    queue->q_db = &nvme_dev->doorbells[(queue_id * 2 * nvme_dev->doorbell_stride)];
 
     queue->q_depth = depth;
 
@@ -510,6 +510,11 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
 
     uint64_t stop = start + NVME_CQ_SIZE(
             queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
+
+// for debugging purposes
+    if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
+        panic("NVMe Fatal Controller Status\n");
+    }
 
     return queue->completion_queue_entries[index].status;
 
@@ -729,7 +734,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->sq_tail = 0; // set submission queue tail pointer to zero
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
-            (nvme_dev->doorbell_stride)]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
+                                       (nvme_dev->doorbell_stride)]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
     memset((void *) queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
