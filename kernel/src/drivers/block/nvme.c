@@ -316,7 +316,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     queue->cq_head = 0;
     queue->cq_phase = 1;
-    queue->q_db = &nvme_dev->doorbells[queue_id * 2 + 1 * (4 << nvme_dev->doorbell_stride)];
+    queue->q_db = &nvme_dev->doorbells[(queue_id * 2  * nvme_dev->doorbell_stride)];
 
     queue->q_depth = depth;
 

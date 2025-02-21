@@ -654,7 +654,7 @@ struct nvme_bar {
     uint32_t admin_queue_attrs;  // Admin Queue Attributes
     uint64_t admin_sq_base_addr; // Admin Submission Queue Base Address
     uint64_t admin_cq_base_addr; // Admin Completion Queue Base Address
-};
+}__attribute__((packed));
 
 
 // Struct representing an NVMe completion queue entry
@@ -665,7 +665,7 @@ struct nvme_completion {
     int32_t sq_id;             // Submission queue identifier
     uint16_t command_id;        // Command identifier
     int32_t status;            // Status code
-};
+}__attribute__((packed));
 
 // Enum for identifying queue types
 enum nvme_queue_id {
@@ -698,7 +698,7 @@ struct nvme_queue {
     uint8_t cq_phase;                  // Completion queue phase bit
     uint8_t cqe_seen;                  // Indicates if a CQE was seen
     uint32_t cmdid_data[];        // Command ID data array
-};
+}__attribute__((packed));
 
 /* Represents an NVM Express device. Each nvme_dev is a PCI function. */
 struct nvme_device {
