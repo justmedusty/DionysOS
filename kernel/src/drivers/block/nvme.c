@@ -307,10 +307,12 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * Update: NVMe controllers appear to have 64 bit addressable DMA capability so
      * I do not think this is the issue. Continuing to investigate
 */
-    void *size = kzmalloc(PAGE_SIZE * 4);
-    queue->completion_queue_entries = (struct nvme_completion *) size;
 
-    queue->submission_queue_commands = (struct nvme_command *) ((uint64_t) size + (PAGE_SIZE * 2));
+    void* queue_mem = kzmalloc(PAGE_SIZE);
+
+    queue->completion_queue_entries = queue_mem;
+
+    queue->submission_queue_commands = (struct nvme_command *)(char*)queue_mem + (16 * NVME_QUEUE_DEPTH);
 
     queue->dev = nvme_dev;
 
