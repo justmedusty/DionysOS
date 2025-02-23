@@ -308,11 +308,11 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
 
-    void* queue_mem = kzmalloc(PAGE_SIZE);
 
-    queue->completion_queue_entries = queue_mem;
 
-    queue->submission_queue_commands = (struct nvme_command *)(char*)queue_mem + (16 * NVME_QUEUE_DEPTH);
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE * 2);
+
+    queue->submission_queue_commands = ((void *) (uint64_t) queue->completion_queue_entries + (PAGE_SIZE));
 
     queue->dev = nvme_dev;
 
@@ -1052,7 +1052,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 64);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 8);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
