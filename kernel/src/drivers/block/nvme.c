@@ -182,7 +182,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
         nvme_dev->prp_entry_count = prps_per_page * num_pages;
     }
 
-    prp_pool = nvme_dev->prp_pool;
+    prp_pool = P2V(nvme_dev->prp_pool);
     i = 0;
     while (number_prps) {
         // if we've filled a page of physical region pool entries, link to the next page and reset index
@@ -955,8 +955,8 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
-    nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities);
-    nvme_dev->doorbells = ((volatile void *) nvme_dev->bar) + 4096;
+    nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities) * 4;
+    nvme_dev->doorbells = (volatile uint32_t *) ((char *) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
