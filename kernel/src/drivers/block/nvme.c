@@ -955,15 +955,15 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
-    nvme_dev->doorbell_stride = 1 << NVME_CAP_STRIDE(nvme_dev->capabilities) * 4;
-    nvme_dev->doorbells = (volatile uint32_t *) ((char *) nvme_dev->bar + 4096);
+    nvme_dev->doorbell_stride = 4 * (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
+    nvme_dev->doorbells = (volatile uint32_t *) ((void *) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
     if (ret) {
         goto free_queue;
     }
-    nvme_dev->prp_pool = V2P(kzmalloc(MAX_PRP_POOL));
+    nvme_dev->prp_pool = (kzmalloc(nvme_dev->page_size));
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
