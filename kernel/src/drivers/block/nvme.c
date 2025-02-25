@@ -435,7 +435,6 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     queue->cq_vector = 0;
 
     nvme_init_queue(nvme_dev->queues[NVME_ADMIN_Q], 0);
-
     return result;
 
     free_queue:
@@ -477,8 +476,10 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
     int32_t status;
     uint32_t result;
     uint32_t queue_count = (count - 1) | ((count - 1) << 16);
-    status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
+    debug_printf("SET QUEUE COUNT COUNT %i\n",queue_count);
 
+    status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
+    debug_printf("SET QUEUE COUNT\n");
     if (status < 0) {
         return status;
     }
@@ -589,12 +590,16 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
 
     // Assign a unique command ID to the command and handle wraparound if necessary
     command->common.command_id = nvme_get_command_id();
+
+    // fatal status happens in this call here
     nvme_submit_command(queue, command);
 
     // Get the current timer count to track the timeout
     start_time = timer_get_current_count();
+
     kprintf("GOING INTO COMPLETION STATUS LOOP\n");
     for (;;) {
+
         // Read the status of the command completion
         status = nvme_read_completion_status(queue, head);
 
@@ -696,7 +701,6 @@ static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
     int32_t shift = NVME_CAP_MPSMIN(device->capabilities) + 12;
 
     control = kzmalloc(sizeof(struct nvme_id_ctrl));
-
     ret = nvme_identify(device, 0, 1, (uint64_t) control);
 
     if (ret > 0) {
