@@ -65,6 +65,7 @@ void fb_ops_clear(struct device *dev) {
     struct framebuffer *fb = dev->device_info;
     clear(fb);
 }
+
 /*
  *  No longer used since it doesn't update context but it will stay for now, it will come in handy at some point
  */
@@ -245,7 +246,7 @@ static void draw_hex(struct device *fb, uint64_t num, int32_t size, uint32_t col
 }
 
 static void insert_hex(char *buffer, uint64_t num, int32_t size, uint64_t *index) {
-    if(buffer == NULL){
+    if (buffer == NULL) {
         return;
     }
     memcpy((void *) &buffer[*index], "0x", 2);
@@ -254,7 +255,7 @@ static void insert_hex(char *buffer, uint64_t num, int32_t size, uint64_t *index
         uint8_t nibble = (num >> i) & 0xF; // Extract 4 bits
         char c = get_hex_char(nibble);
         buffer[*index] = c;
-        *index +=1;
+        *index += 1;
     }
 }
 
@@ -326,7 +327,8 @@ void kprintf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN,
+                                                                                        value);
                     break;
                 }
 
@@ -334,7 +336,8 @@ void kprintf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN,
+                                                                                            "0");
                         break;
                     }
 
@@ -355,7 +358,8 @@ void kprintf(char *str, ...) {
                 }
 
                 default:
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, GREEN,
+                                                                                        "%");
 
                     char c = *str;
                     framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, GREEN);
@@ -367,6 +371,119 @@ void kprintf(char *str, ...) {
     }
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
+}
+
+void debug_printf(char *str, ...) {
+#ifdef _DEBUG_
+    va_list args;
+    va_start(args, str);
+    acquire_spinlock(&main_framebuffer.lock);
+    while (*str) {
+        if (*str == '\n') {
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', WHITE);
+            str++;
+            continue;
+        }
+        if (*str != '%') {
+            framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, *str, WHITE);
+        } else {
+            str++;
+            switch (*str) {
+                case 'x': {
+                    if (*(str + 1) == '.') {
+                        str = str + 2;
+
+                        /*
+                         * We will check the length of the hex number, because I am lazy I will only check the first char and skip the second. No need to check the second anyway.
+                         * You will still be expected to put the second number there even though the internals do not require it, makes your code more readable anyway.
+                         * Usage looks like this :
+                         * %x.8 = print 8 bit hex
+                         * %x.16 = print 16 bit hex
+                         * %x.32 = print 32 bit hex
+                         * %x.64 = print 64 bit hex
+                         */
+
+                        switch (*str) {
+                            case '8':
+                                uint64_t value8 = va_arg(args, uint32_t);
+                                draw_hex(&framebuffer_device, value8, 8, WHITE);
+                                break;
+                            case '1':
+                                uint64_t value16 = va_arg(args, uint32_t);
+                                draw_hex(&framebuffer_device, value16, 16, WHITE);
+
+                                str++;
+                                break;
+                            case '3':
+                                uint64_t value32 = va_arg(args, uint32_t);
+                                draw_hex(&framebuffer_device, value32, 32, WHITE);
+
+                                str++;
+                                break;
+                            case '6':
+                                uint64_t value64 = va_arg(args, uint64_t);
+                                draw_hex(&framebuffer_device, value64, 64, WHITE);
+
+                                str++;
+                                break;
+                            default:
+                                uint64_t value = va_arg(args, uint64_t);
+                                draw_hex(&framebuffer_device, value64, 64, WHITE);
+
+                                break;
+                        }
+                    } else {
+                        uint64_t value = va_arg(args, uint64_t);
+                        draw_hex(&framebuffer_device, value, 64, WHITE);
+                    }
+                    break;
+                }
+
+                case 's': {
+                    char *value = va_arg(args,
+                                         char*);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, value);
+                    break;
+                }
+
+                case 'i': {
+                    uint64_t value = va_arg(args, uint64_t);
+
+                    if (value == 0) {
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, "0");
+                        break;
+                    }
+
+                    char buffer[20]; // Enough to hold the maximum 64 bit value
+                    int index = 0;
+
+                    while (value > 0) {
+                        buffer[index++] = characters[value % 10];
+                        value /= 10;
+                    }
+
+                    // Write digits in reverse order
+                    while (index > 0) {
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(
+                                &framebuffer_device, buffer[--index], WHITE);
+                    }
+                    break;
+                }
+
+                default:
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, "%");
+
+                    char c = *str;
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, WHITE);
+
+                    break;
+            }
+        }
+        str++;
+    }
+    release_spinlock(&main_framebuffer.lock);
+    va_end(args);
+#endif
 }
 
 /*
@@ -553,7 +670,8 @@ void err_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED,
+                                                                                        value);
                     break;
                 }
 
@@ -561,7 +679,8 @@ void err_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, RED,
+                                                                                            "0");
                         break;
                     }
 
@@ -666,7 +785,8 @@ void warn_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE,
+                                                                                        value);
                     break;
                 }
 
@@ -674,7 +794,8 @@ void warn_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE,
+                                                                                            "0");
                         break;
                     }
 
@@ -695,7 +816,8 @@ void warn_printf(char *str, ...) {
                 }
 
                 default:
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, ORANGE,
+                                                                                        "%");
 
                     char c = *str;
                     framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, ORANGE);
@@ -780,7 +902,8 @@ void info_printf(char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW,
+                                                                                        value);
                     break;
                 }
 
@@ -788,7 +911,8 @@ void info_printf(char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW,
+                                                                                            "0");
                         break;
                     }
 
@@ -809,7 +933,8 @@ void info_printf(char *str, ...) {
                 }
 
                 default:
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, YELLOW,
+                                                                                        "%");
 
                     char c = *str;
                     framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, YELLOW);
@@ -895,7 +1020,8 @@ void kprintf_color(uint32_t color, char *str, ...) {
                 case 's': {
                     char *value = va_arg(args,
                                          char*);
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, value);
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color,
+                                                                                        value);
                     break;
                 }
 
@@ -903,7 +1029,8 @@ void kprintf_color(uint32_t color, char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "0");
+                        framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color,
+                                                                                            "0");
                         break;
                     }
 
@@ -924,7 +1051,8 @@ void kprintf_color(uint32_t color, char *str, ...) {
                 }
 
                 default:
-                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color, "%");
+                    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, color,
+                                                                                        "%");
 
                     char c = *str;
                     framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, c, color);

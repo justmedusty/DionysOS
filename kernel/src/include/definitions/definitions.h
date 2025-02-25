@@ -145,7 +145,7 @@ void kprintf_color(uint32_t color, char *str, ...);
 
 void err_printf(char *str, ...);
 
-
+void debug_printf(char *str, ...);
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\
 " ___|\\    \\  |    |   ____|\\    \\|\\    \\ |\\     \\  |\\    \\    /    /|   ___|\\     \\    ____|\\    \\        ___|\\     \\ \n"\
