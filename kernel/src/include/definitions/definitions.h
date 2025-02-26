@@ -15,20 +15,22 @@
 
 
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
-#define SERIAL_LOCK 0
-#define SMP_BOOSTRAP_LOCK 1
-#define sched_LOCK 2
-#define VFS_LOCK 3
-#define DIOSFS_LOCK 4 // may need to make multiple but this is fine for now
-#define PMM_LOCK 5
-#define BTREE_LOCK 6 // there are many of these but it's still an insight
-#define BUDDY_LOCK 7
-#define RAMDISK_LOCK 8
-#define ALLOC_LOCK 9
-#define DOUBLY_LINKED_LIST_LOCK 10
-#define SINGLE_LINKED_LIST_LOCK 11
-#define FRAME_LOCK 12
-#define QUEUE_LOCK 13
+enum {
+    SERIAL_LOCK,
+    SMP_BOOSTRAP_LOCK,
+    SCHED_LOCK,
+    VFS_LOCK,
+    DIOSFS_LOCK, // may need to make multiple but this is fine for now
+    PMM_LOCK,
+    BTREE_LOCK, // there are many of these but it's still an insight
+    BUDDY_LOCK,
+    RAMDISK_LOCK,
+    ALLOC_LOCK,
+    DOUBLY_LINKED_LIST_LOCK,
+    SINGLE_LINKED_LIST_LOCK,
+    FRAME_LOCK,
+    QUEUE_LOCK
+};
 
 #define SPRINTF_MAX_LEN 4096
 
@@ -109,6 +111,15 @@ enum kernel_error_codes {
     KERN_OVERLOADED = -138,        // System overloaded (custom)
 };
 
+
+static inline uint64_t min(uint64_t one, uint64_t two) {
+    return one > two ? two : one;
+}
+
+static inline uint64_t max(uint64_t one, uint64_t two) {
+    return one < two ? two : one;
+}
+
 /*
  * Core function prototypes
  */
@@ -146,6 +157,8 @@ void kprintf_color(uint32_t color, char *str, ...);
 void err_printf(char *str, ...);
 
 void debug_printf(char *str, ...);
+
+
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\
 " ___|\\    \\  |    |   ____|\\    \\|\\    \\ |\\     \\  |\\    \\    /    /|   ___|\\     \\    ____|\\    \\        ___|\\     \\ \n"\

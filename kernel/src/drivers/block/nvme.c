@@ -453,7 +453,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     uint16_t tail = queue->sq_tail;
 
-    memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
+    memcpy(&queue->submission_queue_commands[tail], command, sizeof(struct nvme_command));
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
@@ -467,7 +467,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     if (++tail == queue->q_depth) {
         tail = 0;
     }
-    queue->q_db[0] = tail;
+    *queue->q_db = tail;
 
     queue->sq_tail = tail;
 }
@@ -957,7 +957,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-    nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
+    nvme_dev->queue_depth = min(NVME_CAP_MQES(nvme_dev->capabilities),NVME_QUEUE_DEPTH); // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride =  (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
     debug_printf("STRIDE %i\n",nvme_dev->doorbell_stride);

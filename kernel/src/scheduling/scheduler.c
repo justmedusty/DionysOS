@@ -72,13 +72,13 @@ void sched_init() {
         singly_linked_list_init(&dead_processes[i], 0);
     }
 
-    initlock(&sched_global_lock, sched_LOCK);
+    initlock(&sched_global_lock, SCHED_LOCK);
 
     for(size_t i = 0; i <= cpus_online; i++ ){
-        initlock(&purge_lock[i], sched_LOCK);
+        initlock(&purge_lock[i], SCHED_LOCK);
     }
 
-    initlock(&sched_sleep_lock, sched_LOCK);
+    initlock(&sched_sleep_lock, SCHED_LOCK);
     doubly_linked_list_init(&global_sleep_queue);
     for (uint32_t i = 0; i < cpu_count; i++) {
 
