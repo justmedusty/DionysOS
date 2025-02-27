@@ -310,9 +310,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
 
 
-    queue->completion_queue_entries = kzmalloc(PAGE_SIZE * 2);
+    queue->completion_queue_entries = kzmalloc(32);
 
-    queue->submission_queue_commands = ((void *) (uint64_t) queue->completion_queue_entries + (PAGE_SIZE));
+    queue->submission_queue_commands = ((void *) (uint64_t) queue->completion_queue_entries + (sizeof(struct nvme_completion *) * NVME_QUEUE_DEPTH));
 
     queue->dev = nvme_dev;
 
@@ -537,9 +537,9 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
     command.features.dword11 = double_word11;
     command.features.prp1 = dma_address;
     command.features.fid = feature_id;
-
+    debug_printf("HERE\n");
     ret = nvme_submit_admin_command(nvme_device, &command, result);
-
+    debug_printf("AFTER\n");
     return ret;
 
 }
@@ -667,7 +667,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
  */
 static void nvme_free_queue(struct nvme_queue *queue) {
     kfree(queue->completion_queue_entries);
-    kfree(queue->submission_queue_commands);
+    //kfree(queue->submission_queue_commands);
     kfree(queue);
 }
 
