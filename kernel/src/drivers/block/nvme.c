@@ -309,10 +309,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 */
 
 
+    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
 
-    queue->completion_queue_entries = kzmalloc(32);
-
-    queue->submission_queue_commands = ((void *) (uint64_t) queue->completion_queue_entries + (sizeof(struct nvme_completion *) * NVME_QUEUE_DEPTH));
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
 
     queue->dev = nvme_dev;
 
