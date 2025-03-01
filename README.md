@@ -83,15 +83,6 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 ![20250105_101314](https://github.com/user-attachments/assets/3485e5f6-f889-4d91-b93a-a95312cf1438)
 ![20250105_073158](https://github.com/user-attachments/assets/7413d619-66cb-406f-ba10-0f67f4ccee50)
 
-# Ideas for arcane syscall names:
-
-conjure (spawn)
-bifurcate(fork)
-obliterate(kill)
-unbind,vanish,ascend(exit)
-transmute(anything involving changing , such as changing file name or xattrs)
-shroud (anything involving masking something)
-
 # Makefile targets
 
 Running `make all` will compile the kernel (from the `kernel/` directory) and then generate a bootable ISO image.
