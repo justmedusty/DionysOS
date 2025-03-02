@@ -600,10 +600,10 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     for (;;) {
 
         debug_printf("CONTROLLER STATUS %i\n",queue->dev->bar->controller_status);
-
+        debug_printf("QUEUE STATUS %i\n",queue->completion_queue_entries[head].status);
         // Read the status of the command completion
         status = nvme_read_completion_status(queue, head);
-
+        debug_printf("STATUS %i\n",status);
         // Check if the status phase matches the current phase
         if ((status & 1) == phase) {
             break;
