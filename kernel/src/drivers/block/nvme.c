@@ -25,7 +25,7 @@ static uint64_t
 nvme_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
-                      uint64_t dma_address);
+                      uint32_t dma_address);
 
 static int32_t nvme_setup_io_queues(struct nvme_device *device);
 
@@ -299,7 +299,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
  */
 static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t queue_id, int32_t depth) {
     struct nvme_ops *ops;
-    struct nvme_queue *queue = kzmalloc(sizeof(struct nvme_queue));
+    struct nvme_queue *queue = kzmalloc(sizeof(*queue));
 
     /*
      * I think this here is the issue...
@@ -599,6 +599,8 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     kprintf("GOING INTO COMPLETION STATUS LOOP\n");
     for (;;) {
 
+        debug_printf("CONTROLLER STATUS %i\n",queue->dev->bar->controller_status);
+
         // Read the status of the command completion
         status = nvme_read_completion_status(queue, head);
 
@@ -738,7 +740,7 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->sq_tail = 0; // set submission queue tail pointer to zero
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
-                                       (nvme_dev->doorbell_stride)]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
+                                       ( nvme_dev->doorbell_stride)]; // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
     memset((void *) queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
 
     nvme_dev->active_queues++;
@@ -888,7 +890,7 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
 }
 
 int32_t nvme_identify(struct nvme_device *nvme_dev, uint64_t namespace_id, uint64_t controller_or_namespace_identifier,
-                      uint64_t dma_address) {
+                      uint32_t dma_address) {
 
     struct nvme_command command = {0};
     uint64_t page_size = nvme_dev->page_size;
