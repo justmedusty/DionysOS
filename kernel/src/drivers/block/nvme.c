@@ -452,7 +452,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 
     uint16_t tail = queue->sq_tail;
 
-    memcpy(&queue->submission_queue_commands[tail], command, sizeof(struct nvme_command));
+    memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
     ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
@@ -591,8 +591,10 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
     command->common.command_id = nvme_get_command_id();
 
     // fatal status happens in this call here
-    nvme_submit_command(queue, command);
 
+    debug_printf("CONTROLLER STATUS BEFORE SUBMIT %i\n",queue->dev->bar->controller_status);
+    nvme_submit_command(queue, command);
+    debug_printf("CONTROLLER STATUS AFTER SUBMIT %i\n",queue->dev->bar->controller_status);
     // Get the current timer count to track the timeout
     start_time = timer_get_current_count();
 
@@ -668,7 +670,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
  */
 static void nvme_free_queue(struct nvme_queue *queue) {
     kfree(queue->completion_queue_entries);
-    //kfree(queue->submission_queue_commands);
+    kfree(queue->submission_queue_commands);
     kfree(queue);
 }
 
