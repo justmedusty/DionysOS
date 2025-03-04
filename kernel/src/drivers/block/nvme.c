@@ -318,6 +318,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[(queue_id * 2 * (nvme_dev->doorbell_stride))];
 
+
     queue->q_depth = depth;
 
     queue->qid = queue_id;
@@ -441,7 +442,7 @@ free_queue:
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     uint16_t tail = queue->sq_tail;
-
+    debug_printf("TAIL %i\n",tail);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
@@ -456,8 +457,11 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     if (++tail == queue->q_depth) {
         tail = 0;
     }
-    *queue->q_db = tail;
 
+    queue->q_db[0] = tail;
+    if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
+        debug_printf("FATAL STATUS HERE\n");
+    }
     queue->sq_tail = tail;
 }
 
