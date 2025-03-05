@@ -458,7 +458,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
         tail = 0;
     }
 
-    queue->q_db[0] = tail;
+    *queue->q_db = tail;
     if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
         debug_printf("FATAL STATUS HERE\n");
     }
@@ -930,7 +930,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-    nvme_dev->queue_depth = min(NVME_CAP_MQES(nvme_dev->capabilities),
+    nvme_dev->queue_depth = (int32_t)min(NVME_CAP_MQES(nvme_dev->capabilities),
                                 NVME_QUEUE_DEPTH); // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
