@@ -470,7 +470,7 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
     const uint32_t queue_count = (count - 1) | ((count - 1) << 16);
     debug_printf("SET QUEUE COUNT COUNT %i\n", queue_count);
 
-    int32_t status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
+    const int32_t status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
     debug_printf("SET QUEUE COUNT\n");
     if (status < 0) {
         return status;
@@ -721,8 +721,6 @@ static void nvme_init_queue(struct nvme_queue *queue, uint16_t queue_id) {
     queue->q_db = &nvme_dev->doorbells[queue_id * 2 *
                                        (nvme_dev->doorbell_stride)];
     // set the doorbell for the queue based on the queue_id in the list of doorbells on the device
-    memset((void *) queue->completion_queue_entries, 0, NVME_CQ_SIZE(queue->q_depth));
-
     nvme_dev->active_queues++;
 }
 
@@ -845,12 +843,9 @@ static int32_t nvme_create_io_queues(struct nvme_device *device) {
 }
 
 static int32_t nvme_setup_io_queues(struct nvme_device *device) {
-    int32_t number_io_queues;
-    int32_t result;
-
-    number_io_queues = 1;
+    const int32_t number_io_queues = 1;
     debug_printf("GOING INTO SET QCOUNT\n");
-    result = nvme_set_queue_count(device, number_io_queues);
+    const int32_t result = nvme_set_queue_count(device, number_io_queues);
     debug_printf("PAST SET QCOUNT\n");
     if (result <= 0) {
         return result;
