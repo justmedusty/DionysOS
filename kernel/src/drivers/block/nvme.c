@@ -367,7 +367,6 @@ static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
  */
 static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     int32_t result;
-    uint32_t aqa;
     uint64_t capabilities = nvme_dev->capabilities;
 
     struct nvme_queue *queue;
@@ -400,7 +399,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
         nvme_dev->queues[NVME_ADMIN_Q] = queue;
     }
 
-    aqa = queue->q_depth - 1;
+    uint32_t aqa = queue->q_depth - 1;
 
     aqa |= aqa << 16;
     //Set up the device page_size with the page_size value derived above
@@ -409,7 +408,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     // Set the Controller Configuration to use NVM Command Set.
     nvme_dev->controller_config |= (page_shift - 12) << NVME_CC_MPS_SHIFT;
     // Configure the memory page size (MPS) based on page_shift. Shifts by 12 because the MPS is expressed as a power of 2 in the spec.
-    nvme_dev->controller_config |= NVME_CC_ARB_RR | NVME_CC_SHN_NONE;
+    nvme_dev->controller_config |= NVME_CC_SHN_NONE | NVME_CC_ARB_RR;
     // Set arbitration method to Round Robin (RR) and configure shutdown notification (SHN) to 'None'.
     nvme_dev->controller_config |= NVME_CC_IOSQES | NVME_CC_IOCQES;
     // Specify the sizes of I/O Submission and Completion Queue Entries.
@@ -442,7 +441,7 @@ free_queue:
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     uint16_t tail = queue->sq_tail;
-    debug_printf("TAIL %i\n",tail);
+    debug_printf("TAIL %i\n", tail);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
@@ -773,10 +772,9 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
  */
 static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t queue_id,
                                            struct nvme_queue *queue) {
-    struct nvme_command command;
-    int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_CQ_IRQ_ENABLED;
+    struct nvme_command command = {0};
+    int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_SQ_PRIO_MEDIUM;
 
-    memset(&command, 0, sizeof(command));
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
     command.create_sq.prp1 = ((uint64_t) V2P(queue->submission_queue_commands));
     command.create_sq.sqid = (queue_id);
@@ -925,9 +923,9 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-    nvme_dev->queue_depth = (int32_t)min(NVME_CAP_MQES(nvme_dev->capabilities),
-                                NVME_QUEUE_DEPTH); // this can go off capabilities but for now its fine
+    nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
+    debug_printf("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
     debug_printf("STRIDE %i\n", nvme_dev->doorbell_stride);
     nvme_dev->doorbells = (volatile uint32_t *) ((void *) nvme_dev->bar + 4096);
