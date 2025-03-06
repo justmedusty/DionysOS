@@ -456,12 +456,11 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     if (++tail == queue->q_depth) {
         tail = 0;
     }
-
     *queue->q_db = tail;
+    queue->sq_tail = tail;
     if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
         debug_printf("FATAL STATUS HERE\n");
     }
-    queue->sq_tail = tail;
 }
 
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count) {
@@ -793,13 +792,14 @@ static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
     result = nvme_alloc_completion_queue(dev, queue_id, queue);
     if (result < 0)
         goto release_cq;
-
+    debug_printf("CREATED CQ\n");
     result = nvme_alloc_submission_queue(dev, queue_id, queue);
     if (result < 0)
         goto release_sq;
-
+    debug_printf("CREATED SQ\n");
     nvme_init_queue(queue, queue_id);
 
+    debug_printf("CREATED BOTH QUEUES\n");
     return result;
 
 release_sq:
@@ -928,7 +928,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     debug_printf("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
     debug_printf("STRIDE %i\n", nvme_dev->doorbell_stride);
-    nvme_dev->doorbells = (volatile uint32_t *) ((void *) nvme_dev->bar + 4096);
+    nvme_dev->doorbells = (volatile uint32_t *) ((char *) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
@@ -936,6 +936,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         goto free_queue;
     }
     nvme_dev->prp_pool = (kzmalloc(nvme_dev->page_size));
+    debug_printf("PAGE SIZE %i\n",nvme_dev->page_size);
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
@@ -951,7 +952,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nsid = kzmalloc(nvme_dev->page_size);
 
     for (uint32_t i = 1; i <= nvme_dev->namespace_count; i++) {
-        struct device *namespace_device;
         char name[20];
         if (nvme_identify(nvme_dev, i, 0, (uint64_t) nsid)) {
             ret = KERN_IO_ERROR;
@@ -964,7 +964,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         }
 
         sprintf(name, "blockdev #%i", i);
-        namespace_device = kzmalloc(sizeof(struct device));
+        struct device *namespace_device = kzmalloc(sizeof(struct device));
         create_device(namespace_device, DEVICE_MAJOR_NVME, name, &nvme_device_ops, nvme_dev, NULL);
         insert_device_into_kernel_tree(namespace_device);
     }
