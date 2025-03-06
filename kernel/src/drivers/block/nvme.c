@@ -1023,7 +1023,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 8);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
