@@ -10,6 +10,13 @@
 #include <stddef.h>
 #include <include/memory/pmm.h>
 
+
+#ifdef _DEBUG_
+    #define DEBUG_PRINT(string, ...) debug_printf(string, ## __VA_ARGS__)
+#else
+    #define DEBUG_PRINT(string, ...)
+#endif
+
 #define BIT(bit) ((1UL << bit))
 #define BYTE(num) (num / 8)
 
