@@ -374,7 +374,6 @@ void kprintf(char *str, ...) {
 }
 
 void debug_printf(char *str, ...) {
-#ifdef _DEBUG_
     framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, "[DEBUG] ");
     va_list args;
     va_start(args, str);
@@ -484,7 +483,6 @@ void debug_printf(char *str, ...) {
     }
     release_spinlock(&main_framebuffer.lock);
     va_end(args);
-#endif
 }
 
 /*
