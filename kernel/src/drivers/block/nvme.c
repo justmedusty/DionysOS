@@ -95,6 +95,10 @@ static void nvme_bind(struct device *device);
 
 static int32_t nvme_probe(struct device *device);
 
+
+void print_nvme_regs(struct nvme_device *dev){
+    DEBUG_PRINT("CAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
+}
 /*
  * Not completed yet will need to make some abstracted functions to use this
  */
@@ -283,6 +287,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
         }
 
         if (nvme_dev->bar->controller_status & NVME_CSTS_CFS) {
+            print_nvme_regs(nvme_dev);
             err_printf("NVMe Fatal Controller Status\n");
             return KERN_DEVICE_FAILED;
         }
@@ -307,10 +312,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
 
+    queue->submission_queue_commands = kzmalloc(PAGE_SIZE * 2);
 
-    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
-
-    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE * 2);
 
     queue->dev = nvme_dev;
 
@@ -440,6 +444,8 @@ free_queue:
  * Submit a command to the controllers submission queue, handle wraparound if the queue goes beyond the depth
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
+    static int debug = 0;
+    DEBUG_PRINT("submit called %i times\n",++debug);
     uint16_t tail = queue->sq_tail;
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
@@ -499,7 +505,9 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
 
     // for debugging purposes
     if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
+        print_nvme_regs(queue->dev);
         panic("NVMe Fatal Controller Status\n");
+        return KERN_DEVICE_FAILED;
     }
 
     return queue->completion_queue_entries[index].status;
