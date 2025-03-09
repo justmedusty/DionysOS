@@ -96,9 +96,12 @@ static void nvme_bind(struct device *device);
 static int32_t nvme_probe(struct device *device);
 
 
-void print_nvme_regs(struct nvme_device *dev){
-    DEBUG_PRINT("CAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
+void print_nvme_regs(struct nvme_device *dev) {
+    DEBUG_PRINT("CAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",
+                dev->bar->capabilities, dev->bar->version, dev->bar->interrupt_mask_set, dev->bar->admin_sq_base_addr,
+                dev->bar->admin_cq_base_addr);
 }
+
 /*
  * Not completed yet will need to make some abstracted functions to use this
  */
@@ -302,7 +305,6 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
  *
  */
 static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t queue_id, int32_t depth) {
-    struct nvme_ops *ops;
     struct nvme_queue *queue = kzmalloc(sizeof(*queue));
 
     /*
@@ -312,9 +314,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
 
-    queue->submission_queue_commands = kzmalloc(PAGE_SIZE * 2);
+    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
 
-    queue->completion_queue_entries = kzmalloc(PAGE_SIZE * 2);
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
 
     queue->dev = nvme_dev;
 
@@ -330,7 +332,7 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     nvme_dev->total_queues++;
     nvme_dev->queues[queue_id] = queue;
 
-    ops = nvme_dev->device->driver->device_ops->block_device_ops->nvme_ops;
+    const struct nvme_ops *ops = nvme_dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
     if (ops && ops->setup_queue) {
         ops->setup_queue(queue);
@@ -445,17 +447,15 @@ free_queue:
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     static int debug = 0;
-    DEBUG_PRINT("submit called %i times\n",++debug);
+    DEBUG_PRINT("submit called %i times\n", ++debug);
     uint16_t tail = queue->sq_tail;
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
-    if (ops && ops->submit_cmd) {
-        if (ops->submit_cmd != nvme_submit_command) {
-            ops->submit_cmd(queue, command);
-            return;
-        }
+    if (ops && ops->submit_cmd && ops->submit_cmd != nvme_submit_command) {
+        ops->submit_cmd(queue, command);
+        return;
     }
 
     if (++tail == queue->q_depth) {
@@ -944,7 +944,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         goto free_queue;
     }
     nvme_dev->prp_pool = (kzmalloc(nvme_dev->page_size));
-    DEBUG_PRINT("PAGE SIZE %i\n",nvme_dev->page_size);
+    DEBUG_PRINT("PAGE SIZE %i\n", nvme_dev->page_size);
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
@@ -953,7 +953,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         goto free_queue;
     }
 
-
+    panic("Got past the issue");
     nvme_get_info_from_identify(nvme_dev);
 
 
@@ -1026,12 +1026,12 @@ void setup_nvme_device(struct pci_device *pci_device) {
         nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF) |
                                              ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
     } else {
-        nvme_dev->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];
+        nvme_dev->bar = (struct nvme_bar *) (uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF);
     }
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE | USER, 32);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
