@@ -372,14 +372,11 @@ static int32_t nvme_disable_control(struct nvme_device *nvme_dev) {
  * Setup the admin queue
  */
 static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
-    int32_t result;
-    uint64_t capabilities = nvme_dev->capabilities;
-
-    struct nvme_queue *queue;
+    const uint64_t capabilities = nvme_dev->capabilities;
 
     uint64_t page_shift = 12;
-    uint64_t device_page_min = NVME_CAP_MPSMIN(capabilities) + 12;
-    uint64_t device_page_max = NVME_CAP_MPSMAX(capabilities) + 12;
+    const uint64_t device_page_min = NVME_CAP_MPSMIN(capabilities) + 12;
+    const uint64_t device_page_max = NVME_CAP_MPSMAX(capabilities) + 12;
 
     if (page_shift < device_page_min) {
         return KERN_NO_DEVICE;
@@ -389,13 +386,13 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     }
 
 
-    result = nvme_disable_control(nvme_dev);
+    int32_t result = nvme_disable_control(nvme_dev);
 
     if (result < 0) {
         return result;
     }
 
-    queue = nvme_dev->queues[NVME_ADMIN_Q];
+    struct nvme_queue *queue = nvme_dev->queues[NVME_ADMIN_Q];
 
     if (!queue) {
         queue = nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
@@ -929,10 +926,10 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->device = dev;
     doubly_linked_list_init(&nvme_dev->namespaces);
 
-
-    nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-    nvme_dev->queue_depth = min(NVME_CAP_MQES(nvme_dev->bar->capabilities) + 1,NVME_QUEUE_DEPTH); // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
+    nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
+    nvme_dev->queue_depth = (int32_t) min(NVME_CAP_MQES(nvme_dev->capabilities) + 1,NVME_QUEUE_DEPTH);
+    // this can go off capabilities but for now its fine
     DEBUG_PRINT("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
     DEBUG_PRINT("STRIDE %i\n", nvme_dev->doorbell_stride);
