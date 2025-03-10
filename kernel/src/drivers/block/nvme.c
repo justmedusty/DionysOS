@@ -931,7 +931,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
-    nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
+    nvme_dev->queue_depth = min(NVME_CAP_MQES(nvme_dev->bar->capabilities) + 1,NVME_QUEUE_DEPTH); // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     DEBUG_PRINT("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
