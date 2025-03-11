@@ -97,7 +97,7 @@ static int32_t nvme_probe(struct device *device);
 
 
 void print_nvme_regs(struct nvme_device *dev){
-    DEBUG_PRINT("CAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
+    DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
 }
 /*
  * Not completed yet will need to make some abstracted functions to use this
@@ -312,9 +312,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
 
-    queue->submission_queue_commands = kzmalloc(PAGE_SIZE * 2);
+    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
 
-    queue->completion_queue_entries = kzmalloc(PAGE_SIZE * 2);
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
 
     queue->dev = nvme_dev;
 
@@ -471,7 +471,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count) {
     uint32_t result;
     const uint32_t queue_count = (count - 1) | ((count - 1) << 16);
-    DEBUG_PRINT("SET QUEUE COUNT COUNT %i\n", queue_count);
+    DEBUG_PRINT("SET QUEUE COUNT : COUNT %i\n", queue_count);
 
     const int32_t status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
     DEBUG_PRINT("SET QUEUE COUNT\n");
@@ -839,7 +839,7 @@ static int32_t nvme_create_io_queues(struct nvme_device *device) {
             break;
         }
     }
-    DEBUG_PRINT("FIRST LOOP DONE CRTEIOQ\n");
+    DEBUG_PRINT("FIRST LOOP DONE CREATE IO QUEUES\n");
     for (i = device->active_queues; i <= device->total_queues; i++) {
         if (nvme_create_queue(device->queues[i], i)) {
             break;
