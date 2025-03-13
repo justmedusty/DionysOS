@@ -96,48 +96,52 @@ static void nvme_bind(struct device *device);
 static int32_t nvme_probe(struct device *device);
 
 
-void print_nvme_regs(struct nvme_device *dev){
-    DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
+void print_nvme_regs(struct nvme_device *dev) {
+    DEBUG_PRINT(
+            "\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",
+            dev->bar->capabilities, dev->bar->version, dev->bar->interrupt_mask_set, dev->bar->controller_status,
+            dev->bar->reserved1, dev->bar->admin_sq_base_addr, dev->bar->admin_cq_base_addr);
 }
+
 /*
  * Not completed yet will need to make some abstracted functions to use this
  */
 struct nvme_ops nvme_ops = {
-    .submit_cmd = nvme_submit_command,
-    .complete_cmd = NULL,
-    .setup_queue = NULL,
+        .submit_cmd = nvme_submit_command,
+        .complete_cmd = NULL,
+        .setup_queue = NULL,
 };
 
 struct block_device_ops nvme_block_ops = {
-    .block_read = nvme_read_block,
-    .block_write = nvme_write_block,
-    .nvme_ops = &nvme_ops
+        .block_read = nvme_read_block,
+        .block_write = nvme_write_block,
+        .nvme_ops = &nvme_ops
 };
 
 struct pci_driver nvme_pci_driver = {
-    .probe = nvme_probe,
-    .bind = nvme_bind,
-    .shutdown = NULL,
-    .name = "nvmedriver",
-    .driver_managed_dma = false,
-    .resume = NULL,
-    .device = NULL, // this struct can be copied for use later and then have fields reassigned
+        .probe = nvme_probe,
+        .bind = nvme_bind,
+        .shutdown = NULL,
+        .name = "nvmedriver",
+        .driver_managed_dma = false,
+        .resume = NULL,
+        .device = NULL, // this struct can be copied for use later and then have fields reassigned
 };
 
 struct device_ops nvme_device_ops = {
-    .block_device_ops = &nvme_block_ops,
-    .shutdown = nvme_shutdown,
-    .reset = NULL,
-    .get_status = NULL,
-    .init = nvme_init,
-    .configure = NULL,
+        .block_device_ops = &nvme_block_ops,
+        .shutdown = nvme_shutdown,
+        .reset = NULL,
+        .get_status = NULL,
+        .init = nvme_init,
+        .configure = NULL,
 
 };
 
 struct device_driver nvme_driver = {
-    .pci_driver = &nvme_pci_driver,
-    .device_ops = &nvme_device_ops,
-    .probe = nvme_probe,
+        .pci_driver = &nvme_pci_driver,
+        .device_ops = &nvme_device_ops,
+        .probe = nvme_probe,
 };
 
 /*
@@ -312,9 +316,9 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
     //issue is controller cannot access this memory
-    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
-
-    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
+    queue->submission_queue_commands = (struct nvme_command *) (char *)nvme_dev->bar + 0xA000;
+    DEBUG_PRINT("BAR %x.64\n", V2P(nvme_dev->bar));
+    queue->completion_queue_entries = (volatile struct nvme_completion *) (char * )nvme_dev->bar + 0xB000;
 
     queue->dev = nvme_dev;
 
@@ -433,7 +437,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     nvme_init_queue(nvme_dev->queues[NVME_ADMIN_Q], 0);
     return result;
 
-free_queue:
+    free_queue:
     nvme_free_queues(nvme_dev, 0);
 
     return result;
@@ -445,7 +449,7 @@ free_queue:
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     static int debug = 0;
-    DEBUG_PRINT("submit called %i times\n",++debug);
+    DEBUG_PRINT("submit called %i times\n", ++debug);
     uint16_t tail = queue->sq_tail;
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
@@ -501,7 +505,7 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
     uint64_t start = (uint64_t) &queue->completion_queue_entries[0];
 
     uint64_t stop = start + NVME_CQ_SIZE(
-                        queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
+            queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
     // for debugging purposes
     if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
@@ -809,9 +813,9 @@ static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
     DEBUG_PRINT("CREATED BOTH QUEUES\n");
     return result;
 
-release_sq:
+    release_sq:
     nvme_delete_sq(dev, queue_id);
-release_cq:
+    release_cq:
     nvme_delete_cq(dev, queue_id);
 
     return result;
@@ -944,7 +948,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         goto free_queue;
     }
     nvme_dev->prp_pool = (kzmalloc(nvme_dev->page_size));
-    DEBUG_PRINT("PAGE SIZE %i\n",nvme_dev->page_size);
+    DEBUG_PRINT("PAGE SIZE %i\n", nvme_dev->page_size);
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
@@ -980,9 +984,9 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     kfree(nsid);
     return KERN_SUCCESS;
 
-free_id:
+    free_id:
     kfree(nsid);
-free_queue:
+    free_queue:
     kfree(nvme_dev->queues);
 
     return KERN_IO_ERROR; // does io make sense ? maybe,  but placeholder for now
@@ -1031,7 +1035,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE | DISABLE_CACHE, 32);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);

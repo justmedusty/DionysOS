@@ -31,7 +31,7 @@ enum permissions {
     READWRITE = PTE_RW,
     NO_EXECUTE = PTE_NX,
     USER = PTE_U,
-
+    DISABLE_CACHE = PTE_PCD,
 };
 #endif
 struct virtual_region {
