@@ -286,13 +286,14 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     timeout_millis = NVME_CAP_TIMEOUT(nvme_dev->capabilities) * 500;
     start = timer_get_current_count();
     while ((timer_get_current_count() - start) < timeout_millis) {
+
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
             return KERN_SUCCESS;
         }
 
         if (nvme_dev->bar->controller_status & NVME_CSTS_CFS) {
             print_nvme_regs(nvme_dev);
-            err_printf("NVMe Fatal Controller Status\n");
+            panic("NVMe Fatal Controller Status\n");
             return KERN_DEVICE_FAILED;
         }
     }
@@ -316,9 +317,8 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
      * I do not think this is the issue. Continuing to investigate
 */
     //issue is controller cannot access this memory
-    queue->submission_queue_commands = (struct nvme_command *) (char *)nvme_dev->bar + 0xA000;
-    DEBUG_PRINT("BAR %x.64\n", V2P(nvme_dev->bar));
-    queue->completion_queue_entries = (volatile struct nvme_completion *) (char * )nvme_dev->bar + 0xB000;
+    queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
+    queue->completion_queue_entries = kzmalloc(PAGE_SIZE);
 
     queue->dev = nvme_dev;
 
