@@ -58,9 +58,6 @@ static void nvme_free_queues(struct nvme_device *nvme_dev, int32_t lowest);
 
 static void nvme_free_queue(struct nvme_queue *queue);
 
-int32_t nvme_get_features(struct nvme_device *device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
-                          uint32_t *result);
-
 int32_t
 nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
                   uint32_t *result);
@@ -527,25 +524,6 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
 }
 
 /*
- * Submit a GET_FEATURES admin command
- */
-int32_t
-nvme_get_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t namespace_id, uint64_t dma_address,
-                  uint32_t *result) {
-    struct nvme_command command = {0};
-    int32_t ret;
-
-    command.features.opcode = NVME_ADMIN_OPCODE_GET_FEATURES;
-    command.features.nsid = namespace_id;
-    command.features.prp1 = dma_address;
-    command.features.fid = feature_id;
-
-    ret = nvme_submit_admin_command(nvme_device, &command, result);
-
-    return ret;
-}
-
-/*
  * Just get a command id and wraparound once we hit max
  */
 static uint16_t nvme_get_command_id() {
@@ -939,6 +917,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
+
     ret = nvme_setup_io_queues(nvme_dev);
     if (ret) {
         goto free_queue;
@@ -946,7 +925,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 
     nvme_get_info_from_identify(nvme_dev);
-
 
     nsid = kzmalloc(nvme_dev->page_size);
 

@@ -494,6 +494,7 @@ struct nvme_identify {
 };
 
 // Struct representing an NVMe features command
+
 struct nvme_features {
     uint8_t opcode;        // Command opcode
     uint8_t flags;         // Command flags
