@@ -97,7 +97,7 @@ static int32_t nvme_probe(struct device *device);
 
 
 void print_nvme_regs(struct nvme_device *dev){
-    DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,dev->bar->admin_sq_base_addr,dev->bar->admin_cq_base_addr);
+    DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,nvme_read_q(&dev->bar->admin_sq_base_addr),nvme_read_q(&dev->bar->admin_cq_base_addr));
 }
 /*
  * Not completed yet will need to make some abstracted functions to use this
@@ -288,7 +288,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
 
         if (nvme_dev->bar->controller_status & NVME_CSTS_CFS) {
             print_nvme_regs(nvme_dev);
-            err_printf("NVMe Fatal Controller Status\n");
+            panic("NVMe Fatal Controller Status\n");
             return KERN_DEVICE_FAILED;
         }
     }
@@ -307,9 +307,6 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
 
     /*
      * I think this here is the issue...
-     *
-     * Update: NVMe controllers appear to have 64 bit addressable DMA capability so
-     * I do not think this is the issue. Continuing to investigate
 */
     //issue is controller cannot access this memory
     queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
@@ -373,8 +370,6 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     int32_t result;
     uint64_t capabilities = nvme_dev->capabilities;
 
-    struct nvme_queue *queue;
-
     uint64_t page_shift = 12;
     uint64_t device_page_min = NVME_CAP_MPSMIN(capabilities) + 12;
     uint64_t device_page_max = NVME_CAP_MPSMAX(capabilities) + 12;
@@ -393,7 +388,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
         return result;
     }
 
-    queue = nvme_dev->queues[NVME_ADMIN_Q];
+    struct nvme_queue *queue = nvme_dev->queues[NVME_ADMIN_Q];
 
     if (!queue) {
         queue = nvme_alloc_queue(nvme_dev, 0, NVME_QUEUE_DEPTH);
@@ -418,6 +413,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     // Specify the sizes of I/O Submission and Completion Queue Entries.
     nvme_dev->bar->admin_queue_attrs = aqa;
     // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
+    DEBUG_PRINT("sq cmds %x.64 cqes %x.64\n",queue->submission_queue_commands,queue->completion_queue_entries);
     nvme_write_q((uint64_t) V2P(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
     // Write the physical base address of the Admin Submission Queue to its Base Address Register.
     nvme_write_q((uint64_t) V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
