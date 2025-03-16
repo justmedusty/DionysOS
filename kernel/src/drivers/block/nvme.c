@@ -96,7 +96,7 @@ static void nvme_bind(struct device *device);
 static int32_t nvme_probe(struct device *device);
 
 
-void print_nvme_regs(struct nvme_device *dev){
+void print_nvme_regs(const struct nvme_device *dev){
     DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,nvme_read_q(&dev->bar->admin_sq_base_addr),nvme_read_q(&dev->bar->admin_cq_base_addr));
 }
 /*

@@ -607,17 +607,17 @@ struct nvme_command {
  * double-word (ptr[0]) first, followed by the higher double-word (ptr[1]).
  */
 static inline uint64_t nvme_read_q(volatile uint64_t *regs) {
-    volatile uint32_t *ptr = (volatile uint32_t *) regs;
-    uint64_t val_lo = ptr[0];  // Read lower 32 bits
-    uint64_t val_hi = ptr[1];  // Read higher 32 bits
+    const volatile uint32_t *ptr = (volatile uint32_t *) regs;
+    const uint64_t val_lo = ptr[0];  // Read lower 32 bits
+    const uint64_t val_hi = ptr[1];  // Read higher 32 bits
 
     return val_lo | (val_hi << 32); // Combine to form 64-bit value
 }
 
 static inline void nvme_write_q(uint64_t val, volatile uint64_t *regs) {
     volatile uint32_t *ptr = (volatile uint32_t *) regs;
-    uint32_t val_lo = (uint32_t)(val & 0xFFFFFFFF);  // Extract lower 32 bits
-    uint32_t val_hi = (uint32_t)(val >> 32);        // Extract higher 32 bits
+    const uint32_t val_lo = (uint32_t)(val & 0xFFFFFFFF);  // Extract lower 32 bits
+    const uint32_t val_hi = (uint32_t)(val >> 32);        // Extract higher 32 bits
 
     ptr[0] = val_lo;  // Write lower 32 bits first
     ptr[1] = val_hi;  // Write higher 32 bits next
