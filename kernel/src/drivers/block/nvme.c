@@ -932,7 +932,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     DEBUG_PRINT("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
     DEBUG_PRINT("STRIDE %i\n", nvme_dev->doorbell_stride);
-    nvme_dev->doorbells =  kzmalloc(PAGE_SIZE * 32);//(volatile uint32_t *) ((uintptr_t) nvme_dev->bar + 4096);
+    nvme_dev->doorbells =  (volatile uint32_t *) ((uintptr_t) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
