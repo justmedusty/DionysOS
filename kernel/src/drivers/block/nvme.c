@@ -178,7 +178,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
          * Always increase in increments of pages.  It doesn't waste
          * much memory and reduces the number of allocations.
          */
-        nvme_dev->prp_pool = V2P(kzmalloc(num_pages * page_size));
+        nvme_dev->prp_pool = (kzmalloc(num_pages * page_size));
         if (!nvme_dev->prp_pool) {
             err_printf("kmalloc prp_pool fail\n");
             return KERN_NO_MEM;
@@ -186,7 +186,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
         nvme_dev->prp_entry_count = prps_per_page * num_pages;
     }
 
-    prp_pool = P2V(nvme_dev->prp_pool);
+    prp_pool = (nvme_dev->prp_pool);
     i = 0;
     while (number_prps) {
         // if we've filled a page of physical region pool entries, link to the next page and reset index
