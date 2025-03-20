@@ -440,9 +440,8 @@ free_queue:
  * Submit a command to the controllers submission queue, handle wraparound if the queue goes beyond the depth
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
-    static int debug = 0;
-    DEBUG_PRINT("submit called %i times\n",++debug);
     uint16_t tail = queue->sq_tail;
+    DEBUG_PRINT("TAIL %i\n",tail);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
 
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
@@ -470,7 +469,6 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
     DEBUG_PRINT("SET QUEUE COUNT : COUNT %i\n", queue_count);
 
     const int32_t status = nvme_set_features(nvme_dev, NVME_FEAT_NUM_QUEUES, queue_count, 0, &result);
-    DEBUG_PRINT("SET QUEUE COUNT\n");
     if (status < 0) {
         return status;
     }
@@ -929,9 +927,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
-    DEBUG_PRINT("QDEPTH %i\n", nvme_dev->queue_depth);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
-    DEBUG_PRINT("STRIDE %i\n", nvme_dev->doorbell_stride);
     nvme_dev->doorbells =  (volatile uint32_t *) ((uintptr_t) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
@@ -940,7 +936,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
         goto free_queue;
     }
     nvme_dev->prp_pool = (kzmalloc(nvme_dev->page_size));
-    DEBUG_PRINT("PAGE SIZE %i\n",nvme_dev->page_size);
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
