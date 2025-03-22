@@ -316,7 +316,6 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     queue->cq_phase = 1;
     queue->q_db = &nvme_dev->doorbells[(queue_id * 2 * (nvme_dev->doorbell_stride))];
 
-
     queue->q_depth = depth;
 
     queue->qid = queue_id;
@@ -392,7 +391,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
         if (!queue) {
             panic("NVMe : Cannot allocate admin queue");
         }
-        nvme_dev->queues[NVME_ADMIN_Q] = queue;
+
     }
 
     uint32_t aqa = queue->q_depth - 1;
@@ -806,12 +805,14 @@ static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16
 static int32_t nvme_create_io_queues(struct nvme_device *device) {
     uint32_t i;
     DEBUG_PRINT("GOING INTO FIRST LOOP CREATE IO QUEUES\n");
+    DEBUG_PRINT("TOTAL_QUEUES %i MAX QUEUE ID %i\n",device->total_queues,device->max_queue_id);
     for (i = device->total_queues; i <= device->max_queue_id; i++) {
         if (!nvme_alloc_queue(device, i, device->queue_depth)) {
             break;
         }
     }
     DEBUG_PRINT("FIRST LOOP DONE CREATE IO QUEUES\n");
+
     for (i = device->active_queues; i <= device->total_queues; i++) {
         if (nvme_create_queue(device->queues[i], i)) {
             break;
@@ -902,7 +903,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     doubly_linked_list_init(&nvme_dev->namespaces);
 
 
-    nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
+    nvme_dev->queues = kmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));

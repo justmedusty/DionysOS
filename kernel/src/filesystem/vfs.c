@@ -599,7 +599,6 @@ static int64_t vnode_update_children_array(const struct vnode *vnode) {
 struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
-    uint64_t current = 0;
 
     do {
         const struct virtual_handle *handle = node->data;
@@ -614,12 +613,11 @@ struct vnode *handle_to_vnode(uint64_t handle_id) {
 
 int64_t handle_to_offset(uint64_t handle_id) {
     const struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
-    uint64_t current = 0;
 
     do {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
-            return handle->offset; //TODO handle impl-def things like this
+            return (int64_t ) handle->offset;
         }
         node = node->next;
     } while (node->next != NULL);
@@ -646,7 +644,7 @@ struct virtual_handle *find_handle(int64_t handle_id) {
 
     struct virtual_handle *handle = node->data;
 
-    while (node->data && handle->handle_id != handle_id) {
+    while (node->data && handle->handle_id != (uint64_t ) handle_id) {
         node = node->next;
         if (!node) {
             return NULL;
