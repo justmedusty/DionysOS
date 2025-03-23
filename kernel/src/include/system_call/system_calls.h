@@ -8,14 +8,15 @@
 enum system_calls {
     SYS_WRITE,
     SYS_READ,
-    SYS_EXIT,
-    SYS_SPAWN,
-    SYS_EXEC,
+    SYS_SEEK,
     SYS_OPEN,
     SYS_CLOSE,
+    SYS_EXIT,
+    SYS_WAIT,
+    SYS_SPAWN,
+    SYS_EXEC,
     SYS_CREATE,
-    SYS_ALLOC,
-    SYS_DEALLOC,
-
+    SYS_HEAP_GROW,
+    SYS_HEAP_SHRINK,
 };
 #endif //SYSTEM_CALLS_H
