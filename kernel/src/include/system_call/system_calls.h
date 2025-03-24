@@ -5,6 +5,19 @@
 #ifndef SYSTEM_CALLS_H
 #define SYSTEM_CALLS_H
 
+#include "stdint.h"
+
+#ifdef __x86_64__
+#include "include/architecture/x86_64/msr.h"
+
+#define IA32_LSTAR 0xC0000082
+static inline void set_syscall_handler(void *syscall_handler) {
+    wrmsr(IA32_LSTAR, (uintptr_t) syscall_handler);
+}
+#endif
+int32_t system_call_dispatch();
+void register_syscall_dispatch();
+
 enum system_calls {
     SYS_WRITE,
     SYS_READ,
