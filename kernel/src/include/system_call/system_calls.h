@@ -15,13 +15,13 @@
 
 #include "include/architecture/x86_64/msr.h"
 
-struct regs {
-    uint64_t rdi;
-    uint64_t rsi;
-    uint64_t rdx;
-    uint64_t r10;
-    uint64_t r8;
-    uint64_t r9;
+struct sys_call_regs {
+    void  *arg1;
+    void  *arg2;
+    void  *arg3;
+    void  *arg4;
+    void  *arg5;
+    void  *arg6;
 };
 #define IA32_LSTAR 0xC0000082
 extern int syscall_entry();
@@ -36,6 +36,7 @@ int32_t system_call_dispatch();
 void register_syscall_dispatch();
 
 enum system_calls {
+    MIN_SYS,
     SYS_WRITE,
     SYS_READ,
     SYS_SEEK,
@@ -48,5 +49,6 @@ enum system_calls {
     SYS_CREATE,
     SYS_HEAP_GROW,
     SYS_HEAP_SHRINK,
+    MAX_SYS
 };
 #endif //SYSTEM_CALLS_H

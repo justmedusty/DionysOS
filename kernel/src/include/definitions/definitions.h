@@ -62,6 +62,7 @@ enum kernel_error_codes {
     KERN_NOT_SUPPORTED = -95,      // Operation not supported (ENOTSUP)
     KERN_WRONG_TYPE = -19,         // Incorrect type provided (custom)
     KERN_MAX_REACHED = -20,        // Maximum limit reached (custom)
+    KERN_NO_SYS = -21,
 
     // Filesystem and Mounting Errors
     KERN_NO_MOUNT = -100,          // No mount point found (custom)
