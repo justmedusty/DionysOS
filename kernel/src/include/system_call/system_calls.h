@@ -7,13 +7,20 @@
 
 #include "stdint.h"
 
+/*
+ * x86_64 requires writing to the MSR defined below the address of the syscall handler so that when syscall instruction
+ * is used in userspace after CS changes to ring 0, it will jump to the handler we set here
+ */
 #ifdef __x86_64__
+
 #include "include/architecture/x86_64/msr.h"
 
 #define IA32_LSTAR 0xC0000082
+
 static inline void set_syscall_handler(void *syscall_handler) {
     wrmsr(IA32_LSTAR, (uintptr_t) syscall_handler);
 }
+
 #endif
 int32_t system_call_dispatch();
 void register_syscall_dispatch();

@@ -18,6 +18,7 @@
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include "include/scheduling/sched.h"
 #include "include/filesystem/diosfs.h"
+#include "include/system_call/system_calls.h"
 #include "include/filesystem/tmpfs.h"
 
 /*
@@ -66,6 +67,8 @@ void kernel_bootstrap() {
     timer_init(1000);
     info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
                 (usable_pages * (PAGE_SIZE / 1024)) / 1024);
+    register_syscall_dispatch();
+    kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();
     ready = 1;
