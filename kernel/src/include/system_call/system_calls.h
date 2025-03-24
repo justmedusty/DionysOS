@@ -15,13 +15,23 @@
 
 #include "include/architecture/x86_64/msr.h"
 
+struct regs {
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rdx;
+    uint64_t r10;
+    uint64_t r8;
+    uint64_t r9;
+};
 #define IA32_LSTAR 0xC0000082
-
-static inline void set_syscall_handler(void *syscall_handler) {
-    wrmsr(IA32_LSTAR, (uintptr_t) syscall_handler);
+extern int syscall_entry();
+static inline void set_syscall_handler() {
+    wrmsr(IA32_LSTAR, (uint64_t) syscall_entry);
 }
 
 #endif
+
+
 int32_t system_call_dispatch();
 void register_syscall_dispatch();
 

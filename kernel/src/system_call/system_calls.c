@@ -8,5 +8,5 @@ int32_t system_call_dispatch(){
 }
 
 void register_syscall_dispatch(){
-    set_syscall_handler(system_call_dispatch);
+    set_syscall_handler();
 }
