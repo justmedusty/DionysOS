@@ -1,0 +1,8 @@
+//
+// Created by dustyn on 3/25/25.
+//
+
+#ifndef KERNEL_SYSTEMCALL_WRAPPERS_H
+#define KERNEL_SYSTEMCALL_WRAPPERS_H
+
+#endif //KERNEL_SYSTEMCALL_WRAPPERS_H
