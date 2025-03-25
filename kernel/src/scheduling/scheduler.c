@@ -309,4 +309,9 @@ static void promote_processes() {
     }
 
 }
+
+//just for the system call prototype in definitions.h
+void exit(){
+    sched_exit();
+}
 //#endif

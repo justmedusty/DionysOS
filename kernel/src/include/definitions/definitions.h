@@ -166,6 +166,7 @@ void err_printf(char *str, ...);
 
 void debug_printf(char *str, ...);
 
+void exit();
 
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\
