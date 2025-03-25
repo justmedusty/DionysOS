@@ -4,38 +4,36 @@
 #include "stdint.h"
 #include "include/system_call/system_calls.h"
 #include "include/definitions/definitions.h"
+
+
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
-    if(syscall_no < MIN_SYS || syscall_no > MAX_SYS){
+    if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         return KERN_NO_SYS;
     }
 
+
     switch (syscall_no) {
         case SYS_CLOSE:
-            break;
+            close(args->arg1);
+            return KERN_SUCCESS;
         case SYS_CREATE:
-            break;
+            return create((char *) args->arg1, (char *) args->arg2, args->arg3);
         case SYS_WRITE:
-            break;
+            return write(args->arg1, (char *) args->arg2, args->arg3);
         case SYS_READ:
-            break;
+            return read(args->arg1, (char *) args->arg2, args->arg3);
         case SYS_SEEK:
-            break;
+            return seek(args->arg1, args->arg2);
         case SYS_OPEN:
-            break;
-        case SYS_EXIT:
-            break;
-        case SYS_WAIT:
-            break;
-        case SYS_SPAWN:
-            break;
-        case SYS_EXEC:
-            break;
-        case SYS_HEAP_GROW:
-            break;
-        case SYS_HEAP_SHRINK:
-            break;
+            return open((char *) args->arg1);
+        case SYS_MOUNT:
+            return mount((char *) args->arg1, (char *) args->arg2);
+        case SYS_UNMOUNT:
+            return unmount((char *) args->arg1);
+        case SYS_RENAME:
+            return rename((char *) args->arg1, (char *) args->arg2);
         default:
-            break;
+            return KERN_NO_SYS; // Return an error for unknown syscalls
     }
 }
 

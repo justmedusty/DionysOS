@@ -4,7 +4,6 @@ syscall_entry:
     swapgs               ; Swap kernel and user GS base (if using per-cpu structures)
     push r11             ; Save RFLAGS
     push rcx             ; Save return address
-    push rax             ; Save syscall number
     push rbx             ; Save callee-saved registers
     push rbp
     push r12
@@ -23,7 +22,6 @@ syscall_entry:
     pop r12
     pop rbp
     pop rbx
-    pop rax              ; Restore RAX (return value)
 
     pop rcx              ; Restore return address for sysret
     pop r11              ; Restore RFLAGS
