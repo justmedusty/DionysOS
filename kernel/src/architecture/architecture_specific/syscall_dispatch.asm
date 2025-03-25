@@ -12,7 +12,9 @@ syscall_entry:
     push r14
     push r15
 
-    mov rdi, rsp         ; Pass stack pointer to syscall dispatcher
+    mov rdi, rax         ; First argument: syscall number (from RAX)
+    mov rsi, rsp         ; Second argument: pointer to syscall arguments (stack)
+
     call system_call_dispatch
 
     pop r15
@@ -21,10 +23,10 @@ syscall_entry:
     pop r12
     pop rbp
     pop rbx
-    pop rax             ; Restore RAX (return value)
+    pop rax              ; Restore RAX (return value)
 
-    pop rcx             ; Restore return address for sysret
-    pop r11             ; Restore RFLAGS
+    pop rcx              ; Restore return address for sysret
+    pop r11              ; Restore RFLAGS
 
-    swapgs              ; Restore user GS base
-    sysretq             ; Return to CS 3
+    swapgs               ; Restore user GS base
+    sysretq              ; Return to CS 3

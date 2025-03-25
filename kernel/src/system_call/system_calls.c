@@ -4,7 +4,7 @@
 #include "stdint.h"
 #include "include/system_call/system_calls.h"
 #include "include/definitions/definitions.h"
-int32_t system_call_dispatch(int64_t syscall_no, struct sys_call_regs args) {
+int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
     if(syscall_no < MIN_SYS || syscall_no > MAX_SYS){
         return KERN_NO_SYS;
     }
@@ -21,7 +21,6 @@ int32_t system_call_dispatch(int64_t syscall_no, struct sys_call_regs args) {
         case SYS_SEEK:
             break;
         case SYS_OPEN:
-            // Open a file
             break;
         case SYS_EXIT:
             break;

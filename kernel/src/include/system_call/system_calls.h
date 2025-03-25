@@ -15,16 +15,18 @@
 
 #include "include/architecture/x86_64/msr.h"
 
-struct sys_call_regs {
-    void  *arg1;
-    void  *arg2;
-    void  *arg3;
-    void  *arg4;
-    void  *arg5;
-    void  *arg6;
+struct syscall_args {
+    uint64_t arg1;
+    uint64_t arg2;
+    uint64_t arg3;
+    uint64_t arg4;
+    uint64_t arg5;
+    uint64_t arg6;
 };
 #define IA32_LSTAR 0xC0000082
+
 extern int syscall_entry();
+
 static inline void set_syscall_handler() {
     wrmsr(IA32_LSTAR, (uint64_t) syscall_entry);
 }
@@ -32,7 +34,8 @@ static inline void set_syscall_handler() {
 #endif
 
 
-int32_t system_call_dispatch();
+int64_t system_call_dispatch();
+
 void register_syscall_dispatch();
 
 enum system_calls {
