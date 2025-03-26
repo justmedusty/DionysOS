@@ -25,6 +25,7 @@ struct syscall_args {
 };
 #define IA32_LSTAR 0xC0000082
 
+__attribute__((always_inline))
 extern int syscall_entry();
 
 static inline void set_syscall_handler() {
