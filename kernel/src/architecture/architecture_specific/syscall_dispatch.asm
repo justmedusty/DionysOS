@@ -11,11 +11,27 @@ syscall_entry:
     push r14
     push r15
 
-    mov rdi, rax         ; First argument: syscall number (from RAX)
+    ;move args into place to be passed to the dispatcher
+    push r9
+    push r8
+    push r10
+    push rdx
+    push rsi
+    push rdi
+
+
+    mov rdi, rax         ; First argument: syscall number (from RAX) , this overwrites the value passed but we pushed onto the stack so it is ok
     mov rsi, rsp         ; Second argument: pointer to syscall arguments (stack)
 
     call system_call_dispatch
 
+    ; We do not really need to pop into the regs we could just do a plain pop and let it dissapear but we'll place them back to ensure the other pops works properly
+    pop rdi
+    pop rsi
+    pop rdx
+    pop r10
+    pop r8
+    pop r9
     pop r15
     pop r14
     pop r13
