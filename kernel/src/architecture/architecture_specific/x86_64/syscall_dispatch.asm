@@ -25,13 +25,13 @@ syscall_entry:
 
     call system_call_dispatch
 
-    ; We do not really need to pop into the regs we could just do a plain pop and let it dissapear but we'll place them back to ensure the other pops works properly
     pop rdi
     pop rsi
     pop rdx
     pop r10
     pop r8
     pop r9
+
     pop r15
     pop r14
     pop r13

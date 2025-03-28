@@ -525,7 +525,6 @@ static struct vnode *parse_path(char *path) {
     char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
-        /* This isn't implemented yet so it will be garbage until I finish it up */
         current_vnode = current_process()->current_working_dir;
     } else {
         path++;
