@@ -375,6 +375,11 @@ static struct buddy_block *buddy_alloc_large_range(uint64_t pages, uint8_t zone)
     uint64_t max_blocks = pages / (1 << MAX_ORDER) + (pages % 1 << MAX_ORDER != 0);
     struct buddy_block *block = NULL;
 retry:
+
+    /*
+     *  Since this will loop forever if there is not enough contiguous memory, put some arbitrary 'give up' number as we will call it.
+     *  Doesn't matter what the number is.
+     */
     if(retry_count > 500){
         panic("Cannot allocate a large enough contiguous span of memory!");
     }
