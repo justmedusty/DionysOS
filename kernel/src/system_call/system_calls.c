@@ -43,3 +43,11 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
 void register_syscall_dispatch() {
     set_syscall_handler();
 }
+
+void *user_to_kernel_pointer(void *pointer){
+    //TODO
+}
+
+void *kernel_to_user_pointer(void *pointer){
+    //TODO
+}
