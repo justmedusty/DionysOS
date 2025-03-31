@@ -941,7 +941,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
             continue;
         }
 
-        sprintf(name, "blockdev #%i", i);
+        ksprintf(name, "blockdev #%i", i);
         struct device *namespace_device = kzmalloc(sizeof(struct device));
         create_device(namespace_device, DEVICE_MAJOR_NVME, name, &nvme_device_ops, nvme_dev, NULL);
         insert_device_into_kernel_tree(namespace_device);
@@ -987,7 +987,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_controller->device_class = NVME_PCI_CLASS;
     nvme_controller->lock = kmalloc(sizeof(struct spinlock));
     nvme_controller->device_type = DEVICE_TYPE_BLOCK;
-    sprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
+    ksprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct
     if (pci_device->sixtyfour_bit_bar) {
         /*
@@ -1019,7 +1019,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
 static void nvme_bind(struct device *device) {
     static int32_t nvme_number;
     char name[32];
-    sprintf(name, "nvmedevice_%i", nvme_number++);
+    ksprintf(name, "nvmedevice_%i", nvme_number++);
     safe_strcpy(device->name, name, 30);
     device->name[31] = '\0'; // call it paranoia but im doing this anyway
 }

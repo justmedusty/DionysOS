@@ -152,7 +152,7 @@ int64_t get_size(uint64_t handle);
 
 int64_t seek(uint64_t handle, uint64_t whence);
 
-void sprintf(char *buffer, char *str, ...);
+void ksprintf(char *buffer, char *str, ...);
 
 void warn_printf(char *str, ...);
 

@@ -488,7 +488,7 @@ void debug_printf(char *str, ...) {
 /*
  * It doesn't QUITE belong here but the others are here and it makes it easier to put it in the same header file.
  */
-void sprintf(char *buffer, char *str, ...) {
+void ksprintf(char *buffer, char *str, ...) {
     uint64_t index = 0;
     va_list args;
     va_start(args, str);

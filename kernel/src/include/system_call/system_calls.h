@@ -12,7 +12,6 @@
  * is used in userspace after CS changes to ring 0, it will jump to the handler we set here
  */
 #ifdef __x86_64__
-
 #include "include/architecture/x86_64/msr.h"
 
 struct syscall_args {
@@ -31,7 +30,6 @@ extern int syscall_entry();
 static inline void set_syscall_handler() {
     wrmsr(IA32_LSTAR, (uint64_t) syscall_entry);
 }
-
 #endif
 
 
