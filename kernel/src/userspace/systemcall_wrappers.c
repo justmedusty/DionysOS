@@ -40,3 +40,7 @@ static inline int64_t create(char *path, char *name, uint64_t type) {
 static inline int64_t seek(uint64_t handle, uint64_t whence) {
 return syscall_stub((uint64_t)SYS_SEEK, handle, whence, 0, 0, 0, 0);
 }
+
+static inline int64_t exit() {
+return syscall_stub((uint64_t)SYS_EXIT, 0, 0, 0, 0, 0, 0);
+}

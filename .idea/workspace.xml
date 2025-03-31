@@ -26,8 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Laying out device.h among other things.">
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/userspace/systemcall_wrappers.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/userspace/systemcall_wrappers.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +97,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/kernel&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/Makefile&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -294,6 +295,9 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Embedded GDB Server.jj" />
+      <item itemvalue="Makefile Target.run-gdb" />
+      <item itemvalue="Makefile Target.run" />
       <item itemvalue="Native Application.GNUmakefile" />
       <item itemvalue="Native Application.Makefile" />
       <item itemvalue="Native Application.all-hdd" />
@@ -308,9 +312,6 @@
       <item itemvalue="Native Application.run-uefi" />
       <item itemvalue="Native Application.run-x86" />
       <item itemvalue="Remote Debug.GDB Kernel" />
-      <item itemvalue="Makefile Target.run-gdb" />
-      <item itemvalue="Makefile Target.run" />
-      <item itemvalue="Embedded GDB Server.jj" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -403,22 +404,9 @@
       <workItem from="1736845755835" duration="167000" />
       <workItem from="1737966288939" duration="119000" />
       <workItem from="1738658015969" duration="227000" />
-    </task>
-    <task id="LOCAL-00211" summary="Wild goose chase going on on but fixing bugs left and right.">
-      <option name="closed" value="true" />
-      <created>1732725157132</created>
-      <option name="number" value="00211" />
-      <option name="presentableId" value="LOCAL-00211" />
-      <option name="project" value="LOCAL" />
-      <updated>1732725157132</updated>
-    </task>
-    <task id="LOCAL-00212" summary="Little more cleanup and bug fixes. Everything is working as expected">
-      <option name="closed" value="true" />
-      <created>1732741081182</created>
-      <option name="number" value="00212" />
-      <option name="presentableId" value="LOCAL-00212" />
-      <option name="project" value="LOCAL" />
-      <updated>1732741081182</updated>
+      <workItem from="1742976965887" duration="1874000" />
+      <workItem from="1743322779989" duration="3613000" />
+      <workItem from="1743338144936" duration="2241000" />
     </task>
     <task id="LOCAL-00213" summary="comments">
       <option name="closed" value="true" />
@@ -796,7 +784,23 @@
       <option name="project" value="LOCAL" />
       <updated>1734770614805</updated>
     </task>
-    <option name="localTasksCounter" value="260" />
+    <task id="LOCAL-00260" summary="added always inline directive for syscall asm stub">
+      <option name="closed" value="true" />
+      <created>1742978565383</created>
+      <option name="number" value="00260" />
+      <option name="presentableId" value="LOCAL-00260" />
+      <option name="project" value="LOCAL" />
+      <updated>1742978565383</updated>
+    </task>
+    <task id="LOCAL-00261" summary="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa">
+      <option name="closed" value="true" />
+      <created>1743323602681</created>
+      <option name="number" value="00261" />
+      <option name="presentableId" value="LOCAL-00261" />
+      <option name="project" value="LOCAL" />
+      <updated>1743323602681</updated>
+    </task>
+    <option name="localTasksCounter" value="262" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -817,8 +821,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="more testing and minor fixes in block_free function" />
-    <MESSAGE value="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one." />
     <MESSAGE value="onto testing recursive directory freeing and the like" />
     <MESSAGE value="Fixed tempfs_create returning a null vnode" />
     <MESSAGE value="Fixed get_inode_and_mark_bitmap function it was incrementing by block not byte" />
@@ -842,7 +844,9 @@
     <MESSAGE value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
     <MESSAGE value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
     <MESSAGE value="Laying out device.h among other things." />
-    <option name="LAST_COMMIT_MESSAGE" value="Laying out device.h among other things." />
+    <MESSAGE value="added always inline directive for syscall asm stub" />
+    <MESSAGE value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
+    <option name="LAST_COMMIT_MESSAGE" value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -879,13 +883,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -896,7 +900,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -943,31 +947,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" />
+          <dependency id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="1" />
+          <dependency id="0" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="2" />
+          <dependency id="1" master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="3" />
+          <dependency id="3" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
