@@ -903,7 +903,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     doubly_linked_list_init(&nvme_dev->namespaces);
 
 
-    nvme_dev->queues = kmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
+    nvme_dev->queues = kzmalloc(NVME_Q_NUM * sizeof(struct nvme_queue *));
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
@@ -1001,7 +1001,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 64);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
@@ -1028,7 +1028,6 @@ static void nvme_bind(struct device *device) {
  *  I will set it up so that each namespace will be its own device and the device struct parent pointer should point to the nvme device.
  */
 static int32_t nvme_probe(struct device *device) {
-    struct nvme_device *nvme_dev = device->device_info;
     struct pci_device *pci_device = device->pci_device;
     if (!pci_device) {
         return KERN_NOT_FOUND;
