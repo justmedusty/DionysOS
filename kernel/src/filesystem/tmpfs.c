@@ -129,29 +129,31 @@ void tmpfs_remove(const struct vnode *vnode) {
     struct tmpfs_filesystem_context *context = vnode->filesystem_object;
     acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
-    if (vnode->vnode_type == VNODE_FILE) {
-        tmpfs_delete_reg_file(node);
-        tmpfs_remove_dirent_in_parent_directory(node);
-        kfree(node);
-        release_spinlock(&context->fs_lock);
-        return;
+
+
+    switch (vnode->vnode_type) {
+        case VNODE_FILE:
+            tmpfs_delete_reg_file(node);
+            tmpfs_remove_dirent_in_parent_directory(node);
+            kfree(node);
+            release_spinlock(&context->fs_lock);
+            return;
+
+        case VNODE_DIRECTORY :
+            tmpfs_delete_directory_recursively(node);
+            tmpfs_remove_dirent_in_parent_directory(node);
+            kfree(node);
+            release_spinlock(&context->fs_lock);
+            return;
+
+        case VNODE_SYM_LINK:
+            kfree(node->sym_link_path.path);
+            tmpfs_remove_dirent_in_parent_directory(node);
+            kfree(node);
+            release_spinlock(&context->fs_lock);
+            return;
     }
 
-    if (vnode->vnode_type == VNODE_DIRECTORY) {
-        tmpfs_delete_directory_recursively(node);
-        tmpfs_remove_dirent_in_parent_directory(node);
-        kfree(node);
-        release_spinlock(&context->fs_lock);
-        return;
-    }
-
-    if (vnode->vnode_type == VNODE_SYM_LINK) {
-        kfree(node->sym_link_path.path);
-        tmpfs_remove_dirent_in_parent_directory(node);
-        kfree(node);
-        release_spinlock(&context->fs_lock);
-        return;
-    }
 
     panic("tmpfs_remove: unknown vnode type");
 }
@@ -198,7 +200,7 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
 
     vnode->vnode_size += total_bytes - bytes;
     release_spinlock(&context->fs_lock);
-    return (int64_t) (total_bytes - bytes);
+    return (int64_t)(total_bytes - bytes);
 }
 
 /*
