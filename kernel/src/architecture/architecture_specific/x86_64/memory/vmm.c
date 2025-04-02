@@ -97,7 +97,7 @@ void map_kernel_address_space(p4d_t *pgdir) {
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
  */
 
-static pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
+pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
     if (pgdir == 0) {
         panic("page dir zero");
     }
