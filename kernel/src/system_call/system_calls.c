@@ -45,22 +45,20 @@ void register_syscall_dispatch() {
 }
 
 void *user_to_kernel_pointer(void *pointer){
-    uint64_t phys_addr = pointer & 0x1000; //shed off the rest if this is some unaligned object so we can work with page aligned address
-    struct process user_process = my_cpu()->running_process;
-    phys_addr = walk_page_directory(user_process.page_map->top_level,phys_addr,0);
-
-
+    void *phys_addr = (void *)((uint64_t )pointer & 0x1000); //shed off the rest if this is some unaligned object so we can work with page aligned address
+    struct process *user_process = my_cpu()->running_process;
+    phys_addr = walk_page_directory(user_process->page_map->top_level,phys_addr,0);
 
 }
 
 void *kernel_to_user_pointer(void *pointer){
     struct process *user_process = my_cpu()->running_process;
-    uint64_t phys_addr = V2P(pointer);
+    uint64_t phys_addr = (uint64_t)V2P(pointer);
 
     /*
      * We are just going to default to page size for now if this is ever an issue we can come back to this.
      */
-    arch_map_pages(my_cpu()->page_map->top_level,phys_addr, V2P(phys_addr),READWRITE,NO_EXECUTE,PAGE_SIZE);
+    arch_map_pages(my_cpu()->page_map->top_level,phys_addr, V2P(phys_addr),READWRITE | NO_EXECUTE,PAGE_SIZE);
 
     return pointer;
 }
