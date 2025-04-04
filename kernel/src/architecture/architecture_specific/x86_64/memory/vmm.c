@@ -22,15 +22,10 @@
 #include "include/drivers/serial/uart.h"
 #include "include/architecture//arch_vmm.h"
 #include "include/architecture/x86_64/asm_functions.h"
+#include "include/architecture/x86_64/msr.h"
 
 #define FOUR_GB 0x100000000
 
-#define PAT_UC 0x00
-#define PAT_WC 0x01
-#define PAT_WT 0x04
-#define PAT_WP 0x05
-#define PAT_WB 0x06
-#define PAT_UC_MINUS 0x07
 
 
 p4d_t *global_pg_dir = 0;
@@ -43,6 +38,7 @@ void init_vmm() {
     kernel_pg_map = kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = V2P(kzmalloc(PAGE_SIZE));
     kernel_pg_map->vm_regions = NULL;
+
     /*
      * Map symbols in the linker script
      */
