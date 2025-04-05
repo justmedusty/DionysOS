@@ -17,13 +17,6 @@ enum {
 #ifdef __x86_64__
 
 
-#define PAT_MSR 0x277
-#define PAT_UC 0x00
-#define PAT_WC 0x01
-#define PAT_WT 0x04
-#define PAT_WP 0x05
-#define PAT_WB 0x06
-#define PAT_UC_MINUS 0x07
 
 static void native_flush_tlb_single(unsigned long vaddr) {
     asm volatile("invlpg (%0)"::"r" (vaddr) : "memory");

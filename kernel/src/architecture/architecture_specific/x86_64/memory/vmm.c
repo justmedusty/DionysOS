@@ -27,8 +27,8 @@
 #define FOUR_GB 0x100000000
 
 
-
 p4d_t *global_pg_dir = 0;
+
 
 void switch_page_table(p4d_t *page_dir) {
     lcr3((uint64_t) (page_dir));
