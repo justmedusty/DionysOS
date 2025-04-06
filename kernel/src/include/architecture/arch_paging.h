@@ -61,8 +61,10 @@ extern p4d_t *global_pg_dir;
 #define PTE_A           (uint64_t)0x020UL  //accessed , for demand paging
 #define PTE_PS          (uint64_t)0x080UL   // Page Size
 #define PTE_NX          (uint64_t) (1UL << 63UL) // no execute
-#define PTE_PCD         (uint64_t) 0x010UL // page cache disable
 
+#define PTE_PCD         (uint64_t) 0x010UL // page cache disable
+#define PTE_PCD         (uint64_t) 0x010UL
+#define PTE_PAT         1UL << 7UL //Only bit 7 in your run-of-the-mill 4k PTEs
 
 #define PAT_MSR 0x277
 #define PAT_UC 0x00
