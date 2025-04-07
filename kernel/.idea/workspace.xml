@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
-    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
-    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppGeneralOptions" type="string" />
     <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
   </component>
   <component name="CMakeProjectFlavorService">
@@ -26,10 +23,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2e208c7-432c-43d0-8b75-f552aa5b52fe" name="Changes" comment="added 4k PTE pat bit macro">
-      <change beforePath="$PROJECT_DIR$/../.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/editor.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="removed editor files altogether" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,11 +31,9 @@
   </component>
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
+    <option name="completeInNamespacesByDefault" value="true" />
   </component>
   <component name="ExternalProjectsData">
-    <projectState path="$PROJECT_DIR$/..">
-      <ProjectState />
-    </projectState>
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
@@ -55,50 +47,12 @@
     &quot;assignee&quot;: &quot;justmedusty&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/justmedusty/DionysOS.git",
-    "accountId": "c2f8b42f-2c9e-40c6-9fa9-164b88fc2b00"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/justmedusty/DionysOS.git&quot;,
+    &quot;accountId&quot;: &quot;e2b1b2ad-035b-4f66-8c92-326f785b0dec&quot;
   }
-}]]></component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/boot/kernel_bootstrap.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/boot/kernel_bootstrap.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/data_structures/binary_tree.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/data_structures/hash_table.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/data_structures/queue.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/device/device.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/filesystem/diosfs.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/filesystem/tmpfs.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/filesystem/vfs.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/architecture/arch_cpu.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/architecture/arch_paging.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/architecture/arch_vmm.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/architecture/x86_64/acpi.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/data_structures/binary_tree.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/data_structures/singly_linked_list.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/definitions/definitions.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/device/device.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/drivers/block/nvme.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/drivers/serial/uart.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/filesystem/diosfs.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/filesystem/tmpfs.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/filesystem/vfs.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/memory/kalloc.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/memory/pmm.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/scheduling/kthread.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/scheduling/process.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/include/scheduling/sched.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/memory/pmm.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/memory/slab.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/scheduling/kthread.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/scheduling/process.c" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/src/scheduling/scheduler.c" root0="FORCE_HIGHLIGHTING" />
-  </component>
-  <component name="MacroExpansionManager">
-    <option name="directoryName" value="ctJGwlSn" />
-  </component>
+}</component>
   <component name="MakefileLocalSettings">
     <option name="availableProjects">
       <map>
@@ -126,26 +80,25 @@
       </map>
     </option>
   </component>
+  <component name="OCResolveContextSettings">
+    <option name="configuration" value="$PROJECT_DIR$/src/dev/disk/ramdisk.c" />
+  </component>
   <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 7
+  &quot;associatedIndex&quot;: 4
 }</component>
-  <component name="ProjectId" id="2qPEVRefmR981QGgBOj0F1Lgv6g" />
+  <component name="ProjectId" id="2qP70pBRAl7BJsgBBjhDqWg4XOh" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Makefile Target.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.Debug.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
     &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;com.jetbrains.cidr.cpp.cmake.workspace.CMakeCacheInvalidator.marker&quot;: &quot;true&quot;,
@@ -156,27 +109,40 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/include/device/display" />
-      <recent name="$PROJECT_DIR$/src/device/display" />
-      <recent name="$PROJECT_DIR$/src/device" />
-      <recent name="$PROJECT_DIR$/src/include/filesystem" />
+      <recent name="$PROJECT_DIR$/src/include/system_call" />
+      <recent name="$PROJECT_DIR$/src/include/data_structures" />
+      <recent name="$PROJECT_DIR$/src/include/device/block" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.run">
+  <component name="RunManager" selected="Remote Debug.Unnamed">
+    <configuration name="GNUmakefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="GNUmakefile" CONFIG_NAME="GNUmakefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GNUmakefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="GNUmakefile" CONFIG_NAME="GNUmakefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Makefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="Makefile" CONFIG_NAME="Makefile" version="1">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="Makefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="Makefile" CONFIG_NAME="Makefile" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="all" CONFIG_NAME="all" version="1">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
@@ -201,13 +167,10 @@
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Debug" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/bin/kernel" sysroot="">
-      <debugger kind="GDB" isBundled="true" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Debug" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/bin/kernel" sysroot="">
-      <debugger kind="GDB" isBundled="true" />
-      <method v="2" />
+    <configuration name="distclean" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="kernel" TARGET_NAME="distclean" CONFIG_NAME="distclean" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
     </configuration>
     <configuration name="Unnamed" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/bin/kernel" sysroot="">
       <debugger kind="GDB" isBundled="true" />
@@ -217,508 +180,495 @@
       <debugger kind="GDB" isBundled="true" />
       <method v="2" />
     </configuration>
-    <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
-      <makefile filename="$PROJECT_DIR$/../Makefile" target="run-x86" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
-    <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
-      <makefile filename="$PROJECT_DIR$/../Makefile" target="run-x86" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
+    <configuration name="Unnamed" type="CLion_Remote" version="1" remoteCommand="tcp:localhost:1234" symbolFile="$PROJECT_DIR$/bin/kernel" sysroot="">
+      <debugger kind="GDB" isBundled="true" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Makefile Target.run" />
+      <item itemvalue="Native Application.GNUmakefile" />
       <item itemvalue="Native Application.Makefile" />
       <item itemvalue="Native Application.all" />
       <item itemvalue="Native Application.distclean" />
-      <item itemvalue="Remote Debug.Debug" />
       <item itemvalue="Remote Debug.Unnamed" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="f2e208c7-432c-43d0-8b75-f552aa5b52fe" name="Changes" comment="" />
-      <created>1734555833325</created>
+      <changelist id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="" />
+      <created>1734552136446</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1734555833325</updated>
-      <workItem from="1734555834412" duration="171000" />
-      <workItem from="1734556009607" duration="188000" />
-      <workItem from="1734556202315" duration="42000" />
-      <workItem from="1734556267163" duration="73000" />
-      <workItem from="1734556377926" duration="141000" />
-      <workItem from="1734556520267" duration="226000" />
-      <workItem from="1734556749175" duration="104000" />
-      <workItem from="1734557551963" duration="86000" />
-      <workItem from="1734557649578" duration="269000" />
-      <workItem from="1734557926453" duration="20000" />
-      <workItem from="1734557957444" duration="41000" />
-      <workItem from="1734558002055" duration="18000" />
-      <workItem from="1734558247956" duration="144000" />
-      <workItem from="1734558392452" duration="84000" />
-      <workItem from="1734558477068" duration="40000" />
-      <workItem from="1734558656333" duration="114000" />
-      <workItem from="1734558772561" duration="36000" />
-      <workItem from="1734558818368" duration="42000" />
-      <workItem from="1734558955734" duration="44000" />
-      <workItem from="1734559022064" duration="62000" />
-      <workItem from="1734559461868" duration="113000" />
-      <workItem from="1734559596025" duration="519000" />
-      <workItem from="1734560119766" duration="857000" />
-      <workItem from="1734641381910" duration="3139000" />
-      <workItem from="1734907467560" duration="970000" />
-      <workItem from="1734908489358" duration="34000" />
-      <workItem from="1734908529752" duration="122000" />
-      <workItem from="1734940527434" duration="5553000" />
-      <workItem from="1734946551943" duration="22586000" />
-      <workItem from="1735110938609" duration="14800000" />
-      <workItem from="1735128260431" duration="3456000" />
-      <workItem from="1735143423591" duration="17135000" />
-      <workItem from="1735206229560" duration="54000" />
-      <workItem from="1735206295137" duration="6243000" />
-      <workItem from="1735212625111" duration="41000" />
-      <workItem from="1735212678940" duration="280000" />
-      <workItem from="1735212961784" duration="230000" />
-      <workItem from="1735213204000" duration="472000" />
-      <workItem from="1735213680388" duration="2582000" />
-      <workItem from="1735216265097" duration="32000" />
-      <workItem from="1735216308920" duration="180000" />
-      <workItem from="1735216491103" duration="29000" />
-      <workItem from="1735216531521" duration="6837000" />
-      <workItem from="1735244258645" duration="9968000" />
-      <workItem from="1735289517858" duration="11692000" />
-      <workItem from="1735374369458" duration="2445000" />
-      <workItem from="1735376816836" duration="36000" />
-      <workItem from="1735376863725" duration="1618000" />
-      <workItem from="1735378484356" duration="7429000" />
-      <workItem from="1735460977190" duration="8019000" />
-      <workItem from="1735469492467" duration="5008000" />
-      <workItem from="1735484231220" duration="4292000" />
-      <workItem from="1735547210375" duration="6479000" />
-      <workItem from="1735553693425" duration="38000" />
-      <workItem from="1735553740990" duration="94000" />
-      <workItem from="1735553838520" duration="28000" />
-      <workItem from="1735553879246" duration="5137000" />
-      <workItem from="1735560460583" duration="13071000" />
-      <workItem from="1735638909454" duration="37000" />
-      <workItem from="1735638959078" duration="148000" />
-      <workItem from="1735639109466" duration="30000" />
-      <workItem from="1735639150888" duration="13239000" />
-      <workItem from="1735719886749" duration="10021000" />
-      <workItem from="1735753670514" duration="5186000" />
-      <workItem from="1735766675840" duration="1183000" />
-      <workItem from="1735810880504" duration="12780000" />
-      <workItem from="1735940230885" duration="8425000" />
-      <workItem from="1736084355998" duration="354000" />
-      <workItem from="1736193593535" duration="86000" />
-      <workItem from="1737830570486" duration="1685000" />
-      <workItem from="1739574210996" duration="912000" />
-      <workItem from="1740775537745" duration="29000" />
-      <workItem from="1740990365463" duration="884000" />
-      <workItem from="1741077920021" duration="8255000" />
-      <workItem from="1741247885771" duration="7325000" />
-      <workItem from="1741255612469" duration="3471000" />
-      <workItem from="1741505798911" duration="3259000" />
-      <workItem from="1743233924977" duration="1138000" />
-      <workItem from="1743926967269" duration="1606000" />
+      <updated>1734552136446</updated>
+      <workItem from="1734552137561" duration="117000" />
+      <workItem from="1734552279868" duration="5226000" />
+      <workItem from="1734594086410" duration="1097000" />
+      <workItem from="1734595205337" duration="684000" />
+      <workItem from="1734595890610" duration="5428000" />
+      <workItem from="1734623899631" duration="101000" />
+      <workItem from="1734624002524" duration="1627000" />
+      <workItem from="1734625713781" duration="2827000" />
+      <workItem from="1734631032900" duration="8000" />
+      <workItem from="1734631048646" duration="12000" />
+      <workItem from="1734782790358" duration="2030000" />
+      <workItem from="1734784825037" duration="500000" />
+      <workItem from="1734785325532" duration="20000" />
+      <workItem from="1734785361855" duration="17669000" />
+      <workItem from="1734814582119" duration="23000" />
+      <workItem from="1734814621568" duration="764000" />
+      <workItem from="1734815386539" duration="1793000" />
+      <workItem from="1734855424763" duration="30000" />
+      <workItem from="1734855471603" duration="80000" />
+      <workItem from="1734855554071" duration="22000" />
+      <workItem from="1734855582595" duration="532000" />
+      <workItem from="1734856116589" duration="110000" />
+      <workItem from="1734856233098" duration="20000" />
+      <workItem from="1734856259711" duration="67000" />
+      <workItem from="1734856328840" duration="18000" />
+      <workItem from="1734856353533" duration="2621000" />
+      <workItem from="1734860184023" duration="2017000" />
+      <workItem from="1736068654280" duration="53325000" />
+      <workItem from="1736250552734" duration="84652000" />
+      <workItem from="1736760042895" duration="130000" />
+      <workItem from="1736760204100" duration="9376000" />
+      <workItem from="1736845025205" duration="54000" />
+      <workItem from="1736845100398" duration="90000" />
+      <workItem from="1736845207188" duration="191000" />
+      <workItem from="1736845399426" duration="60000" />
+      <workItem from="1736845468894" duration="4000" />
+      <workItem from="1736845626906" duration="18000" />
+      <workItem from="1736845646772" duration="33000" />
+      <workItem from="1736845680726" duration="74000" />
+      <workItem from="1736845924375" duration="23000" />
+      <workItem from="1736845947854" duration="31000" />
+      <workItem from="1736845988610" duration="32414000" />
+      <workItem from="1737019181643" duration="139000" />
+      <workItem from="1737019339866" duration="109000" />
+      <workItem from="1737019450262" duration="18000" />
+      <workItem from="1737019480521" duration="52000" />
+      <workItem from="1737019535112" duration="20000" />
+      <workItem from="1737019561998" duration="47000" />
+      <workItem from="1737019609725" duration="31000" />
+      <workItem from="1737019648230" duration="91000" />
+      <workItem from="1737019741933" duration="51000" />
+      <workItem from="1737019799972" duration="30000" />
+      <workItem from="1737019838210" duration="20000" />
+      <workItem from="1737019859936" duration="110000" />
+      <workItem from="1737019970895" duration="82000" />
+      <workItem from="1737020163132" duration="15251000" />
+      <workItem from="1737113858789" duration="30000" />
+      <workItem from="1737113912330" duration="46267000" />
+      <workItem from="1737619924084" duration="31622000" />
+      <workItem from="1737966409921" duration="52661000" />
+      <workItem from="1738658245033" duration="73695000" />
+      <workItem from="1739803635642" duration="17838000" />
+      <workItem from="1740152014564" duration="52425000" />
+      <workItem from="1741646973090" duration="3844000" />
+      <workItem from="1741788101921" duration="40184000" />
+      <workItem from="1742743675892" duration="25855000" />
+      <workItem from="1743271335835" duration="2142000" />
+      <workItem from="1743277516506" duration="841000" />
+      <workItem from="1743753931915" duration="31000" />
+      <workItem from="1743753964646" duration="48000" />
+      <workItem from="1743754030561" duration="217000" />
+      <workItem from="1743754248508" duration="97000" />
+      <workItem from="1743754352385" duration="39000" />
+      <workItem from="1743754440578" duration="7707000" />
+      <workItem from="1743948276570" duration="5858000" />
     </task>
-    <task id="LOCAL-00062" summary="Fixed issue with not being able to use other binary trees, was wiping the memory nodes lol. That will do it.">
+    <task id="LOCAL-00133" summary="Fixed the fatal status was a comparison operator facing the wrong direction lol">
       <option name="closed" value="true" />
-      <created>1735466423308</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
+      <created>1739264428865</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
       <option name="project" value="LOCAL" />
-      <updated>1735466423308</updated>
+      <updated>1739264428865</updated>
     </task>
-    <task id="LOCAL-00063" summary="Bandaid fix for the hash bucket problem. The smaller slab size gets the faster it happens. Not sure what exactly is causing it.">
+    <task id="LOCAL-00134" summary="Closer to getting it working">
       <option name="closed" value="true" />
-      <created>1735472591648</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
+      <created>1739356733809</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
       <option name="project" value="LOCAL" />
-      <updated>1735472591648</updated>
+      <updated>1739356733809</updated>
     </task>
-    <task id="LOCAL-00064" summary="Oops">
+    <task id="LOCAL-00135" summary="continuing to debug changed mapping function for BAR since this appears to need many pages mapped.">
       <option name="closed" value="true" />
-      <created>1735472664601</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
+      <created>1739443514066</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
       <option name="project" value="LOCAL" />
-      <updated>1735472664601</updated>
+      <updated>1739443514066</updated>
     </task>
-    <task id="LOCAL-00065" summary="Found a few issues in the quest to fix the alloc issues. To make it simple since it doesn't happen often, when a bucket is returned with the sought address not found, it is assumed to be a slab entry and slab functions are used. This works and is a little easier than bookkeeping the info of every slab.">
+    <task id="LOCAL-00136" summary="Trying to figure out why command never goes through just loops forever.">
       <option name="closed" value="true" />
-      <created>1735487642936</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
+      <created>1739443917759</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
       <option name="project" value="LOCAL" />
-      <updated>1735487642937</updated>
+      <updated>1739443917759</updated>
     </task>
-    <task id="LOCAL-00066" summary="Added a comment in buddy_free explaining what is going on. I tested the slab allocator with hundreds of thousands of allocs and frees and it works as expected. Issue appears to be resolved">
+    <task id="LOCAL-00137" summary="I have my suspicions as to the source of the no status update bug.. commenting and investigating more">
       <option name="closed" value="true" />
-      <created>1735549672120</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
+      <created>1739523226012</created>
+      <option name="number" value="00137" />
+      <option name="presentableId" value="LOCAL-00137" />
       <option name="project" value="LOCAL" />
-      <updated>1735549672120</updated>
+      <updated>1739523226012</updated>
     </task>
-    <task id="LOCAL-00067" summary="Bit of housekeeping, setting up serial device object. Not using it yet since I cannot set up the device objects that early in the boot process so will sit on it for now.">
+    <task id="LOCAL-00138" summary="Don't think it was the queue allocation issue, still investigating">
       <option name="closed" value="true" />
-      <created>1735553223313</created>
-      <option name="number" value="00067" />
-      <option name="presentableId" value="LOCAL-00067" />
+      <created>1739526473939</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
       <option name="project" value="LOCAL" />
-      <updated>1735553223313</updated>
+      <updated>1739526473939</updated>
     </task>
-    <task id="LOCAL-00068" summary="minor stuff, put comment beside serial device init function call">
+    <task id="LOCAL-00139" summary="Queue had wrong address written, doesnt appear to fix the issue yet may need to write a separate DMA allocator not sure yet">
       <option name="closed" value="true" />
-      <created>1735554571545</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
+      <created>1739613401460</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
       <option name="project" value="LOCAL" />
-      <updated>1735554571545</updated>
+      <updated>1739613401460</updated>
     </task>
-    <task id="LOCAL-00069" summary="Added a list of registered PCI devices to make it quicker to find them, changed some print statements to use info_printf">
+    <task id="LOCAL-00140" summary="I do not think the issue is DMA allocation. Still trying to figure it out.">
       <option name="closed" value="true" />
-      <created>1735557607152</created>
-      <option name="number" value="00069" />
-      <option name="presentableId" value="LOCAL-00069" />
+      <created>1739700609015</created>
+      <option name="number" value="00140" />
+      <option name="presentableId" value="LOCAL-00140" />
       <option name="project" value="LOCAL" />
-      <updated>1735557607152</updated>
+      <updated>1739700609015</updated>
     </task>
-    <task id="LOCAL-00070" summary="fixed binary tree removal was not updating right min parent which leads to circular references.">
+    <task id="LOCAL-00141" summary="Still trying to figure out the NVMe issue">
       <option name="closed" value="true" />
-      <created>1735558912669</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
+      <created>1739873746960</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
       <option name="project" value="LOCAL" />
-      <updated>1735558912669</updated>
+      <updated>1739873746960</updated>
     </task>
-    <task id="LOCAL-00071" summary="making the max_cpus value set inside the makefile among some other little changes.">
+    <task id="LOCAL-00142" summary="Still trying to figure out the NVMe issue">
       <option name="closed" value="true" />
-      <created>1735560842213</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
+      <created>1739959323827</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
       <option name="project" value="LOCAL" />
-      <updated>1735560842213</updated>
+      <updated>1739959323827</updated>
     </task>
-    <task id="LOCAL-00072" summary="tinkering with vmm mapping">
+    <task id="LOCAL-00143" summary="Still trying to figure out the NVMe issue">
       <option name="closed" value="true" />
-      <created>1735563023795</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
+      <created>1740044403128</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
       <option name="project" value="LOCAL" />
-      <updated>1735563023795</updated>
+      <updated>1740044403128</updated>
     </task>
-    <task id="LOCAL-00073" summary="more VMM tinkering">
+    <task id="LOCAL-00144" summary="playing around with doorbell positioning still doesnt appear to get the controller to flip the status bit">
       <option name="closed" value="true" />
-      <created>1735563369759</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
+      <created>1740130943352</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
       <option name="project" value="LOCAL" />
-      <updated>1735563369759</updated>
+      <updated>1740130943352</updated>
     </task>
-    <task id="LOCAL-00074" summary="bunch of problems that I have found , fixing it for now by manially mapping all memory. Also PMM now has user and kernel pool">
+    <task id="LOCAL-00145" summary="trying different ways of setting up the queue addresses">
       <option name="closed" value="true" />
-      <created>1735568523744</created>
-      <option name="number" value="00074" />
-      <option name="presentableId" value="LOCAL-00074" />
+      <created>1740218474735</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
       <option name="project" value="LOCAL" />
-      <updated>1735568523744</updated>
+      <updated>1740218474735</updated>
     </task>
-    <task id="LOCAL-00075" summary="For now I am fixing the page fault + triple fault issue with mapping physical memory by simply mapping all of the memory found. This works for now. Not sure why using the bootloader memory map will crash the system if I up the amount of memory">
+    <task id="LOCAL-00146" summary="Back to the drawing board, setting the queues to be contig does not fix the issue">
       <option name="closed" value="true" />
-      <created>1735635473317</created>
-      <option name="number" value="00075" />
-      <option name="presentableId" value="LOCAL-00075" />
+      <created>1740303274952</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
       <option name="project" value="LOCAL" />
-      <updated>1735635473317</updated>
+      <updated>1740303274953</updated>
     </task>
-    <task id="LOCAL-00076" summary="Kernel will get approx 1/3ish of the available memory">
+    <task id="LOCAL-00147" summary="It 100% has to do with dma allocations or accesses so still looking">
       <option name="closed" value="true" />
-      <created>1735636596149</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
+      <created>1740304992450</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
       <option name="project" value="LOCAL" />
-      <updated>1735636596149</updated>
+      <updated>1740304992450</updated>
     </task>
-    <task id="LOCAL-00077" summary="cleaning up">
+    <task id="LOCAL-00148" summary="s">
       <option name="closed" value="true" />
-      <created>1735637196872</created>
-      <option name="number" value="00077" />
-      <option name="presentableId" value="LOCAL-00077" />
+      <created>1740391939496</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
       <option name="project" value="LOCAL" />
-      <updated>1735637196872</updated>
+      <updated>1740391939496</updated>
     </task>
-    <task id="LOCAL-00078" summary="header guard + checking both user nd kernel pmm tree in IS_PMM_TREE macro">
+    <task id="LOCAL-00149" summary="added debug printf function">
       <option name="closed" value="true" />
-      <created>1735638149763</created>
-      <option name="number" value="00078" />
-      <option name="presentableId" value="LOCAL-00078" />
+      <created>1740468174421</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
       <option name="project" value="LOCAL" />
-      <updated>1735638149763</updated>
+      <updated>1740468174421</updated>
     </task>
-    <task id="LOCAL-00079" summary="added umalloc for getting user pages among some other little housekeeping things">
+    <task id="LOCAL-00150" summary="added debug prefix">
       <option name="closed" value="true" />
-      <created>1735639320593</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
+      <created>1740468246866</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
       <option name="project" value="LOCAL" />
-      <updated>1735639320593</updated>
+      <updated>1740468246866</updated>
     </task>
-    <task id="LOCAL-00080" summary="tons of filesystem bugfixing going on">
+    <task id="LOCAL-00151" summary="marking where the fatal status occurs">
       <option name="closed" value="true" />
-      <created>1735649446124</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
+      <created>1740473732079</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
       <option name="project" value="LOCAL" />
-      <updated>1735649446124</updated>
+      <updated>1740473732079</updated>
     </task>
-    <task id="LOCAL-00081" summary="Reverted commits since I destroyed something and could not figure out what change it was. Fixed the issues a few commits back and all appears to be good and well now.">
+    <task id="LOCAL-00152" summary="some small refactors and still trying to crack the nvme fatal csts mystery">
       <option name="closed" value="true" />
-      <created>1735652197653</created>
-      <option name="number" value="00081" />
-      <option name="presentableId" value="LOCAL-00081" />
+      <created>1740558049606</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
       <option name="project" value="LOCAL" />
-      <updated>1735652197653</updated>
+      <updated>1740558049606</updated>
     </task>
-    <task id="LOCAL-00082" summary="Reverted commits since I destroyed something and could not figure out what change it was. Fixed the issues a few commits back and all appears to be good and well now.">
+    <task id="LOCAL-00153" summary="adding some debug statements around nvme.c">
       <option name="closed" value="true" />
-      <created>1735652486511</created>
-      <option name="number" value="00082" />
-      <option name="presentableId" value="LOCAL-00082" />
+      <created>1740560176964</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
       <option name="project" value="LOCAL" />
-      <updated>1735652486511</updated>
+      <updated>1740560176964</updated>
     </task>
-    <task id="LOCAL-00083" summary="created a new create function for special vnode types, unimplemented mostly">
+    <task id="LOCAL-00154" summary="going to redo queue allocation i think that is the problem">
       <option name="closed" value="true" />
-      <created>1735721624001</created>
-      <option name="number" value="00083" />
-      <option name="presentableId" value="LOCAL-00083" />
+      <created>1740648273522</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
       <option name="project" value="LOCAL" />
-      <updated>1735721624001</updated>
+      <updated>1740648273522</updated>
     </task>
-    <task id="LOCAL-00084" summary="added some ascii art macros">
+    <task id="LOCAL-00155" summary="fixing queue alloc">
       <option name="closed" value="true" />
-      <created>1735722070408</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
+      <created>1740731300332</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
       <option name="project" value="LOCAL" />
-      <updated>1735722070408</updated>
+      <updated>1740731300332</updated>
     </task>
-    <task id="LOCAL-00085" summary="creating core read/write etc functions and prototypes, added header files to line_count.sh">
+    <task id="LOCAL-00156" summary="seems to read properly for many iterations before throwing a fatal status in the bar...">
       <option name="closed" value="true" />
-      <created>1735723333664</created>
-      <option name="number" value="00085" />
-      <option name="presentableId" value="LOCAL-00085" />
+      <created>1740907626785</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
       <option name="project" value="LOCAL" />
-      <updated>1735723333664</updated>
+      <updated>1740907626785</updated>
     </task>
-    <task id="LOCAL-00086" summary="added asm files as well">
+    <task id="LOCAL-00157" summary="It appears to me that what is happening is that when the controller is trying to write to the given memory when it completes it cannot and throws the fatal status">
       <option name="closed" value="true" />
-      <created>1735723374137</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
+      <created>1740908327374</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
       <option name="project" value="LOCAL" />
-      <updated>1735723374137</updated>
+      <updated>1740908327374</updated>
     </task>
-    <task id="LOCAL-00087" summary="made the echo msg more descriptive">
+    <task id="LOCAL-00158" summary="I think it has to do with queue doorbells so going to play around with them">
       <option name="closed" value="true" />
-      <created>1735723486733</created>
-      <option name="number" value="00087" />
-      <option name="presentableId" value="LOCAL-00087" />
+      <created>1740909365192</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
       <option name="project" value="LOCAL" />
-      <updated>1735723486733</updated>
+      <updated>1740909365192</updated>
     </task>
-    <task id="LOCAL-00088" summary="ACPI mcfg header count macro">
+    <task id="LOCAL-00159" summary="some more debug logic in nvme.c">
       <option name="closed" value="true" />
-      <created>1735725458903</created>
-      <option name="number" value="00088" />
-      <option name="presentableId" value="LOCAL-00088" />
+      <created>1741429269742</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
       <option name="project" value="LOCAL" />
-      <updated>1735725458903</updated>
+      <updated>1741429269742</updated>
     </task>
-    <task id="LOCAL-00089" summary="overhauling error message / handling slowly. All int64s not uint64s and use global error codes defined in definitions.h. I only did filesystem stuff for now will be an effort to change all of the kernel error responses at least to external sources to be standardized">
+    <task id="LOCAL-00160" summary="Still unsure where the status is coming from, maybe it is a command version mismatch not sure">
       <option name="closed" value="true" />
-      <created>1735731164794</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
+      <created>1741683128764</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
       <option name="project" value="LOCAL" />
-      <updated>1735731164794</updated>
+      <updated>1741683128764</updated>
     </task>
-    <task id="LOCAL-00090" summary="fleshing out functions that will be invoked by syscalls for generic fs ops, created a new string function for checking that a string is not too long">
+    <task id="LOCAL-00161" summary="going to play around with memory flags maybe it has to do with DMA cachability or WC mapping or something like that">
       <option name="closed" value="true" />
-      <created>1735764698679</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
+      <created>1741855758163</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
       <option name="project" value="LOCAL" />
-      <updated>1735764698679</updated>
+      <updated>1741855758163</updated>
     </task>
-    <task id="LOCAL-00091" summary="appear to have fixed the open and close issue. It has to do with the vnode is cached field being false all the time and whe it keeps reading the dirents in for some reason it causes an infinite loop. I should try to fix this but for I have fixed it for now. It should be a reentrant function though so I will stick a pin in it.">
+    <task id="LOCAL-00162" summary="Switching cqes et al back , need to find out why it cant read the entries there">
       <option name="closed" value="true" />
-      <created>1735815403953</created>
-      <option name="number" value="00091" />
-      <option name="presentableId" value="LOCAL-00091" />
+      <created>1741942510562</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
       <option name="project" value="LOCAL" />
-      <updated>1735815403953</updated>
+      <updated>1741942510562</updated>
     </task>
-    <task id="LOCAL-00092" summary="Fixed the bug mentioned in the previous commit msg, left a comment on the better solution.">
+    <task id="LOCAL-00163" summary="removed get_features function, still trying to fix nvme controller fatal status">
       <option name="closed" value="true" />
-      <created>1735817364922</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
+      <created>1742032365982</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
       <option name="project" value="LOCAL" />
-      <updated>1735817364922</updated>
+      <updated>1742032365982</updated>
     </task>
-    <task id="LOCAL-00093" summary="Removed the debug print statements">
+    <task id="LOCAL-00164" summary="small changes added cast etc to vfs.c, nvme.c removed redundant queue setting in the device struct.">
       <option name="closed" value="true" />
-      <created>1735817438309</created>
-      <option name="number" value="00093" />
-      <option name="presentableId" value="LOCAL-00093" />
+      <created>1742635843460</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
       <option name="project" value="LOCAL" />
-      <updated>1735817438309</updated>
+      <updated>1742635843460</updated>
     </task>
-    <task id="LOCAL-00094" summary="made linecount.sh excluse all bootloader files">
+    <task id="LOCAL-00165" summary="gonna start to set up syscalls">
       <option name="closed" value="true" />
-      <created>1735818630135</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
+      <created>1742744802099</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
       <option name="project" value="LOCAL" />
-      <updated>1735818630135</updated>
+      <updated>1742744802099</updated>
     </task>
-    <task id="LOCAL-00095" summary="sleep &amp; wake sched functions">
+    <task id="LOCAL-00166" summary="small changes to syscall enum">
       <option name="closed" value="true" />
-      <created>1735895912914</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
+      <created>1742748683849</created>
+      <option name="number" value="00166" />
+      <option name="presentableId" value="LOCAL-00166" />
       <option name="project" value="LOCAL" />
-      <updated>1735895912914</updated>
+      <updated>1742748683849</updated>
     </task>
-    <task id="LOCAL-00096" summary="adding a lock to the queue">
+    <task id="LOCAL-00167" summary="setting up Lstar msr for syscall dispatch handling">
       <option name="closed" value="true" />
-      <created>1735982496615</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
+      <created>1742800313284</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
       <option name="project" value="LOCAL" />
-      <updated>1735982496616</updated>
+      <updated>1742800313284</updated>
     </task>
-    <task id="LOCAL-00097" summary="queue locking">
+    <task id="LOCAL-00168" summary="setting syscall handler in kernel_bootstrap.c">
       <option name="closed" value="true" />
-      <created>1735983127648</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
+      <created>1742801105639</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
       <option name="project" value="LOCAL" />
-      <updated>1735983127648</updated>
+      <updated>1742801105639</updated>
     </task>
-    <task id="LOCAL-00098" summary="added dps file data, changed user and kernel page pool to be 1:3 k:u">
+    <task id="LOCAL-00169" summary="fixing up syscall entry and registration">
       <option name="closed" value="true" />
-      <created>1735987554466</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
+      <created>1742802940030</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
       <option name="project" value="LOCAL" />
-      <updated>1735987554466</updated>
+      <updated>1742802940030</updated>
     </task>
-    <task id="LOCAL-00099" summary="changing the dfs/dps stuff to just small ifdef blocks in the main file instead of 2 separate files">
+    <task id="LOCAL-00170" summary="little more done in the sys call dispatch, added a non sys error code">
       <option name="closed" value="true" />
-      <created>1735987973342</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
+      <created>1742824061259</created>
+      <option name="number" value="00170" />
+      <option name="presentableId" value="LOCAL-00170" />
       <option name="project" value="LOCAL" />
-      <updated>1735987973342</updated>
+      <updated>1742824061259</updated>
     </task>
-    <task id="LOCAL-00100" summary="Some comments + code smell fixes">
+    <task id="LOCAL-00171" summary="syscall fixup">
       <option name="closed" value="true" />
-      <created>1737831619942</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
+      <created>1742888788453</created>
+      <option name="number" value="00171" />
+      <option name="presentableId" value="LOCAL-00171" />
       <option name="project" value="LOCAL" />
-      <updated>1737831619942</updated>
+      <updated>1742888788453</updated>
     </task>
-    <task id="LOCAL-00101" summary="fixed stride calc mistake">
+    <task id="LOCAL-00172" summary="basic impl for syscall switch case, changed the dispatch asm stub so that it puts the syscall no first">
       <option name="closed" value="true" />
-      <created>1741080309545</created>
-      <option name="number" value="00101" />
-      <option name="presentableId" value="LOCAL-00101" />
+      <created>1742890122067</created>
+      <option name="number" value="00172" />
+      <option name="presentableId" value="LOCAL-00172" />
       <option name="project" value="LOCAL" />
-      <updated>1741080309545</updated>
+      <updated>1742890122068</updated>
     </task>
-    <task id="LOCAL-00102" summary="it has to do with queue doorbells...">
+    <task id="LOCAL-00173" summary="added exit syscall">
       <option name="closed" value="true" />
-      <created>1741081342759</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
+      <created>1742894149000</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
       <option name="project" value="LOCAL" />
-      <updated>1741081342759</updated>
+      <updated>1742894149001</updated>
     </task>
-    <task id="LOCAL-00103" summary="The fatal status seems to randomly change where it occurs every few executions">
+    <task id="LOCAL-00174" summary="added userspace folder with placeholder files">
       <option name="closed" value="true" />
-      <created>1741167065971</created>
-      <option name="number" value="00103" />
-      <option name="presentableId" value="LOCAL-00103" />
+      <created>1742901319944</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
       <option name="project" value="LOCAL" />
-      <updated>1741167065971</updated>
+      <updated>1742901319944</updated>
     </task>
-    <task id="LOCAL-00104" summary="Still trying to figure out exactly what is causing the CFS">
+    <task id="LOCAL-00175" summary="syscall asm stub fixup">
       <option name="closed" value="true" />
-      <created>1741168354464</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
+      <created>1742975967556</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
       <option name="project" value="LOCAL" />
-      <updated>1741168354464</updated>
+      <updated>1742975967556</updated>
     </task>
-    <task id="LOCAL-00105" summary="Still making small changes trying to fix this fatal status in the nvme controller">
+    <task id="LOCAL-00176" summary="added userspace system call asm stub">
       <option name="closed" value="true" />
-      <created>1741251992998</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
+      <created>1743322424809</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
       <option name="project" value="LOCAL" />
-      <updated>1741251992999</updated>
+      <updated>1743322424809</updated>
     </task>
-    <task id="LOCAL-00106" summary="Very confused still as to what exactly is causing it still making small changes trying to figure out where it is happening">
+    <task id="LOCAL-00177" summary="moved PAT macros into arch_vmm.h">
       <option name="closed" value="true" />
-      <created>1741254461450</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
+      <created>1743755099278</created>
+      <option name="number" value="00177" />
+      <option name="presentableId" value="LOCAL-00177" />
       <option name="project" value="LOCAL" />
-      <updated>1741254461450</updated>
+      <updated>1743755099278</updated>
     </task>
-    <task id="LOCAL-00107" summary="changed bar map size for nvme pci bar">
+    <task id="LOCAL-00178" summary="moved pat macros into arch_paging.h">
       <option name="closed" value="true" />
-      <created>1741254785635</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
+      <created>1743841714294</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
       <option name="project" value="LOCAL" />
-      <updated>1741254785635</updated>
+      <updated>1743841714294</updated>
     </task>
-    <task id="LOCAL-00108" summary="cleaned up debug print func">
+    <task id="LOCAL-00179" summary="setup pat function in vmm.c">
       <option name="closed" value="true" />
-      <created>1741336451367</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
+      <created>1744012027304</created>
+      <option name="number" value="00179" />
+      <option name="presentableId" value="LOCAL-00179" />
       <option name="project" value="LOCAL" />
-      <updated>1741336451368</updated>
+      <updated>1744012027305</updated>
     </task>
-    <task id="LOCAL-00109" summary="removed unnecessary preprocessor stuff inside debug_printf function">
+    <task id="LOCAL-00180" summary="added stupid workspace ide file causing issues">
       <option name="closed" value="true" />
-      <created>1741336714753</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
+      <created>1744012399854</created>
+      <option name="number" value="00180" />
+      <option name="presentableId" value="LOCAL-00180" />
       <option name="project" value="LOCAL" />
-      <updated>1741336714753</updated>
+      <updated>1744012399854</updated>
     </task>
-    <task id="LOCAL-00110" summary="added 4k PTE pat bit macro">
+    <task id="LOCAL-00181" summary="removed editor files altogether">
       <option name="closed" value="true" />
-      <created>1743928484713</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
+      <created>1744012600553</created>
+      <option name="number" value="00181" />
+      <option name="presentableId" value="LOCAL-00181" />
       <option name="project" value="LOCAL" />
-      <updated>1743928484713</updated>
+      <updated>1744012600553</updated>
     </task>
-    <option name="localTasksCounter" value="111" />
+    <option name="localTasksCounter" value="182" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -736,50 +686,146 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added asm files as well" />
-    <MESSAGE value="made the echo msg more descriptive" />
-    <MESSAGE value="ACPI mcfg header count macro" />
-    <MESSAGE value="overhauling error message / handling slowly. All int64s not uint64s and use global error codes defined in definitions.h. I only did filesystem stuff for now will be an effort to change all of the kernel error responses at least to external sources to be standardized" />
-    <MESSAGE value="fleshing out functions that will be invoked by syscalls for generic fs ops, created a new string function for checking that a string is not too long" />
-    <MESSAGE value="appear to have fixed the open and close issue. It has to do with the vnode is cached field being false all the time and whe it keeps reading the dirents in for some reason it causes an infinite loop. I should try to fix this but for I have fixed it for now. It should be a reentrant function though so I will stick a pin in it." />
-    <MESSAGE value="Fixed the bug mentioned in the previous commit msg, left a comment on the better solution." />
-    <MESSAGE value="Removed the debug print statements" />
-    <MESSAGE value="made linecount.sh excluse all bootloader files" />
-    <MESSAGE value="sleep &amp; wake sched functions" />
-    <MESSAGE value="adding a lock to the queue" />
-    <MESSAGE value="queue locking" />
-    <MESSAGE value="added dps file data, changed user and kernel page pool to be 1:3 k:u" />
-    <MESSAGE value="changing the dfs/dps stuff to just small ifdef blocks in the main file instead of 2 separate files" />
-    <MESSAGE value="Some comments + code smell fixes" />
-    <MESSAGE value="fixed stride calc mistake" />
-    <MESSAGE value="it has to do with queue doorbells..." />
-    <MESSAGE value="The fatal status seems to randomly change where it occurs every few executions" />
-    <MESSAGE value="Still trying to figure out exactly what is causing the CFS" />
-    <MESSAGE value="Still making small changes trying to fix this fatal status in the nvme controller" />
-    <MESSAGE value="Very confused still as to what exactly is causing it still making small changes trying to figure out where it is happening" />
-    <MESSAGE value="changed bar map size for nvme pci bar" />
-    <MESSAGE value="cleaned up debug print func" />
-    <MESSAGE value="removed unnecessary preprocessor stuff inside debug_printf function" />
-    <MESSAGE value="added 4k PTE pat bit macro" />
-    <option name="LAST_COMMIT_MESSAGE" value="added 4k PTE pat bit macro" />
+    <MESSAGE value="It appears to me that what is happening is that when the controller is trying to write to the given memory when it completes it cannot and throws the fatal status" />
+    <MESSAGE value="I think it has to do with queue doorbells so going to play around with them" />
+    <MESSAGE value="some more debug logic in nvme.c" />
+    <MESSAGE value="Still unsure where the status is coming from, maybe it is a command version mismatch not sure" />
+    <MESSAGE value="going to play around with memory flags maybe it has to do with DMA cachability or WC mapping or something like that" />
+    <MESSAGE value="Switching cqes et al back , need to find out why it cant read the entries there" />
+    <MESSAGE value="removed get_features function, still trying to fix nvme controller fatal status" />
+    <MESSAGE value="small changes added cast etc to vfs.c, nvme.c removed redundant queue setting in the device struct." />
+    <MESSAGE value="gonna start to set up syscalls" />
+    <MESSAGE value="small changes to syscall enum" />
+    <MESSAGE value="setting up Lstar msr for syscall dispatch handling" />
+    <MESSAGE value="setting syscall handler in kernel_bootstrap.c" />
+    <MESSAGE value="fixing up syscall entry and registration" />
+    <MESSAGE value="little more done in the sys call dispatch, added a non sys error code" />
+    <MESSAGE value="syscall fixup" />
+    <MESSAGE value="basic impl for syscall switch case, changed the dispatch asm stub so that it puts the syscall no first" />
+    <MESSAGE value="added exit syscall" />
+    <MESSAGE value="added userspace folder with placeholder files" />
+    <MESSAGE value="syscall asm stub fixup" />
+    <MESSAGE value="added userspace system call asm stub" />
+    <MESSAGE value="moved PAT macros into arch_vmm.h" />
+    <MESSAGE value="moved pat macros into arch_paging.h" />
+    <MESSAGE value="setup pat function in vmm.c" />
+    <MESSAGE value="added stupid workspace ide file causing issues" />
+    <MESSAGE value="removed editor files altogether" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed editor files altogether" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/include/data_structures/binary_tree.h</url>
-          <line>51</line>
-          <option name="timeStamp" value="4" />
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/scheduling/scheduler.c</url>
+          <line>176</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <dependency master-id="0" />
+          <url>file://$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c</url>
+          <line>144</line>
+          <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/cpu/cpu.c</url>
-          <line>25</line>
-          <option name="timeStamp" value="8" />
+          <url>file://$PROJECT_DIR$/src/device/display/framebuffer.c</url>
+          <line>255</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/display/framebuffer.c</url>
+          <line>531</line>
+          <option name="timeStamp" value="59" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/filesystem/tmpfs.c</url>
+          <line>553</line>
+          <option name="timeStamp" value="66" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/memory/kmalloc.c</url>
+          <line>68</line>
+          <option name="timeStamp" value="76" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/filesystem/diosfs.c</url>
+          <line>84</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/filesystem/diosfs.c</url>
+          <line>314</line>
+          <option name="timeStamp" value="118" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>64</line>
+          <option name="timeStamp" value="119" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
+          <line>204</line>
+          <option name="timeStamp" value="139" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>630</line>
+          <option name="timeStamp" value="142" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>539</line>
+          <option name="timeStamp" value="149" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>917</line>
+          <option name="timeStamp" value="150" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>555</line>
+          <option name="timeStamp" value="153" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>922</line>
+          <option name="timeStamp" value="155" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
+          <line>596</line>
+          <option name="timeStamp" value="157" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>532</line>
+          <option name="timeStamp" value="163" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>434</line>
+          <option name="timeStamp" value="169" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>441</line>
+          <option name="timeStamp" value="170" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
+          <line>629</line>
+          <option name="timeStamp" value="172" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/include/architecture/x86_64/hpet.h</url>
+          <line>58</line>
+          <option name="timeStamp" value="173" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/include/definitions/definitions.h</url>
-          <line>20</line>
-          <option name="timeStamp" value="9" />
+          <line>175</line>
+          <option name="timeStamp" value="174" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
