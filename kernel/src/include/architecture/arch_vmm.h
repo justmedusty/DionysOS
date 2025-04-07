@@ -16,6 +16,7 @@ enum {
 
 #ifdef __x86_64__
 
+void setup_pat();
 
 
 static void native_flush_tlb_single(unsigned long vaddr) {

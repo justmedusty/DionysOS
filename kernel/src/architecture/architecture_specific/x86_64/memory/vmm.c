@@ -204,6 +204,12 @@ void arch_dealloc_page_table(p4d_t *pgdir) {
     dealloc_va_range(pgdir, 0, 0xFFFFFFFFFFFFFFFF & ~0xFFF);
 }
 
+void setup_pat(){
+    uint64_t pat = (0ULL << 0) | (1ULL << 8) | (2ULL << 16) | (3ULL << 24) | (4ULL << 32) |  (5ULL <<40) | (6ULL << 48) | (7ULL <<56);
+
+    wrmsr(PAT_MSR,pat);
+}
+
 #endif
 
 

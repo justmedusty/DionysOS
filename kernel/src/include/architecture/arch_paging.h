@@ -65,12 +65,12 @@ extern p4d_t *global_pg_dir;
 
 
 #define PAT_MSR 0x277
-#define PAT_UC 0x00
-#define PAT_WC 0x01
-#define PAT_WT 0x04
-#define PAT_WP 0x05
-#define PAT_WB 0x06
-#define PAT_UC_MINUS 0x07
+#define PAT_UC 0x00 // uncachable
+#define PAT_WC 0x01 //write combining
+#define PAT_WT 0x04 //write through
+#define PAT_WP 0x05 //write protect
+#define PAT_WB 0x06 //write back
+#define PAT_UC_MINUS 0x07 // uncached-
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFUL)
