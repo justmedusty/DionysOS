@@ -26,9 +26,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="proper casts and such in uva2kva and kva2uva function now it compiles">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/userspace/systemcall_wrappers.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/userspace/systemcall_wrappers.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,32 +80,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/Makefile&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Embedded GDB Server.run-gdb.executor": "Debug",
+    "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run.executor": "Run",
+    "Remote Debug.GDB Kernel.executor": "Debug",
+    "Remote Debug.Unnamed.executor": "Debug",
+    "Remote GDB Server.run-gdb.executor": "Debug",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/kernel/Makefile",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "MakefileSettings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
@@ -406,63 +405,9 @@
       <workItem from="1738658015969" duration="227000" />
       <workItem from="1742976965887" duration="1874000" />
       <workItem from="1743322779989" duration="3613000" />
-      <workItem from="1743338144936" duration="2241000" />
-    </task>
-    <task id="LOCAL-00213" summary="comments">
-      <option name="closed" value="true" />
-      <created>1732747302617</created>
-      <option name="number" value="00213" />
-      <option name="presentableId" value="LOCAL-00213" />
-      <option name="project" value="LOCAL" />
-      <updated>1732747302617</updated>
-    </task>
-    <task id="LOCAL-00214" summary="Made the global allocator lockable by putting higher order locked wrapper functions in. Appears to work. The old functions can just be used lockless for the nested dependencies that can arise when data structures need to be dynamically allocated during an allocation. All regular allocations must now use kmalloc.">
-      <option name="closed" value="true" />
-      <created>1732748321438</created>
-      <option name="number" value="00214" />
-      <option name="presentableId" value="LOCAL-00214" />
-      <option name="project" value="LOCAL" />
-      <updated>1732748321438</updated>
-    </task>
-    <task id="LOCAL-00215" summary="Removing the commented out code in tempfs_init. I ran a test allocating most of the pages in the system to ensure that the allocator can handle a beating and it can.">
-      <option name="closed" value="true" />
-      <created>1732748931856</created>
-      <option name="number" value="00215" />
-      <option name="presentableId" value="LOCAL-00215" />
-      <option name="project" value="LOCAL" />
-      <updated>1732748931856</updated>
-    </task>
-    <task id="LOCAL-00216" summary="Extensive logic bug fixes. Things are looking very good now. Just need to handle the newly discovered null slab issue but not top priority as aborting works fine for now.">
-      <option name="closed" value="true" />
-      <created>1732782882764</created>
-      <option name="number" value="00216" />
-      <option name="presentableId" value="LOCAL-00216" />
-      <option name="project" value="LOCAL" />
-      <updated>1732782882764</updated>
-    </task>
-    <task id="LOCAL-00217" summary="Moved the bug message into heap_free_in_slab">
-      <option name="closed" value="true" />
-      <created>1732784680700</created>
-      <option name="number" value="00217" />
-      <option name="presentableId" value="LOCAL-00217" />
-      <option name="project" value="LOCAL" />
-      <updated>1732784680700</updated>
-    </task>
-    <task id="LOCAL-00218" summary="Appear to have fixed  more fundamental issues in the singly_linked_list.c and bst functions and am now back to debugging what is going on in tempfs.c">
-      <option name="closed" value="true" />
-      <created>1732797942415</created>
-      <option name="number" value="00218" />
-      <option name="presentableId" value="LOCAL-00218" />
-      <option name="project" value="LOCAL" />
-      <updated>1732797942415</updated>
-    </task>
-    <task id="LOCAL-00219" summary="Put a bandaid solution in for the bad slab addresses will address it later">
-      <option name="closed" value="true" />
-      <created>1732801927437</created>
-      <option name="number" value="00219" />
-      <option name="presentableId" value="LOCAL-00219" />
-      <option name="project" value="LOCAL" />
-      <updated>1732801927437</updated>
+      <workItem from="1743338144936" duration="5703000" />
+      <workItem from="1743458174538" duration="6590000" />
+      <workItem from="1743541907213" duration="12122000" />
     </task>
     <task id="LOCAL-00220" summary="Messing around with slab allocator. Can't figure out why the occasional bad free is happening. It doesn't seem to happen too much so it might be okay to leave as is but I may rewrite the slab allocator.">
       <option name="closed" value="true" />
@@ -800,7 +745,63 @@
       <option name="project" value="LOCAL" />
       <updated>1743323602681</updated>
     </task>
-    <option name="localTasksCounter" value="262" />
+    <task id="LOCAL-00262" summary="added exit system call stub">
+      <option name="closed" value="true" />
+      <created>1743406368907</created>
+      <option name="number" value="00262" />
+      <option name="presentableId" value="LOCAL-00262" />
+      <option name="project" value="LOCAL" />
+      <updated>1743406368907</updated>
+    </task>
+    <task id="LOCAL-00263" summary="reopening the nvme book">
+      <option name="closed" value="true" />
+      <created>1743408074297</created>
+      <option name="number" value="00263" />
+      <option name="presentableId" value="LOCAL-00263" />
+      <option name="project" value="LOCAL" />
+      <updated>1743408074297</updated>
+    </task>
+    <task id="LOCAL-00264" summary="fixed syscall dispatch function prototype">
+      <option name="closed" value="true" />
+      <created>1743408158580</created>
+      <option name="number" value="00264" />
+      <option name="presentableId" value="LOCAL-00264" />
+      <option name="project" value="LOCAL" />
+      <updated>1743408158580</updated>
+    </task>
+    <task id="LOCAL-00265" summary="tmpfs_remove some logic moved into switch instead of 3 if branches">
+      <option name="closed" value="true" />
+      <created>1743491883096</created>
+      <option name="number" value="00265" />
+      <option name="presentableId" value="LOCAL-00265" />
+      <option name="project" value="LOCAL" />
+      <updated>1743491883096</updated>
+    </task>
+    <task id="LOCAL-00266" summary="PAT macros">
+      <option name="closed" value="true" />
+      <created>1743503788619</created>
+      <option name="number" value="00266" />
+      <option name="presentableId" value="LOCAL-00266" />
+      <option name="project" value="LOCAL" />
+      <updated>1743503788619</updated>
+    </task>
+    <task id="LOCAL-00267" summary="setting up some kva2uva and vice versa logic among some other small changes">
+      <option name="closed" value="true" />
+      <created>1743582706111</created>
+      <option name="number" value="00267" />
+      <option name="presentableId" value="LOCAL-00267" />
+      <option name="project" value="LOCAL" />
+      <updated>1743582706111</updated>
+    </task>
+    <task id="LOCAL-00268" summary="proper casts and such in uva2kva and kva2uva function now it compiles">
+      <option name="closed" value="true" />
+      <created>1743668561609</created>
+      <option name="number" value="00268" />
+      <option name="presentableId" value="LOCAL-00268" />
+      <option name="project" value="LOCAL" />
+      <updated>1743668561609</updated>
+    </task>
+    <option name="localTasksCounter" value="269" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -821,13 +822,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="onto testing recursive directory freeing and the like" />
-    <MESSAGE value="Fixed tempfs_create returning a null vnode" />
-    <MESSAGE value="Fixed get_inode_and_mark_bitmap function it was incrementing by block not byte" />
-    <MESSAGE value="Fixed directory freeing now frees blocks and inodes correctly." />
-    <MESSAGE value="tempfs_lookup now works properly and fills the vnode children properly." />
-    <MESSAGE value="Removed testing code in tempfs_mkfs and removed redundant unsafe free in vnode_free" />
-    <MESSAGE value="const identifiers where needed in tempfs.c" />
     <MESSAGE value="some changes going to set up the file handle table in the process structure and have a list of them." />
     <MESSAGE value="tempfs open and close , having a bitmap for handle ids" />
     <MESSAGE value="Starting to flesh out more vfs functionality" />
@@ -846,7 +840,14 @@
     <MESSAGE value="Laying out device.h among other things." />
     <MESSAGE value="added always inline directive for syscall asm stub" />
     <MESSAGE value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
-    <option name="LAST_COMMIT_MESSAGE" value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
+    <MESSAGE value="added exit system call stub" />
+    <MESSAGE value="reopening the nvme book" />
+    <MESSAGE value="fixed syscall dispatch function prototype" />
+    <MESSAGE value="tmpfs_remove some logic moved into switch instead of 3 if branches" />
+    <MESSAGE value="PAT macros" />
+    <MESSAGE value="setting up some kva2uva and vice versa logic among some other small changes" />
+    <MESSAGE value="proper casts and such in uva2kva and kva2uva function now it compiles" />
+    <option name="LAST_COMMIT_MESSAGE" value="proper casts and such in uva2kva and kva2uva function now it compiles" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -883,13 +884,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -900,7 +901,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -947,31 +948,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" />
+          <dependency id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="2" />
+          <dependency id="1" master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="0" />
+          <dependency id="2" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="1" />
+          <dependency id="0" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
