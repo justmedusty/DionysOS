@@ -83,7 +83,8 @@ void map_kernel_address_space(p4d_t *pgdir) {
     /*
      * Map only the end of user physical memory up to the highest address so the the kernel does not need to map all of user memory
      */
-    if (map_pages(pgdir, highest_user_phys_addr, (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
+    if (map_pages(pgdir, highest_user_phys_addr,
+                  (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
                   highest_address - highest_user_phys_addr) == -1) {
         panic("Mapping address space!");
     }
@@ -204,10 +205,12 @@ void arch_dealloc_page_table(p4d_t *pgdir) {
     dealloc_va_range(pgdir, 0, 0xFFFFFFFFFFFFFFFF & ~0xFFF);
 }
 
-void setup_pat(){
-    uint64_t pat = (0ULL << 0) | (1ULL << 8) | (2ULL << 16) | (3ULL << 24) | (4ULL << 32) |  (5ULL <<40) | (6ULL << 48) | (7ULL <<56);
+void setup_pat() {
+    uint64_t pat =
+            (0ULL << 0) | (1ULL << 8) | (2ULL << 16) | (3ULL << 24) | (4ULL << 32) | (5ULL << 40) | (6ULL << 48) |
+            (7ULL << 56);
 
-    wrmsr(PAT_MSR,pat);
+    wrmsr(PAT_MSR, pat);
 }
 
 #endif

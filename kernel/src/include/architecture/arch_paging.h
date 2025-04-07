@@ -3,12 +3,15 @@
 //
 
 #pragma once
+
 #include "include/memory/pmm.h"
 #include "include/definitions/types.h"
+
 #define P2V(addr) (void *)(((uint64_t)addr) + (uint64_t)hhdm_offset)
 #define V2P(addr) (void *)(((uint64_t)addr) - (uint64_t)hhdm_offset)
 
 void arch_paging_init();
+
 #ifdef __x86_64__
 // A virtual address has  5 parts, 6 if we were using 5 level paging structure as follows:
 //
@@ -42,8 +45,7 @@ extern p4d_t *global_pg_dir;
 #define PTX(va)         (((uint64_t)(va) >> PTXSHIFT) & PAGE_DIR_MASK)
 
 // construct virtual address from indexes (long mode) and offset
-#define PGADDR(p4d,pud,pmd, pte, offset) ((uint64_t)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
-
+#define PGADDR(p4d, pud, pmd, pte, offset) ((uint64_t)((p4d << P4DXSHIFT | pud << PUDXSHIFT | (pmd) << PMDDXSHIFT | (pte) << PTXSHIFT | (offset)))
 
 
 #define PTXSHIFT        12UL      // offset of PTX in a linear address
@@ -55,14 +57,16 @@ extern p4d_t *global_pg_dir;
 #define PGROUNDDOWN(a) (uint64_t) ((((uint64_t)a)) & ~(uint64_t)(PAGE_SIZE-1))
 
 // Page table/directory entry flags.
-#define PTE_P           (uint64_t)0x001UL   // Present
-#define PTE_RW          (uint64_t)0x2UL
-#define PTE_U           (uint64_t)0x004UL   // User
-#define PTE_A           (uint64_t)0x020UL  //accessed , for demand paging
-#define PTE_PS          (uint64_t)0x080UL   // Page Size
-#define PTE_NX          (uint64_t) (1UL << 63UL) // no execute
+#define PTE_P           0x001ULL   // Present
+#define PTE_RW          0x2ULL
+#define PTE_U           0x004ULL   // User
+#define PTE_A           0x020ULL  //accessed , for demand paging
+#define PTE_PS          0x080ULL   // Page Size
+#define PTE_NX          1ULL << 63ULL// no execute
+#define PTE_PCD         0x010ULL // page cache disable
+#define PTE_PWT         0x008ULL //page write through
 
-#define PTE_PCD         (uint64_t) 0x010UL // page cache disable
+
 #define PTE_PAT         1UL << 7UL //Only bit 7 in your run-of-the-mill 4k PTEs
 
 #define PAT_MSR 0x277
@@ -74,7 +78,7 @@ extern p4d_t *global_pg_dir;
 #define PAT_UC_MINUS 0x07 // uncached-
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFUL)
-#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFFUL)
+#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFULL)
+#define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFFULL)
 
 #endif
