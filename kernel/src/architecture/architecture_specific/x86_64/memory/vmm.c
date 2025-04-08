@@ -47,6 +47,7 @@ void init_vmm() {
 
     serial_printf("Kernel page table built in table located at %x.64\n", kernel_pg_map->top_level);
     switch_page_table(kernel_pg_map->top_level);
+    setup_pat();
     serial_printf("VMM mapped and initialized\n");
 }
 

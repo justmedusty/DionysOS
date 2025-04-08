@@ -23,7 +23,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="removed editor files altogether" />
+    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="added intel pwt macro">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/block/nvme.c" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -274,23 +277,7 @@
       <workItem from="1743754248508" duration="97000" />
       <workItem from="1743754352385" duration="39000" />
       <workItem from="1743754440578" duration="7707000" />
-      <workItem from="1743948276570" duration="5858000" />
-    </task>
-    <task id="LOCAL-00133" summary="Fixed the fatal status was a comparison operator facing the wrong direction lol">
-      <option name="closed" value="true" />
-      <created>1739264428865</created>
-      <option name="number" value="00133" />
-      <option name="presentableId" value="LOCAL-00133" />
-      <option name="project" value="LOCAL" />
-      <updated>1739264428865</updated>
-    </task>
-    <task id="LOCAL-00134" summary="Closer to getting it working">
-      <option name="closed" value="true" />
-      <created>1739356733809</created>
-      <option name="number" value="00134" />
-      <option name="presentableId" value="LOCAL-00134" />
-      <option name="project" value="LOCAL" />
-      <updated>1739356733809</updated>
+      <workItem from="1743948276570" duration="10713000" />
     </task>
     <task id="LOCAL-00135" summary="continuing to debug changed mapping function for BAR since this appears to need many pages mapped.">
       <option name="closed" value="true" />
@@ -668,7 +655,23 @@
       <option name="project" value="LOCAL" />
       <updated>1744012600553</updated>
     </task>
-    <option name="localTasksCounter" value="182" />
+    <task id="LOCAL-00182" summary="removing macro double from merge">
+      <option name="closed" value="true" />
+      <created>1744012774330</created>
+      <option name="number" value="00182" />
+      <option name="presentableId" value="LOCAL-00182" />
+      <option name="project" value="LOCAL" />
+      <updated>1744012774330</updated>
+    </task>
+    <task id="LOCAL-00183" summary="added intel pwt macro">
+      <option name="closed" value="true" />
+      <created>1744019761768</created>
+      <option name="number" value="00183" />
+      <option name="presentableId" value="LOCAL-00183" />
+      <option name="project" value="LOCAL" />
+      <updated>1744019761768</updated>
+    </task>
+    <option name="localTasksCounter" value="184" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -686,8 +689,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="It appears to me that what is happening is that when the controller is trying to write to the given memory when it completes it cannot and throws the fatal status" />
-    <MESSAGE value="I think it has to do with queue doorbells so going to play around with them" />
     <MESSAGE value="some more debug logic in nvme.c" />
     <MESSAGE value="Still unsure where the status is coming from, maybe it is a command version mismatch not sure" />
     <MESSAGE value="going to play around with memory flags maybe it has to do with DMA cachability or WC mapping or something like that" />
@@ -711,7 +712,9 @@
     <MESSAGE value="setup pat function in vmm.c" />
     <MESSAGE value="added stupid workspace ide file causing issues" />
     <MESSAGE value="removed editor files altogether" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed editor files altogether" />
+    <MESSAGE value="removing macro double from merge" />
+    <MESSAGE value="added intel pwt macro" />
+    <option name="LAST_COMMIT_MESSAGE" value="added intel pwt macro" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -724,7 +727,7 @@
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c</url>
-          <line>144</line>
+          <line>145</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
