@@ -23,12 +23,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="removed the cache line clearing since its not required for x86_64 as the memory is automatically cache coherent">
-      <change beforePath="$PROJECT_DIR$/../Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../Makefile" afterDir="false" />
+    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="tinkering trying to find out why the nvme controller is refusing to read the memory passed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/block/nvme.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/architecture/generic_asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/architecture/generic_asm_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/bus/pci.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -280,15 +278,7 @@
       <workItem from="1743754248508" duration="97000" />
       <workItem from="1743754352385" duration="39000" />
       <workItem from="1743754440578" duration="7707000" />
-      <workItem from="1743948276570" duration="22995000" />
-    </task>
-    <task id="LOCAL-00140" summary="I do not think the issue is DMA allocation. Still trying to figure it out.">
-      <option name="closed" value="true" />
-      <created>1739700609015</created>
-      <option name="number" value="00140" />
-      <option name="presentableId" value="LOCAL-00140" />
-      <option name="project" value="LOCAL" />
-      <updated>1739700609015</updated>
+      <workItem from="1743948276570" duration="23676000" />
     </task>
     <task id="LOCAL-00141" summary="Still trying to figure out the NVMe issue">
       <option name="closed" value="true" />
@@ -674,7 +664,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744232798278</updated>
     </task>
-    <option name="localTasksCounter" value="189" />
+    <task id="LOCAL-00189" summary="tinkering trying to find out why the nvme controller is refusing to read the memory passed">
+      <option name="closed" value="true" />
+      <created>1744234898846</created>
+      <option name="number" value="00189" />
+      <option name="presentableId" value="LOCAL-00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1744234898846</updated>
+    </task>
+    <option name="localTasksCounter" value="190" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -692,7 +690,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="small changes added cast etc to vfs.c, nvme.c removed redundant queue setting in the device struct." />
     <MESSAGE value="gonna start to set up syscalls" />
     <MESSAGE value="small changes to syscall enum" />
     <MESSAGE value="setting up Lstar msr for syscall dispatch handling" />
@@ -717,7 +714,8 @@
     <MESSAGE value="starting to add cacheflushing" />
     <MESSAGE value="fixed cache flush instruction to not be sse intrinsic - lol" />
     <MESSAGE value="removed the cache line clearing since its not required for x86_64 as the memory is automatically cache coherent" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed the cache line clearing since its not required for x86_64 as the memory is automatically cache coherent" />
+    <MESSAGE value="tinkering trying to find out why the nvme controller is refusing to read the memory passed" />
+    <option name="LAST_COMMIT_MESSAGE" value="tinkering trying to find out why the nvme controller is refusing to read the memory passed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -775,27 +773,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>633</line>
+          <line>631</line>
           <option name="timeStamp" value="142" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>542</line>
+          <line>540</line>
           <option name="timeStamp" value="149" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>920</line>
+          <line>918</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>558</line>
+          <line>556</line>
           <option name="timeStamp" value="153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>925</line>
+          <line>923</line>
           <option name="timeStamp" value="155" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -805,7 +803,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>535</line>
+          <line>533</line>
           <option name="timeStamp" value="163" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -830,12 +828,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>1013</line>
+          <line>1011</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>444</line>
+          <line>442</line>
           <option name="timeStamp" value="178" />
         </line-breakpoint>
       </breakpoints>

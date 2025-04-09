@@ -88,7 +88,6 @@ void map_kernel_address_space(p4d_t *pgdir) {
                   highest_address - highest_user_phys_addr) == -1) {
         panic("Mapping address space!");
     }
-    kprintf_color(LIGHT_RED,"highest user phys %x.64 highest %x.64\n",highest_user_phys_addr,highest_address);
 }
 
 /*
