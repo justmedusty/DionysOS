@@ -25,7 +25,8 @@ all-hdd: $(IMAGE_NAME).hdd
 
 .PHONY: run-gdb
 run-gdb: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d cpu_reset,guest_errors -D qemu_debug.log  -device nvme,drive=my_nvme,debug=1 -drive file=tools/mkfs/image.img,if=none,id=my_nvme,format=raw
+	qemu-system-x86_64 -M q35 -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d cpu_reset,guest_errors -D qemu_debug.log -device nvme,drive=my_nvme,serial=1234 -drive file=tools/mkfs/image.img,if=none,id=my_nvme,format=raw -trace "nvme_*"\
+
 .PHONY: run-x86
 run-x86: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35,smm=off -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) \

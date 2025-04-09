@@ -16,4 +16,8 @@ static inline uint8_t read_port(uint16_t port) {
       return inb(port);
 }
 
+static inline void flush_cache(void * address){
+    dflush64(address);
+}
+
 #endif

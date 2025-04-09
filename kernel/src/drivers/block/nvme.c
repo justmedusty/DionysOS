@@ -9,6 +9,7 @@
 #include "include/memory/mem.h"
 #include "include/architecture/arch_timer.h"
 #include "include/definitions/string.h"
+#include "include/architecture/generic_asm_functions.h"
 
 struct doubly_linked_list nvme_controller_list;
 static bool nvme_initial = false;
@@ -439,7 +440,7 @@ static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *c
     uint16_t tail = queue->sq_tail;
     DEBUG_PRINT("TAIL %i\n",tail);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
-
+   // flush_cache(queue->submission_queue_commands);
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
     if (ops && ops->submit_cmd) {
