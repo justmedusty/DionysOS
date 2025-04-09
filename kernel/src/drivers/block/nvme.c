@@ -439,7 +439,6 @@ free_queue:
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     uint16_t tail = queue->sq_tail;
     DEBUG_PRINT("TAIL %i\n",tail);
-    flush_cache(queue->submission_queue_commands);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 

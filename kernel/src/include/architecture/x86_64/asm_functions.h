@@ -161,7 +161,7 @@ static inline uint64_t interrupts_enabled() {
     return ((flags & BIT(9)) > 0);
 }
 
-static inline void dflush64(void *ptr) {
+static inline void clflush64(void *ptr) {
     __asm__ volatile("clflush (%0)" :: "r"(ptr));
 }
 
