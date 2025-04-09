@@ -23,15 +23,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="added pat setup in vmm.c">
+    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="starting to add cacheflushing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/architecture/x86_64/asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/architecture/x86_64/asm_functions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/definitions/definitions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/scheduling/scheduler.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/scheduling/scheduler.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/system_call/system_calls.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/system_call/system_calls.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -283,23 +278,7 @@
       <workItem from="1743754248508" duration="97000" />
       <workItem from="1743754352385" duration="39000" />
       <workItem from="1743754440578" duration="7707000" />
-      <workItem from="1743948276570" duration="18628000" />
-    </task>
-    <task id="LOCAL-00136" summary="Trying to figure out why command never goes through just loops forever.">
-      <option name="closed" value="true" />
-      <created>1739443917759</created>
-      <option name="number" value="00136" />
-      <option name="presentableId" value="LOCAL-00136" />
-      <option name="project" value="LOCAL" />
-      <updated>1739443917759</updated>
-    </task>
-    <task id="LOCAL-00137" summary="I have my suspicions as to the source of the no status update bug.. commenting and investigating more">
-      <option name="closed" value="true" />
-      <created>1739523226012</created>
-      <option name="number" value="00137" />
-      <option name="presentableId" value="LOCAL-00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1739523226012</updated>
+      <workItem from="1743948276570" duration="20280000" />
     </task>
     <task id="LOCAL-00138" summary="Don't think it was the queue allocation issue, still investigating">
       <option name="closed" value="true" />
@@ -677,7 +656,23 @@
       <option name="project" value="LOCAL" />
       <updated>1744098699206</updated>
     </task>
-    <option name="localTasksCounter" value="185" />
+    <task id="LOCAL-00185" summary="added cache flushing function, trying to crack the nvme qemu reason rejected invalid reads, appears to happen for any address I put in even low addresses">
+      <option name="closed" value="true" />
+      <created>1744188027877</created>
+      <option name="number" value="00185" />
+      <option name="presentableId" value="LOCAL-00185" />
+      <option name="project" value="LOCAL" />
+      <updated>1744188027877</updated>
+    </task>
+    <task id="LOCAL-00186" summary="starting to add cacheflushing">
+      <option name="closed" value="true" />
+      <created>1744188931763</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1744188931763</updated>
+    </task>
+    <option name="localTasksCounter" value="187" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -695,8 +690,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Still unsure where the status is coming from, maybe it is a command version mismatch not sure" />
-    <MESSAGE value="going to play around with memory flags maybe it has to do with DMA cachability or WC mapping or something like that" />
     <MESSAGE value="Switching cqes et al back , need to find out why it cant read the entries there" />
     <MESSAGE value="removed get_features function, still trying to fix nvme controller fatal status" />
     <MESSAGE value="small changes added cast etc to vfs.c, nvme.c removed redundant queue setting in the device struct." />
@@ -720,7 +713,9 @@
     <MESSAGE value="removing macro double from merge" />
     <MESSAGE value="added intel pwt macro" />
     <MESSAGE value="added pat setup in vmm.c" />
-    <option name="LAST_COMMIT_MESSAGE" value="added pat setup in vmm.c" />
+    <MESSAGE value="added cache flushing function, trying to crack the nvme qemu reason rejected invalid reads, appears to happen for any address I put in even low addresses" />
+    <MESSAGE value="starting to add cacheflushing" />
+    <option name="LAST_COMMIT_MESSAGE" value="starting to add cacheflushing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -768,7 +763,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>64</line>
+          <line>65</line>
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -778,27 +773,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>630</line>
+          <line>631</line>
           <option name="timeStamp" value="142" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>539</line>
+          <line>540</line>
           <option name="timeStamp" value="149" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>917</line>
+          <line>918</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>555</line>
+          <line>556</line>
           <option name="timeStamp" value="153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>922</line>
+          <line>923</line>
           <option name="timeStamp" value="155" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -808,12 +803,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>532</line>
+          <line>533</line>
           <option name="timeStamp" value="163" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>434</line>
+          <line>435</line>
           <option name="timeStamp" value="169" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -833,12 +828,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>1010</line>
+          <line>1011</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>440</line>
+          <line>441</line>
           <option name="timeStamp" value="178" />
         </line-breakpoint>
       </breakpoints>
