@@ -4,6 +4,7 @@
 #pragma once
 #include <include/definitions/definitions.h>
 #ifdef __x86_64__
+#include "immintrin.h"
 #include <include/drivers/serial/uart.h>
 
 #include "include/definitions/types.h"
@@ -158,6 +159,13 @@ static inline uint64_t interrupts_enabled() {
           : "memory"         // Memory is modified
       );
     return ((flags & BIT(9)) > 0);
+}
+
+static inline void dflush64(void *addr){
+    uintptr_t p = (uintptr_t) addr;
+    p &= ~(63);
+    _mm_clflush((void*)p);
+    asm volatile("mfence" ::: "memory");
 }
 
 //PAGEBREAK: 36

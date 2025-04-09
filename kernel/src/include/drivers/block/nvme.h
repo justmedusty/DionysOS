@@ -18,6 +18,8 @@
 
 #define NVME_PCI_CLASS 1
 #define NVME_PCI_SUBCLASS 8
+
+
 #define IS_NVME_CONTROLLER(pci_device) (pci_device->class == NVME_PCI_CLASS && pci_device->subclass == NVME_PCI_SUBCLASS)
 enum {
     // Generic Command Statuses

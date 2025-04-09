@@ -509,9 +509,9 @@ static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t i
 int32_t
 nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t double_word11, uint64_t dma_address,
                   uint32_t *result) {
-    struct nvme_command command = {0};
+    struct nvme_command command;
     int32_t ret;
-
+    memset(&command,0,sizeof(command));
     command.features.opcode = NVME_ADMIN_OPCODE_SET_FEATURES;
     command.features.dword11 = double_word11;
     command.features.prp1 = dma_address;
@@ -1001,7 +1001,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 64);
+    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);

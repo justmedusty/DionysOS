@@ -23,9 +23,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="added intel pwt macro">
+    <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="added pat setup in vmm.c">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/block/nvme.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/architecture/x86_64/asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/architecture/x86_64/asm_functions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/definitions/definitions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/drivers/block/nvme.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/scheduling/scheduler.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/scheduling/scheduler.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/system_call/system_calls.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/system_call/system_calls.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -277,15 +283,7 @@
       <workItem from="1743754248508" duration="97000" />
       <workItem from="1743754352385" duration="39000" />
       <workItem from="1743754440578" duration="7707000" />
-      <workItem from="1743948276570" duration="10713000" />
-    </task>
-    <task id="LOCAL-00135" summary="continuing to debug changed mapping function for BAR since this appears to need many pages mapped.">
-      <option name="closed" value="true" />
-      <created>1739443514066</created>
-      <option name="number" value="00135" />
-      <option name="presentableId" value="LOCAL-00135" />
-      <option name="project" value="LOCAL" />
-      <updated>1739443514066</updated>
+      <workItem from="1743948276570" duration="18628000" />
     </task>
     <task id="LOCAL-00136" summary="Trying to figure out why command never goes through just loops forever.">
       <option name="closed" value="true" />
@@ -671,7 +669,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744019761768</updated>
     </task>
-    <option name="localTasksCounter" value="184" />
+    <task id="LOCAL-00184" summary="added pat setup in vmm.c">
+      <option name="closed" value="true" />
+      <created>1744098699206</created>
+      <option name="number" value="00184" />
+      <option name="presentableId" value="LOCAL-00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1744098699206</updated>
+    </task>
+    <option name="localTasksCounter" value="185" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -689,7 +695,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some more debug logic in nvme.c" />
     <MESSAGE value="Still unsure where the status is coming from, maybe it is a command version mismatch not sure" />
     <MESSAGE value="going to play around with memory flags maybe it has to do with DMA cachability or WC mapping or something like that" />
     <MESSAGE value="Switching cqes et al back , need to find out why it cant read the entries there" />
@@ -714,7 +719,8 @@
     <MESSAGE value="removed editor files altogether" />
     <MESSAGE value="removing macro double from merge" />
     <MESSAGE value="added intel pwt macro" />
-    <option name="LAST_COMMIT_MESSAGE" value="added intel pwt macro" />
+    <MESSAGE value="added pat setup in vmm.c" />
+    <option name="LAST_COMMIT_MESSAGE" value="added pat setup in vmm.c" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -727,7 +733,7 @@
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/src/architecture/architecture_specific/x86_64/memory/vmm.c</url>
-          <line>145</line>
+          <line>146</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -767,7 +773,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
-          <line>204</line>
+          <line>206</line>
           <option name="timeStamp" value="139" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -797,7 +803,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
-          <line>596</line>
+          <line>598</line>
           <option name="timeStamp" value="157" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -811,13 +817,8 @@
           <option name="timeStamp" value="169" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>441</line>
-          <option name="timeStamp" value="170" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/include/drivers/block/nvme.h</url>
-          <line>629</line>
+          <line>631</line>
           <option name="timeStamp" value="172" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -829,6 +830,16 @@
           <url>file://$PROJECT_DIR$/src/include/definitions/definitions.h</url>
           <line>175</line>
           <option name="timeStamp" value="174" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>1010</line>
+          <option name="timeStamp" value="175" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
+          <line>440</line>
+          <option name="timeStamp" value="178" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

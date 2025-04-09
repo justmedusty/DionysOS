@@ -84,11 +84,11 @@ void map_kernel_address_space(p4d_t *pgdir) {
     /*
      * Map only the end of user physical memory up to the highest address so the the kernel does not need to map all of user memory
      */
-    if (map_pages(pgdir, highest_user_phys_addr,
-                  (uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
+    if (map_pages(pgdir, highest_user_phys_addr,(uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
                   highest_address - highest_user_phys_addr) == -1) {
         panic("Mapping address space!");
     }
+    kprintf_color(LIGHT_RED,"highest user phys %x.64 highest %x.64\n",highest_user_phys_addr,highest_address);
 }
 
 /*
