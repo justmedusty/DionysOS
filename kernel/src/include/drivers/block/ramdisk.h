@@ -23,7 +23,6 @@
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
 
-
 extern struct device_ops ramdisk_device_ops;
 
 /*

@@ -79,8 +79,8 @@ int main(const int argc, char** argv) {
     bool files = false;
     size_t num_files = 0;
     if (argc < 3) {
-        printf("Usage: mkdiosfs name.img size-gigs\n");
-        printf("You can add files via: mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc\n");
+        printf("Usage: mkdiosfs name.img size-megs\n");
+        printf("You can add files via: mkdiosfs name.img size-megs -f file_to_add other_file_to_add etc\n");
         exit(1);
     }
 
@@ -97,8 +97,8 @@ int main(const int argc, char** argv) {
 
     const uint64_t arg2 = strtoll_wrapper(argv[2]);
 
-    if (arg2 > 8) {
-        printf("This tool does not support images above 8GB, pick a size between 1 and 8 GB\n");
+    if (arg2 > 8000) {
+        printf("This tool does not support images above 8GB, pick a size between 250 and 8000MiB\n");
         exit(1);
     }
 
@@ -110,7 +110,7 @@ int main(const int argc, char** argv) {
         exit(1);
     }
 
-    uint64_t size_bytes = arg2 << 30;
+    uint64_t size_bytes = arg2 << 20;
     //giving a bit of extra space in the buffer, size + size / 20
     disk_buffer = malloc(size_bytes + (size_bytes / 20));
 
@@ -263,13 +263,13 @@ int main(const int argc, char** argv) {
     exit(0);
 }
 
-void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, const size_t gigabytes,
+void diosfs_get_size_info(struct diosfs_size_calculation* size_calculation, const size_t megabytes,
                           const size_t block_size) {
-    if (gigabytes == 0) {
+    if ( megabytes== 0) {
         exit(1);
     }
 
-    const uint64_t size_bytes = gigabytes << 30;
+    const uint64_t size_bytes = megabytes << 20;
 
     size_calculation->total_blocks = (size_bytes / block_size);
     uint64_t padding = size_calculation->total_blocks / 150;
