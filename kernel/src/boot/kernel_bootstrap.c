@@ -20,6 +20,8 @@
 #include "include/filesystem/diosfs.h"
 #include "include/system_call/system_calls.h"
 #include "include/filesystem/tmpfs.h"
+#include "include/drivers/block/ramdisk.h"
+
 
 /*
  *  BSP bootstrapping.

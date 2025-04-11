@@ -33,7 +33,7 @@ run-x86: $(IMAGE_NAME).iso
   -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio \
   -d guest_errors,int -D qemu_debug.log \
   -device nvme,drive=my_nvme,serial=1234 \
-  -drive file=tools/mkfs/mydisk.img,if=none,id=my_nvme,format=raw -trace "nvme_*" -trace file="nvme.trace"\
+  -drive file=tools/mkfs/disk.img,if=none,id=my_nvme,format=raw -trace "nvme_*" -trace file="nvme.trace"\
 
 
 

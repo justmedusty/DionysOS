@@ -23,6 +23,9 @@
 
 #define DEFAULT_RAMDISK_SIZE (0xFF * PAGE_SIZE)
 
+extern uint8_t *_binary_disk_img_start;
+extern uint64_t _binary_disk_img_size;
+
 extern struct device_ops ramdisk_device_ops;
 
 /*

@@ -14,6 +14,9 @@
 #include "include/definitions/string.h"
 
 
+ uint8_t *_binary_disk_img_start = NULL;
+ uint64_t _binary_disk_img_size = 0;
+
 struct ramdisk ramdisk[RAMDISK_COUNT]; /* Only need one but why not 3! */
 struct spinlock ramdisk_locks[RAMDISK_COUNT];
 uint64_t ramdisk_count = RAMDISK_COUNT;
@@ -38,6 +41,7 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
     ramdisk[ramdisk_id].block_size = block_size;
     safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
     initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
+    kprintf_color(LIGHT_PURPLE,"DISK SIZE IS %i\n",_binary_disk_img_size);
     serial_printf("Ramdisk initialized\n");
 }
 
