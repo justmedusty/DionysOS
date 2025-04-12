@@ -26,15 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="inline directive to syscall stub">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="thinking about how im going to embed a disk image">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/linker.ld" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/linker.ld" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/limine.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/limine.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -415,15 +410,7 @@
       <workItem from="1743338144936" duration="5703000" />
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
-      <workItem from="1744268953699" duration="9793000" />
-    </task>
-    <task id="LOCAL-00222" summary="Fixed the allocation issues in tempfs.c for second and third level indirection blocks">
-      <option name="closed" value="true" />
-      <created>1732831683421</created>
-      <option name="number" value="00222" />
-      <option name="presentableId" value="LOCAL-00222" />
-      <option name="project" value="LOCAL" />
-      <updated>1732831683421</updated>
+      <workItem from="1744268953699" duration="13814000" />
     </task>
     <task id="LOCAL-00223" summary="debugging indirection allocation. Something wonky going on.">
       <option name="closed" value="true" />
@@ -809,7 +796,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744274443763</updated>
     </task>
-    <option name="localTasksCounter" value="271" />
+    <task id="LOCAL-00271" summary="thinking about how im going to embed a disk image">
+      <option name="closed" value="true" />
+      <created>1744356674977</created>
+      <option name="number" value="00271" />
+      <option name="presentableId" value="LOCAL-00271" />
+      <option name="project" value="LOCAL" />
+      <updated>1744356674977</updated>
+    </task>
+    <option name="localTasksCounter" value="272" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -830,7 +825,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Starting to flesh out more vfs functionality" />
     <MESSAGE value="fleshing out more vfs functionality" />
     <MESSAGE value="finished vnode close for now, need to implement the remove node by addr function in doubly_linked_list.c" />
     <MESSAGE value="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs" />
@@ -855,7 +849,8 @@
     <MESSAGE value="proper casts and such in uva2kva and kva2uva function now it compiles" />
     <MESSAGE value="changing mkdiosfs to create smaller images so they can be linked inside the final elf easier" />
     <MESSAGE value="inline directive to syscall stub" />
-    <option name="LAST_COMMIT_MESSAGE" value="inline directive to syscall stub" />
+    <MESSAGE value="thinking about how im going to embed a disk image" />
+    <option name="LAST_COMMIT_MESSAGE" value="thinking about how im going to embed a disk image" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -916,7 +911,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c</url>
-          <line>41</line>
+          <line>31</line>
           <option name="timeStamp" value="342" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

@@ -223,7 +223,7 @@ void pci_enumerate_devices(bool print) {
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
                 if (IS_NVME_CONTROLLER(pci_device)) {
-                 //setup_nvme_device(pci_device);
+                 setup_nvme_device(pci_device);
                 }
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
                 info_printf("PCI device of type %s inserted into registered device list\n",
