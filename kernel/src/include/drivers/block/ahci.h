@@ -6,6 +6,8 @@
 #define AHCI_H
 
 #include <stdint.h>
+#include <include/data_structures/doubly_linked_list.h>
+#include <include/data_structures/spinlock.h>
 // Device class/subclass for AHCI
 #define AHCI_CLASS     0x01
 #define AHCI_SUBCLASS  0x06
@@ -148,6 +150,22 @@ struct ahci_fis_device_to_host {
     uint8_t reserved2;
     uint8_t reserved3;
 } __attribute__((packed));
+
+struct ahci_controller {
+    void *pci_bar;
+    volatile struct ahci_registers *ahci_regs;
+    uint32_t port_count;
+    uint32_t command_slots;
+    struct doubly_linked_list device_list;
+    uint32_t major;
+    uint32_t minor;
+};
+struct ahci_device {
+    int32_t status;
+    volatile struct ahci_port_registers *registers;
+    struct spinlock lock;
+    struct ahci_controller *parent;
+};
 
 
 #endif //AHCI_H
