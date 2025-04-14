@@ -88,7 +88,7 @@ struct ahci_command_header {
     uint32_t reserved[4];
 } __attribute__((packed));
 
-struct ahci_pdrt_entry {
+struct ahci_prdt_entry {
     uint32_t data_base_address;
     uint32_t data_base_address_upper;
     uint32_t reserved;
@@ -167,5 +167,7 @@ struct ahci_device {
     struct ahci_controller *parent;
 };
 
+uint32_t find_command_slot(struct ahci_device *device);
+struct ahci_command_table *set_prdt(struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count);
 
 #endif //AHCI_H
