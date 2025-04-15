@@ -100,7 +100,7 @@ struct ahci_command_table {
     uint8_t command_fis[64];
     uint8_t atapi_command[16];
     uint8_t reserved[48];
-    struct ahci_pdrt_entry prdt_entries[1];
+    struct ahci_prdt_entry prdt_entries[1];
 } __attribute__((packed));
 
 
