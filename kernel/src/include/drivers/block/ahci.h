@@ -167,7 +167,7 @@ struct ahci_device {
     struct ahci_controller *parent;
 };
 
-uint32_t find_command_slot(struct ahci_device *device);
+uint32_t ahci_find_command_slot(struct ahci_device *device);
 struct ahci_command_table *set_prdt(struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count);
-
+void ahci_send_command(uint32_t slot, struct ahci_device *device);
 #endif //AHCI_H
