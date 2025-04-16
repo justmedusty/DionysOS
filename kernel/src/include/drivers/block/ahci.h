@@ -35,6 +35,8 @@
 #define FIS_TYPE_PIO_SETUP   0x5F
 #define FIS_TYPE_DEV_BITS    0xA1
 
+#define READ 0x25
+#define WRITE 0x35
 // Sector size
 #define SECTOR_SIZE 0x200
 
@@ -106,7 +108,7 @@ struct ahci_command_table {
 
 struct ahci_fis_host_to_device {
     uint8_t fis_type;
-    uint8_t port_and_control;
+    uint8_t flags;
     uint8_t command;
     uint8_t feature_low;
 
@@ -168,6 +170,6 @@ struct ahci_device {
 };
 
 uint32_t ahci_find_command_slot(struct ahci_device *device);
-struct ahci_command_table *set_prdt(struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count);
+struct ahci_command_table *set_prdt(volatile struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count);
 void ahci_send_command(uint32_t slot, struct ahci_device *device);
 #endif //AHCI_H
