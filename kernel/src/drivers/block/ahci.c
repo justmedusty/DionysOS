@@ -4,7 +4,7 @@
 
 #include "include/drivers/block/ahci.h"
 #include "include/memory/mem.h"
-
+#include "include/architecture/arch_timer.h"
 uint32_t ahci_find_command_slot(struct ahci_device *device) {
     for (uint32_t i; i < device->parent->command_slots; i++) {
         if (((device->registers->sata_active | device->registers->command_issue) & (1 << i)) == 0) {
@@ -163,4 +163,32 @@ int32_t ahci_initialize(struct ahci_device *device) {
 
     return KERN_SUCCESS;
 
+}
+
+int32_t ahci_give_kernel_ownership(struct ahci_controller *controller){
+    if ((controller->ahci_regs->capabilities_extended & (1 << 0)) == 0) {
+        err_printf("AHCI: Bios Handoff Not Supported\n");
+        return KERN_NOT_SUPPORTED;
+    }
+
+    controller->ahci_regs->bios_os_handoff_control_status |= (1 << 1);
+
+    while ((controller->ahci_regs->bios_os_handoff_control_status  & (1 << 0)) == 0) {
+        __asm__ __volatile__("pause");
+    }
+
+    timer_sleep(25);
+
+    if (controller->ahci_regs->bios_os_handoff_control_status & (1 << 4)) {
+        timer_sleep(2000);
+    }
+
+    if ((controller->ahci_regs->bios_os_handoff_control_status & (1 << 4)) ||
+        (controller->ahci_regs->bios_os_handoff_control_status  & (1 << 0)) ||
+        ((controller->ahci_regs->bios_os_handoff_control_status  & (1 << 1)) == 0)) {
+        err_printf("AHCI: Bios Handoff Failed\n");
+        return KERN_IO_ERROR;
+    }
+
+    return KERN_SUCCESS;
 }
