@@ -12,9 +12,9 @@
 
 
 #ifdef _DEBUG_
-    #define DEBUG_PRINT(string, ...) debug_printf(string, ## __VA_ARGS__)
+#define DEBUG_PRINT(string, ...) debug_printf(string, ## __VA_ARGS__)
 #else
-    #define DEBUG_PRINT(string, ...)
+#define DEBUG_PRINT(string, ...)
 #endif
 
 #define BIT(bit) ((1UL << bit))
@@ -126,6 +126,15 @@ static inline uint64_t min(uint64_t one, uint64_t two) {
 
 static inline uint64_t max(uint64_t one, uint64_t two) {
     return one < two ? two : one;
+}
+
+static inline void to_big_endian(void *pointer, uint64_t bytes) {
+    char *value = pointer;
+    for (int i = 0; i < bytes; i += 2) {
+        char temp = value[i];
+        value[i] = value[i + 1];
+        value[i + 1] = temp;
+    }
 }
 
 /*

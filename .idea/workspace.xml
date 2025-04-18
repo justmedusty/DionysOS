@@ -26,8 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="added ahci read write function">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out ahci initialize function">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -409,15 +411,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="22173000" />
-    </task>
-    <task id="LOCAL-00227" summary="More stress testing and finding breaking components in the list functions going back to those.">
-      <option name="closed" value="true" />
-      <created>1732957979446</created>
-      <option name="number" value="00227" />
-      <option name="presentableId" value="LOCAL-00227" />
-      <option name="project" value="LOCAL" />
-      <updated>1732957979446</updated>
+      <workItem from="1744547936947" duration="27428000" />
     </task>
     <task id="LOCAL-00228" summary="Found the cause of the current bug. The way to indntify a slab was just checking if the address started on a page boundary, this wont work anymore. Going to use a hash table to store slab addresses and check that way.">
       <option name="closed" value="true" />
@@ -803,7 +797,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744789519532</updated>
     </task>
-    <option name="localTasksCounter" value="276" />
+    <task id="LOCAL-00276" summary="fleshing out ahci initialize function">
+      <option name="closed" value="true" />
+      <created>1744877638086</created>
+      <option name="number" value="00276" />
+      <option name="presentableId" value="LOCAL-00276" />
+      <option name="project" value="LOCAL" />
+      <updated>1744877638086</updated>
+    </task>
+    <option name="localTasksCounter" value="277" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -824,7 +826,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some PCI scratch to be built and fixed as I go" />
     <MESSAGE value="Decices are only being added to list if they are a recognizable type" />
     <MESSAGE value="Proper Device scanning being done and adding most of the fields (not all)" />
     <MESSAGE value="pci_read_config was whacked, now fixed I believe" />
@@ -849,7 +850,8 @@
     <MESSAGE value="fixed set prdt func" />
     <MESSAGE value="added ahci send command function" />
     <MESSAGE value="added ahci read write function" />
-    <option name="LAST_COMMIT_MESSAGE" value="added ahci read write function" />
+    <MESSAGE value="fleshing out ahci initialize function" />
+    <option name="LAST_COMMIT_MESSAGE" value="fleshing out ahci initialize function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
