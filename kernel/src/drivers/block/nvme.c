@@ -278,6 +278,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     int64_t start;
 
     timeout_millis = NVME_CAP_TIMEOUT(nvme_dev->capabilities) * 500;
+    kprintf_color(ORANGE,"TIMEOUT MILLIS %i\n",timeout_millis);
     start = timer_get_current_count();
     while ((timer_get_current_count() - start) < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {

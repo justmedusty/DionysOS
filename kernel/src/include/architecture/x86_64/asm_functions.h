@@ -44,6 +44,13 @@ static inline void outw(uint16_t port, uint16_t data) {
     asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
+
+// Writes a 16-bit value to the specified I/O port.
+static inline void outl(uint32_t port, uint16_t data) {
+    asm volatile("out %0,%1" : : "a" (data), "d" (port));
+}
+
+
 // Writes a sequence of 32-bit values from memory to the specified I/O port.
 static inline void outsl(int port, const void* addr, int cnt) {
     asm volatile("cld; rep outsl" :

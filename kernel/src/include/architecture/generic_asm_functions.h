@@ -9,7 +9,7 @@
 #include "include/architecture/x86_64/asm_functions.h"
 
 static inline void write_port(uint16_t port, uint8_t value) {
-      outb(port, value);
+      outl(port, value);
 }
 
 static inline uint8_t read_port(uint16_t port) {
