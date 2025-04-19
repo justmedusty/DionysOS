@@ -281,7 +281,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     start = timer_get_current_count();
     while ((timer_get_current_count() - start) < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
-            kprintf("SUCCESS %i\n",bit);
+            DEBUG_PRINT("SUCCESS %i\n",bit);
             return KERN_SUCCESS;
         }
 
@@ -307,7 +307,6 @@ static struct nvme_queue *nvme_alloc_queue(struct nvme_device *nvme_dev, int32_t
     /*
      * I think this here is the issue...
 */
-    //issue is controller cannot access this memory
     queue->submission_queue_commands = kzmalloc(PAGE_SIZE);
 
     queue->completion_queue_entries = kzmalloc(PAGE_SIZE);

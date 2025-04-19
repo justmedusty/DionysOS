@@ -26,9 +26,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="keep it this way since this appears to be correct, just need to solve the timeouts.">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Wait ready appears to work it is just for commands that it does not work properly">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/bus/pci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -410,15 +412,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="42548000" />
-    </task>
-    <task id="LOCAL-00234" summary=" in tempfs_create">
-      <option name="closed" value="true" />
-      <created>1733132495092</created>
-      <option name="number" value="00234" />
-      <option name="presentableId" value="LOCAL-00234" />
-      <option name="project" value="LOCAL" />
-      <updated>1733132495092</updated>
+      <workItem from="1744547936947" duration="44084000" />
     </task>
     <task id="LOCAL-00235" summary="more testing and minor fixes in block_free function">
       <option name="closed" value="true" />
@@ -804,7 +798,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745062119767</updated>
     </task>
-    <option name="localTasksCounter" value="283" />
+    <task id="LOCAL-00283" summary="Wait ready appears to work it is just for commands that it does not work properly">
+      <option name="closed" value="true" />
+      <created>1745062400976</created>
+      <option name="number" value="00283" />
+      <option name="presentableId" value="LOCAL-00283" />
+      <option name="project" value="LOCAL" />
+      <updated>1745062400976</updated>
+    </task>
+    <option name="localTasksCounter" value="284" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -825,7 +827,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
     <MESSAGE value="Laying out device.h among other things." />
     <MESSAGE value="added always inline directive for syscall asm stub" />
     <MESSAGE value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
@@ -850,7 +851,8 @@
     <MESSAGE value="Getting somewhere , going to keep tinkering with the pci config" />
     <MESSAGE value="Added timout logic since timer isnt turned on yet during NVME setup" />
     <MESSAGE value="keep it this way since this appears to be correct, just need to solve the timeouts." />
-    <option name="LAST_COMMIT_MESSAGE" value="keep it this way since this appears to be correct, just need to solve the timeouts." />
+    <MESSAGE value="Wait ready appears to work it is just for commands that it does not work properly" />
+    <option name="LAST_COMMIT_MESSAGE" value="Wait ready appears to work it is just for commands that it does not work properly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

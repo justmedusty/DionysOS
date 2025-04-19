@@ -20,7 +20,6 @@
 
 
 #define PCI_COMMAND_BUS_MASTER 0x04
-#define PCI_COMMAND_OFFSET 0x04
 //PCI Types
 #define PCI_TYPE_GENERIC_DEVICE 0x0
 #define PCI_TYPE_BRIDGE 0x1
@@ -209,8 +208,6 @@ struct pci_device {
     };
     struct pci_slot *pci_slot;
     struct pci_driver *driver;
-
-
 };
 
 struct pci_slot {
