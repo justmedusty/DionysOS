@@ -503,12 +503,5 @@ void pci_get_address(struct pci_device *device, uint32_t offset) {
 void pci_enable_bus_mastering(struct pci_device *device) {
     uint16_t command = pci_read_config(device, PCI_COMMAND_OFFSET) & SHORT_MASK;
     command |= PCI_COMMAND_BUS_MASTER;
-    /*
-     * Testing this out
-     */
-    pci_get_address(device,PCI_COMMAND_OFFSET);
-    outw(PCI_CONFIG_DATA + (PCI_COMMAND_OFFSET & 2),command);
-
-
     pci_write_config(device, PCI_COMMAND_OFFSET, command);
 }

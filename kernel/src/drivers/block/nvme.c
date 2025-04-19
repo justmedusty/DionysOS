@@ -518,6 +518,7 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
     command.features.prp1 = dma_address;
     command.features.fid = feature_id;
     DEBUG_PRINT("HERE\n");
+
     ret = nvme_submit_admin_command(nvme_device, &command, result);
     DEBUG_PRINT("AFTER\n");
     return ret;
@@ -572,6 +573,15 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         // Check for timeout
         if (timeout > 0 && (timer_get_current_count() - start_time) >= timeout) {
             return KERN_TIMEOUT; // Return timeout error if elapsed time exceeds the specified timeout
+        }
+
+        /*
+         * Because I am using this before the timer even has a chance to be turned on I will do this as a backup
+         */
+        timeout-=10;
+        if(timeout == 0){
+            panic("NVMe: Command timed out");
+            break;
         }
     }
 
@@ -833,7 +843,6 @@ static int32_t nvme_setup_io_queues(struct nvme_device *device) {
     device->max_queue_id = number_io_queues;
     //free previously allocated queues
     nvme_free_queues(device, number_io_queues + 1);
-    panic("HERE");
     nvme_create_io_queues(device);
 
     return 0;
@@ -919,7 +928,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->prp_entry_count = MAX_PRP_POOL >> 3;
 
     //now issues arising here
-
     ret = nvme_setup_io_queues(nvme_dev);
     if (ret) {
         goto free_queue;

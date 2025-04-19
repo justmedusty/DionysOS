@@ -17,7 +17,11 @@ static inline uint8_t inb(uint16_t port) {
     asm volatile("in %1,%0" : "=a" (data) : "d" (port));
     return data;
 }
-
+static inline uint32_t inl(uint32_t port) {
+    uint8_t data;
+    asm volatile("in %1,%0" : "=a" (data) : "d" (port));
+    return data;
+}
 // Reads a sequence of 32-bit values from the specified I/O port into memory.
 static inline void insl(int port, void* addr, int cnt) {
     asm volatile("cld; rep insl" :
@@ -46,7 +50,7 @@ static inline void outw(uint16_t port, uint16_t data) {
 
 
 // Writes a 16-bit value to the specified I/O port.
-static inline void outl(uint32_t port, uint16_t data) {
+static inline void outl(uint16_t port, uint32_t data) {
     asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
