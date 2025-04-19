@@ -26,11 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Getting somewhere , going to keep tinkering with the pci config">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Added timout logic since timer isnt turned on yet during NVME setup">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/architecture/x86_64/asm_functions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/architecture/x86_64/asm_functions.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -412,15 +410,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="40797000" />
-    </task>
-    <task id="LOCAL-00232" summary="comments">
-      <option name="closed" value="true" />
-      <created>1733079422435</created>
-      <option name="number" value="00232" />
-      <option name="presentableId" value="LOCAL-00232" />
-      <option name="project" value="LOCAL" />
-      <updated>1733079422435</updated>
+      <workItem from="1744547936947" duration="42216000" />
     </task>
     <task id="LOCAL-00233" summary="Fixed the get dir entries function it is testing properly now.">
       <option name="closed" value="true" />
@@ -806,7 +796,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745052463939</updated>
     </task>
-    <option name="localTasksCounter" value="281" />
+    <task id="LOCAL-00281" summary="Added timout logic since timer isnt turned on yet during NVME setup">
+      <option name="closed" value="true" />
+      <created>1745060006201</created>
+      <option name="number" value="00281" />
+      <option name="presentableId" value="LOCAL-00281" />
+      <option name="project" value="LOCAL" />
+      <updated>1745060006201</updated>
+    </task>
+    <option name="localTasksCounter" value="282" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -827,7 +825,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Got rid of dynamic allocation for pci devs" />
     <MESSAGE value="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process." />
     <MESSAGE value="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent" />
     <MESSAGE value="Laying out device.h among other things." />
@@ -852,7 +849,8 @@
     <MESSAGE value="ownership passoff ahci function" />
     <MESSAGE value="Added pci functions , setting up bus mastering since I believe this might be the case of why the nvme controller is unable to read any memory I pass to it" />
     <MESSAGE value="Getting somewhere , going to keep tinkering with the pci config" />
-    <option name="LAST_COMMIT_MESSAGE" value="Getting somewhere , going to keep tinkering with the pci config" />
+    <MESSAGE value="Added timout logic since timer isnt turned on yet during NVME setup" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added timout logic since timer isnt turned on yet during NVME setup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -989,7 +987,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>984</line>
+          <line>988</line>
           <option name="timeStamp" value="443" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -999,12 +997,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>917</line>
+          <line>921</line>
           <option name="timeStamp" value="445" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>776</line>
+          <line>780</line>
           <option name="timeStamp" value="451" />
         </line-breakpoint>
       </breakpoints>
