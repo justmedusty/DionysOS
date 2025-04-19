@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include "include/device/device.h"
 
+#ifdef __x86_64__
+#endif
 #define PCI_MAX_BUSES 256
 #define SLOTS_PER_BUS 32
 #define FUNCTIONS_PER_DEVICE 8
@@ -240,6 +242,9 @@ void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions, u
 
 void set_pci_mmio_address(struct mcfg_entry *entry);
 
+void pci_get_address(struct pci_device *device, uint32_t offset);
+
+void pci_enable_bus_mastering(struct pci_device *device);
 // Message Signaled Interrupts (MSI) format message flags
 #define MSI_EDGE_TRIGGER  (1 << 15)  // Edge-triggered interrupt bit
 #define MSI_DEASSERT      (1 << 14)  // Deassert interrupt bit

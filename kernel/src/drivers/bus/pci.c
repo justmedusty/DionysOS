@@ -12,6 +12,7 @@
 #include "include/definitions/string.h"
 #include "include/memory/mem.h"
 #include "include/drivers/block/nvme.h"
+#include "include/architecture/generic_asm_functions.h"
 
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
@@ -33,21 +34,23 @@ struct pci_bus_information pci_info = {
  * PCIe still uses the oldschool bus:slot:function layout so we use the those values + the shift macros in order to get information
  */
 static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
-    uintptr_t address = (uintptr_t) P2V(pci_info.pci_mmio_address)
-                        + (uintptr_t) (device->bus << BUS_SHIFT)
-                        + (uintptr_t) (device->slot << SLOT_SHIFT)
-                        + (uintptr_t) (device->function << FUNCTION_SHIFT)
-                        + (uintptr_t) offset;
+    uintptr_t
+    address = (uintptr_t)P2V(pci_info.pci_mmio_address)
+    +(uintptr_t)(device->bus << BUS_SHIFT)
+    + (uintptr_t)(device->slot << SLOT_SHIFT)
+    + (uintptr_t)(device->function << FUNCTION_SHIFT)
+    + (uintptr_t) offset;
 
     return *(volatile uint32_t *) address;
 }
 
 static void pci_write_config(struct pci_device *device, uint16_t offset, uint32_t value) {
-    uintptr_t address = (uintptr_t) P2V(pci_info.pci_mmio_address)
-                        + (uintptr_t) (device->bus << BUS_SHIFT)
-                        + (uintptr_t) (device->slot << SLOT_SHIFT)
-                        + (uintptr_t) (device->function << FUNCTION_SHIFT)
-                        + (uintptr_t) offset;
+    uintptr_t
+    address = (uintptr_t)P2V(pci_info.pci_mmio_address)
+    +(uintptr_t)(device->bus << BUS_SHIFT)
+    + (uintptr_t)(device->slot << SLOT_SHIFT)
+    + (uintptr_t)(device->function << FUNCTION_SHIFT)
+    + (uintptr_t) offset;
 
     *(volatile uint32_t *) address = value;
 }
@@ -68,7 +71,7 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
 
 #endif
 
-void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions,uint64_t pages) {
+void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions, uint64_t pages) {
     arch_map_pages(pgdir, bar_phys_addr, V2P(bar_phys_addr), permissions, PAGE_SIZE * pages);
     switch_page_table(pgdir); // Should we do this? I will go with yes for now
 }
@@ -181,7 +184,7 @@ void pci_enumerate_devices(bool print) {
                         break;
                     case PCI_TYPE_GENERIC_DEVICE:
                         pci_device->generic.base_address_registers[0] =
-                                pci_read_config(pci_device, PCI_GENERIC_BAR0_OFFSET) &WORD_MASK;
+                                pci_read_config(pci_device, PCI_GENERIC_BAR0_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[1] =
                                 pci_read_config(pci_device, PCI_GENERIC_BAR1_OFFSET) & WORD_MASK;
                         pci_device->generic.base_address_registers[2] =
@@ -223,7 +226,7 @@ void pci_enumerate_devices(bool print) {
                 pci_device->pci_slot = p_slot;
                 pci_device->registered = true;
                 if (IS_NVME_CONTROLLER(pci_device)) {
-                 setup_nvme_device(pci_device);
+                    setup_nvme_device(pci_device);
                 }
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
                 info_printf("PCI device of type %s inserted into registered device list\n",
@@ -488,4 +491,16 @@ uint32_t pci_read_base_address_register(struct device *device, int32_t base_addr
 void pci_write_base_address_register(struct device *device, int32_t base_address_register_number, uint32_t address) {
     uint32_t base_address_register = pci_info.pci_mmio_address + (base_address_register_number * 4);
     pci_write_config(device->pci_device, base_address_register, address);
+}
+
+void pci_get_address(struct pci_device *device, uint32_t offset) {
+    uint32_t address = (uint32_t) (device->bus << 16) | (uint32_t) (device->slot << 11) | (uint32_t) (device->function) << 8 |
+                       ((offset & ~3) | 0x80000000);
+    write_port(PCI_CONFIG_ADD, address);
+}
+
+void pci_enable_bus_mastering(struct pci_device *device){
+    if((pci_read_config(device,0x4) & (1 << 2)) == 0){
+        pci_write_config(device,0x4, pci_read_config(device,0x4) & (1 << 2));
+    }
 }

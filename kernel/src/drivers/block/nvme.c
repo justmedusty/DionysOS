@@ -977,6 +977,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
         doubly_linked_list_init(&nvme_controller_list);
         nvme_initial = true;
     }
+    pci_enable_bus_mastering(pci_device);
     struct device *nvme_controller = kzmalloc(sizeof(struct device));
     struct nvme_device *nvme_dev = kzmalloc(sizeof(struct nvme_device));
     nvme_controller->driver = &nvme_driver;
