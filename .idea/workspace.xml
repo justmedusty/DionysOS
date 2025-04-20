@@ -26,11 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Wait ready appears to work it is just for commands that it does not work properly">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/bus/pci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/bus/pci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -412,15 +410,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="44084000" />
-    </task>
-    <task id="LOCAL-00235" summary="more testing and minor fixes in block_free function">
-      <option name="closed" value="true" />
-      <created>1733138127754</created>
-      <option name="number" value="00235" />
-      <option name="presentableId" value="LOCAL-00235" />
-      <option name="project" value="LOCAL" />
-      <updated>1733138127754</updated>
+      <workItem from="1744547936947" duration="50497000" />
     </task>
     <task id="LOCAL-00236" summary="Fixed block allocation scheme in tempfs_write_dirent. It wouldnt deallocate on an empty dir and keep allocating if you delete an entry and add a new one.">
       <option name="closed" value="true" />
@@ -806,7 +796,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745062400976</updated>
     </task>
-    <option name="localTasksCounter" value="284" />
+    <task id="LOCAL-00284" summary="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present">
+      <option name="closed" value="true" />
+      <created>1745064152595</created>
+      <option name="number" value="00284" />
+      <option name="presentableId" value="LOCAL-00284" />
+      <option name="project" value="LOCAL" />
+      <updated>1745064152595</updated>
+    </task>
+    <option name="localTasksCounter" value="285" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -827,7 +825,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Laying out device.h among other things." />
     <MESSAGE value="added always inline directive for syscall asm stub" />
     <MESSAGE value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
     <MESSAGE value="added exit system call stub" />
@@ -852,7 +849,8 @@
     <MESSAGE value="Added timout logic since timer isnt turned on yet during NVME setup" />
     <MESSAGE value="keep it this way since this appears to be correct, just need to solve the timeouts." />
     <MESSAGE value="Wait ready appears to work it is just for commands that it does not work properly" />
-    <option name="LAST_COMMIT_MESSAGE" value="Wait ready appears to work it is just for commands that it does not work properly" />
+    <MESSAGE value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

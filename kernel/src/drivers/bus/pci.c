@@ -493,15 +493,8 @@ void pci_write_base_address_register(struct device *device, int32_t base_address
     pci_write_config(device->pci_device, base_address_register, address);
 }
 
-void pci_get_address(struct pci_device *device, uint32_t offset) {
-    uint32_t address =
-            (uint32_t)(device->bus << 16) | (uint32_t)(device->slot << 11) | (uint32_t)(device->function) << 8 |
-            ((offset & ~3) | 0x80000000);
-    write_port(PCI_CONFIG_ADD, address);
-}
-
 void pci_enable_bus_mastering(struct pci_device *device) {
     uint16_t command = device->command;
-    command |= PCI_COMMAND_BUS_MASTER;
+    command |= (1 << 2);
     pci_write_config(device,PCI_DEVICE_COMMAND_OFFSET,command);
 }

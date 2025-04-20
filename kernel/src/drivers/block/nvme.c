@@ -577,7 +577,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         /*
          * Because I am using this before the timer even has a chance to be turned on I will do this as a backup
          */
-        timeout-=10;
+        timeout-=1;
         if(timeout == 0){
             panic("NVMe: Command timed out");
             break;
