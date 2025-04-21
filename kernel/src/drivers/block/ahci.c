@@ -10,6 +10,39 @@
 struct ahci_controller controller = {0};
 struct doubly_linked_list ahci_controller_list = {0};
 
+
+
+struct block_device_ops ahci_block_ops = {
+        .block_read = ahci_read_block,
+        .block_write = ahci_write_block,
+        .ahci_ops = &ahci_ops
+};
+
+struct pci_driver ahci_pci_driver = {
+        .probe = ahci_probe,
+        .bind = ahci_bind,
+        .shutdown = NULL,
+        .name = "ahcidriver",
+        .driver_managed_dma = false,
+        .resume = NULL,
+        .device = NULL, // this struct can be copied for use later and then have fields reassigned
+};
+
+struct device_ops ahci_device_ops = {
+        .block_device_ops = &ahci_block_ops,
+        .shutdown = NULL,
+        .reset = NULL,
+        .get_status = NULL,
+        .init = ahci_init,
+        .configure = NULL,
+
+};
+
+struct device_driver ahci_driver = {
+        .pci_driver = &ahci_pci_driver,
+        .device_ops = &ahci_device_ops,
+        .probe = ahci_probe,
+};
 uint32_t ahci_find_command_slot(struct ahci_device *device) {
     for (uint32_t i; i < device->parent->command_slots; i++) {
         if (((device->registers->sata_active | device->registers->command_issue) & (1 << i)) == 0) {
@@ -201,4 +234,46 @@ int32_t ahci_give_kernel_ownership(struct ahci_controller *controller) {
 
 int32_t  initialize_ahci_controller(struct pci_device *device){
 
+}
+
+void setup_ahci_device(struct pci_device *pci_device) {
+    static uint32_t controller_count = 0;
+    pci_enable_bus_mastering(pci_device);
+    struct device *ahci_controller = kzmalloc(sizeof(struct device));
+    struct ahci_device *ahci_device = kzmalloc(sizeof(struct ahci_device));
+    ahci_controller->driver = &nvme_driver;
+    ahci_controller->pci_device = pci_device;
+    ahci_controller->device_info = ahci_device;
+    ahci_controller->device_major = DEVICE_MAJOR_AHCI;
+    ahci_controller->device_minor = device_minor_map[DEVICE_MAJOR_AHCI]++;
+    ahci_controller->device_class = NVME_PCI_CLASS;
+    ahci_controller->lock = kmalloc(sizeof(struct spinlock));
+    ahci_controller->device_type = DEVICE_TYPE_BLOCK;
+    ksprintf(ahci_controller->name, "ahcictlr%i", controller_count++);
+    //NVMe controller internal struct
+    if (pci_device->sixtyfour_bit_bar) {
+        /*
+         * Can't blanket mask in the PCI config bookkeeping because you do not mask any of the second bar in the case of a 64 bit bar address
+         */
+        ahci_device->bar = (struct nvme_bar *) ((uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF) |
+                                             ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
+    } else {
+        ahci_device->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];
+    }
+    ahci_device->bar = P2V(ahci_device->bar);
+
+
+    pci_map_bar((uint64_t) V2P(ahci_device->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
+
+    ahci_device->controller = ahci_controller;
+    int32_t ret = ahci_controller->driver->probe(ahci_controller);
+
+    if (ret != KERN_SUCCESS) {
+        warn_printf("AHCI Controller Setup Failed.\n");
+        kfree(ahci_controller);
+        kfree(ahci_device);
+        return;
+    }
+
+    insert_device_into_kernel_tree(ahci_controller);
 }

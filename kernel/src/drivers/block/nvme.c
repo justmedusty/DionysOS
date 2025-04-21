@@ -575,7 +575,7 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         }
 
         /*
-         * Because I am using this before the timer even has a chance to be turned on I will do this as a backup
+         * Because I am using this because init is done before the timer even has a chance to be turned on I will do this as a backup
          */
         timeout-=1;
         if(timeout == 0){
