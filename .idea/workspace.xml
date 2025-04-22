@@ -26,7 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="lengthening nvme timeout while i debug what it causing it to spin forever">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Setting up more AHCI setup code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
@@ -412,15 +412,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="54854000" />
-    </task>
-    <task id="LOCAL-00237" summary="onto testing recursive directory freeing and the like">
-      <option name="closed" value="true" />
-      <created>1733215570866</created>
-      <option name="number" value="00237" />
-      <option name="presentableId" value="LOCAL-00237" />
-      <option name="project" value="LOCAL" />
-      <updated>1733215570866</updated>
+      <workItem from="1744547936947" duration="60675000" />
     </task>
     <task id="LOCAL-00238" summary="Fixed tempfs_create returning a null vnode">
       <option name="closed" value="true" />
@@ -806,7 +798,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745141196081</updated>
     </task>
-    <option name="localTasksCounter" value="286" />
+    <task id="LOCAL-00286" summary="Setting up more AHCI setup code">
+      <option name="closed" value="true" />
+      <created>1745225241025</created>
+      <option name="number" value="00286" />
+      <option name="presentableId" value="LOCAL-00286" />
+      <option name="project" value="LOCAL" />
+      <updated>1745225241025</updated>
+    </task>
+    <option name="localTasksCounter" value="287" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -827,7 +827,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa" />
     <MESSAGE value="added exit system call stub" />
     <MESSAGE value="reopening the nvme book" />
     <MESSAGE value="fixed syscall dispatch function prototype" />
@@ -852,7 +851,8 @@
     <MESSAGE value="Wait ready appears to work it is just for commands that it does not work properly" />
     <MESSAGE value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
     <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
-    <option name="LAST_COMMIT_MESSAGE" value="lengthening nvme timeout while i debug what it causing it to spin forever" />
+    <MESSAGE value="Setting up more AHCI setup code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Setting up more AHCI setup code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -989,23 +989,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>987</line>
+          <line>986</line>
           <option name="timeStamp" value="443" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>418</line>
+          <line>417</line>
           <option name="timeStamp" value="444" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>920</line>
+          <line>919</line>
           <option name="timeStamp" value="445" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>779</line>
+          <line>778</line>
           <option name="timeStamp" value="451" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/ahci.c</url>
+          <line>264</line>
+          <option name="timeStamp" value="452" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

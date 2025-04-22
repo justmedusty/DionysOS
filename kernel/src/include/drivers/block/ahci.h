@@ -40,23 +40,6 @@
 // Sector size
 #define SECTOR_SIZE 0x200
 
-struct ahci_registers {
-    volatile uint32_t capabilities;
-    volatile uint32_t global_host_control;
-    volatile uint32_t interrupt_status;
-    volatile uint32_t ports_implemented;
-    volatile uint32_t version;
-    volatile uint32_t command_completion_control;
-    volatile uint32_t command_completion_ports;
-    volatile uint32_t enclosure_management_location;
-    volatile uint32_t enclosure_management_control;
-    volatile uint32_t capabilities_extended;
-    volatile uint32_t bios_os_handoff_control_status;
-    volatile uint32_t reserved[29];
-    volatile uint32_t vendor_specific[24];
-} __attribute__((packed));
-
-
 struct ahci_port_registers {
     volatile uint32_t command_list_base_address;
     volatile uint32_t command_list_base_address_upper;
@@ -79,6 +62,24 @@ struct ahci_port_registers {
     volatile uint32_t reserved1[11];
     volatile uint32_t vendor_specific[10];
 } __attribute__((packed));
+
+struct ahci_registers {
+    volatile uint32_t capabilities;
+    volatile uint32_t global_host_control;
+    volatile uint32_t interrupt_status;
+    volatile uint32_t ports_implemented;
+    volatile uint32_t version;
+    volatile uint32_t command_completion_control;
+    volatile uint32_t command_completion_ports;
+    volatile uint32_t enclosure_management_location;
+    volatile uint32_t enclosure_management_control;
+    volatile uint32_t capabilities_extended;
+    volatile uint32_t bios_os_handoff_control_status;
+    volatile uint32_t reserved[29];
+    volatile uint32_t vendor_specific[24];
+    volatile struct ahci_port_registers[1]; // each device gets its own port
+} __attribute__((packed));
+
 
 
 struct ahci_command_header {

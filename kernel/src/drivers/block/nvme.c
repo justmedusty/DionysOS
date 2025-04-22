@@ -94,48 +94,53 @@ static void nvme_bind(struct device *device);
 static int32_t nvme_probe(struct device *device);
 
 
-void print_nvme_regs(const struct nvme_device *dev){
-    DEBUG_PRINT("\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",dev->bar->capabilities,dev->bar->version,dev->bar->interrupt_mask_set,dev->bar->controller_status,dev->bar->reserved1,nvme_read_q(&dev->bar->admin_sq_base_addr),nvme_read_q(&dev->bar->admin_cq_base_addr));
+void print_nvme_regs(const struct nvme_device *dev) {
+    DEBUG_PRINT(
+            "\nCAP : %x.64\nVersion: %x.32\nInterrupt Mask Set : %x.32\nController Status : %x.32\nReserved1 : %x.32\nAdmin SQ Base : %x.64\nAdmin CQ Base %x.64\n",
+            dev->bar->capabilities, dev->bar->version, dev->bar->interrupt_mask_set, dev->bar->controller_status,
+            dev->bar->reserved1, nvme_read_q(&dev->bar->admin_sq_base_addr),
+            nvme_read_q(&dev->bar->admin_cq_base_addr));
 }
+
 /*
  * Not completed yet will need to make some abstracted functions to use this
  */
 struct nvme_ops nvme_ops = {
-    .submit_cmd = nvme_submit_command,
-    .complete_cmd = NULL,
-    .setup_queue = NULL,
+        .submit_cmd = nvme_submit_command,
+        .complete_cmd = NULL,
+        .setup_queue = NULL,
 };
 
 struct block_device_ops nvme_block_ops = {
-    .block_read = nvme_read_block,
-    .block_write = nvme_write_block,
-    .nvme_ops = &nvme_ops
+        .block_read = nvme_read_block,
+        .block_write = nvme_write_block,
+        .nvme_ops = &nvme_ops
 };
 
 struct pci_driver nvme_pci_driver = {
-    .probe = nvme_probe,
-    .bind = nvme_bind,
-    .shutdown = NULL,
-    .name = "nvmedriver",
-    .driver_managed_dma = false,
-    .resume = NULL,
-    .device = NULL, // this struct can be copied for use later and then have fields reassigned
+        .probe = nvme_probe,
+        .bind = nvme_bind,
+        .shutdown = NULL,
+        .name = "nvmedriver",
+        .driver_managed_dma = false,
+        .resume = NULL,
+        .device = NULL, // this struct can be copied for use later and then have fields reassigned
 };
 
 struct device_ops nvme_device_ops = {
-    .block_device_ops = &nvme_block_ops,
-    .shutdown = nvme_shutdown,
-    .reset = NULL,
-    .get_status = NULL,
-    .init = nvme_init,
-    .configure = NULL,
+        .block_device_ops = &nvme_block_ops,
+        .shutdown = nvme_shutdown,
+        .reset = NULL,
+        .get_status = NULL,
+        .init = nvme_init,
+        .configure = NULL,
 
 };
 
 struct device_driver nvme_driver = {
-    .pci_driver = &nvme_pci_driver,
-    .device_ops = &nvme_device_ops,
-    .probe = nvme_probe,
+        .pci_driver = &nvme_pci_driver,
+        .device_ops = &nvme_device_ops,
+        .probe = nvme_probe,
 };
 
 /*
@@ -146,7 +151,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
                                                 int32_t total_len, uint64_t dma_addr) {
     uint32_t page_size = nvme_dev->page_size;
     uint32_t offset = dma_addr & (page_size - 1);
-    uint64_t *prp_pool;
+    uint64_t * prp_pool;
     int32_t length = total_len;
     uint32_t i, number_prps;
     uint32_t prps_per_page = page_size >> 3;
@@ -159,8 +164,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
         return 0;
     }
 
-    if (length)
-        dma_addr += (page_size - offset);
+    dma_addr += (page_size - offset);
 
     if (length <= page_size) {
         *prp2 = dma_addr;
@@ -189,7 +193,8 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
     while (number_prps) {
         // if we've filled a page of physical region pool entries, link to the next page and reset index
         if (i == ((page_size >> 3) - 1)) {
-            *(prp_pool + i) = (uint64_t) prp_pool + page_size; // point to next physical region pool page
+            *(prp_pool + i) = (uint64_t)
+            prp_pool + page_size; // point to next physical region pool page
             i = 0; // reset index for the new physical region page
             prp_pool += page_size; // move to the next physical region page
         }
@@ -199,7 +204,8 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
         number_prps--; // decrement the number of prps left to set
     }
 
-    *prp2 = (uint64_t) nvme_dev->prp_pool;
+    *prp2 = (uint64_t)
+    nvme_dev->prp_pool;
 
 
     return 0;
@@ -281,7 +287,7 @@ static int32_t nvme_wait_ready(struct nvme_device *nvme_dev, bool enabled) {
     start = timer_get_current_count();
     while ((timer_get_current_count() - start) < timeout_millis) {
         if ((nvme_dev->bar->controller_status & NVME_CSTS_RDY) == bit) {
-            DEBUG_PRINT("SUCCESS %i\n",bit);
+            DEBUG_PRINT("SUCCESS %i\n", bit);
             return KERN_SUCCESS;
         }
 
@@ -410,10 +416,10 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     // Specify the sizes of I/O Submission and Completion Queue Entries.
     nvme_dev->bar->admin_queue_attrs = aqa;
     // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
-    DEBUG_PRINT("sq cmds %x.64 cqes %x.64\n",queue->submission_queue_commands,queue->completion_queue_entries);
-    nvme_write_q((uint64_t) V2P(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
+    DEBUG_PRINT("sq cmds %x.64 cqes %x.64\n", queue->submission_queue_commands, queue->completion_queue_entries);
+    nvme_write_q((uint64_t)V2P(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
     // Write the physical base address of the Admin Submission Queue to its Base Address Register.
-    nvme_write_q((uint64_t) V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
+    nvme_write_q((uint64_t)V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
     // Write the physical base address of the Admin Completion Queue to its Base Address Register.
 
     result = nvme_enable_control(nvme_dev);
@@ -426,7 +432,7 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     nvme_init_queue(nvme_dev->queues[NVME_ADMIN_Q], 0);
     return result;
 
-free_queue:
+    free_queue:
     nvme_free_queues(nvme_dev, 0);
 
     return result;
@@ -438,7 +444,7 @@ free_queue:
  */
 static void nvme_submit_command(struct nvme_queue *queue, struct nvme_command *command) {
     uint16_t tail = queue->sq_tail;
-    DEBUG_PRINT("TAIL %i\n",tail);
+    DEBUG_PRINT("TAIL %i\n", tail);
     memcpy(&queue->submission_queue_commands[tail], command, sizeof(*command));
     const struct nvme_ops *ops = (struct nvme_ops *) queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
 
@@ -472,9 +478,9 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
         return KERN_SUCCESS;
     }
     if ((result & 0xffff) > (result >> 16)) {
-        return (int32_t) (result >> 16) + 1;
+        return (int32_t)(result >> 16) + 1;
     }
-    return (int32_t) (result & 0xffff) + 1;
+    return (int32_t)(result & 0xffff) + 1;
 }
 
 static int32_t nvme_block_probe() {
@@ -488,10 +494,10 @@ int32_t nvme_scan_namespace() {
  * Read the status index in the completion queue to so we can see what is going on, hopefully no alignment issues but we will see won't we
  */
 static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index) {
-    uint64_t start = (uint64_t) &queue->completion_queue_entries[0];
+    uint64_t start = (uint64_t) & queue->completion_queue_entries[0];
 
     uint64_t stop = start + NVME_CQ_SIZE(
-                        queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
+            queue->q_depth); // this might cause alignment issues but we're fucking cowboys here okay?!
 
     // for debugging purposes
     if (queue->dev->bar->controller_status & NVME_CSTS_CFS) {
@@ -511,7 +517,7 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
                   uint32_t *result) {
     struct nvme_command command;
     int32_t ret;
-    memset(&command,0,sizeof(command));
+    memset(&command, 0, sizeof(command));
     command.features.opcode = NVME_ADMIN_OPCODE_SET_FEATURES;
     command.features.dword11 = double_word11;
     command.features.prp1 = dma_address;
@@ -577,8 +583,8 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         /*
          * Because I am using this because init is done before the timer even has a chance to be turned on I will do this as a backup
          */
-        timeout-=1;
-        if(timeout == 0){
+        timeout -= 1;
+        if (timeout == 0) {
             panic("NVMe: Command timed out");
             break;
         }
@@ -667,7 +673,8 @@ static int32_t nvme_get_info_from_identify(struct nvme_device *device) {
     const int32_t shift = NVME_CAP_MPSMIN(device->capabilities) + 12;
     struct nvme_id_ctrl *control = kzmalloc(sizeof(struct nvme_id_ctrl));
     DEBUG_PRINT("INTO IDENTIFY\n");
-    const int32_t ret = nvme_identify(device, 0, 1, (uint64_t) control);
+    const int32_t ret = nvme_identify(device, 0, 1, (uint64_t)
+    control);
     DEBUG_PRINT("PAST IDENTIFY\n");
     if (ret > 0) {
         kfree(control);
@@ -745,7 +752,7 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = (uint64_t) V2P(queue->completion_queue_entries);
+    command.create_cq.prp1 = (uint64_t)V2P(queue->completion_queue_entries);
     command.create_cq.cqid = queue_id;
     command.create_cq.qsize = queue->q_depth - 1;
     command.create_cq.cq_flags = flags;
@@ -763,7 +770,7 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
     int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_SQ_PRIO_MEDIUM;
 
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
-    command.create_sq.prp1 = ((uint64_t) V2P(queue->submission_queue_commands));
+    command.create_sq.prp1 = ((uint64_t)V2P(queue->submission_queue_commands));
     command.create_sq.sqid = (queue_id);
     command.create_sq.qsize = (queue->q_depth - 1);
     command.create_sq.sq_flags = (flags);
@@ -790,9 +797,9 @@ static int32_t nvme_create_queue(struct nvme_queue *queue, int32_t queue_id) {
     DEBUG_PRINT("CREATED BOTH QUEUES\n");
     return result;
 
-release_sq:
+    release_sq:
     nvme_delete_sq(dev, queue_id);
-release_cq:
+    release_cq:
     nvme_delete_cq(dev, queue_id);
 
     return result;
@@ -815,7 +822,7 @@ static int32_t nvme_delete_completion_queue(struct nvme_device *nvme_dev, uint16
 static int32_t nvme_create_io_queues(struct nvme_device *device) {
     uint32_t i;
     DEBUG_PRINT("GOING INTO FIRST LOOP CREATE IO QUEUES\n");
-    DEBUG_PRINT("TOTAL_QUEUES %i MAX QUEUE ID %i\n",device->total_queues,device->max_queue_id);
+    DEBUG_PRINT("TOTAL_QUEUES %i MAX QUEUE ID %i\n", device->total_queues, device->max_queue_id);
     for (i = device->total_queues; i <= device->max_queue_id; i++) {
         if (!nvme_alloc_queue(device, i, device->queue_depth)) {
             break;
@@ -916,7 +923,7 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     nvme_dev->queue_depth = NVME_QUEUE_DEPTH; // this can go off capabilities but for now its fine
     nvme_dev->capabilities = nvme_read_q(&nvme_dev->bar->capabilities);
     nvme_dev->doorbell_stride = (1 << NVME_CAP_STRIDE(nvme_dev->capabilities));
-    nvme_dev->doorbells =  (volatile uint32_t *) ((uintptr_t) nvme_dev->bar + 4096);
+    nvme_dev->doorbells = (volatile uint32_t *) ((uintptr_t) nvme_dev->bar + 4096);
 
     ret = nvme_configure_admin_queue(nvme_dev);
 
@@ -958,9 +965,9 @@ int32_t nvme_init(struct device *dev, void *other_args) {
     kfree(nsid);
     return KERN_SUCCESS;
 
-free_id:
+    free_id:
     kfree(nsid);
-free_queue:
+    free_queue:
     kfree(nvme_dev->queues);
 
     return KERN_IO_ERROR; // does io make sense ? maybe,  but placeholder for now
@@ -1002,7 +1009,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
         /*
          * Can't blanket mask in the PCI config bookkeeping because you do not mask any of the second bar in the case of a 64 bit bar address
          */
-        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t) (pci_device->generic.base_address_registers[0] & ~0xF) |
+        nvme_dev->bar = (struct nvme_bar *) ((uintptr_t)(pci_device->generic.base_address_registers[0] & ~0xF) |
                                              ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
     } else {
         nvme_dev->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];
@@ -1010,7 +1017,8 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_dev->bar = P2V(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t) V2P(nvme_dev->bar), (uint64_t *) kernel_pg_map->top_level, READWRITE, 32);
+    pci_map_bar((uint64_t)V2P(nvme_dev->bar), (uint64_t * )
+    kernel_pg_map->top_level, READWRITE, 32);
 
     nvme_dev->device = nvme_controller;
     int32_t ret = nvme_controller->driver->probe(nvme_controller);
