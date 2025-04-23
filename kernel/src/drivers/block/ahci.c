@@ -6,20 +6,25 @@
 #include "include/memory/mem.h"
 #include "include/architecture/arch_timer.h"
 #include "include/drivers/bus/pci.h"
+#include "include/drivers/block/ahci.h"
 
 struct ahci_controller controller = {0};
 struct doubly_linked_list ahci_controller_list = {0};
+
+static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write);
+
+
 
 
 struct block_device_ops ahci_block_ops = {
         .block_read = ahci_read_block,
         .block_write = ahci_write_block,
-        .ahci_ops = &ahci_ops
+        .ahci_ops = NULL
 };
 
 struct pci_driver ahci_pci_driver = {
-        .probe = ahci_probe,
-        .bind = ahci_bind,
+        .probe = NULL,
+        .bind = NULL,
         .shutdown = NULL,
         .name = "ahcidriver",
         .driver_managed_dma = false,
@@ -32,7 +37,7 @@ struct device_ops ahci_device_ops = {
         .shutdown = NULL,
         .reset = NULL,
         .get_status = NULL,
-        .init = ahci_init,
+        .init = NULL,
         .configure = NULL,
 
 };
@@ -40,7 +45,7 @@ struct device_ops ahci_device_ops = {
 struct device_driver ahci_driver = {
         .pci_driver = &ahci_pci_driver,
         .device_ops = &ahci_device_ops,
-        .probe = ahci_probe,
+        .probe = NULL,
 };
 
 uint32_t ahci_find_command_slot(struct ahci_device *device) {
@@ -52,7 +57,17 @@ uint32_t ahci_find_command_slot(struct ahci_device *device) {
     return UINT32_MAX;
 }
 
-struct ahci_command_table *
+uint64_t ahci_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
+    return read_write_lba(device->device_info,buffer,block_number,block_count,false);
+}
+
+uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
+    return read_write_lba(device->device_info,buffer,block_number,block_count,true);
+}
+
+
+
+volatile struct ahci_command_table *
 set_prdt(volatile struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count) {
     volatile struct ahci_command_table *command_table =
     P2V((uint64_t)((uint64_t) header->command_table_base_address |
@@ -84,7 +99,7 @@ void ahci_send_command(uint32_t slot, struct ahci_device *device) {
     device->registers->command_and_status &= ~HBA_CMD_FR;
 }
 
-int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write) {
+static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write) {
 
     uint32_t command_slot = ahci_find_command_slot(device);
 

@@ -4,10 +4,12 @@
 
 #ifndef AHCI_H
 #define AHCI_H
+#pragma once
 
 #include <stdint.h>
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/data_structures/spinlock.h>
+#include "include/drivers/bus/pci.h"
 // Device class/subclass for AHCI
 #define AHCI_CLASS     0x01
 #define AHCI_SUBCLASS  0x06
@@ -77,9 +79,8 @@ struct ahci_registers {
     volatile uint32_t bios_os_handoff_control_status;
     volatile uint32_t reserved[29];
     volatile uint32_t vendor_specific[24];
-    volatile struct ahci_port_registers[1]; // each device gets its own port
+    volatile struct ahci_port_registers port_regs[1]; // each device gets its own port
 } __attribute__((packed));
-
 
 
 struct ahci_command_header {
@@ -173,7 +174,7 @@ struct ahci_device {
 
 uint32_t ahci_find_command_slot(struct ahci_device *device);
 
-struct ahci_command_table *
+volatile struct ahci_command_table *
 set_prdt(volatile struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count);
 
 void ahci_send_command(uint32_t slot, struct ahci_device *device);
@@ -183,5 +184,9 @@ int32_t ahci_initialize(struct ahci_device *device);
 int32_t ahci_give_kernel_ownership(struct ahci_controller *controller);
 
 void setup_ahci_device(struct pci_device *pci_device);
+
+uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
+
+uint64_t ahci_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
 #endif //AHCI_H
