@@ -26,9 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out more ahci functionality">
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
-    </list>
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out more ahci functionality x2" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -410,15 +408,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="69182000" />
-    </task>
-    <task id="LOCAL-00241" summary="tempfs_lookup now works properly and fills the vnode children properly.">
-      <option name="closed" value="true" />
-      <created>1733303065175</created>
-      <option name="number" value="00241" />
-      <option name="presentableId" value="LOCAL-00241" />
-      <option name="project" value="LOCAL" />
-      <updated>1733303065175</updated>
+      <workItem from="1744547936947" duration="69493000" />
     </task>
     <task id="LOCAL-00242" summary="Removed testing code in tempfs_mkfs and removed redundant unsafe free in vnode_free">
       <option name="closed" value="true" />
@@ -804,7 +794,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745478666685</updated>
     </task>
-    <option name="localTasksCounter" value="290" />
+    <task id="LOCAL-00290" summary="fleshing out more ahci functionality x2">
+      <option name="closed" value="true" />
+      <created>1745479998246</created>
+      <option name="number" value="00290" />
+      <option name="presentableId" value="LOCAL-00290" />
+      <option name="project" value="LOCAL" />
+      <updated>1745479998246</updated>
+    </task>
+    <option name="localTasksCounter" value="291" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -825,7 +823,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="tmpfs_remove some logic moved into switch instead of 3 if branches" />
     <MESSAGE value="PAT macros" />
     <MESSAGE value="setting up some kva2uva and vice versa logic among some other small changes" />
     <MESSAGE value="proper casts and such in uva2kva and kva2uva function now it compiles" />
@@ -850,7 +847,8 @@
     <MESSAGE value="fleshing out and fixing ahci skeleton" />
     <MESSAGE value="More fleshing out of AHCI, as well as function pointer tables" />
     <MESSAGE value="fleshing out more ahci functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="fleshing out more ahci functionality" />
+    <MESSAGE value="fleshing out more ahci functionality x2" />
+    <option name="LAST_COMMIT_MESSAGE" value="fleshing out more ahci functionality x2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -13,9 +13,9 @@ struct ahci_controller controller = {0};
 struct doubly_linked_list ahci_controller_list = {0};
 
 static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write);
+static int32_t ahci_probe(struct device *device);
 
-
-struct block_device_ops ahci_block_ops = {
+        struct block_device_ops ahci_block_ops = {
         .block_read = ahci_read_block,
         .block_write = ahci_write_block,
         .ahci_ops = NULL
@@ -44,7 +44,7 @@ struct device_ops ahci_device_ops = {
 struct device_driver ahci_driver = {
         .pci_driver = &ahci_pci_driver,
         .device_ops = &ahci_device_ops,
-        .probe = NULL,
+        .probe = ahci_probe,
 };
 
 uint32_t ahci_find_command_slot(struct ahci_device *device) {
@@ -281,7 +281,7 @@ void setup_ahci_device(struct pci_device *pci_device) {
     pci_enable_bus_mastering(pci_device);
     struct device *ahci_controller = kzmalloc(sizeof(struct device));
     struct ahci_controller *controller = kzmalloc(sizeof(struct ahci_controller));
-    ahci_controller->driver = NULL;
+    ahci_controller->driver = &ahci_driver;
     ahci_controller->pci_device = pci_device;
     ahci_controller->device_info = controller;
     ahci_controller->device_major = DEVICE_MAJOR_AHCI;
