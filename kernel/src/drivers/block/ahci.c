@@ -151,7 +151,7 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
     uint32_t command_slot = ahci_find_command_slot(device);
 
     uint64_t
-    command_list = (uint64_t)
+            command_list = (uint64_t)
     kmalloc(PAGE_SIZE);
 
     device->registers->command_list_base_address = (uint32_t) command_list;
@@ -169,7 +169,7 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
     }
 
     uint64_t
-    fis_base = (uint64_t)
+            fis_base = (uint64_t)
     kmalloc(PAGE_SIZE);
     device->registers->fis_base_address = (uint32_t) fis_base;
     device->registers->fis_base_address_upper = (uint32_t)(fis_base >> 32);
@@ -256,59 +256,48 @@ static bool is_bar_64_bit(uint32_t bar) {
     return type == 2;
 }
 
-int32_t initialize_ahci_controller(struct pci_device *device) {
-    pci_enable_bus_mastering(device);
-    struct device *ahci_controller = kzmalloc(sizeof(struct device));
-    struct ahci_controller *controller = kzmalloc(sizeof(struct ahci_controller));
-    controller->ahci_regs = P2V(device->generic.base_address_registers[5]);
+int32_t initialize_ahci_controller(struct device *device) {
+    struct ahci_controller *controller = device->device_info;
+    struct pci_device *pci_dev = device->pci_device;
+
+    controller->ahci_regs = P2V(pci_dev->generic.base_address_registers[5]);
 
     controller->major = (controller->ahci_regs->version >> 16) & SHORT_MASK;
     controller->minor = controller->ahci_regs->version & SHORT_MASK;
 
+    if ((controller->ahci_regs->capabilities & (1 << 31)) == 0) {
+        warn_printf("AHCI: Controller does not support 64 bit addressing");
+        return KERN_NOT_SUPPORTED;
+    }
+
+    ahci_give_kernel_ownership(controller);
 
 
 }
-
 
 
 void setup_ahci_device(struct pci_device *pci_device) {
     static uint32_t controller_count = 0;
     pci_enable_bus_mastering(pci_device);
     struct device *ahci_controller = kzmalloc(sizeof(struct device));
-    struct ahci_device *ahci_device = kzmalloc(sizeof(struct ahci_device));
+    struct ahci_controller *controller = kzmalloc(sizeof(struct ahci_controller));
     ahci_controller->driver = NULL;
     ahci_controller->pci_device = pci_device;
-    ahci_controller->device_info = ahci_device;
+    ahci_controller->device_info = controller;
     ahci_controller->device_major = DEVICE_MAJOR_AHCI;
     ahci_controller->device_minor = device_minor_map[DEVICE_MAJOR_AHCI]++;
     ahci_controller->device_class = AHCI_CLASS;
     ahci_controller->lock = kmalloc(sizeof(struct spinlock));
     ahci_controller->device_type = DEVICE_TYPE_BLOCK;
+    ahci_controller->pci_device = pci_device;
     ksprintf(ahci_controller->name, "ahcictlr%i", controller_count++);
-    //NVMe controller internal struct
-    if (pci_device->sixtyfour_bit_bar) {
-        /*
-         * Can't blanket mask in the PCI config bookkeeping because you do not mask any of the second bar in the case of a 64 bit bar address
-         */
-        ahci_device->registers = (struct ahci_port_registers *) (
-                (uintptr_t)(pci_device->generic.base_address_registers[0] & ~0xF) |
-                ((uintptr_t) pci_device->generic.base_address_registers[1] << 32));
-    } else {
-        ahci_device->registers = (struct ahci_port_registers *) (uintptr_t) pci_device->generic.base_address_registers[0];
-    }
-    ahci_device->registers = P2V(ahci_device->registers);
 
-
-    pci_map_bar((uint64_t)V2P(ahci_device->registers), (uint64_t * )
-    kernel_pg_map->top_level, READWRITE, 32);
-
-    ahci_device->controller = ahci_controller;
     int32_t ret = ahci_controller->driver->probe(ahci_controller);
 
     if (ret != KERN_SUCCESS) {
         warn_printf("AHCI Controller Setup Failed.\n");
         kfree(ahci_controller);
-        kfree(ahci_device);
+        kfree(controller);
         return;
     }
 
@@ -330,5 +319,5 @@ static int32_t ahci_probe(struct device *device) {
         return KERN_NOT_FOUND;
     }
 
-    return initialize_ahci_controller(pci_device);
+    return initialize_ahci_controller(device);
 }

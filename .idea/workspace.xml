@@ -26,11 +26,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="More fleshing out of AHCI, as well as function pointer tables">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out more ahci functionality">
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -413,15 +410,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="68143000" />
-    </task>
-    <task id="LOCAL-00240" summary="Fixed directory freeing now frees blocks and inodes correctly.">
-      <option name="closed" value="true" />
-      <created>1733298409217</created>
-      <option name="number" value="00240" />
-      <option name="presentableId" value="LOCAL-00240" />
-      <option name="project" value="LOCAL" />
-      <updated>1733298409217</updated>
+      <workItem from="1744547936947" duration="69182000" />
     </task>
     <task id="LOCAL-00241" summary="tempfs_lookup now works properly and fills the vnode children properly.">
       <option name="closed" value="true" />
@@ -807,7 +796,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745394265095</updated>
     </task>
-    <option name="localTasksCounter" value="289" />
+    <task id="LOCAL-00289" summary="fleshing out more ahci functionality">
+      <option name="closed" value="true" />
+      <created>1745478666685</created>
+      <option name="number" value="00289" />
+      <option name="presentableId" value="LOCAL-00289" />
+      <option name="project" value="LOCAL" />
+      <updated>1745478666685</updated>
+    </task>
+    <option name="localTasksCounter" value="290" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -828,7 +825,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed syscall dispatch function prototype" />
     <MESSAGE value="tmpfs_remove some logic moved into switch instead of 3 if branches" />
     <MESSAGE value="PAT macros" />
     <MESSAGE value="setting up some kva2uva and vice versa logic among some other small changes" />
@@ -853,7 +849,8 @@
     <MESSAGE value="Setting up more AHCI setup code" />
     <MESSAGE value="fleshing out and fixing ahci skeleton" />
     <MESSAGE value="More fleshing out of AHCI, as well as function pointer tables" />
-    <option name="LAST_COMMIT_MESSAGE" value="More fleshing out of AHCI, as well as function pointer tables" />
+    <MESSAGE value="fleshing out more ahci functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="fleshing out more ahci functionality" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
