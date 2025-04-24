@@ -26,9 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out and fixing ahci skeleton">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="More fleshing out of AHCI, as well as function pointer tables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,32 +83,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/Makefile&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Embedded GDB Server.run-gdb.executor": "Debug",
+    "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run.executor": "Run",
+    "Remote Debug.GDB Kernel.executor": "Debug",
+    "Remote Debug.Unnamed.executor": "Debug",
+    "Remote GDB Server.run-gdb.executor": "Debug",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/Makefile",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "MakefileSettings",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
@@ -411,15 +413,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="63425000" />
-    </task>
-    <task id="LOCAL-00239" summary="Fixed get_inode_and_mark_bitmap function it was incrementing by block not byte">
-      <option name="closed" value="true" />
-      <created>1733223371634</created>
-      <option name="number" value="00239" />
-      <option name="presentableId" value="LOCAL-00239" />
-      <option name="project" value="LOCAL" />
-      <updated>1733223371635</updated>
+      <workItem from="1744547936947" duration="68143000" />
     </task>
     <task id="LOCAL-00240" summary="Fixed directory freeing now frees blocks and inodes correctly.">
       <option name="closed" value="true" />
@@ -805,7 +799,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745310027193</updated>
     </task>
-    <option name="localTasksCounter" value="288" />
+    <task id="LOCAL-00288" summary="More fleshing out of AHCI, as well as function pointer tables">
+      <option name="closed" value="true" />
+      <created>1745394265095</created>
+      <option name="number" value="00288" />
+      <option name="presentableId" value="LOCAL-00288" />
+      <option name="project" value="LOCAL" />
+      <updated>1745394265095</updated>
+    </task>
+    <option name="localTasksCounter" value="289" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -826,7 +828,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="reopening the nvme book" />
     <MESSAGE value="fixed syscall dispatch function prototype" />
     <MESSAGE value="tmpfs_remove some logic moved into switch instead of 3 if branches" />
     <MESSAGE value="PAT macros" />
@@ -851,7 +852,8 @@
     <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
     <MESSAGE value="Setting up more AHCI setup code" />
     <MESSAGE value="fleshing out and fixing ahci skeleton" />
-    <option name="LAST_COMMIT_MESSAGE" value="fleshing out and fixing ahci skeleton" />
+    <MESSAGE value="More fleshing out of AHCI, as well as function pointer tables" />
+    <option name="LAST_COMMIT_MESSAGE" value="More fleshing out of AHCI, as well as function pointer tables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -985,11 +987,6 @@
           <url>file://$PROJECT_DIR$/kernel/src/sched/dfs.c</url>
           <line>45</line>
           <option name="timeStamp" value="442" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>994</line>
-          <option name="timeStamp" value="443" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>

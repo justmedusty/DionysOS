@@ -477,10 +477,10 @@ static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count)
     if (status > 1) {
         return KERN_SUCCESS;
     }
-    if ((result & 0xffff) > (result >> 16)) {
+    if ((result & SHORT_MASK) > (result >> 16)) {
         return (int32_t)(result >> 16) + 1;
     }
-    return (int32_t)(result & 0xffff) + 1;
+    return (int32_t)(result & SHORT_MASK) + 1;
 }
 
 static int32_t nvme_block_probe() {
@@ -975,7 +975,6 @@ int32_t nvme_init(struct device *dev, void *other_args) {
 
 int32_t nvme_shutdown(struct device *dev) {
     struct nvme_device *nvme_dev = dev->device_info;
-
     return nvme_disable_control(nvme_dev);
 }
 
@@ -1034,7 +1033,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
 }
 
 static void nvme_bind(struct device *device) {
-    static int32_t nvme_number;
+    static int32_t nvme_number = 1;
     char name[32];
     ksprintf(name, "nvmedevice_%i", nvme_number++);
     safe_strcpy(device->name, name, 30);

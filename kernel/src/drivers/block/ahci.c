@@ -7,13 +7,12 @@
 #include "include/architecture/arch_timer.h"
 #include "include/drivers/bus/pci.h"
 #include "include/drivers/block/ahci.h"
+#include "include/definitions/string.h"
 
 struct ahci_controller controller = {0};
 struct doubly_linked_list ahci_controller_list = {0};
 
 static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write);
-
-
 
 
 struct block_device_ops ahci_block_ops = {
@@ -57,14 +56,13 @@ uint32_t ahci_find_command_slot(struct ahci_device *device) {
     return UINT32_MAX;
 }
 
-uint64_t ahci_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
-    return read_write_lba(device->device_info,buffer,block_number,block_count,false);
+uint64_t ahci_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
+    return read_write_lba(device->device_info, buffer, block_number, block_count, false);
 }
 
-uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device){
-    return read_write_lba(device->device_info,buffer,block_number,block_count,true);
+uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
+    return read_write_lba(device->device_info, buffer, block_number, block_count, true);
 }
-
 
 
 volatile struct ahci_command_table *
@@ -149,7 +147,7 @@ static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t
     return KERN_SUCCESS;
 }
 
-int32_t ahci_initialize(struct ahci_device *device) {
+int32_t ahci_initialize_device(struct ahci_device *device) {
     uint32_t command_slot = ahci_find_command_slot(device);
 
     uint64_t
@@ -164,7 +162,7 @@ int32_t ahci_initialize(struct ahci_device *device) {
                                                           (uint64_t) device->registers->command_list_base_address_upper
                                                                   << 32) + ((i * sizeof(struct ahci_command_header))));
         uint64_t
-        descriptor_base = (uint64_t)
+                descriptor_base = (uint64_t)
         kmalloc(PAGE_SIZE);
         header->command_table_base_address = (uint32_t) descriptor_base;
         header->command_table_base_address_upper = (uint32_t)(descriptor_base >> 32);
@@ -250,9 +248,28 @@ int32_t ahci_give_kernel_ownership(struct ahci_controller *controller) {
     return KERN_SUCCESS;
 }
 
+static bool is_bar_64_bit(uint32_t bar) {
+    if ((bar & 1) != 0) {
+        return false;
+    }
+    uint32_t type = (bar >> 1) & 3;
+    return type == 2;
+}
+
 int32_t initialize_ahci_controller(struct pci_device *device) {
+    pci_enable_bus_mastering(device);
+    struct device *ahci_controller = kzmalloc(sizeof(struct device));
+    struct ahci_controller *controller = kzmalloc(sizeof(struct ahci_controller));
+    controller->ahci_regs = P2V(device->generic.base_address_registers[5]);
+
+    controller->major = (controller->ahci_regs->version >> 16) & SHORT_MASK;
+    controller->minor = controller->ahci_regs->version & SHORT_MASK;
+
+
 
 }
+
+
 
 void setup_ahci_device(struct pci_device *pci_device) {
     static uint32_t controller_count = 0;
@@ -296,4 +313,22 @@ void setup_ahci_device(struct pci_device *pci_device) {
     }
 
     insert_device_into_kernel_tree(ahci_controller);
+}
+
+
+static void ahci_bind(struct device *device) {
+    static int32_t ahci_number = 0;
+    char name[32];
+    ksprintf(name, "ahcidevice_%i", ahci_number++);
+    safe_strcpy(device->name, name, 30);
+    device->name[31] = '\0'; // call it paranoia but im doing this anyway
+}
+
+static int32_t ahci_probe(struct device *device) {
+    struct pci_device *pci_device = device->pci_device;
+    if (!pci_device) {
+        return KERN_NOT_FOUND;
+    }
+
+    return initialize_ahci_controller(pci_device);
 }

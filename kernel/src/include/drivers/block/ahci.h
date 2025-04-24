@@ -179,7 +179,7 @@ set_prdt(volatile struct ahci_command_header *header, uint64_t buffer, uint32_t 
 
 void ahci_send_command(uint32_t slot, struct ahci_device *device);
 
-int32_t ahci_initialize(struct ahci_device *device);
+int32_t ahci_initialize_device(struct ahci_device *device);
 
 int32_t ahci_give_kernel_ownership(struct ahci_controller *controller);
 
