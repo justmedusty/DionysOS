@@ -70,12 +70,12 @@ void attach_region(struct virt_map *map,struct virtual_region *region){
          * Using kmalloc and removing the offset because kmalloc is locked phys_alloc is not
          * This is ugly and I will likely change it in the future
          */
-        arch_map_pages(map->top_level,(uint64_t)kmalloc((uint64_t)V2P(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
+        arch_map_pages(map->top_level,(uint64_t)kmalloc((uint64_t)Virt2Phys(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
         return;
     }
 
     for (size_t i = 0; i < region->num_pages; i++) {
-        map_pages(map->top_level,(uint64_t) kmalloc((uint64_t)V2P(1)),(uint64_t *) region->va + (i * PAGE_SIZE),region->perms,1);
+        map_pages(map->top_level,(uint64_t) kmalloc((uint64_t)Virt2Phys(1)),(uint64_t *) region->va + (i * PAGE_SIZE),region->perms,1);
     }
 
 }

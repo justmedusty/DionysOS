@@ -60,7 +60,7 @@ void *kmalloc(uint64_t size) {
 
 void *umalloc(uint64_t pages) {
     acquire_spinlock(&userlock);
-    void *return_value = P2V(phys_alloc(pages,USER_POOL));
+    void *return_value = Phys2Virt(phys_alloc(pages,USER_POOL));
 
     if (return_value == NULL) {
         release_spinlock(&userlock);
@@ -99,7 +99,7 @@ void *_kalloc(uint64_t size) {
 
 
     uint64_t page_count = (size + (PAGE_SIZE)) / PAGE_SIZE;
-    void *return_value = P2V(phys_alloc(page_count,KERNEL_POOL));
+    void *return_value = Phys2Virt(phys_alloc(page_count,KERNEL_POOL));
 
     if (return_value == NULL) {
         return NULL;
@@ -119,7 +119,7 @@ void _kfree(void *address) {
         goto slab;
     }
 
-    phys_dealloc(V2P(address));
+    phys_dealloc(Virt2Phys(address));
     return;
 
 slab:

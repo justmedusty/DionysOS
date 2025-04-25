@@ -23,7 +23,7 @@ static inline void hpet_write(uint64_t reg_offset, uint64_t value) {
 }
 
 void hpet_init() {
-    address = (uint64_t) P2V(hpet.address.address);
+    address = (uint64_t) Phys2Virt(hpet.address.address);
     uint64_t capabilities = hpet_read(capabilities_id);
 
     uint64_t config = hpet_read(general_config);

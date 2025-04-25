@@ -29,7 +29,7 @@ void *find_acpi_table(const char *name) {
         uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 4;
 
         for (uint32_t i = 0; i < entries; i++) {
-            struct acpi_sdt *sdt = (struct acpi_sdt *) P2V(*((uint32_t *) rsdt->table + i));
+            struct acpi_sdt *sdt = (struct acpi_sdt *) Phys2Virt(*((uint32_t *) rsdt->table + i));
             if (!memcmp(sdt->signature, name, 4))
                 return (void *) sdt;
         }
@@ -40,7 +40,7 @@ void *find_acpi_table(const char *name) {
     uint32_t entries = (rsdt->sdt.len - sizeof(rsdt->sdt)) / 8;
 
     for (uint32_t i = 0; i < entries; i++) {
-        struct acpi_sdt *sdt = (struct acpi_sdt *) P2V(*((uint64_t *) rsdt->table + i));
+        struct acpi_sdt *sdt = (struct acpi_sdt *) Phys2Virt(*((uint64_t *) rsdt->table + i));
         if (!memcmp(sdt->signature, name, 4)) {
             return (void *) sdt;
         }
@@ -67,7 +67,7 @@ void acpi_init() {
         // Use XSDT
         serial_printf("Using xsdt\n");
         acpi_extended = 1;
-        acpi_root_sdt = (struct acpi_rsdt *) P2V((uint64_t) rsdp->xsdt_addr);
+        acpi_root_sdt = (struct acpi_rsdt *) Phys2Virt((uint64_t) rsdp->xsdt_addr);
         serial_printf("xsdt addr %x.64 \n", rsdp->xsdt_addr);
 
         if (rsdp->xsdt_addr == 0) {
@@ -75,7 +75,7 @@ void acpi_init() {
         }
     } else {
 
-        acpi_root_sdt = (struct acpi_rsdt *) P2V((uint32_t) rsdp->rsdt_addr);
+        acpi_root_sdt = (struct acpi_rsdt *) Phys2Virt((uint32_t) rsdp->rsdt_addr);
         serial_printf("rsdt addr %x.32 \n", rsdp->rsdt_addr);
 
         if (rsdp->rsdt_addr == 0) {

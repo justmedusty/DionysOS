@@ -34,14 +34,14 @@ void lapic_write(uint32_t reg, uint32_t val) {
     if (lapic_base == 0) {
         lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-    *((volatile uint32_t*)(P2V(lapic_base) + reg)) = val;
+    *((volatile uint32_t*)(Phys2Virt(lapic_base) + reg)) = val;
 }
 
 uint32_t lapic_read(uint32_t reg) {
     if (lapic_base == 0) {
         lapic_base = rdmsr(IA32_APIC_BASE_MSR) & 0xFFFFF000;
     }
-    return *((volatile uint32_t*)(P2V(lapic_base) + reg));
+    return *((volatile uint32_t*)(Phys2Virt(lapic_base) + reg));
 }
 
 uint32_t get_lapid_id() {

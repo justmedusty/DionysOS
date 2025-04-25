@@ -79,7 +79,6 @@ struct ahci_registers {
     volatile uint32_t bios_os_handoff_control_status;
     volatile uint32_t reserved[29];
     volatile uint32_t vendor_specific[24];
-    volatile struct ahci_port_registers port_regs[1]; // each device gets its own port
 } __attribute__((packed));
 
 

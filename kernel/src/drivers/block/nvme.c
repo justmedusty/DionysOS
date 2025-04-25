@@ -175,7 +175,7 @@ static int32_t nvme_setup_physical_region_pools(struct nvme_device *nvme_dev, ui
     num_pages = DIV_ROUND_UP(number_prps, prps_per_page);
 
     if (number_prps > nvme_dev->prp_entry_count) {
-        kfree(P2V(nvme_dev->prp_pool));
+        kfree(Phys2Virt(nvme_dev->prp_pool));
         /*
          * Always increase in increments of pages.  It doesn't waste
          * much memory and reduces the number of allocations.
@@ -417,9 +417,9 @@ static int32_t nvme_configure_admin_queue(struct nvme_device *nvme_dev) {
     nvme_dev->bar->admin_queue_attrs = aqa;
     // Set the Admin Queue Attributes (AQA), like queue depth and number of entries.
     DEBUG_PRINT("sq cmds %x.64 cqes %x.64\n", queue->submission_queue_commands, queue->completion_queue_entries);
-    nvme_write_q((uint64_t)V2P(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
+    nvme_write_q((uint64_t)Virt2Phys(queue->submission_queue_commands), &nvme_dev->bar->admin_sq_base_addr);
     // Write the physical base address of the Admin Submission Queue to its Base Address Register.
-    nvme_write_q((uint64_t)V2P(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
+    nvme_write_q((uint64_t)Virt2Phys(queue->completion_queue_entries), &nvme_dev->bar->admin_cq_base_addr);
     // Write the physical base address of the Admin Completion Queue to its Base Address Register.
 
     result = nvme_enable_control(nvme_dev);
@@ -752,7 +752,7 @@ static int32_t nvme_alloc_completion_queue(struct nvme_device *dev, uint16_t que
 
     memset(&command, 0, sizeof(command));
     command.create_cq.opcode = NVME_ADMIN_OPCODE_CREATE_CQ;
-    command.create_cq.prp1 = (uint64_t)V2P(queue->completion_queue_entries);
+    command.create_cq.prp1 = (uint64_t)Virt2Phys(queue->completion_queue_entries);
     command.create_cq.cqid = queue_id;
     command.create_cq.qsize = queue->q_depth - 1;
     command.create_cq.cq_flags = flags;
@@ -770,7 +770,7 @@ static int32_t nvme_alloc_submission_queue(struct nvme_device *dev, uint16_t que
     int32_t flags = NVME_QUEUE_PHYS_CONTIG | NVME_SQ_PRIO_MEDIUM;
 
     command.create_sq.opcode = NVME_ADMIN_OPCODE_CREATE_SQ;
-    command.create_sq.prp1 = ((uint64_t)V2P(queue->submission_queue_commands));
+    command.create_sq.prp1 = ((uint64_t)Virt2Phys(queue->submission_queue_commands));
     command.create_sq.sqid = (queue_id);
     command.create_sq.qsize = (queue->q_depth - 1);
     command.create_sq.sq_flags = (flags);
@@ -1013,10 +1013,10 @@ void setup_nvme_device(struct pci_device *pci_device) {
     } else {
         nvme_dev->bar = (struct nvme_bar *) (uintptr_t) pci_device->generic.base_address_registers[0];
     }
-    nvme_dev->bar = P2V(nvme_dev->bar);
+    nvme_dev->bar = Phys2Virt(nvme_dev->bar);
 
 
-    pci_map_bar((uint64_t)V2P(nvme_dev->bar), (uint64_t * )
+    pci_map_bar((uint64_t)Virt2Phys(nvme_dev->bar), (uint64_t * )
     kernel_pg_map->top_level, READWRITE, 32);
 
     nvme_dev->device = nvme_controller;

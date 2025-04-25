@@ -32,14 +32,14 @@ void pic_disable() {
  *
  */
 void write_ioapic(const uint32_t ioapic, const uint32_t reg, const uint32_t value) {
-    uint64_t base = (uint64_t) P2V(madt_ioapic_list[ioapic]->apic_addr);
+    uint64_t base = (uint64_t) Phys2Virt(madt_ioapic_list[ioapic]->apic_addr);
     *(volatile uint32_t *) base = reg;
     base += IOAPIC_IOWIN;
     *(uint32_t *) base = value;
 }
 
 uint32_t read_ioapic(const uint32_t ioapic, const uint32_t reg) {
-    uint64_t base = (uint64_t) P2V(madt_ioapic_list[ioapic]->apic_addr);
+    uint64_t base = (uint64_t) Phys2Virt(madt_ioapic_list[ioapic]->apic_addr);
     *(uint32_t *) base = reg;
     base += IOAPIC_IOWIN;
     return *(volatile uint32_t *) base;

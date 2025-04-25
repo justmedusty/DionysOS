@@ -308,7 +308,7 @@ void *phys_zalloc(uint64_t pages,uint8_t zone) {
     block->is_free = USED;
     total_allocated += 1 << block->order;
     void *return_value = (void *) block->start_address;
-    memset(P2V(return_value),0,pages * PAGE_SIZE);
+    memset(Phys2Virt(return_value),0,pages * PAGE_SIZE);
     return return_value;
 }
 
@@ -513,8 +513,8 @@ static void buddy_free(void *address) {
              *
              */
             struct header *slab_header = (struct header *) (
-                (uint64_t) P2V(address) & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
-            heap_free_in_slab(slab_header->slab, P2V(address));
+                (uint64_t) Phys2Virt(address) & ~((DEFAULT_SLAB_SIZE_PAGES * PAGE_SIZE) - 1));
+            heap_free_in_slab(slab_header->slab, Phys2Virt(address));
             return;
         }
         struct buddy_block *block = node->data;

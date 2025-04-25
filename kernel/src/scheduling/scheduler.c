@@ -53,7 +53,7 @@ static void free_process(struct process *process) {
 
     if (process->page_map->top_level != kernel_pg_map->top_level) {
         arch_dealloc_page_table(process->page_map->top_level);
-        kfree(P2V(process->page_map->top_level)); // we do this because kfree is locked, phys_dealloc is not
+        kfree(Phys2Virt(process->page_map->top_level)); // we do this because kfree is locked, phys_dealloc is not
     }
 
     doubly_linked_list_destroy(process->page_map->vm_regions, true);

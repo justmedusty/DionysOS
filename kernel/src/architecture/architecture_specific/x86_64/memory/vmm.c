@@ -36,7 +36,7 @@ void switch_page_table(p4d_t *page_dir) {
 
 void init_vmm() {
     kernel_pg_map = kmalloc(PAGE_SIZE);
-    kernel_pg_map->top_level = V2P(kzmalloc(PAGE_SIZE));
+    kernel_pg_map->top_level = Virt2Phys(kzmalloc(PAGE_SIZE));
     kernel_pg_map->vm_regions = NULL;
 
     /*
@@ -104,42 +104,42 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t *pud = P2V(pgdir);
+    pud_t *pud = Phys2Virt(pgdir);
     pud += p4d_idx;
 
     if (!(*pud & PTE_P)) {
         if (flags & ALLOC) {
-            *pud = (pud_t) V2P(kzmalloc(PAGE_SIZE));
+            *pud = (pud_t) Virt2Phys(kzmalloc(PAGE_SIZE));
             *pud |= PTE_P | PTE_RW;
         } else {
             return 0;
         }
     }
 
-    pmd_t *pmd = P2V(PTE_ADDR(*pud));
+    pmd_t *pmd = Phys2Virt(PTE_ADDR(*pud));
     pmd += pud_idx;
     if (!(*pmd & PTE_P)) {
         if (flags & ALLOC) {
-            *pmd = (pmd_t) V2P(kzmalloc(PAGE_SIZE));
+            *pmd = (pmd_t) Virt2Phys(kzmalloc(PAGE_SIZE));
             *pmd |= PTE_P | PTE_RW;
         } else {
             return 0;
         }
     }
 
-    pte_t *pte = P2V(PTE_ADDR(*pmd));
+    pte_t *pte = Phys2Virt(PTE_ADDR(*pmd));
     pte += pmd_idx;
 
     if (!(*pte & PTE_P)) {
         if (flags & ALLOC) {
-            *pte = (pte_t) V2P(kzmalloc(PAGE_SIZE));
+            *pte = (pte_t) Virt2Phys(kzmalloc(PAGE_SIZE));
             *pte |= PTE_P | PTE_RW;
         } else {
             return 0;
         }
     }
 
-    pte_t *entry = P2V(PTE_ADDR(*pte));
+    pte_t *entry = Phys2Virt(PTE_ADDR(*pte));
     entry += pte_idx;
     return entry;
 }

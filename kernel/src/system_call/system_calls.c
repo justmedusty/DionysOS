@@ -53,12 +53,12 @@ void *user_to_kernel_pointer(void *pointer){
 
 void *kernel_to_user_pointer(void *pointer){
     struct process *user_process = my_cpu()->running_process;
-    uint64_t phys_addr = (uint64_t)V2P(pointer);
+    uint64_t phys_addr = (uint64_t)Virt2Phys(pointer);
 
     /*
      * We are just going to default to page size for now if this is ever an issue we can come back to this.
      */
-    arch_map_pages(my_cpu()->page_map->top_level,phys_addr, V2P(phys_addr),READWRITE | NO_EXECUTE,PAGE_SIZE);
+    arch_map_pages(my_cpu()->page_map->top_level,phys_addr, Virt2Phys(phys_addr),READWRITE | NO_EXECUTE,PAGE_SIZE);
 
     return pointer;
 }

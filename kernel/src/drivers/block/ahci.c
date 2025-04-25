@@ -13,9 +13,10 @@ struct ahci_controller controller = {0};
 struct doubly_linked_list ahci_controller_list = {0};
 
 static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t start, uint64_t count, bool write);
+
 static int32_t ahci_probe(struct device *device);
 
-        struct block_device_ops ahci_block_ops = {
+struct block_device_ops ahci_block_ops = {
         .block_read = ahci_read_block,
         .block_write = ahci_write_block,
         .ahci_ops = NULL
@@ -68,8 +69,8 @@ uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffe
 volatile struct ahci_command_table *
 set_prdt(volatile struct ahci_command_header *header, uint64_t buffer, uint32_t interrupt_vector, uint32_t byte_count) {
     volatile struct ahci_command_table *command_table =
-    P2V((uint64_t)((uint64_t) header->command_table_base_address |
-                              ((uint64_t) header->command_table_base_address_upper << 32)));
+    Phys2Virt((uint64_t)((uint64_t) header->command_table_base_address |
+                                    ((uint64_t) header->command_table_base_address_upper << 32)));
 
     command_table->prdt_entries[0].data_base_address = (uint32_t) buffer;
     command_table->prdt_entries[0].data_base_address_upper = (uint32_t)(buffer >> 32);
@@ -106,7 +107,7 @@ static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t
     }
 
     volatile struct ahci_command_header *header =
-    (struct ahci_command_header *) P2V(
+    (struct ahci_command_header *) Phys2Virt(
             (((uint64_t) device->registers->command_list_base_address) |
     ((uint64_t) device->registers->command_list_base_address_upper << 32)) +
     ((uint64_t) command_slot * sizeof(struct ahci_command_header)));
@@ -117,7 +118,7 @@ static int32_t read_write_lba(struct ahci_device *device, char *buffer, uint64_t
     header->flags |= (uint16_t)(sizeof(struct ahci_fis_host_to_device) / 4);
     header->prdt_entry_count = 1;
 
-    volatile struct ahci_command_table *table = set_prdt(header, (uint64_t)(V2P(buffer)), 1,
+    volatile struct ahci_command_table *table = set_prdt(header, (uint64_t)(Virt2Phys(buffer)), 1,
             (uint32_t)(count * SECTOR_SIZE - 1));
 
     volatile struct ahci_fis_host_to_device *command_pointer = (volatile struct ahci_fis_host_to_device *) &table->command_fis;
@@ -158,9 +159,10 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
     device->registers->command_list_base_address_upper = (uint32_t)(command_list >> 32);
 
     for (int i = 0; i < 32; i++) {
-        volatile struct ahci_command_header *header = P2V((((uint64_t) device->registers->command_list_base_address) |
-                                                          (uint64_t) device->registers->command_list_base_address_upper
-                                                                  << 32) + ((i * sizeof(struct ahci_command_header))));
+        volatile struct ahci_command_header *header = Phys2Virt(
+                (((uint64_t) device->registers->command_list_base_address) |
+        (uint64_t) device->registers->command_list_base_address_upper
+                << 32) + ((i * sizeof(struct ahci_command_header))));
         uint64_t
                 descriptor_base = (uint64_t)
         kmalloc(PAGE_SIZE);
@@ -175,10 +177,10 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
     device->registers->fis_base_address_upper = (uint32_t)(fis_base >> 32);
     device->registers->command_and_status |= (1 << 0) | (1 << 4);
 
-    volatile struct ahci_command_header *header = P2V((((uint64_t) device->registers->command_list_base_address) |
-                                                      (uint64_t) device->registers->command_list_base_address_upper
-                                                              << 32) +
-                                                      ((command_slot * sizeof(struct ahci_command_header))));
+    volatile struct ahci_command_header *header = Phys2Virt((((uint64_t) device->registers->command_list_base_address) |
+                                                            (uint64_t) device->registers->command_list_base_address_upper
+                                                                    << 32) +
+                                                            ((command_slot * sizeof(struct ahci_command_header))));
 
     header->flags &= ~0b11111 | (1 << 7);
     header->flags |= (uint16_t)(sizeof(struct ahci_fis_host_to_device) / 4);
@@ -186,7 +188,7 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
 
     uint16_t *identity = kmalloc(PAGE_SIZE);
 
-    volatile struct ahci_command_table *table = set_prdt(header, (uint64_t)V2P((uint64_t) identity), 1, 511);
+    volatile struct ahci_command_table *table = set_prdt(header, (uint64_t)Virt2Phys((uint64_t) identity), 1, 511);
 
     volatile struct ahci_fis_host_to_device *command = (struct ahci_fis_host_to_device *) table->command_fis;
     memset((void *) command, 0, sizeof(struct ahci_fis_host_to_device));
@@ -260,7 +262,7 @@ int32_t initialize_ahci_controller(struct device *device) {
     struct ahci_controller *controller = device->device_info;
     struct pci_device *pci_dev = device->pci_device;
 
-    controller->ahci_regs = P2V(pci_dev->generic.base_address_registers[5]);
+    controller->ahci_regs = Phys2Virt(pci_dev->generic.base_address_registers[5]);
 
     controller->major = (controller->ahci_regs->version >> 16) & SHORT_MASK;
     controller->minor = controller->ahci_regs->version & SHORT_MASK;
@@ -271,6 +273,51 @@ int32_t initialize_ahci_controller(struct device *device) {
     }
 
     ahci_give_kernel_ownership(controller);
+
+    controller->ahci_regs->global_host_control |= (1 << 31);
+
+    controller->ahci_regs->global_host_control &= ~(1 << 1);
+
+    controller->port_count = controller->ahci_regs->capabilities & 0x1F;
+    controller->command_slots = (controller->ahci_regs->capabilities >> 8) & 0x1F;
+
+    for (size_t i = 0; i < controller->port_count; i++) {
+        if (controller->ahci_regs->ports_implemented & (1 << i) != 0) {
+            volatile struct ahci_port_registers *port =
+                    (volatile struct ahci_port_registers *) controller->pci_bar + sizeof(struct ahci_registers) +
+                    (i * sizeof(struct ahci_port_registers));
+
+            port = Phys2Virt(port);
+
+            if (port->signature == SATA_ATA) {
+                struct ahci_device *ahci_device = kmalloc(sizeof(struct ahci_device));
+                ahci_device->controller = device;
+                ahci_device->registers = port;
+                ahci_device->parent = controller;
+
+                int32_t ret = ahci_initialize_device(ahci_device);
+
+                //it can only return success for now but this will be important if that changes
+                if (ret != KERN_SUCCESS) {
+                    kfree(ahci_device);
+                    warn_printf("Unable to set up AHCI device, moving on..\n");
+                    continue;
+                }
+
+
+                struct device *ahci_dev = kmalloc(sizeof(struct device));
+                device->device_info = ahci_device;
+                device->driver = &ahci_driver;
+
+
+                insert_device_into_kernel_tree(ahci_dev);
+
+
+            }
+
+
+        }
+    }
 
 
 }

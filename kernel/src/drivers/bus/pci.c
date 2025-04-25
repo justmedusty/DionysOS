@@ -35,7 +35,7 @@ struct pci_bus_information pci_info = {
  */
 static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
     uintptr_t
-    address = (uintptr_t)P2V(pci_info.pci_mmio_address)
+    address = (uintptr_t)Phys2Virt(pci_info.pci_mmio_address)
     +(uintptr_t)(device->bus << BUS_SHIFT)
     + (uintptr_t)(device->slot << SLOT_SHIFT)
     + (uintptr_t)(device->function << FUNCTION_SHIFT)
@@ -46,7 +46,7 @@ static uint32_t pci_read_config(struct pci_device *device, uint16_t offset) {
 
 static void pci_write_config(struct pci_device *device, uint16_t offset, uint32_t value) {
     uintptr_t
-    address = (uintptr_t)P2V(pci_info.pci_mmio_address)
+    address = (uintptr_t)Phys2Virt(pci_info.pci_mmio_address)
     +(uintptr_t)(device->bus << BUS_SHIFT)
     + (uintptr_t)(device->slot << SLOT_SHIFT)
     + (uintptr_t)(device->function << FUNCTION_SHIFT)
@@ -72,7 +72,7 @@ void set_pci_mmio_address(struct mcfg_entry *entry) {
 #endif
 
 void pci_map_bar(uint64_t bar_phys_addr, uint64_t *pgdir, uint8_t permissions, uint64_t pages) {
-    arch_map_pages(pgdir, bar_phys_addr, V2P(bar_phys_addr), permissions, PAGE_SIZE * pages);
+    arch_map_pages(pgdir, bar_phys_addr, Virt2Phys(bar_phys_addr), permissions, PAGE_SIZE * pages);
     switch_page_table(pgdir); // Should we do this? I will go with yes for now
 }
 
