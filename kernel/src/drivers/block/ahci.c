@@ -159,7 +159,8 @@ int32_t ahci_initialize_device(struct ahci_device *device) {
     device->registers->command_list_base_address_upper = (uint32_t)(command_list >> 32);
 
     for (int i = 0; i < 32; i++) {
-        volatile struct ahci_command_header *header = Phys2Virt(
+        volatile struct ahci_command_header *header =
+        Phys2Virt(
                 (((uint64_t) device->registers->command_list_base_address) |
         (uint64_t) device->registers->command_list_base_address_upper
                 << 32) + ((i * sizeof(struct ahci_command_header))));
@@ -289,10 +290,12 @@ int32_t initialize_ahci_controller(struct device *device) {
 
             port = Phys2Virt(port);
 
+            //For our implementation we only care about SATA / ATA storage devices
             if (port->signature == SATA_ATA) {
                 struct ahci_device *ahci_device = kmalloc(sizeof(struct ahci_device));
                 ahci_device->controller = device;
                 ahci_device->registers = port;
+
                 ahci_device->parent = controller;
 
                 int32_t ret = ahci_initialize_device(ahci_device);
@@ -309,15 +312,15 @@ int32_t initialize_ahci_controller(struct device *device) {
                 device->device_info = ahci_device;
                 device->driver = &ahci_driver;
 
-
                 insert_device_into_kernel_tree(ahci_dev);
-
 
             }
 
 
         }
     }
+
+    return KERN_SUCCESS;
 
 
 }

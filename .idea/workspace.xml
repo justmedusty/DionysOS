@@ -26,24 +26,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="fleshing out more ahci functionality x3">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Renamed P2V and V2P macros, also more ahci controller device enumeration logic">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/acpi/acpi.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/acpi/acpi.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/ioapic.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/ioapic.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/lapic.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/cpu/lapic.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/hpet.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/hpet.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/memory/vmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/architecture/architecture_specific/x86_64/memory/vmm.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/nvme.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/architecture/arch_paging.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/architecture/arch_paging.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/memory/kmalloc.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/memory/kmalloc.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/memory/pmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/memory/pmm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/memory/slab.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/memory/slab.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/memory/vmm.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/memory/vmm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/scheduling/scheduler.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/scheduling/scheduler.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/system_call/system_calls.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/system_call/system_calls.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -426,15 +414,7 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="72884000" />
-    </task>
-    <task id="LOCAL-00243" summary="const identifiers where needed in tempfs.c">
-      <option name="closed" value="true" />
-      <created>1733309873215</created>
-      <option name="number" value="00243" />
-      <option name="presentableId" value="LOCAL-00243" />
-      <option name="project" value="LOCAL" />
-      <updated>1733309873215</updated>
+      <workItem from="1744547936947" duration="76526000" />
     </task>
     <task id="LOCAL-00244" summary="some changes going to set up the file handle table in the process structure and have a list of them.">
       <option name="closed" value="true" />
@@ -820,7 +800,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745480259971</updated>
     </task>
-    <option name="localTasksCounter" value="292" />
+    <task id="LOCAL-00292" summary="Renamed P2V and V2P macros, also more ahci controller device enumeration logic">
+      <option name="closed" value="true" />
+      <created>1745570563236</created>
+      <option name="number" value="00292" />
+      <option name="presentableId" value="LOCAL-00292" />
+      <option name="project" value="LOCAL" />
+      <updated>1745570563236</updated>
+    </task>
+    <option name="localTasksCounter" value="293" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -841,7 +829,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="setting up some kva2uva and vice versa logic among some other small changes" />
     <MESSAGE value="proper casts and such in uva2kva and kva2uva function now it compiles" />
     <MESSAGE value="changing mkdiosfs to create smaller images so they can be linked inside the final elf easier" />
     <MESSAGE value="inline directive to syscall stub" />
@@ -866,7 +853,8 @@
     <MESSAGE value="fleshing out more ahci functionality" />
     <MESSAGE value="fleshing out more ahci functionality x2" />
     <MESSAGE value="fleshing out more ahci functionality x3" />
-    <option name="LAST_COMMIT_MESSAGE" value="fleshing out more ahci functionality x3" />
+    <MESSAGE value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
+    <option name="LAST_COMMIT_MESSAGE" value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

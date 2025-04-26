@@ -422,7 +422,7 @@ static struct tmpfs_node *find_tmpfs_node_from_vnode(const struct vnode *vnode) 
     if (ret == NULL) {
         /*
          * A state in which a vnode exists for a tmpfs object but no object exists underneath is invalid and should
-         * cause a kernel panic
+         * cause a kernel panic so I can see it and investigate
          */
         panic("tmpfs_node_from_vnode: tmpfs node does not exist");
     }
@@ -505,7 +505,7 @@ static void tmpfs_remove_all_data_pages(const struct tmpfs_node *node) {
     }
     kfree(node->page_list);
 }
-
+//TODO check this out make sure this isn't trying to access out of bounds memory, I remember testing this but looks sus
 static void free_page_list_entry(struct tmpfs_page_list_entry *entry) {
     for (size_t i = entry->number_of_pages; i > 0; i--) {
         kfree(entry->page_list[i]);

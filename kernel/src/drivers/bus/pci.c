@@ -13,6 +13,7 @@
 #include "include/memory/mem.h"
 #include "include/drivers/block/nvme.h"
 #include "include/architecture/generic_asm_functions.h"
+#include "include/drivers/block/ahci.h"
 
 /*
  * PCIe Functionality , the MMIO address is obtained via the MCFG table via an acpi table lookup
@@ -227,6 +228,9 @@ void pci_enumerate_devices(bool print) {
                 pci_device->registered = true;
                 if (IS_NVME_CONTROLLER(pci_device)) {
                     setup_nvme_device(pci_device);
+                }
+                if(IS_AHCI_CONTROLLER(pci_device)){
+                    setup_ahci_device(pci_device);
                 }
                 doubly_linked_list_insert_head(&registered_pci_devices, pci_device);
                 info_printf("PCI device of type %s inserted into registered device list\n",

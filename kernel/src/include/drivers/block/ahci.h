@@ -37,6 +37,8 @@
 #define FIS_TYPE_PIO_SETUP   0x5F
 #define FIS_TYPE_DEV_BITS    0xA1
 
+#define IS_AHCI_CONTROLLER(pci_device) (pci_device->class == 0x01 && (pci_device->subclass == 0x05 || pci_device->subclass == 0x06))
+
 #define READ 0x25
 #define WRITE 0x35
 // Sector size
@@ -187,5 +189,7 @@ void setup_ahci_device(struct pci_device *pci_device);
 uint64_t ahci_write_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
 
 uint64_t ahci_read_block(uint64_t block_number, size_t block_count, char *buffer, struct device *device);
+
+int32_t initialize_ahci_controller(struct device *device);
 
 #endif //AHCI_H
