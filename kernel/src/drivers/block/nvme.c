@@ -67,7 +67,7 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
 static int32_t nvme_set_queue_count(struct nvme_device *nvme_dev, int32_t count);
 
 
-static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index);
+static uint16_t nvme_read_completion_status(const struct nvme_queue *queue, uint16_t index);
 
 static uint16_t nvme_get_command_id();
 
@@ -493,7 +493,7 @@ int32_t nvme_scan_namespace() {
 /*
  * Read the status index in the completion queue to so we can see what is going on, hopefully no alignment issues but we will see won't we
  */
-static uint16_t nvme_read_completion_status(struct nvme_queue *queue, uint16_t index) {
+static uint16_t nvme_read_completion_status(const struct nvme_queue *queue, const uint16_t index) {
     uint64_t start = (uint64_t) & queue->completion_queue_entries[0];
 
     uint64_t stop = start + NVME_CQ_SIZE(
@@ -523,7 +523,6 @@ nvme_set_features(struct nvme_device *nvme_device, uint64_t feature_id, uint64_t
     command.features.prp1 = dma_address;
     command.features.fid = feature_id;
     DEBUG_PRINT("HERE\n");
-
     ret = nvme_submit_admin_command(nvme_device, &command, result);
     DEBUG_PRINT("AFTER\n");
     return ret;
@@ -545,7 +544,6 @@ static uint16_t nvme_get_command_id() {
  */
 static int32_t
 nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command, uint32_t *result, uint64_t timeout) {
-    struct nvme_ops *ops;
     uint16_t head = queue->cq_head; // Current head of the completion queue
     uint16_t phase = queue->cq_phase; // Current phase of the  completion queue
 
@@ -583,17 +581,13 @@ nvme_submit_sync_command(struct nvme_queue *queue, struct nvme_command *command,
         /*
          * Because I am using this because init is done before the timer even has a chance to be turned on I will do this as a backup
          */
-        timeout -= 1;
-        if (timeout == 0) {
-            panic("NVMe: Command timed out");
-            break;
-        }
+
     }
 
     DEBUG_PRINT("BREAK\n");
 
     // Check for custom nvme operations to complete the command
-    ops = queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
+    struct nvme_ops *ops = queue->dev->device->driver->device_ops->block_device_ops->nvme_ops;
     if (ops && ops->complete_cmd) {
         ops->complete_cmd(queue, command); // Use the custom operation if available
     }

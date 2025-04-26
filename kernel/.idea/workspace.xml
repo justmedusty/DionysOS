@@ -8,7 +8,6 @@
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
-    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexRemoved" />
   </component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
@@ -27,8 +26,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb862b73-8de0-4e41-be71-c6ddefa3d5ca" name="Changes" comment="Once again saying fuck it to the nvme driver">
+      <change beforePath="$PROJECT_DIR$/../Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/drivers/block/ahci.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/drivers/block/nvme.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/drivers/block/nvme.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -282,6 +282,7 @@
       <workItem from="1743754440578" duration="7707000" />
       <workItem from="1743948276570" duration="27318000" />
       <workItem from="1744528887981" duration="1510000" />
+      <workItem from="1745695555795" duration="722000" />
     </task>
     <task id="LOCAL-00142" summary="Still trying to figure out the NVMe issue">
       <option name="closed" value="true" />
@@ -776,27 +777,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>631</line>
+          <line>644</line>
           <option name="timeStamp" value="142" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>540</line>
+          <line>548</line>
           <option name="timeStamp" value="149" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>918</line>
+          <line>931</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>556</line>
+          <line>564</line>
           <option name="timeStamp" value="153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>923</line>
+          <line>935</line>
           <option name="timeStamp" value="155" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -806,12 +807,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>533</line>
+          <line>541</line>
           <option name="timeStamp" value="163" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>435</line>
+          <line>441</line>
           <option name="timeStamp" value="169" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -826,17 +827,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/include/definitions/definitions.h</url>
-          <line>175</line>
+          <line>184</line>
           <option name="timeStamp" value="174" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>1011</line>
+          <line>1024</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/drivers/block/nvme.c</url>
-          <line>442</line>
+          <line>448</line>
           <option name="timeStamp" value="178" />
         </line-breakpoint>
       </breakpoints>
