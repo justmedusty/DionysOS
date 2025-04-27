@@ -49,7 +49,7 @@ struct device_driver ahci_driver = {
 };
 
 uint32_t ahci_find_command_slot(struct ahci_device *device) {
-    for (uint32_t i; i < device->parent->command_slots; i++) {
+    for (uint32_t i = 0; i < device->parent->command_slots; i++) {
         if (((device->registers->sata_active | device->registers->command_issue) & (1 << i)) == 0) {
             return i;
         }
