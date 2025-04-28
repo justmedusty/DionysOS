@@ -26,7 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="More ahci setup &amp; incorporating into pci device enumeration">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Makefile" afterDir="false" />
@@ -429,15 +429,7 @@
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
-      <workItem from="1745767660924" duration="6063000" />
-    </task>
-    <task id="LOCAL-00245" summary="tempfs open and close , having a bitmap for handle ids">
-      <option name="closed" value="true" />
-      <created>1733391198445</created>
-      <option name="number" value="00245" />
-      <option name="presentableId" value="LOCAL-00245" />
-      <option name="project" value="LOCAL" />
-      <updated>1733391198445</updated>
+      <workItem from="1745767660924" duration="6449000" />
     </task>
     <task id="LOCAL-00246" summary="Starting to flesh out more vfs functionality">
       <option name="closed" value="true" />
@@ -823,7 +815,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745659361673</updated>
     </task>
-    <option name="localTasksCounter" value="294" />
+    <task id="LOCAL-00294" summary="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now.">
+      <option name="closed" value="true" />
+      <created>1745826402723</created>
+      <option name="number" value="00294" />
+      <option name="presentableId" value="LOCAL-00294" />
+      <option name="project" value="LOCAL" />
+      <updated>1745826402723</updated>
+    </task>
+    <option name="localTasksCounter" value="295" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -844,7 +844,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="changing mkdiosfs to create smaller images so they can be linked inside the final elf easier" />
     <MESSAGE value="inline directive to syscall stub" />
     <MESSAGE value="thinking about how im going to embed a disk image" />
     <MESSAGE value="little bit of ahci functionality" />
@@ -869,7 +868,8 @@
     <MESSAGE value="fleshing out more ahci functionality x3" />
     <MESSAGE value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
     <MESSAGE value="More ahci setup &amp; incorporating into pci device enumeration" />
-    <option name="LAST_COMMIT_MESSAGE" value="More ahci setup &amp; incorporating into pci device enumeration" />
+    <MESSAGE value="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now." />
+    <option name="LAST_COMMIT_MESSAGE" value="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
