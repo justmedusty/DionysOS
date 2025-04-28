@@ -117,6 +117,7 @@ bin/$(KERNEL): Makefile linker.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(KLD) $(OBJ) $(KLDFLAGS) -o $@
 	printf '\x03' | dd of=$@ bs=1 count=1 seek=16 conv=notrunc
+	cp ../tools/mkfs/disk.img bin
 
 # Include header dependencies.
 -include $(HEADER_DEPS)

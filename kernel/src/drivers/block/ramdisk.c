@@ -21,6 +21,12 @@ struct ramdisk ramdisk[RAMDISK_COUNT]; /* Only need one but why not 3! */
 struct spinlock ramdisk_locks[RAMDISK_COUNT];
 uint64_t ramdisk_count = RAMDISK_COUNT;
 
+__attribute__((used, section(".requests")))
+static volatile struct limine_module_request request = {
+        .id = LIMINE_MODULE_REQUEST,
+        .revision = 0
+};
+
 /*
  * This function initializes a ramdisk of size bytes converted to pages, ramdisk id which is just the index into the array, and a string which could be useful at some point.
  * It initializes the lock, page count, allocates memory yada yada yada
@@ -34,6 +40,10 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
         size_bytes = DEFAULT_RAMDISK_SIZE;
     }
 
+    if(request.response != NULL && request.response->module_count > 0){
+        _binary_disk_img_size = request.response->modules[0]->size;
+        _binary_disk_img_start = request.response->modules[0]->address;
+    }
     ramdisk[ramdisk_id].ramdisk_start = kmalloc(size_bytes);
     ramdisk[ramdisk_id].ramdisk_size_pages = size_bytes / PAGE_SIZE;
     ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages *

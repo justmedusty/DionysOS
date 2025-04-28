@@ -26,12 +26,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Renamed P2V and V2P macros, also more ahci controller device enumeration logic">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="More ahci setup &amp; incorporating into pci device enumeration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ahci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/bus/pci.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/drivers/block/ahci.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/limine.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/limine.cfg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,6 +89,7 @@
   "keyToString": {
     "Embedded GDB Server.run-gdb.executor": "Debug",
     "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run-x86.executor": "Run",
     "Makefile Target.run.executor": "Run",
     "Remote Debug.GDB Kernel.executor": "Debug",
     "Remote Debug.Unnamed.executor": "Debug",
@@ -120,7 +122,7 @@
       <recent name="$PROJECT_DIR$/kernel/src/arch/arch_specific" />
     </key>
   </component>
-  <component name="RunManager" selected="Remote Debug.GDB Kernel">
+  <component name="RunManager" selected="Makefile Target.run-x86">
     <configuration name="GNUmakefile" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DionysOS" TARGET_NAME="GNUmakefile" CONFIG_NAME="GNUmakefile" version="1">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
@@ -272,6 +274,12 @@
       </makefile>
       <method v="2" />
     </configuration>
+    <configuration name="run-x86" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/Makefile" target="run-x86" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
     <configuration name="run" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
       <makefile filename="$PROJECT_DIR$/GNUmakefile" target="run-x86" workingDirectory="" arguments="">
         <envs />
@@ -302,6 +310,7 @@
       <item itemvalue="Embedded GDB Server.jj" />
       <item itemvalue="Makefile Target.run-gdb" />
       <item itemvalue="Makefile Target.run" />
+      <item itemvalue="Makefile Target.run-x86" />
       <item itemvalue="Native Application.GNUmakefile" />
       <item itemvalue="Native Application.Makefile" />
       <item itemvalue="Native Application.all-hdd" />
@@ -317,6 +326,11 @@
       <item itemvalue="Native Application.run-x86" />
       <item itemvalue="Remote Debug.GDB Kernel" />
     </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Makefile Target.run-x86" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -414,15 +428,8 @@
       <workItem from="1743458174538" duration="6590000" />
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
-      <workItem from="1744547936947" duration="76526000" />
-    </task>
-    <task id="LOCAL-00244" summary="some changes going to set up the file handle table in the process structure and have a list of them.">
-      <option name="closed" value="true" />
-      <created>1733389273014</created>
-      <option name="number" value="00244" />
-      <option name="presentableId" value="LOCAL-00244" />
-      <option name="project" value="LOCAL" />
-      <updated>1733389273014</updated>
+      <workItem from="1744547936947" duration="77585000" />
+      <workItem from="1745767660924" duration="6063000" />
     </task>
     <task id="LOCAL-00245" summary="tempfs open and close , having a bitmap for handle ids">
       <option name="closed" value="true" />
@@ -808,7 +815,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745570563236</updated>
     </task>
-    <option name="localTasksCounter" value="293" />
+    <task id="LOCAL-00293" summary="More ahci setup &amp; incorporating into pci device enumeration">
+      <option name="closed" value="true" />
+      <created>1745659361673</created>
+      <option name="number" value="00293" />
+      <option name="presentableId" value="LOCAL-00293" />
+      <option name="project" value="LOCAL" />
+      <updated>1745659361673</updated>
+    </task>
+    <option name="localTasksCounter" value="294" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -829,7 +844,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="proper casts and such in uva2kva and kva2uva function now it compiles" />
     <MESSAGE value="changing mkdiosfs to create smaller images so they can be linked inside the final elf easier" />
     <MESSAGE value="inline directive to syscall stub" />
     <MESSAGE value="thinking about how im going to embed a disk image" />
@@ -854,7 +868,8 @@
     <MESSAGE value="fleshing out more ahci functionality x2" />
     <MESSAGE value="fleshing out more ahci functionality x3" />
     <MESSAGE value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
-    <option name="LAST_COMMIT_MESSAGE" value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
+    <MESSAGE value="More ahci setup &amp; incorporating into pci device enumeration" />
+    <option name="LAST_COMMIT_MESSAGE" value="More ahci setup &amp; incorporating into pci device enumeration" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -891,13 +906,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -908,7 +923,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="3" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -955,31 +970,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" />
+          <dependency id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="1" />
+          <dependency id="2" master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="0" />
+          <dependency id="1" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" master-id="2" />
+          <dependency id="0" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
@@ -996,13 +1011,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>927</line>
+          <line>921</line>
           <option name="timeStamp" value="445" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
-          <line>786</line>
+          <line>780</line>
           <option name="timeStamp" value="451" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
+          <line>195</line>
+          <option name="timeStamp" value="453" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

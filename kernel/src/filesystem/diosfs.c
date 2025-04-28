@@ -17,6 +17,10 @@
  * We need to ensure that for each filesystem we have a separate lock
  * We'll only implement the one filesystem for now.
  */
+
+
+
+
 #define NUM_FILESYSTEM_OBJECTS 10
 struct spinlock diosfs_lock[10] = {0};
 struct diosfs_superblock diosfs_superblock[10] = {0};

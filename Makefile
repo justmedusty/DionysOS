@@ -38,6 +38,14 @@ run-x86: $(IMAGE_NAME).iso
   -device ide-hd,drive=my_drive,bus=ahci0.0
 
 
+.PHONY: run-x86-kvm
+run-x86-kvm: $(IMAGE_NAME).iso
+	qemu-system-x86_64 -M q35,smm=off -enable-kvm -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) \
+  -cdrom $(IMAGE_NAME).iso -boot d -monitor stdio \
+  -d guest_errors,int -D qemu_debug.log \
+  -device ahci,id=ahci0 \
+  -drive file=tools/mkfs/disk.img,if=none,id=my_drive,format=raw \
+  -device ide-hd,drive=my_drive,bus=ahci0.0
 
 
 
@@ -70,6 +78,7 @@ $(IMAGE_NAME).iso: limine/limine kernel
 	rm -rf iso_root
 	mkdir -p iso_root/boot
 	cp -v kernel/bin/kernel iso_root/boot/
+	cp -v kernel/bin/disk.img iso_root/boot/
 	mkdir -p iso_root/boot/limine
 	cp -v limine.cfg limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin iso_root/boot/limine/
 	mkdir -p iso_root/EFI/BOOT
