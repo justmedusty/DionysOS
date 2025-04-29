@@ -26,8 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="removing auxiliary block devices from qemu flags">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="setting up disk reading , need to map the full disk into memory first">
       <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -425,15 +424,7 @@
       <workItem from="1743541907213" duration="12122000" />
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
-      <workItem from="1745767660924" duration="11066000" />
-    </task>
-    <task id="LOCAL-00247" summary="fleshing out more vfs functionality">
-      <option name="closed" value="true" />
-      <created>1733488366212</created>
-      <option name="number" value="00247" />
-      <option name="presentableId" value="LOCAL-00247" />
-      <option name="project" value="LOCAL" />
-      <updated>1733488366212</updated>
+      <workItem from="1745767660924" duration="11644000" />
     </task>
     <task id="LOCAL-00248" summary="finished vnode close for now, need to implement the remove node by addr function in doubly_linked_list.c">
       <option name="closed" value="true" />
@@ -819,7 +810,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745826682770</updated>
     </task>
-    <option name="localTasksCounter" value="296" />
+    <task id="LOCAL-00296" summary="setting up disk reading , need to map the full disk into memory first">
+      <option name="closed" value="true" />
+      <created>1745915881070</created>
+      <option name="number" value="00296" />
+      <option name="presentableId" value="LOCAL-00296" />
+      <option name="project" value="LOCAL" />
+      <updated>1745915881070</updated>
+    </task>
+    <option name="localTasksCounter" value="297" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -840,7 +839,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="thinking about how im going to embed a disk image" />
     <MESSAGE value="little bit of ahci functionality" />
     <MESSAGE value="fixed set prdt func" />
     <MESSAGE value="added ahci send command function" />
@@ -865,7 +863,8 @@
     <MESSAGE value="More ahci setup &amp; incorporating into pci device enumeration" />
     <MESSAGE value="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now." />
     <MESSAGE value="removing auxiliary block devices from qemu flags" />
-    <option name="LAST_COMMIT_MESSAGE" value="removing auxiliary block devices from qemu flags" />
+    <MESSAGE value="setting up disk reading , need to map the full disk into memory first" />
+    <option name="LAST_COMMIT_MESSAGE" value="setting up disk reading , need to map the full disk into memory first" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1019,6 +1018,11 @@
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
           <line>195</line>
           <option name="timeStamp" value="453" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c</url>
+          <line>66</line>
+          <option name="timeStamp" value="457" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

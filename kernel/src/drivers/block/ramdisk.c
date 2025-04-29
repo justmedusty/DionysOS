@@ -42,7 +42,7 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
     if(request.response != NULL && request.response->module_count > 0){
         _binary_disk_img_size = request.response->modules[0]->size;
         _binary_disk_img_start = request.response->modules[0]->address;
-        DEBUG_PRINT("START %x.64",_binary_disk_img_start);
+        DEBUG_PRINT("START %x.64\n",_binary_disk_img_start);
         ramdisk_disk_image_init(ramdisk_id,name);
         return;
     }
@@ -64,19 +64,16 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
 }
 
 static void ramdisk_disk_image_init(const uint64_t ramdisk_id,char *name){
-    ramdisk[ramdisk_id].ramdisk_start = kmalloc(_binary_disk_img_size);
+    ramdisk[ramdisk_id].ramdisk_start = _binary_disk_img_start;
     ramdisk[ramdisk_id].ramdisk_size_pages = _binary_disk_img_size / PAGE_SIZE;
     ramdisk[ramdisk_id].ramdisk_size_pages++; //just in case we're a page short with the above calc which is likely
     ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE);
-    memcpy(ramdisk[ramdisk_id].ramdisk_start,_binary_disk_img_start,_binary_disk_img_size);
     struct diosfs_superblock *sb = ramdisk[ramdisk_id].ramdisk_start;
     ramdisk[ramdisk_id].block_size = sb->block_size;
     DEBUG_PRINT("BLOCK SIZE OF IMAGE %i\n",sb->block_size);
     safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
     initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
     serial_printf("Ramdisk initialized\n");
-
-
 }
 
 /*
