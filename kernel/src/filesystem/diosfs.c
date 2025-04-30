@@ -64,6 +64,10 @@ struct diosfs_filesystem_context diosfs_filesystem_context[10] = {
 /*
  * Internally linked function prototypes
  */
+
+static void  diosfs_register_filesystem(const uint64_t device_id, const uint64_t device_type,
+                                            struct diosfs_filesystem_context *fs);
+
 static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, uint8_t type, uint64_t number);
 
 static void diosfs_get_free_inode_and_mark_bitmap(const struct diosfs_filesystem_context *fs,
@@ -195,7 +199,11 @@ void diosfs_init(uint64_t filesystem_id) {
 #ifdef _CREATE_RAMDISK_
     ramdisk_init(DEFAULT_DIOSFS_SIZE, diosfs_filesystem_context[filesystem_id].device->device_minor, "initramfs",
                  DIOSFS_BLOCKSIZE);
-    dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+    if(_binary_disk_img_start != NULL){
+        diosfs_register_filesystem(filesystem_id,diosfs_filesystem_context->device->device_type,&diosfs_filesystem_context[filesystem_id]);
+    } else{
+        dios_mkfs(filesystem_id, diosfs_filesystem_context->device->device_type, &diosfs_filesystem_context[filesystem_id]);
+    }
 #endif
 
 
@@ -340,6 +348,28 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     serial_printf("DiosFS : File /etc/config created\n");
     vnode_write(vnode9, 0, sizeof("dustyn password"), "dustyn password");
     kfree(buffer);
+}
+
+void diosfs_register_filesystem(const uint64_t device_id, const uint64_t device_type,
+                                struct diosfs_filesystem_context *fs) {
+    fs->device->device_major = device_type;
+    fs->device->device_minor = device_id;
+    diosfs_read_block_by_number(DIOSFS_SUPERBLOCK, (char *) fs->superblock, fs, 0, DIOSFS_BLOCKSIZE);
+    struct diosfs_inode root;
+    diosfs_read_inode(fs, &root, ROOT_INODE);
+    struct vnode *vnode = vnode_alloc();
+    memset(vnode, 0, sizeof(struct vnode));
+    strcpy((char *) vnode->vnode_name, "/");
+    vnode->filesystem_object = fs;
+    vnode->vnode_inode_number = root.inode_number;
+    vnode->vnode_type = VNODE_DIRECTORY;
+    vnode->vnode_ops = &diosfs_vnode_ops;
+    vnode->vnode_refcount = 1;
+    vnode->vnode_parent = NULL;
+    vnode->vnode_children = NULL;
+    vnode->vnode_filesystem_id = VNODE_FS_DIOSFS;
+    vnode_mount(&vfs_root, vnode);
+    kprintf("Diosfs Filesystem Registered\n");
 }
 
 void dios_mkfs(const uint64_t device_id, const uint64_t device_type, struct diosfs_filesystem_context *fs) {
@@ -952,7 +982,8 @@ static void diosfs_clear_bitmap(const struct diosfs_filesystem_context *fs, cons
      * 0 the bit and write it back Noting that this doesnt work for a set but Im not sure that
      * I will use it for that.
      */
-    buffer[BYTE(number)] &= (uint64_t) ~BIT(bit); //TODO handle impl defined behavior here
+    buffer[BYTE(number)] &= (uint64_t)
+    ~BIT(bit); //TODO handle impl defined behavior here
     fs->device->driver->device_ops->block_device_ops->block_write(block,
                                                                   1, buffer, fs->device);
     kfree(buffer);
@@ -1509,7 +1540,8 @@ static uint64_t diosfs_get_relative_block_number_from_file(const struct diosfs_i
     char *temp_buffer = kmalloc(PAGE_SIZE);
     const struct diosfs_byte_offset_indices indices = diosfs_indirection_indices_for_block_number(current_block);
     uint64_t current_block_number = 0;
-    uint64_t *indirection_block = (uint64_t *) temp_buffer;
+    uint64_t * indirection_block = (uint64_t * )
+    temp_buffer;
 
     switch (indices.levels_indirection) {
         case 0:
@@ -1813,9 +1845,12 @@ static void free_blocks_from_inode(struct diosfs_filesystem_context *fs,
     char *buffer = kmalloc(PAGE_SIZE);
     char *buffer2 = kmalloc(PAGE_SIZE);
     char *buffer3 = kmalloc(PAGE_SIZE);
-    uint64_t *blocks = (uint64_t *) buffer;
-    uint64_t *blocks_2 = (uint64_t *) buffer2;
-    uint64_t *blocks_3 = (uint64_t *) buffer3;
+    uint64_t * blocks = (uint64_t * )
+    buffer;
+    uint64_t * blocks_2 = (uint64_t * )
+    buffer2;
+    uint64_t * blocks_3 = (uint64_t * )
+    buffer3;
 
     struct diosfs_byte_offset_indices byte_offset_indices = diosfs_indirection_indices_for_block_number(block_number);
 
@@ -1915,7 +1950,8 @@ static void free_blocks_from_inode(struct diosfs_filesystem_context *fs,
 static uint64_t diosfs_allocate_triple_indirect_block(struct diosfs_filesystem_context *fs, struct diosfs_inode *inode,
                                                       const uint64_t num_allocated, uint64_t num_to_allocate) {
     char *buffer = kmalloc(PAGE_SIZE);
-    uint64_t *block_array = (uint64_t *) buffer;
+    uint64_t * block_array = (uint64_t * )
+    buffer;
     uint64_t index;
     uint64_t allocated;
     uint64_t triple_indirect = inode->triple_indirect == 0
@@ -1970,7 +2006,8 @@ static uint64_t diosfs_allocate_double_indirect_block(struct diosfs_filesystem_c
 
 
     diosfs_read_block_by_number(double_indirect, buffer, fs, 0, fs->superblock->block_size);
-    uint64_t *block_array = (uint64_t *) buffer;
+    uint64_t * block_array = (uint64_t * )
+    buffer;
 
     if (num_allocated == 0) {
         index = 0;
@@ -2031,7 +2068,8 @@ static uint64_t diosfs_allocate_single_indirect_block(const struct diosfs_filesy
 
     diosfs_read_block_by_number(single_indirect, buffer, fs, 0, fs->superblock->block_size);
     /* We can probably just write over the memory which makes these reads redundant, just a note for now */
-    uint64_t *block_array = (uint64_t *) buffer;
+    uint64_t * block_array = (uint64_t * )
+    buffer;
     for (uint64_t i = num_allocated; i < num_to_allocate + num_allocated; i++) {
         block_array[i] = diosfs_get_free_block_and_mark_bitmap(fs);
     }
