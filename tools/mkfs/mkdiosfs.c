@@ -215,6 +215,9 @@ int main(const int argc, char** argv) {
     diosfs_create(&inode, "var",DIOSFS_DIRECTORY);
     printf("Created var directory\n");
 
+    diosfs_create(&inode, "temp",DIOSFS_DIRECTORY);
+    printf("Created temp directory\n");
+
     //include any passed files in, they automamtically end up in the home directory
     if (files) {
         struct diosfs_inode home_inode;

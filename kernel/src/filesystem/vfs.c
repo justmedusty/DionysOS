@@ -530,7 +530,7 @@ static struct vnode *parse_path(char *path) {
         path++;
     }
 
-    if(*path == '/'){
+    while(*path == '/'){
         path++;
     }
 

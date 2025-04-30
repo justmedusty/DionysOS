@@ -357,6 +357,7 @@ void diosfs_register_filesystem(const uint64_t device_id, const uint64_t device_
     diosfs_read_block_by_number(DIOSFS_SUPERBLOCK, (char *) fs->superblock, fs, 0, DIOSFS_BLOCKSIZE);
     struct diosfs_inode root;
     diosfs_read_inode(fs, &root, ROOT_INODE);
+    DEBUG_PRINT("ROOT SIZE %i INODE NO %i NAME %s\n",root.size,root.inode_number,root.name);
     struct vnode *vnode = vnode_alloc();
     memset(vnode, 0, sizeof(struct vnode));
     strcpy((char *) vnode->vnode_name, "/");

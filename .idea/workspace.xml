@@ -26,10 +26,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="using the image as the disk instead of allocating and copying">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Registering disk image fs function written, need to ensure it is working as expected">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -427,15 +429,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="2286000" />
-    </task>
-    <task id="LOCAL-00249" summary="still some work to do with vfs but starting to set up the kthread functionality since it will be used to test the vfs">
-      <option name="closed" value="true" />
-      <created>1733563274955</created>
-      <option name="number" value="00249" />
-      <option name="presentableId" value="LOCAL-00249" />
-      <option name="project" value="LOCAL" />
-      <updated>1733563274955</updated>
+      <workItem from="1745996199303" duration="3921000" />
     </task>
     <task id="LOCAL-00250" summary="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
       <option name="closed" value="true" />
@@ -821,7 +815,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745916623826</updated>
     </task>
-    <option name="localTasksCounter" value="298" />
+    <task id="LOCAL-00298" summary="Registering disk image fs function written, need to ensure it is working as expected">
+      <option name="closed" value="true" />
+      <created>1745998770939</created>
+      <option name="number" value="00298" />
+      <option name="presentableId" value="LOCAL-00298" />
+      <option name="project" value="LOCAL" />
+      <updated>1745998770939</updated>
+    </task>
+    <option name="localTasksCounter" value="299" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -842,7 +844,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed set prdt func" />
     <MESSAGE value="added ahci send command function" />
     <MESSAGE value="added ahci read write function" />
     <MESSAGE value="fleshing out ahci initialize function" />
@@ -867,7 +868,8 @@
     <MESSAGE value="removing auxiliary block devices from qemu flags" />
     <MESSAGE value="setting up disk reading , need to map the full disk into memory first" />
     <MESSAGE value="using the image as the disk instead of allocating and copying" />
-    <option name="LAST_COMMIT_MESSAGE" value="using the image as the disk instead of allocating and copying" />
+    <MESSAGE value="Registering disk image fs function written, need to ensure it is working as expected" />
+    <option name="LAST_COMMIT_MESSAGE" value="Registering disk image fs function written, need to ensure it is working as expected" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1018,19 +1020,9 @@
           <option name="timeStamp" value="451" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>199</line>
-          <option name="timeStamp" value="453" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c</url>
-          <line>66</line>
-          <option name="timeStamp" value="457" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>355</line>
-          <option name="timeStamp" value="459" />
+          <url>file://$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c</url>
+          <line>64</line>
+          <option name="timeStamp" value="461" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

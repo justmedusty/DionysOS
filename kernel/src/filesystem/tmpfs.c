@@ -276,13 +276,14 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
         return;
     }
-
+    DEBUG_PRINT("PRE LOOKUP\n");
     struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
     if (vnode_to_be_mounted == NULL) {
 
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
+    DEBUG_PRINT("AFTER LOOKUP\n");
 
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
     memset(root, 0, sizeof(struct tmpfs_node));
