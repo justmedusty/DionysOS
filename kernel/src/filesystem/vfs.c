@@ -364,6 +364,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
             vnode_directory_alloc_children(vnode);
         }
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
+        DEBUG_PRINT("VNODE FIND CHILD TOKEN IS %s VNODE NAME IS %s\n",token,vnode->vnode_name);
         vnode->is_cached = true;
         /* Handle cache stuff when I get there */
         release_spinlock(&vfs_lock);
