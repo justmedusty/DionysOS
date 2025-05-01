@@ -73,7 +73,8 @@ static void ramdisk_disk_image_init(const uint64_t ramdisk_id,char *name){
     DEBUG_PRINT("BLOCK SIZE OF IMAGE %i\n",sb->block_size);
     safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
     initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
-    arch_map_pages(kernel_pg_map->top_level, (uint64_t )Virt2Phys(ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start,READWRITE | NO_EXECUTE, ramdisk[ramdisk_id].ramdisk_size_pages);
+    DEBUG_PRINT("PHYS : %x.64 VIRT %x.64 PAGES %i\n",Virt2Phys(ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start,ramdisk[ramdisk_id].ramdisk_size_pages);
+    arch_map_pages(kernel_pg_map->top_level, (uint64_t )Virt2Phys(ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start,READWRITE | NO_EXECUTE, _binary_disk_img_size);
     serial_printf("Ramdisk initialized\n");
 }
 

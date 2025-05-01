@@ -26,12 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Registering disk image fs function written, need to ensure it is working as expected">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="trying to figure out where the page fault in tmpfs_mkfs is coming from">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -429,15 +426,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="3921000" />
-    </task>
-    <task id="LOCAL-00250" summary="Added clang-tidy file and fixed import. IDE is still fucked so gonna try reimporting project yet again.">
-      <option name="closed" value="true" />
-      <created>1733563602585</created>
-      <option name="number" value="00250" />
-      <option name="presentableId" value="LOCAL-00250" />
-      <option name="project" value="LOCAL" />
-      <updated>1733563602587</updated>
+      <workItem from="1745996199303" duration="11169000" />
     </task>
     <task id="LOCAL-00251" summary="Some PCI scratch to be built and fixed as I go">
       <option name="closed" value="true" />
@@ -823,7 +812,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745998770939</updated>
     </task>
-    <option name="localTasksCounter" value="299" />
+    <task id="LOCAL-00299" summary="trying to figure out where the page fault in tmpfs_mkfs is coming from">
+      <option name="closed" value="true" />
+      <created>1746000149385</created>
+      <option name="number" value="00299" />
+      <option name="presentableId" value="LOCAL-00299" />
+      <option name="project" value="LOCAL" />
+      <updated>1746000149385</updated>
+    </task>
+    <option name="localTasksCounter" value="300" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -844,7 +841,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added ahci send command function" />
     <MESSAGE value="added ahci read write function" />
     <MESSAGE value="fleshing out ahci initialize function" />
     <MESSAGE value="more ahci driver fleshing out" />
@@ -869,7 +865,8 @@
     <MESSAGE value="setting up disk reading , need to map the full disk into memory first" />
     <MESSAGE value="using the image as the disk instead of allocating and copying" />
     <MESSAGE value="Registering disk image fs function written, need to ensure it is working as expected" />
-    <option name="LAST_COMMIT_MESSAGE" value="Registering disk image fs function written, need to ensure it is working as expected" />
+    <MESSAGE value="trying to figure out where the page fault in tmpfs_mkfs is coming from" />
+    <option name="LAST_COMMIT_MESSAGE" value="trying to figure out where the page fault in tmpfs_mkfs is coming from" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1020,9 +1017,19 @@
           <option name="timeStamp" value="451" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/boot/kernel_bootstrap.c</url>
-          <line>64</line>
-          <option name="timeStamp" value="461" />
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
+          <line>365</line>
+          <option name="timeStamp" value="466" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
+          <line>507</line>
+          <option name="timeStamp" value="468" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
+          <line>1257</line>
+          <option name="timeStamp" value="469" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
