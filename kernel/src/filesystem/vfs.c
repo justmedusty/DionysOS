@@ -359,22 +359,28 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         vnode = vnode->mounted_vnode;
     }
 
-    if (vnode->is_cached == false) {
-        if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
-            vnode_directory_alloc_children(vnode);
-        }
-        struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
-        DEBUG_PRINT("VNODE FIND CHILD TOKEN IS %s VNODE NAME IS %s\n",token,vnode->vnode_name);
-        vnode->is_cached = true;
-        /* Handle cache stuff when I get there */
-        release_spinlock(&vfs_lock);
-        return child;
-    }
-
+    DEBUG_PRINT("VNODE NAME %s\n",vnode->vnode_name);
     size_t index = 0;
 
-    struct vnode *child = vnode->vnode_children[index];
+    if (vnode->is_cached == false) {
 
+        struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
+        DEBUG_PRINT("VNODE FIND CHILD TOKEN IS %s VNODE NAME IS %s\n",token,vnode->vnode_name);
+        /* Handle cache stuff when I get there */
+        release_spinlock(&vfs_lock);
+        if(child){
+            return child;
+        } else{
+            return NULL;
+        }
+
+    }
+
+    if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
+        vnode_directory_alloc_children(vnode);
+    }
+
+    struct vnode *child = vnode->vnode_children[index];
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
         if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
@@ -385,6 +391,8 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         child = vnode->vnode_children[++index];
     }
     release_spinlock(&vfs_lock);
+
+
     return NULL;;
 }
 

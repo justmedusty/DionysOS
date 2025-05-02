@@ -17,6 +17,8 @@
 #define DEBUG_PRINT(string, ...)
 #endif
 
+typedef unsigned char byte;
+
 #define BIT(bit) ((1UL << bit))
 #define BYTE(num) (num / 8)
 

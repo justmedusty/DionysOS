@@ -26,9 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="trying to figure out where the page fault in tmpfs_mkfs is coming from">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Need to address vnode caching now">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/drivers/block/ramdisk.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -426,23 +427,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="11169000" />
-    </task>
-    <task id="LOCAL-00251" summary="Some PCI scratch to be built and fixed as I go">
-      <option name="closed" value="true" />
-      <created>1734637772105</created>
-      <option name="number" value="00251" />
-      <option name="presentableId" value="LOCAL-00251" />
-      <option name="project" value="LOCAL" />
-      <updated>1734637772106</updated>
-    </task>
-    <task id="LOCAL-00252" summary="Decices are only being added to list if they are a recognizable type">
-      <option name="closed" value="true" />
-      <created>1734681230209</created>
-      <option name="number" value="00252" />
-      <option name="presentableId" value="LOCAL-00252" />
-      <option name="project" value="LOCAL" />
-      <updated>1734681230209</updated>
+      <workItem from="1745996199303" duration="20904000" />
     </task>
     <task id="LOCAL-00253" summary="Proper Device scanning being done and adding most of the fields (not all)">
       <option name="closed" value="true" />
@@ -820,7 +805,23 @@
       <option name="project" value="LOCAL" />
       <updated>1746000149385</updated>
     </task>
-    <option name="localTasksCounter" value="300" />
+    <task id="LOCAL-00300" summary="disk image is properly mapped now need to chase the bugs particularly in tmpfs creation, the null p derefs in the ktheads are likely related to the botched tmpfs init">
+      <option name="closed" value="true" />
+      <created>1746086279801</created>
+      <option name="number" value="00300" />
+      <option name="presentableId" value="LOCAL-00300" />
+      <option name="project" value="LOCAL" />
+      <updated>1746086279801</updated>
+    </task>
+    <task id="LOCAL-00301" summary="Need to address vnode caching now">
+      <option name="closed" value="true" />
+      <created>1746086913987</created>
+      <option name="number" value="00301" />
+      <option name="presentableId" value="LOCAL-00301" />
+      <option name="project" value="LOCAL" />
+      <updated>1746086913987</updated>
+    </task>
+    <option name="localTasksCounter" value="302" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -841,8 +842,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added ahci read write function" />
-    <MESSAGE value="fleshing out ahci initialize function" />
     <MESSAGE value="more ahci driver fleshing out" />
     <MESSAGE value="ownership passoff ahci function" />
     <MESSAGE value="Added pci functions , setting up bus mastering since I believe this might be the case of why the nvme controller is unable to read any memory I pass to it" />
@@ -866,7 +865,9 @@
     <MESSAGE value="using the image as the disk instead of allocating and copying" />
     <MESSAGE value="Registering disk image fs function written, need to ensure it is working as expected" />
     <MESSAGE value="trying to figure out where the page fault in tmpfs_mkfs is coming from" />
-    <option name="LAST_COMMIT_MESSAGE" value="trying to figure out where the page fault in tmpfs_mkfs is coming from" />
+    <MESSAGE value="disk image is properly mapped now need to chase the bugs particularly in tmpfs creation, the null p derefs in the ktheads are likely related to the botched tmpfs init" />
+    <MESSAGE value="Need to address vnode caching now" />
+    <option name="LAST_COMMIT_MESSAGE" value="Need to address vnode caching now" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1017,11 +1018,6 @@
           <option name="timeStamp" value="451" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>365</line>
-          <option name="timeStamp" value="466" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
           <line>507</line>
           <option name="timeStamp" value="468" />
@@ -1030,6 +1026,16 @@
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
           <line>1257</line>
           <option name="timeStamp" value="469" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
+          <line>555</line>
+          <option name="timeStamp" value="474" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
+          <line>279</line>
+          <option name="timeStamp" value="475" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
