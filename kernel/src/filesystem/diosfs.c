@@ -492,6 +492,7 @@ int64_t diosfs_stat(const struct vnode *vnode) {
  */
 struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     struct diosfs_filesystem_context *fs = parent->filesystem_object;
+    DEBUG_PRINT("FS CTX LOCK ADDR %x.64\n",fs->lock);
     acquire_spinlock(fs->lock);
 
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS || parent->vnode_type != VNODE_DIRECTORY) {
@@ -509,12 +510,16 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
                                                 parent->vnode_inode_number,
                                                 buffer_size);
 
+
     if (ret != DIOSFS_SUCCESS) {
         kfree(buffer);
         release_spinlock(fs->lock);
         return NULL;
     }
 
+    for(size_t i = 0; i < inode.size; i++){
+        DEBUG_PRINT("ENTRY NAME %s ENTRY SIZE %i\n",entries[i].name,entries[i].size);
+    }
     uint64_t fill_vnode = false;
 
     /*
@@ -526,22 +531,28 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     }
 
     if (!parent->is_cached) {
+        DEBUG_PRINT("MARKING VNODE %s TO BE FILLED\n",parent->vnode_name);
         fill_vnode = true;
     }
 
     struct vnode *child = NULL;
 
-    uint8_t max_directories = parent->vnode_size > VNODE_MAX_DIRECTORY_ENTRIES
+    uint8_t max_directories = inode.size > VNODE_MAX_DIRECTORY_ENTRIES
                               ? VNODE_MAX_DIRECTORY_ENTRIES
-                              : parent->vnode_size;
+                              : inode.size;
 
 
     for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
         if (fill_vnode) {
-            kprintf("1");
+
+            if(!(parent->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)){
+                parent->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
+                parent->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
+            }
+            DEBUG_PRINT("BEFORE PARENT CHILDREN %x.64\n",parent->vnode_children);
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
-            kprintf("\n2");
+            DEBUG_PRINT("DONE\n");
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
