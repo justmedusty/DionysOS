@@ -520,6 +520,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     for(size_t i = 0; i < inode.size; i++){
         DEBUG_PRINT("ENTRY NAME %s ENTRY SIZE %i\n",entries[i].name,entries[i].size);
     }
+
     uint64_t fill_vnode = false;
 
     /*

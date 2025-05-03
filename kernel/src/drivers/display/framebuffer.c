@@ -374,10 +374,10 @@ void kprintf(char *str, ...) {
 }
 
 void debug_printf(char *str, ...) {
-    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, "[DEBUG] ");
     va_list args;
     va_start(args, str);
     acquire_spinlock(&main_framebuffer.lock);
+    framebuffer_device.driver->device_ops->framebuffer_ops->draw_string(&framebuffer_device, WHITE, "[DEBUG] ");
     while (*str) {
         if (*str == '\n') {
             framebuffer_device.driver->device_ops->framebuffer_ops->draw_char(&framebuffer_device, '\n', WHITE);
