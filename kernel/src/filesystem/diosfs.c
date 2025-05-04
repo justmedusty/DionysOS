@@ -1365,7 +1365,6 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
         panic("diosfs_write_bytes_to_inode bad type");
     }
 
-    DEBUG_PRINT("INODE NAME %s TYPE %i\n", inode->name, inode->type);
     if (buffer_size < fs->superblock->block_size || buffer_size < fs->superblock->block_size * num_blocks_to_read) {
         /*
          * I'll set a sensible minimum buffer size
@@ -1389,10 +1388,9 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
     /*
      *  If 0 is passed, try to read everything
      */
-
     uint64_t bytes_read = 0;
     uint64_t bytes_to_read = read_size_bytes;
-    DEBUG_PRINT("START BLOCK %i END BLOCK %i INODE NAME %s INODE SIDE %i\n",start_block,end_block,inode->name,inode->size);
+    DEBUG_PRINT("START BLOCK %i END BLOCK %i INODE NAME %s INODE SIZE %i\n",start_block,end_block,inode->name,inode->size);
     for (uint64_t i = start_block; i <= end_block; i++) {
         uint64_t byte_size;
         if (fs->superblock->block_size - start_offset < bytes_to_read) {

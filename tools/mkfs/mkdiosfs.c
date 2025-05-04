@@ -400,6 +400,7 @@ static void fill_directory(uint64_t inode_number, char* directory_path) {
 
         struct diosfs_inode new_inode;
         read_inode(new_inode_num, &new_inode);
+        printf("%s BYTES READ %lu\n",file_buffer,bytes_read);
         diosfs_write_bytes_to_inode(&new_inode, file_buffer, bytes_read, 0, bytes_read);
         printf("Created file %s\n", entry->d_name);
 
@@ -582,6 +583,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
                                             const uint64_t write_size_bytes) {
     if (inode->type != DIOSFS_REG_FILE) {
         printf("diosfs_write_bytes_to_inode bad type");
+        exit(1);
     }
 
 
