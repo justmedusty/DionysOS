@@ -399,7 +399,8 @@ static void fill_directory(uint64_t inode_number, char* directory_path) {
         uint64_t new_inode_num = diosfs_create(&inode, entry->d_name, DIOSFS_REG_FILE);
 
         struct diosfs_inode new_inode;
-        read_inode(new_inode_num, &new_inode);
+        diosfs_read_inode(&new_inode, new_inode_num);
+        printf("INODE NAME %s INO %lu\n",new_inode.name,new_inode.inode_number);
         printf("%s BYTES READ %lu\n",file_buffer,bytes_read);
         diosfs_write_bytes_to_inode(&new_inode, file_buffer, bytes_read, 0, bytes_read);
         printf("Created file %s\n", entry->d_name);
@@ -409,6 +410,7 @@ static void fill_directory(uint64_t inode_number, char* directory_path) {
     }
 
     free(namelist);
+
 }
 
 void write_block(const uint64_t block_number, char *block_buffer, const uint64_t offset, uint64_t write_size) {
@@ -451,7 +453,6 @@ uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint
     uint64_t ret = diosfs_write_dirent(parent, &entry);
     diosfs_write_inode(parent);
     return inode.inode_number;
-
 }
 
 
@@ -637,7 +638,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
     for (uint64_t i = start_block; i < end_block; i++) {
         uint64_t byte_size;
 
-        if (DIOSFS_BLOCKSIZE - start_offset < bytes_left) {
+        if ((DIOSFS_BLOCKSIZE - start_offset) < bytes_left) {
             byte_size = DIOSFS_BLOCKSIZE - start_offset;
         } else {
             byte_size = bytes_left;
@@ -662,6 +663,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
 
     diosfs_write_inode(inode);
     diosfs_find_directory_entry_and_update(inode->inode_number,inode->parent_inode_number);
+    printf("BYTES WRITTEN %lu\n",bytes_written);
     return DIOSFS_SUCCESS;
 }
 

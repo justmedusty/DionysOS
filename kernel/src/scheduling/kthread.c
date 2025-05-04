@@ -84,13 +84,11 @@ void kthread_main() {
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
     char *buffer = kmalloc(PAGE_SIZE);
-    char *buf = "THIS IS A TEST MESSAGE!!!!!!";
     int64_t handle = open("/etc/passwd");
     DEBUG_PRINT("HANDLE %i\n",handle);
     if(handle < 0){
         goto done;
     }
-    int64_t ret = write(handle,buf,sizeof(buf));
     memset(buffer, 0, PAGE_SIZE * 8);
     int64_t ret = read(handle,buffer,get_size(handle));
 
