@@ -606,7 +606,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
         exit(1);
     }
 
-    if (offset + write_size_bytes > inode->size) {
+    if ((offset + write_size_bytes) > inode->size) {
         new_size = true;
         new_size_bytes = (offset + write_size_bytes) - inode->size;
     }
@@ -623,7 +623,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
     uint64_t current_block_number = 0;
     uint64_t end_block = start_block + num_blocks_to_write;
 
-    if (end_block + 1 > inode->block_count) {
+    if ((end_block + 1) > inode->block_count) {
         diosfs_inode_allocate_new_blocks(inode, (end_block + 1) - inode->block_count);
         inode->block_count += ((end_block + 1) - inode->block_count);
     }
@@ -634,8 +634,8 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
 
     uint64_t bytes_written = 0;
     uint64_t bytes_left = write_size_bytes;
-
-    for (uint64_t i = start_block; i < end_block; i++) {
+    printf("START BLOCK %i END BLOCK %i\n",start_block,end_block);
+    for (uint64_t i = start_block; i < end_block + 1; i++) {
         uint64_t byte_size;
 
         if ((DIOSFS_BLOCKSIZE - start_offset) < bytes_left) {
@@ -643,8 +643,11 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
         } else {
             byte_size = bytes_left;
         }
+
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i);
+        printf("CURRENT BLOCK NUMBER %lu BUFFER %s\n",current_block_number,buffer);
         diosfs_write_block_by_number(current_block_number, buffer, start_offset, byte_size);
+
         bytes_written += byte_size;
         bytes_left -= byte_size;
         buffer += byte_size;

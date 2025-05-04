@@ -1479,7 +1479,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs
         panic("diosfs_write_bytes_from_inode bad offset"); /* Should never happen, panic for visibility  */
     }
 
-    if (offset + write_size_bytes > inode->size) {
+    if ((offset + write_size_bytes) > inode->size) {
         new_size = true;
         new_size_bytes = (offset + write_size_bytes) - inode->size;
     }
@@ -1496,7 +1496,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_filesystem_context *fs
     uint64_t current_block_number = 0;
     uint64_t end_block = start_block + num_blocks_to_write;
 
-    if (end_block + 1 > inode->block_count) {
+    if ((end_block + 1) > inode->block_count) {
         diosfs_inode_allocate_new_blocks(fs, inode, (end_block + 1) - inode->block_count);
         inode->block_count += ((end_block + 1) - inode->block_count);
     }
