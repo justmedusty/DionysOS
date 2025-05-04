@@ -103,35 +103,35 @@ void vnode_directory_alloc_children(struct vnode *vnode) {
  * Checks if the node is root
  */
 void vnode_free(struct vnode *vnode) {
-    acquire_spinlock(&vfs_lock);
+    acquire_spinlock(&list_lock);
 
     if (vnode == NULL) {
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return;
     }
 
     //Do not free if any processes either have this open or it is their CWD
     if (vnode->vnode_active_references != 0) {
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return;
     }
 
     if (vnode->is_mount_point) {
         //No freeing mount points
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return;
     }
 
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return;
     }
 
     //don't try to free the root
     if (vnode == &vfs_root) {
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return;
     }
 
@@ -140,7 +140,7 @@ void vnode_free(struct vnode *vnode) {
     }
 
     kfree(vnode);
-    release_spinlock(&vfs_lock);
+    release_spinlock(&list_lock);
 }
 
 /*
