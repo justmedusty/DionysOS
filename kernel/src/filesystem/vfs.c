@@ -364,7 +364,6 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 
     DEBUG_PRINT("TOKEN %s BEFORE CACHE CHECK!\n",token);
     if (vnode->is_cached == false) {
-
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
 
         release_spinlock(&vfs_lock);

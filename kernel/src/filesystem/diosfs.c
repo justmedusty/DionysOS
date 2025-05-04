@@ -508,6 +508,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     diosfs_read_inode(fs, &inode, parent->vnode_inode_number);
 
     if(inode.size == 0){
+        DEBUG_PRINT("NAME %s PARENT NAME %s\n",name,parent->vnode_name);
         //Nothing to lookup do not proceed
         release_spinlock(fs->lock);
         return NULL;
