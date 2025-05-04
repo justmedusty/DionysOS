@@ -83,6 +83,9 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 ![20250105_101314](https://github.com/user-attachments/assets/3485e5f6-f889-4d91-b93a-a95312cf1438)
 ![20250105_073158](https://github.com/user-attachments/assets/7413d619-66cb-406f-ba10-0f67f4ccee50)
 
+# If you are still reading
+Check out my programming playlist on spotify, great for those early morning/late night programming sessions : https://open.spotify.com/playlist/7uB8d3ewMRQu1cPN3iQmwI?si=3653daa1429f4213
+
 # Makefile targets
 
 Running `make all` will compile the kernel (from the `kernel/` directory) and then generate a bootable ISO image.
