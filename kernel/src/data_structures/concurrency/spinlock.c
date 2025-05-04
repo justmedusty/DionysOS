@@ -27,14 +27,13 @@ void acquire_spinlock(struct spinlock *spinlock) {
     }
     arch_atomic_swap(&spinlock->locked, 1);
     disable_interrupts();
-
     spinlock->cpu = my_cpu();
 }
 
 void release_spinlock(struct spinlock *spinlock) {
     spinlock->cpu = NULL;
-    enable_interrupts();
     spinlock->locked = 0;
+    enable_interrupts();
 }
 
 bool try_lock(struct spinlock *spinlock) {

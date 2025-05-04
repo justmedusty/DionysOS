@@ -25,7 +25,7 @@ struct vnode vfs_root;
 
 //VFS lock
 struct spinlock vfs_lock;
-
+struct spinlock list_lock;
 //static prototype
 static struct vnode *parse_path(char *path);
 
@@ -50,6 +50,7 @@ void vfs_init() {
         static_vnode_pool[i].vnode_flags |= VNODE_STATIC_POOL;
     }
     initlock(&vfs_lock, VFS_LOCK);
+    initlock(&list_lock, VFS_LOCK);
     memset(&vfs_root, 0, sizeof(struct vnode));
     vfs_root.vnode_inode_number = 0;
     vfs_root.vnode_type = VNODE_DIRECTORY;
@@ -66,18 +67,18 @@ void vfs_init() {
  */
 struct vnode *vnode_alloc() {
     DEBUG_PRINT("VNODE ALLOC ACQUIRE LOCK %i!\n",vfs_lock.locked);
-    acquire_spinlock(&vfs_lock);
+    acquire_spinlock(&list_lock);
     DEBUG_PRINT("VNODE ALLOC ACQUIRED LOCK %i!\n",vfs_lock.locked);
 
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
-        release_spinlock(&vfs_lock);
+        release_spinlock(&list_lock);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
-    release_spinlock(&vfs_lock);
+    release_spinlock(&list_lock);
     return vnode;
 }
 
@@ -583,7 +584,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
         }
     }
     release_spinlock(&vfs_lock);
-    return -KERN_MAX_REACHED;
+    return KERN_MAX_REACHED;
 }
 
 
