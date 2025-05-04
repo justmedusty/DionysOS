@@ -7,7 +7,9 @@
 #include <string.h>
 #include "mkdiosfs.h"
 #include <stdbool.h>
-
+#include <stdint.h>
+#include <dirent.h>
+#include <sys/types.h>
 
 uint64_t strtoll_wrapper(const char *arg);
 
@@ -67,7 +69,7 @@ void diosfs_get_size_info(struct diosfs_size_calculation *size_calculation, size
 
 static uint64_t diosfs_find_directory_entry_and_update(const uint64_t inode_number,
                                                        const uint64_t directory_inode_number);
-
+static void fill_directory(uint64_t inode_number, char* directory_path);
 
 #define FILE_LIST_OFFSET 4
 
@@ -294,6 +296,12 @@ int main(const int argc, char **argv) {
         }
     }
 
+    fill_directory(BIN_INO,"./default_files/bin");
+    fill_directory(ETC_INO,"./default_files/etc");
+    fill_directory(HOME_INO,"./default_files/home");
+    fill_directory(VAR_INO,"./default_files/var");
+
+
     fwrite(disk_buffer, size_calculation.total_blocks * DIOSFS_BLOCKSIZE, 1, f);
     free(block);
     free(disk_buffer);
@@ -332,6 +340,74 @@ uint64_t strtoll_wrapper(const char *arg) {
     }
 
     return result;
+}
+static void fill_directory(uint64_t inode_number, char* directory_path) {
+    struct diosfs_inode inode;
+    read_inode(inode_number, &inode);
+    printf("Going into %s directory\n", inode.name);
+
+    struct dirent **namelist;
+    int n = scandir(directory_path, &namelist, NULL, alphasort);
+    if (n < 0) {
+        perror("scandir");
+        return;
+    }
+
+    for (int i = 0; i < n; i++) {
+        struct dirent *entry = namelist[i];
+
+        // Skip "." and ".."
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            free(entry);
+            continue;
+        }
+
+        // Build full path to the file
+        char filepath[1024];
+        snprintf(filepath, sizeof(filepath), "%s/%s", directory_path, entry->d_name);
+
+        FILE *file = fopen(filepath, "r");
+        if (file == NULL) {
+            fprintf(stderr, "Error opening file %s. Skipping.\n", filepath);
+            perror("fopen");
+            free(entry);
+            continue;
+        }
+
+        // Read file contents
+        fseek(file, 0L, SEEK_END);
+        long size = ftell(file);
+        rewind(file);
+
+        char *file_buffer = malloc(size + 1);
+        if (!file_buffer) {
+            fprintf(stderr, "Memory allocation failed for file %s\n", filepath);
+            fclose(file);
+            free(entry);
+            continue;
+        }
+
+        size_t bytes_read = fread(file_buffer, 1, size, file);
+        fclose(file);
+
+        if (bytes_read != size) {
+            fprintf(stderr, "Warning: expected %ld bytes but read %zu for file %s\n", size, bytes_read, filepath);
+        }
+
+        // Create file in filesystem
+        printf("Creating file %s in the %s directory...\n", entry->d_name,inode.name);
+        uint64_t new_inode_num = diosfs_create(&inode, entry->d_name, DIOSFS_REG_FILE);
+
+        struct diosfs_inode new_inode;
+        read_inode(new_inode_num, &new_inode);
+        diosfs_write_bytes_to_inode(&new_inode, file_buffer, bytes_read, 0, bytes_read);
+        printf("Created file %s\n", entry->d_name);
+
+        free(file_buffer);
+        free(entry);
+    }
+
+    free(namelist);
 }
 
 void write_block(const uint64_t block_number, char *block_buffer, const uint64_t offset, uint64_t write_size) {

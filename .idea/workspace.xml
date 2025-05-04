@@ -26,8 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir">
       <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -81,34 +80,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run-x86.executor&quot;: &quot;Run&quot;,
-    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
-    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
-    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/Makefile&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Embedded GDB Server.run-gdb.executor": "Debug",
+    "Makefile Target.run-gdb.executor": "Run",
+    "Makefile Target.run-x86.executor": "Run",
+    "Makefile Target.run.executor": "Run",
+    "Remote Debug.GDB Kernel.executor": "Debug",
+    "Remote Debug.Unnamed.executor": "Debug",
+    "Remote GDB Server.run-gdb.executor": "Debug",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/tools/mkfs/mkdiosfs.c",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "MakefileSettings",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tools/mkfs/default_files/var" />
@@ -426,15 +425,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="35076000" />
-    </task>
-    <task id="LOCAL-00260" summary="added always inline directive for syscall asm stub">
-      <option name="closed" value="true" />
-      <created>1742978565383</created>
-      <option name="number" value="00260" />
-      <option name="presentableId" value="LOCAL-00260" />
-      <option name="project" value="LOCAL" />
-      <updated>1742978565383</updated>
+      <workItem from="1745996199303" duration="36420000" />
     </task>
     <task id="LOCAL-00261" summary="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa">
       <option name="closed" value="true" />
@@ -820,7 +811,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746349630035</updated>
     </task>
-    <option name="localTasksCounter" value="309" />
+    <task id="LOCAL-00309" summary="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir">
+      <option name="closed" value="true" />
+      <created>1746352035522</created>
+      <option name="number" value="00309" />
+      <option name="presentableId" value="LOCAL-00309" />
+      <option name="project" value="LOCAL" />
+      <updated>1746352035522</updated>
+    </task>
+    <option name="localTasksCounter" value="310" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -841,7 +840,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
     <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
     <MESSAGE value="Setting up more AHCI setup code" />
     <MESSAGE value="fleshing out and fixing ahci skeleton" />
@@ -866,7 +864,8 @@
     <MESSAGE value="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref" />
     <MESSAGE value="readme" />
     <MESSAGE value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
+    <MESSAGE value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
+    <option name="LAST_COMMIT_MESSAGE" value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
