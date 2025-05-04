@@ -65,7 +65,9 @@ void vfs_init() {
  *  otherwise kalloc is invoked.
  */
 struct vnode *vnode_alloc() {
+    DEBUG_PRINT("VNODE ALLOC ACQUIRE LOCK %i!\n",vfs_lock.locked);
     acquire_spinlock(&vfs_lock);
+    DEBUG_PRINT("VNODE ALLOC ACQUIRED LOCK %i!\n",vfs_lock.locked);
 
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
@@ -365,15 +367,8 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     DEBUG_PRINT("TOKEN %s BEFORE CACHE CHECK!\n",token);
     if (vnode->is_cached == false) {
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
-
         release_spinlock(&vfs_lock);
-        if(child){
-            return child;
-        } else{
-            DEBUG_PRINT("NULL FIND CHILD\n");
-            return NULL;
-        }
-
+        return child;
     }
 
     DEBUG_PRINT("TOKEN %s AFTER CACHE CHECK!\n",token);

@@ -659,7 +659,7 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
     }
 
     diosfs_write_inode(inode);
-
+    diosfs_find_directory_entry_and_update(inode->inode_number,inode->parent_inode_number);
     return DIOSFS_SUCCESS;
 }
 
