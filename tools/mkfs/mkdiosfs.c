@@ -391,7 +391,7 @@ static void fill_directory(uint64_t inode_number, char* directory_path) {
         fclose(file);
 
         if (bytes_read != size) {
-            fprintf(stderr, "Warning: expected %ld bytes but read %zu for file %s\n", size, bytes_read, filepath);
+            fprintf(stderr, "Warning: expected %lu bytes but read %lu for file %s\n", size, bytes_read, filepath);
         }
 
         // Create file in filesystem

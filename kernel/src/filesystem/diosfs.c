@@ -1390,7 +1390,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
      */
     uint64_t bytes_read = 0;
     uint64_t bytes_to_read = read_size_bytes;
-    DEBUG_PRINT("START BLOCK %i END BLOCK %i INODE NAME %s INODE SIZE %i\n",start_block,end_block,inode->name,inode->size);
+    DEBUG_PRINT("START BLOCK %i END BLOCK %i INODE NAME %s INODE SIZE %i BLOCK START %i\n",start_block,end_block,inode->name,inode->size,fs->superblock->block_start_pointer);
     for (uint64_t i = start_block; i <= end_block; i++) {
         uint64_t byte_size;
         if (fs->superblock->block_size - start_offset < bytes_to_read) {
@@ -1842,6 +1842,9 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char *buffe
     uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             fs->superblock->block_start_pointer +
             block_number, 1, buffer, fs->device);
+
+    DEBUG_PRINT("BLOCK NO %i\n", fs->superblock->block_start_pointer +
+                                 block_number);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_read_block_by_number");
