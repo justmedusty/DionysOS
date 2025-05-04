@@ -411,7 +411,6 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
 int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
-
     if (vnode->vnode_type == VNODE_HARD_LINK) {
         if (diosfs_symlink_check(fs, vnode, VNODE_FILE) != DIOSFS_SUCCESS) {
             return DIOSFS_UNEXPECTED_SYMLINK_TYPE;
@@ -420,7 +419,6 @@ int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, co
 
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
-
     uint64_t ret = diosfs_read_bytes_from_inode(fs, &inode, buffer, PGROUNDUP(bytes),
                                                 offset % fs->superblock->block_size, bytes);
     release_spinlock(fs->lock);
@@ -1372,6 +1370,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
         /*
          * I'll set a sensible minimum buffer size
          */
+        panic("");
         return DIOSFS_BUFFER_TOO_SMALL;
     }
 
@@ -1402,7 +1401,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
             byte_size = bytes_to_read;
         }
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i, fs);
-
+        DEBUG_PRINT("BUFFER ADDR %x.64\n",buffer);
         diosfs_read_block_by_number(current_block_number, buffer + bytes_read, fs, start_offset, byte_size);
 
         bytes_read += byte_size;

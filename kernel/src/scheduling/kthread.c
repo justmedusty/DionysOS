@@ -83,8 +83,7 @@ void kthread_main() {
     uint8_t cpu_no = my_cpu()->cpu_number;
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
-    char *buffer = kmalloc(PAGE_SIZE * 8);
-
+    char *buffer = kmalloc(PAGE_SIZE);
     int64_t handle = open("/etc/passwd");
     DEBUG_PRINT("HANDLE %i\n",handle);
     if(handle < 0){
@@ -98,8 +97,7 @@ void kthread_main() {
         serial_printf("Error opening file passwd!\n");
         goto done;
     }
-
-    serial_printf("FILE : %s \n", buffer);
+    DEBUG_PRINT("FILE : %s RET: %i \n", buffer,ret);
     seek(handle,SEEK_END);
     done:
     sched_yield();
