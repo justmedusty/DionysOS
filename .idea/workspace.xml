@@ -26,11 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="readme">
-      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/etc/passwd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/home/welcome.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/var/log.txt" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -428,15 +426,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="33072000" />
-    </task>
-    <task id="LOCAL-00259" summary="Laying out device.h among other things.">
-      <option name="closed" value="true" />
-      <created>1734770614805</created>
-      <option name="number" value="00259" />
-      <option name="presentableId" value="LOCAL-00259" />
-      <option name="project" value="LOCAL" />
-      <updated>1734770614805</updated>
+      <workItem from="1745996199303" duration="35076000" />
     </task>
     <task id="LOCAL-00260" summary="added always inline directive for syscall asm stub">
       <option name="closed" value="true" />
@@ -822,7 +812,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746349071342</updated>
     </task>
-    <option name="localTasksCounter" value="308" />
+    <task id="LOCAL-00308" summary="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too">
+      <option name="closed" value="true" />
+      <created>1746349630035</created>
+      <option name="number" value="00308" />
+      <option name="presentableId" value="LOCAL-00308" />
+      <option name="project" value="LOCAL" />
+      <updated>1746349630035</updated>
+    </task>
+    <option name="localTasksCounter" value="309" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -843,7 +841,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Wait ready appears to work it is just for commands that it does not work properly" />
     <MESSAGE value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
     <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
     <MESSAGE value="Setting up more AHCI setup code" />
@@ -868,7 +865,8 @@
     <MESSAGE value="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk" />
     <MESSAGE value="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref" />
     <MESSAGE value="readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="readme" />
+    <MESSAGE value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
