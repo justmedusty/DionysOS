@@ -26,11 +26,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="readme">
+      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/etc/passwd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/home/welcome.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/mkfs/default_files/var/log.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,11 +113,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tools/mkfs/default_files/var" />
+      <recent name="$PROJECT_DIR$/tools/mkfs/default_files/etc" />
       <recent name="$PROJECT_DIR$/kernel/src/include/dev" />
       <recent name="$PROJECT_DIR$/kernel/src/dev/disk" />
       <recent name="$PROJECT_DIR$/kernel/src/dev" />
-      <recent name="$PROJECT_DIR$/kernel/src/include/scheduling" />
-      <recent name="$PROJECT_DIR$/kernel/src/arch/arch_specific" />
     </key>
   </component>
   <component name="RunManager" selected="Remote Debug.GDB Kernel">
@@ -428,31 +428,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="31839000" />
-    </task>
-    <task id="LOCAL-00256" summary="Got rid of dynamic allocation for pci devs">
-      <option name="closed" value="true" />
-      <created>1734687220675</created>
-      <option name="number" value="00256" />
-      <option name="presentableId" value="LOCAL-00256" />
-      <option name="project" value="LOCAL" />
-      <updated>1734687220675</updated>
-    </task>
-    <task id="LOCAL-00257" summary="Added pci driver abstraction struct with function pointers, fixed stack free bug in free_process and created a new process field in the process(in the process of changing the process field) . That's a lot of the word process.">
-      <option name="closed" value="true" />
-      <created>1734697922155</created>
-      <option name="number" value="00257" />
-      <option name="presentableId" value="LOCAL-00257" />
-      <option name="project" value="LOCAL" />
-      <updated>1734697922155</updated>
-    </task>
-    <task id="LOCAL-00258" summary="removed all the explicit type defs in kalloc and slab since it's not my personal style and I want to be consistent">
-      <option name="closed" value="true" />
-      <created>1734709496539</created>
-      <option name="number" value="00258" />
-      <option name="presentableId" value="LOCAL-00258" />
-      <option name="project" value="LOCAL" />
-      <updated>1734709496539</updated>
+      <workItem from="1745996199303" duration="33072000" />
     </task>
     <task id="LOCAL-00259" summary="Laying out device.h among other things.">
       <option name="closed" value="true" />
@@ -822,7 +798,31 @@
       <option name="project" value="LOCAL" />
       <updated>1746254801504</updated>
     </task>
-    <option name="localTasksCounter" value="305" />
+    <task id="LOCAL-00305" summary="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk">
+      <option name="closed" value="true" />
+      <created>1746345526729</created>
+      <option name="number" value="00305" />
+      <option name="presentableId" value="LOCAL-00305" />
+      <option name="project" value="LOCAL" />
+      <updated>1746345526729</updated>
+    </task>
+    <task id="LOCAL-00306" summary="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref">
+      <option name="closed" value="true" />
+      <created>1746345732206</created>
+      <option name="number" value="00306" />
+      <option name="presentableId" value="LOCAL-00306" />
+      <option name="project" value="LOCAL" />
+      <updated>1746345732206</updated>
+    </task>
+    <task id="LOCAL-00307" summary="readme">
+      <option name="closed" value="true" />
+      <created>1746349071342</created>
+      <option name="number" value="00307" />
+      <option name="presentableId" value="LOCAL-00307" />
+      <option name="project" value="LOCAL" />
+      <updated>1746349071342</updated>
+    </task>
+    <option name="localTasksCounter" value="308" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -843,9 +843,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Getting somewhere , going to keep tinkering with the pci config" />
-    <MESSAGE value="Added timout logic since timer isnt turned on yet during NVME setup" />
-    <MESSAGE value="keep it this way since this appears to be correct, just need to solve the timeouts." />
     <MESSAGE value="Wait ready appears to work it is just for commands that it does not work properly" />
     <MESSAGE value="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present" />
     <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
@@ -868,7 +865,10 @@
     <MESSAGE value="some debugging and moving code blocks around to address vfs functionality when not cached, causing null derefs" />
     <MESSAGE value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
     <MESSAGE value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
+    <MESSAGE value="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk" />
+    <MESSAGE value="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref" />
+    <MESSAGE value="readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="readme" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

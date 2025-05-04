@@ -1,0 +1,7 @@
+“A computer is like a violin. You can imagine it making beautiful music, but you have to learn how to play it.”
+“The best way to predict the future is to invent it.”
+“Computers are incredibly fast, accurate, and stupid. Human beings are incredibly slow, inaccurate, and brilliant. Together they are powerful beyond imagination.”
+“A good programmer is someone who always looks both ways before crossing a one-way street.”
+“Most of the good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program.”
+“If debugging is the process of removing software bugs, then programming must be the process of putting them in.”
+“Computers are like Old Testament gods; lots of rules and no mercy.”
