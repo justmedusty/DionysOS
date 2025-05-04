@@ -491,8 +491,8 @@ int64_t diosfs_stat(const struct vnode *vnode) {
  * Finally, return child
  */
 struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
+
     struct diosfs_filesystem_context *fs = parent->filesystem_object;
-    DEBUG_PRINT("FS CTX LOCK ADDR %x.64\n",fs->lock);
     acquire_spinlock(fs->lock);
 
     if (parent->vnode_filesystem_id != VNODE_FS_DIOSFS || parent->vnode_type != VNODE_DIRECTORY) {
@@ -506,6 +506,13 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
     struct diosfs_directory_entry *entries = (struct diosfs_directory_entry *) buffer;
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, parent->vnode_inode_number);
+
+    if(inode.size == 0){
+        //Nothing to lookup do not proceed
+        release_spinlock(fs->lock);
+        return NULL;
+    }
+
     uint64_t ret = diosfs_get_directory_entries(fs, (struct diosfs_directory_entry *) buffer,
                                                 parent->vnode_inode_number,
                                                 buffer_size);

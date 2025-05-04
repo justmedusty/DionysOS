@@ -566,7 +566,6 @@ static struct vnode *parse_path(char *path) {
         current_vnode = find_vnode_child(current_vnode, current_token);
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
-            panic("NULL ENTRY");
             kfree(current_token);
             return NULL;
         }
