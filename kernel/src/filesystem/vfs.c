@@ -362,25 +362,22 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     DEBUG_PRINT("VNODE NAME %s\n",vnode->vnode_name);
     size_t index = 0;
 
+    DEBUG_PRINT("TOKEN %s BEFORE CACHE CHECK!\n",token);
     if (vnode->is_cached == false) {
 
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
-        DEBUG_PRINT("VNODE FIND CHILD TOKEN IS %s VNODE NAME IS %s\n",token,vnode->vnode_name);
-        /* Handle cache stuff when I get there */
+
         release_spinlock(&vfs_lock);
-
         if(child){
-
             return child;
-
         } else{
             DEBUG_PRINT("NULL FIND CHILD\n");
-
             return NULL;
         }
 
     }
 
+    DEBUG_PRINT("TOKEN %s AFTER CACHE CHECK!\n",token);
     if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
         vnode_directory_alloc_children(vnode);
     }
@@ -396,7 +393,6 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         child = vnode->vnode_children[++index];
     }
     release_spinlock(&vfs_lock);
-
 
     return NULL;;
 }
@@ -536,6 +532,11 @@ static struct vnode *parse_path(char *path) {
     //Assign to the root node by default
     struct vnode *current_vnode = &vfs_root;
 
+    if(current_vnode->is_mount_point){
+        current_vnode = current_vnode->mounted_vnode;
+        DEBUG_PRINT("NUM CHILDREN  ROOT %i\n",current_vnode->num_children);
+    }
+
     char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
 
     if (path[0] != '/') {
@@ -556,11 +557,16 @@ static struct vnode *parse_path(char *path) {
     uint64_t index = 1;
 
     while (last_token != LAST_TOKEN) {
+
         last_token = strtok(path, '/', current_token, index);
         index++;
+        if(strcmp(current_token, "passwd")){
+            DEBUG_PRINT("PASSWD!\n");
+        }
         current_vnode = find_vnode_child(current_vnode, current_token);
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {
+            panic("NULL ENTRY");
             kfree(current_token);
             return NULL;
         }

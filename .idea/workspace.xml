@@ -26,10 +26,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -427,15 +428,7 @@
       <workItem from="1744268953699" duration="13814000" />
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
-      <workItem from="1745996199303" duration="25580000" />
-    </task>
-    <task id="LOCAL-00255" summary="morning brain had me write that bunch of redundant nonsense so I removed it lol">
-      <option name="closed" value="true" />
-      <created>1734685398207</created>
-      <option name="number" value="00255" />
-      <option name="presentableId" value="LOCAL-00255" />
-      <option name="project" value="LOCAL" />
-      <updated>1734685398207</updated>
+      <workItem from="1745996199303" duration="31839000" />
     </task>
     <task id="LOCAL-00256" summary="Got rid of dynamic allocation for pci devs">
       <option name="closed" value="true" />
@@ -821,7 +814,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746254075914</updated>
     </task>
-    <option name="localTasksCounter" value="304" />
+    <task id="LOCAL-00304" summary="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least">
+      <option name="closed" value="true" />
+      <created>1746254801504</created>
+      <option name="number" value="00304" />
+      <option name="presentableId" value="LOCAL-00304" />
+      <option name="project" value="LOCAL" />
+      <updated>1746254801504</updated>
+    </task>
+    <option name="localTasksCounter" value="305" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -842,7 +843,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added pci functions , setting up bus mastering since I believe this might be the case of why the nvme controller is unable to read any memory I pass to it" />
     <MESSAGE value="Getting somewhere , going to keep tinkering with the pci config" />
     <MESSAGE value="Added timout logic since timer isnt turned on yet during NVME setup" />
     <MESSAGE value="keep it this way since this appears to be correct, just need to solve the timeouts." />
@@ -867,7 +867,8 @@
     <MESSAGE value="Need to address vnode caching now" />
     <MESSAGE value="some debugging and moving code blocks around to address vfs functionality when not cached, causing null derefs" />
     <MESSAGE value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
+    <MESSAGE value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1018,24 +1019,19 @@
           <option name="timeStamp" value="451" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>508</line>
-          <option name="timeStamp" value="468" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>1269</line>
-          <option name="timeStamp" value="469" />
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
+          <line>285</line>
+          <option name="timeStamp" value="478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>560</line>
-          <option name="timeStamp" value="474" />
+          <line>383</line>
+          <option name="timeStamp" value="482" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
-          <line>279</line>
-          <option name="timeStamp" value="475" />
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
+          <line>562</line>
+          <option name="timeStamp" value="492" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

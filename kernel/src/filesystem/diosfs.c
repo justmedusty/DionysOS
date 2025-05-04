@@ -553,6 +553,8 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
             }
             DEBUG_PRINT("BEFORE PARENT CHILDREN %x.64\n",parent->vnode_children);
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
+            parent->num_children++;
+
             DEBUG_PRINT("DONE\n");
         }
         /*

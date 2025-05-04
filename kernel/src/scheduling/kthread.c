@@ -84,14 +84,27 @@ void kthread_main() {
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
     char *buffer = kmalloc(PAGE_SIZE * 8);
+
     int64_t handle = open("/etc/passwd");
+    DEBUG_PRINT("HANDLE %i\n",handle);
+    if(handle < 0){
+        goto done;
+    }
+
     memset(buffer, 0, PAGE_SIZE * 8);
-    read(handle,buffer,get_size(handle));
+    int64_t ret = read(handle,buffer,get_size(handle));
+
+    if(ret != KERN_SUCCESS){
+        serial_printf("Error opening file passwd!\n");
+        goto done;
+    }
+
     serial_printf("FILE : %s \n", buffer);
     seek(handle,SEEK_END);
+    done:
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
-    timer_sleep(1500);
+    timer_sleep(10);
     serial_printf("Thread %i exiting\n", cpu_no);
     kfree(buffer);
     sched_exit();
