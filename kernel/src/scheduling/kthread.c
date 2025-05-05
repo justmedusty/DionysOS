@@ -11,7 +11,7 @@
 #include <include/drivers/display/framebuffer.h>
 #include <include/filesystem/vfs.h>
 #include <include/scheduling/sched.h>
-
+#include "include/definitions/definitions.h"
 #include "include/memory/kalloc.h"
 #include "include/scheduling/process.h"
 
@@ -52,9 +52,10 @@ void kthread_init() {
     /*
      * A lot of the flags here are not actually needed since there is no new mappings
      */
-    struct virtual_region *stack_region = create_region((uint64_t) stack, DEFAULT_STACK_SIZE / PAGE_SIZE, STACK, READWRITE, true);
-    attach_region(proc->page_map,stack_region);
-    proc->stack =stack;
+    struct virtual_region *stack_region = create_region((uint64_t)
+    stack, DEFAULT_STACK_SIZE / PAGE_SIZE, STACK, READWRITE, true);
+    attach_region(proc->page_map, stack_region);
+    proc->stack = stack;
 
     /*
      * Set the architecture specific registers ahead of time the stack is set up as well as the instruction pointer
@@ -73,7 +74,7 @@ void kthread_init() {
     }
 
     enqueue(proc->current_cpu->local_run_queue, proc, MEDIUM);
-    kprintf("Kernel Threads Initialized For CPU #%i\n",my_cpu()->cpu_number);
+    kprintf("Kernel Threads Initialized For CPU #%i\n", my_cpu()->cpu_number);
 }
 
 /*
@@ -84,53 +85,47 @@ void kthread_main() {
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
     char *buffer = kmalloc(PAGE_SIZE);
-    int64_t handle = open("/etc/passwd");
-    DEBUG_PRINT("HANDLE %i\n",handle);
-    if(handle < 0){
-        goto done;
-    }
-    memset(buffer, 0, PAGE_SIZE * 8);
-    int64_t ret = read(handle,buffer,get_size(handle));
 
-    if(ret != KERN_SUCCESS){
-        serial_printf("Error opening file passwd!\n");
+    int64_t handle = open("/temp/procfs/kernel_messages");
+    DEBUG_PRINT("HANDLE %i\n", handle);
+    if (handle < 0) {
         goto done;
     }
-    int64_t handle2 = open("/home/welcome.txt");
-    DEBUG_PRINT("HANDLE %i\n",handle);
-    if(handle2 < 0){
-        goto done;
-    }
-    memset(buffer, 0, PAGE_SIZE * 8);
-    ret = read(handle2,buffer,get_size(handle2));
 
-    if(ret != KERN_SUCCESS){
-        serial_printf("Error opening file passwd!\n");
-        goto done;
-    }
-    DEBUG_PRINT("FILE : %s RET: %i \n", buffer,ret);
-    int64_t handle3 = open("/home/cool_quotes.txt");
-    DEBUG_PRINT("HANDLE %i\n",handle);
-    if(handle3 < 0){
-        goto done;
-    }
-    memset(buffer, 0, PAGE_SIZE * 8);
-    ret = read(handle3,buffer,get_size(handle2));
+    int64_t ret = read(handle,buffer,0);
 
-    if(ret != KERN_SUCCESS){
-        serial_printf("Error opening file passwd!\n");
-        goto done;
+    if(!ret){
+        warn_printf("Could not read file!");
     }
-    DEBUG_PRINT("FILE : %s RET: %i \n", buffer,ret);
-    seek(handle,SEEK_END);
-    seek(handle2,SEEK_END);
-    seek(handle3,SEEK_END);
+
+    DEBUG_PRINT("KERNEL LOG MESSAGES %s\n",buffer);
+    seek(handle, SEEK_END);
+    close(handle);
+
     done:
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
     timer_sleep(10);
     serial_printf("Thread %i exiting\n", cpu_no);
     kfree(buffer);
+    sched_exit();
+}
+
+void kthread_work(worker_function function, void *args) {
+
+    char *message_buffer = kmalloc(PAGE_SIZE);
+    ksprintf(message_buffer, "Kernel thread %i is starting, calling function located at %x.64\n",
+             current_process()->process_id, function);
+    log_kernel_message(message_buffer);
+
+    if (function) {
+        function(args);
+    } else{
+        ksprintf(message_buffer, "Kernel thread %i was called with a NULL function pointer!\n");
+    }
+
+    ksprintf(message_buffer, "Kernel thread %i is exiting, called function located at %x.64\n",current_process()->process_id, function);
+    kfree(message_buffer);
     sched_exit();
 }
 

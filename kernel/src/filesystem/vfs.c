@@ -66,9 +66,7 @@ void vfs_init() {
  *  otherwise kalloc is invoked.
  */
 struct vnode *vnode_alloc() {
-    DEBUG_PRINT("VNODE ALLOC ACQUIRE LOCK %i!\n",vfs_lock.locked);
     acquire_spinlock(&list_lock);
-    DEBUG_PRINT("VNODE ALLOC ACQUIRED LOCK %i!\n",vfs_lock.locked);
 
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
@@ -362,17 +360,14 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         vnode = vnode->mounted_vnode;
     }
 
-    DEBUG_PRINT("VNODE NAME %s\n",vnode->vnode_name);
     size_t index = 0;
 
-    DEBUG_PRINT("TOKEN %s BEFORE CACHE CHECK!\n",token);
     if (vnode->is_cached == false) {
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         release_spinlock(&vfs_lock);
         return child;
     }
 
-    DEBUG_PRINT("TOKEN %s AFTER CACHE CHECK!\n",token);
     if (!(vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
         vnode_directory_alloc_children(vnode);
     }
@@ -529,7 +524,6 @@ static struct vnode *parse_path(char *path) {
 
     if(current_vnode->is_mount_point){
         current_vnode = current_vnode->mounted_vnode;
-        DEBUG_PRINT("NUM CHILDREN  ROOT %i\n",current_vnode->num_children);
     }
 
     char *current_token = kmalloc(VFS_MAX_NAME_LENGTH);
@@ -555,9 +549,7 @@ static struct vnode *parse_path(char *path) {
 
         last_token = strtok(path, '/', current_token, index);
         index++;
-        if(strcmp(current_token, "passwd")){
-            DEBUG_PRINT("PASSWD!\n");
-        }
+
         current_vnode = find_vnode_child(current_vnode, current_token);
         //I may want to use special codes rather than just null so we can know invalid path, node not found, wrong type, etc
         if (current_vnode == NULL) {

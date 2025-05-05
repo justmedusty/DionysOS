@@ -14,8 +14,8 @@
 #include "include/definitions/string.h"
 
 
- uint8_t *_binary_disk_img_start = NULL;
- uint64_t _binary_disk_img_size = 0;
+uint8_t *_binary_disk_img_start = NULL;
+uint64_t _binary_disk_img_size = 0;
 
 struct ramdisk ramdisk[RAMDISK_COUNT]; /* Only need one but why not 3! */
 struct spinlock ramdisk_locks[RAMDISK_COUNT];
@@ -39,11 +39,10 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
         serial_printf("ramdisk id is out of range\n");
         return;
     }
-    if(request.response != NULL && request.response->module_count > 0){
+    if (request.response != NULL && request.response->module_count > 0) {
         _binary_disk_img_size = request.response->modules[0]->size;
         _binary_disk_img_start = request.response->modules[0]->address;
-        DEBUG_PRINT("START %x.64\n",_binary_disk_img_start);
-        ramdisk_disk_image_init(ramdisk_id,name);
+        ramdisk_disk_image_init(ramdisk_id, name);
         return;
     }
 
@@ -63,18 +62,19 @@ void ramdisk_init(uint64_t size_bytes, const uint64_t ramdisk_id, char *name, ui
     serial_printf("Ramdisk initialized\n");
 }
 
-static void ramdisk_disk_image_init(const uint64_t ramdisk_id,char *name){
+static void ramdisk_disk_image_init(const uint64_t ramdisk_id, char *name) {
     ramdisk[ramdisk_id].ramdisk_start = _binary_disk_img_start;
     ramdisk[ramdisk_id].ramdisk_size_pages = _binary_disk_img_size / PAGE_SIZE;
     ramdisk[ramdisk_id].ramdisk_size_pages++; //just in case we're a page short with the above calc which is likely
-    ramdisk[ramdisk_id].ramdisk_end = ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE);
+    ramdisk[ramdisk_id].ramdisk_end =
+            ramdisk[ramdisk_id].ramdisk_start + (ramdisk[ramdisk_id].ramdisk_size_pages * PAGE_SIZE);
     struct diosfs_superblock *sb = ramdisk[ramdisk_id].ramdisk_start;
     ramdisk[ramdisk_id].block_size = sb->block_size;
-    DEBUG_PRINT("BLOCK SIZE OF IMAGE %i\n",sb->block_size);
     safe_strcpy(ramdisk[ramdisk_id].ramdisk_name, name, sizeof(ramdisk[ramdisk_id].ramdisk_name));
     initlock(&ramdisk[ramdisk_id].ramdisk_lock, RAMDISK_LOCK);
-    DEBUG_PRINT("PHYS : %x.64 VIRT %x.64 PAGES %i\n",Virt2Phys(ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start,ramdisk[ramdisk_id].ramdisk_size_pages);
-    arch_map_pages(kernel_pg_map->top_level, (uint64_t )Virt2Phys(ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start,READWRITE | NO_EXECUTE, _binary_disk_img_size);
+    arch_map_pages(kernel_pg_map->top_level, (uint64_t)Virt2Phys(
+            ramdisk[ramdisk_id].ramdisk_start),ramdisk[ramdisk_id].ramdisk_start, READWRITE |
+                                                                                  NO_EXECUTE, _binary_disk_img_size);
     serial_printf("Ramdisk initialized\n");
 }
 
@@ -208,7 +208,7 @@ uint64_t ramdisk_write(const char *buffer, uint64_t block, uint64_t offset, uint
 
 uint64_t ramdisk_device_ops_read(uint64_t block_number, size_t block_count, char *buffer, struct device *device) {
     struct ramdisk *rd = device->device_info;
-    uint64_t ret = ramdisk_read(buffer, block_number, 0 , block_count * rd->block_size,
+    uint64_t ret = ramdisk_read(buffer, block_number, 0, block_count * rd->block_size,
                                 PAGE_SIZE * 100, device->device_minor);
     return ret;
 }

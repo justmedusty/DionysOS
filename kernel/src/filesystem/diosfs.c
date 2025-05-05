@@ -561,7 +561,6 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
             parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
             parent->num_children++;
 
-            DEBUG_PRINT("DONE\n");
         }
         /*
          * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
@@ -1390,7 +1389,6 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
      */
     uint64_t bytes_read = 0;
     uint64_t bytes_to_read = read_size_bytes;
-    DEBUG_PRINT("START BLOCK %i END BLOCK %i INODE NAME %s INODE SIZE %i BLOCK START %i\n",start_block,end_block,inode->name,inode->size,fs->superblock->block_start_pointer);
     for (uint64_t i = start_block; i <= end_block; i++) {
         uint64_t byte_size;
         if (fs->superblock->block_size - start_offset < bytes_to_read) {
@@ -1399,7 +1397,6 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
             byte_size = bytes_to_read;
         }
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i, fs);
-        DEBUG_PRINT("BUFFER ADDR %x.64\n",buffer);
         diosfs_read_block_by_number(current_block_number, buffer + bytes_read, fs, start_offset, byte_size);
 
         bytes_read += byte_size;

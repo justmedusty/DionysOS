@@ -23,6 +23,12 @@ typedef unsigned char byte;
 #define BYTE(num) (num / 8)
 
 
+extern struct vnode *procfs_root;
+extern struct vnode *kernel_message;
+extern bool procfs_online;
+
+typedef void (*worker_function)(void *args);
+
 //The ID's I'm going to put below are for spinlock contexts in case there are deadlock/contention issues later
 enum {
     SERIAL_LOCK,
@@ -178,6 +184,8 @@ void err_printf(char *str, ...);
 void debug_printf(char *str, ...);
 
 void exit_process();
+
+void log_kernel_message(const char *message);
 
 #define DIONYSOS_ASCII_STRING \
 "     _____    ____         _____  _____   ______    _____      _____        ______          _____             ______  \n"\

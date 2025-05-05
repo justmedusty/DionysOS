@@ -634,7 +634,6 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
 
     uint64_t bytes_written = 0;
     uint64_t bytes_left = write_size_bytes;
-    printf("START BLOCK %i END BLOCK %i\n",start_block,end_block);
     for (uint64_t i = start_block; i < end_block + 1; i++) {
         uint64_t byte_size;
 
@@ -645,7 +644,6 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
         }
 
         current_block_number = diosfs_get_relative_block_number_from_file(inode, i);
-        printf("CURRENT BLOCK NUMBER %lu BUFFER %s\n",current_block_number,buffer);
         diosfs_write_block_by_number(current_block_number, buffer, start_offset, byte_size);
 
         bytes_written += byte_size;
@@ -666,7 +664,6 @@ static uint64_t diosfs_write_bytes_to_inode(struct diosfs_inode *inode, const ch
 
     diosfs_write_inode(inode);
     diosfs_find_directory_entry_and_update(inode->inode_number,inode->parent_inode_number);
-    printf("BYTES WRITTEN %lu\n",bytes_written);
     return DIOSFS_SUCCESS;
 }
 

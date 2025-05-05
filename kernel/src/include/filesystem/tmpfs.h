@@ -15,10 +15,6 @@
 #define DIRECTORY_ENTRY_ARRAY_SIZE VNODE_MAX_DIRECTORY_ENTRIES * sizeof(uintptr_t)
 #define MAX_TMPFS_ENTRIES VNODE_MAX_DIRECTORY_ENTRIES
 
-extern struct vnode *procfs_root;
-extern struct vnode *kernel_message;
-extern bool procfs_online;
-
 struct tmpfs_directory_entries {
     struct tmpfs_node **entries;
 };
@@ -91,6 +87,6 @@ void tmpfs_remove(const struct vnode *vnode);
 
 void tmpfs_mkfs(uint64_t filesystem_id, char *directory_to_mount_onto);
 
-void log_kernel_message(const char *message);
+
 
 #endif //KERNEL_TMPFS_H
