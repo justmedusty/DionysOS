@@ -96,8 +96,35 @@ void kthread_main() {
         serial_printf("Error opening file passwd!\n");
         goto done;
     }
+    int64_t handle2 = open("/home/welcome.txt");
+    DEBUG_PRINT("HANDLE %i\n",handle);
+    if(handle2 < 0){
+        goto done;
+    }
+    memset(buffer, 0, PAGE_SIZE * 8);
+    ret = read(handle2,buffer,get_size(handle2));
+
+    if(ret != KERN_SUCCESS){
+        serial_printf("Error opening file passwd!\n");
+        goto done;
+    }
+    DEBUG_PRINT("FILE : %s RET: %i \n", buffer,ret);
+    int64_t handle3 = open("/home/cool_quotes.txt");
+    DEBUG_PRINT("HANDLE %i\n",handle);
+    if(handle3 < 0){
+        goto done;
+    }
+    memset(buffer, 0, PAGE_SIZE * 8);
+    ret = read(handle3,buffer,get_size(handle2));
+
+    if(ret != KERN_SUCCESS){
+        serial_printf("Error opening file passwd!\n");
+        goto done;
+    }
     DEBUG_PRINT("FILE : %s RET: %i \n", buffer,ret);
     seek(handle,SEEK_END);
+    seek(handle2,SEEK_END);
+    seek(handle3,SEEK_END);
     done:
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
