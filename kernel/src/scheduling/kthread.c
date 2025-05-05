@@ -94,8 +94,9 @@ void kthread_main() {
 
     int64_t ret = read(handle,buffer,0);
 
-    if(!ret){
+    if(ret < 0){
         warn_printf("Could not read file!");
+        sched_exit();
     }
 
     DEBUG_PRINT("KERNEL LOG MESSAGES %s\n",buffer);
