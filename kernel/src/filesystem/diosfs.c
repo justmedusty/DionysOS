@@ -1368,7 +1368,7 @@ static uint64_t diosfs_read_bytes_from_inode(struct diosfs_filesystem_context *f
         /*
          * I'll set a sensible minimum buffer size
          */
-        panic("");
+        warn_printf("diosfs_read_bytes_from_inode: Buffer too small! Buffer size is %i and blocks size is %i! Total blocks to read is %i! Inode name %s\n",buffer_size,fs->superblock->block_size,num_blocks_to_read,inode->name);
         return DIOSFS_BUFFER_TOO_SMALL;
     }
 
