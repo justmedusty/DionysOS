@@ -262,16 +262,20 @@ void tmpfs_close(struct vnode *vnode, uint64_t handle) {
     nop();
 }
 
+struct spinlock kernel_message_lock;
 void log_kernel_message(const char *message) {
     if (procfs_online) {
+        acquire_spinlock(&kernel_message_lock);
         uint64_t len = strlen(message);
         uint64_t offset = kernel_message->vnode_size;
         vnode_write(kernel_message, offset, len, message);
+        release_spinlock(&kernel_message_lock);
     }
 }
 
 void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     kprintf("Creating tmpfs filesystem...\n");
+    initlock(&kernel_message_lock,KERNEL_MESSAGE_LOCK);
     if (filesystem_id > TMPFS_NUM_SUPERBLOCKS) {
         warn_printf("tmpfs_mkfs: filesystem_id > TMPFS_NUM_SUPERBLOCKS\n");
         return;

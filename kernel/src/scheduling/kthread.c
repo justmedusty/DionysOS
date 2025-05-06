@@ -84,6 +84,7 @@ void kthread_main() {
     uint8_t cpu_no = my_cpu()->cpu_number;
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
+    kthread_work(NULL,NULL);
     char *buffer = kmalloc(PAGE_SIZE);
 
     int64_t handle = open("/temp/procfs/kernel_messages");
@@ -91,11 +92,12 @@ void kthread_main() {
     if (handle < 0) {
         goto done;
     }
-
-    int64_t ret = read(handle,buffer,0);
+    DEBUG_PRINT("HANDLE IS %i\n",handle);
+    DEBUG_PRINT("SIZE IS %i\n", get_size(handle));
+    int64_t ret = read(handle,buffer, get_size(handle));
 
     if(ret < 0){
-        warn_printf("Could not read file!");
+        warn_printf("kthread_main: Could not read file!");
         sched_exit();
     }
 

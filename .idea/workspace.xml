@@ -26,8 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir">
-      <change beforePath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/tools/mkfs/mkdiosfs.c" afterDir="false" />
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers">
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,34 +82,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Embedded GDB Server.run-gdb.executor": "Debug",
-    "Makefile Target.run-gdb.executor": "Run",
-    "Makefile Target.run-x86.executor": "Run",
-    "Makefile Target.run.executor": "Run",
-    "Remote Debug.GDB Kernel.executor": "Debug",
-    "Remote Debug.Unnamed.executor": "Debug",
-    "Remote GDB Server.run-gdb.executor": "Debug",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/dustyn/CLionProjects/DionysOS/tools/mkfs/mkdiosfs.c",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "MakefileSettings",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Embedded GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
+    &quot;Makefile Target.run-gdb.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.run-x86.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.run.executor&quot;: &quot;Run&quot;,
+    &quot;Remote Debug.GDB Kernel.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote GDB Server.run-gdb.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/tools/mkfs/mkdiosfs.c&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MakefileSettings&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tools/mkfs/default_files/var" />
@@ -426,126 +428,7 @@
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
       <workItem from="1745996199303" duration="36420000" />
-    </task>
-    <task id="LOCAL-00261" summary="some more system call fleshing out both user side and some kernel placeholder functions for uva2kva and vice versa">
-      <option name="closed" value="true" />
-      <created>1743323602681</created>
-      <option name="number" value="00261" />
-      <option name="presentableId" value="LOCAL-00261" />
-      <option name="project" value="LOCAL" />
-      <updated>1743323602681</updated>
-    </task>
-    <task id="LOCAL-00262" summary="added exit system call stub">
-      <option name="closed" value="true" />
-      <created>1743406368907</created>
-      <option name="number" value="00262" />
-      <option name="presentableId" value="LOCAL-00262" />
-      <option name="project" value="LOCAL" />
-      <updated>1743406368907</updated>
-    </task>
-    <task id="LOCAL-00263" summary="reopening the nvme book">
-      <option name="closed" value="true" />
-      <created>1743408074297</created>
-      <option name="number" value="00263" />
-      <option name="presentableId" value="LOCAL-00263" />
-      <option name="project" value="LOCAL" />
-      <updated>1743408074297</updated>
-    </task>
-    <task id="LOCAL-00264" summary="fixed syscall dispatch function prototype">
-      <option name="closed" value="true" />
-      <created>1743408158580</created>
-      <option name="number" value="00264" />
-      <option name="presentableId" value="LOCAL-00264" />
-      <option name="project" value="LOCAL" />
-      <updated>1743408158580</updated>
-    </task>
-    <task id="LOCAL-00265" summary="tmpfs_remove some logic moved into switch instead of 3 if branches">
-      <option name="closed" value="true" />
-      <created>1743491883096</created>
-      <option name="number" value="00265" />
-      <option name="presentableId" value="LOCAL-00265" />
-      <option name="project" value="LOCAL" />
-      <updated>1743491883096</updated>
-    </task>
-    <task id="LOCAL-00266" summary="PAT macros">
-      <option name="closed" value="true" />
-      <created>1743503788619</created>
-      <option name="number" value="00266" />
-      <option name="presentableId" value="LOCAL-00266" />
-      <option name="project" value="LOCAL" />
-      <updated>1743503788619</updated>
-    </task>
-    <task id="LOCAL-00267" summary="setting up some kva2uva and vice versa logic among some other small changes">
-      <option name="closed" value="true" />
-      <created>1743582706111</created>
-      <option name="number" value="00267" />
-      <option name="presentableId" value="LOCAL-00267" />
-      <option name="project" value="LOCAL" />
-      <updated>1743582706111</updated>
-    </task>
-    <task id="LOCAL-00268" summary="proper casts and such in uva2kva and kva2uva function now it compiles">
-      <option name="closed" value="true" />
-      <created>1743668561609</created>
-      <option name="number" value="00268" />
-      <option name="presentableId" value="LOCAL-00268" />
-      <option name="project" value="LOCAL" />
-      <updated>1743668561609</updated>
-    </task>
-    <task id="LOCAL-00269" summary="changing mkdiosfs to create smaller images so they can be linked inside the final elf easier">
-      <option name="closed" value="true" />
-      <created>1744270081614</created>
-      <option name="number" value="00269" />
-      <option name="presentableId" value="LOCAL-00269" />
-      <option name="project" value="LOCAL" />
-      <updated>1744270081615</updated>
-    </task>
-    <task id="LOCAL-00270" summary="inline directive to syscall stub">
-      <option name="closed" value="true" />
-      <created>1744274443763</created>
-      <option name="number" value="00270" />
-      <option name="presentableId" value="LOCAL-00270" />
-      <option name="project" value="LOCAL" />
-      <updated>1744274443763</updated>
-    </task>
-    <task id="LOCAL-00271" summary="thinking about how im going to embed a disk image">
-      <option name="closed" value="true" />
-      <created>1744356674977</created>
-      <option name="number" value="00271" />
-      <option name="presentableId" value="LOCAL-00271" />
-      <option name="project" value="LOCAL" />
-      <updated>1744356674977</updated>
-    </task>
-    <task id="LOCAL-00272" summary="little bit of ahci functionality">
-      <option name="closed" value="true" />
-      <created>1744619141843</created>
-      <option name="number" value="00272" />
-      <option name="presentableId" value="LOCAL-00272" />
-      <option name="project" value="LOCAL" />
-      <updated>1744619141843</updated>
-    </task>
-    <task id="LOCAL-00273" summary="fixed set prdt func">
-      <option name="closed" value="true" />
-      <created>1744703724754</created>
-      <option name="number" value="00273" />
-      <option name="presentableId" value="LOCAL-00273" />
-      <option name="project" value="LOCAL" />
-      <updated>1744703724754</updated>
-    </task>
-    <task id="LOCAL-00274" summary="added ahci send command function">
-      <option name="closed" value="true" />
-      <created>1744706271046</created>
-      <option name="number" value="00274" />
-      <option name="presentableId" value="LOCAL-00274" />
-      <option name="project" value="LOCAL" />
-      <updated>1744706271046</updated>
-    </task>
-    <task id="LOCAL-00275" summary="added ahci read write function">
-      <option name="closed" value="true" />
-      <created>1744789519532</created>
-      <option name="number" value="00275" />
-      <option name="presentableId" value="LOCAL-00275" />
-      <option name="project" value="LOCAL" />
-      <updated>1744789519532</updated>
+      <workItem from="1746353384954" duration="36201000" />
     </task>
     <task id="LOCAL-00276" summary="fleshing out ahci initialize function">
       <option name="closed" value="true" />
@@ -819,7 +702,127 @@
       <option name="project" value="LOCAL" />
       <updated>1746352035522</updated>
     </task>
-    <option name="localTasksCounter" value="310" />
+    <task id="LOCAL-00310" summary="Adding file embedding from the local files directory in mkdiosfs will need to debug">
+      <option name="closed" value="true" />
+      <created>1746354766136</created>
+      <option name="number" value="00310" />
+      <option name="presentableId" value="LOCAL-00310" />
+      <option name="project" value="LOCAL" />
+      <updated>1746354766136</updated>
+    </task>
+    <task id="LOCAL-00311" summary="still debugging , same freezeup as before seems to be an infinite loop">
+      <option name="closed" value="true" />
+      <created>1746355328470</created>
+      <option name="number" value="00311" />
+      <option name="presentableId" value="LOCAL-00311" />
+      <option name="project" value="LOCAL" />
+      <updated>1746355328470</updated>
+    </task>
+    <task id="LOCAL-00312" summary="Still unsure where this lock is being held from... I dont see any branches that take the vfs lock and do not release it">
+      <option name="closed" value="true" />
+      <created>1746361315325</created>
+      <option name="number" value="00312" />
+      <option name="presentableId" value="LOCAL-00312" />
+      <option name="project" value="LOCAL" />
+      <updated>1746361315325</updated>
+    </task>
+    <task id="LOCAL-00313" summary="Fixed it ,was a recursive lock issue that I resolved by putting a unqiue lock on the vnode_alloc function">
+      <option name="closed" value="true" />
+      <created>1746362073710</created>
+      <option name="number" value="00313" />
+      <option name="presentableId" value="LOCAL-00313" />
+      <option name="project" value="LOCAL" />
+      <updated>1746362073710</updated>
+    </task>
+    <task id="LOCAL-00314" summary="Using the new list lock in vnode_free as well">
+      <option name="closed" value="true" />
+      <created>1746362345674</created>
+      <option name="number" value="00314" />
+      <option name="presentableId" value="LOCAL-00314" />
+      <option name="project" value="LOCAL" />
+      <updated>1746362345674</updated>
+    </task>
+    <task id="LOCAL-00315" summary="now issue lies in read not returning any data">
+      <option name="closed" value="true" />
+      <created>1746364765866</created>
+      <option name="number" value="00315" />
+      <option name="presentableId" value="LOCAL-00315" />
+      <option name="project" value="LOCAL" />
+      <updated>1746364765866</updated>
+    </task>
+    <task id="LOCAL-00316" summary="Still debugging, I think it is has to do with the mkdiosfs write bytes to inode logic I will review that against the main kernel diosfs functions">
+      <option name="closed" value="true" />
+      <created>1746367144147</created>
+      <option name="number" value="00316" />
+      <option name="presentableId" value="LOCAL-00316" />
+      <option name="project" value="LOCAL" />
+      <updated>1746367144147</updated>
+    </task>
+    <task id="LOCAL-00317" summary="The issue appears to be a bad block offset calculation in mkdiosfs,likely due to raw block number not including the data block offset, will fix">
+      <option name="closed" value="true" />
+      <created>1746373666510</created>
+      <option name="number" value="00317" />
+      <option name="presentableId" value="LOCAL-00317" />
+      <option name="project" value="LOCAL" />
+      <updated>1746373666510</updated>
+    </task>
+    <task id="LOCAL-00318" summary="Writing then reading works, so it must have to do with the writing in mkdiosfs">
+      <option name="closed" value="true" />
+      <created>1746377686828</created>
+      <option name="number" value="00318" />
+      <option name="presentableId" value="LOCAL-00318" />
+      <option name="project" value="LOCAL" />
+      <updated>1746377686828</updated>
+    </task>
+    <task id="LOCAL-00319" summary="investigating mkdiosfs writing">
+      <option name="closed" value="true" />
+      <created>1746379962631</created>
+      <option name="number" value="00319" />
+      <option name="presentableId" value="LOCAL-00319" />
+      <option name="project" value="LOCAL" />
+      <updated>1746379962631</updated>
+    </task>
+    <task id="LOCAL-00320" summary="Fixed mkdiosfs writing issue, loop was not executing properly due to start and end block being 0">
+      <option name="closed" value="true" />
+      <created>1746381696498</created>
+      <option name="number" value="00320" />
+      <option name="presentableId" value="LOCAL-00320" />
+      <option name="project" value="LOCAL" />
+      <updated>1746381696499</updated>
+    </task>
+    <task id="LOCAL-00321" summary="Added some new fonts and some other test reads to kthread code">
+      <option name="closed" value="true" />
+      <created>1746429499105</created>
+      <option name="number" value="00321" />
+      <option name="presentableId" value="LOCAL-00321" />
+      <option name="project" value="LOCAL" />
+      <updated>1746429499105</updated>
+    </task>
+    <task id="LOCAL-00322" summary="Removing some debug prints, attempting to fix the tmpfs reading now in the procfs filesystem">
+      <option name="closed" value="true" />
+      <created>1746431831636</created>
+      <option name="number" value="00322" />
+      <option name="presentableId" value="LOCAL-00322" />
+      <option name="project" value="LOCAL" />
+      <updated>1746431831636</updated>
+    </task>
+    <task id="LOCAL-00323" summary="Fixed ret check in kthread_main">
+      <option name="closed" value="true" />
+      <created>1746432076512</created>
+      <option name="number" value="00323" />
+      <option name="presentableId" value="LOCAL-00323" />
+      <option name="project" value="LOCAL" />
+      <updated>1746432076512</updated>
+    </task>
+    <task id="LOCAL-00324" summary="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers">
+      <option name="closed" value="true" />
+      <created>1746518107589</created>
+      <option name="number" value="00324" />
+      <option name="presentableId" value="LOCAL-00324" />
+      <option name="project" value="LOCAL" />
+      <updated>1746518107589</updated>
+    </task>
+    <option name="localTasksCounter" value="325" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -840,21 +843,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="lengthening nvme timeout while i debug what it causing it to spin forever" />
-    <MESSAGE value="Setting up more AHCI setup code" />
-    <MESSAGE value="fleshing out and fixing ahci skeleton" />
-    <MESSAGE value="More fleshing out of AHCI, as well as function pointer tables" />
-    <MESSAGE value="fleshing out more ahci functionality" />
-    <MESSAGE value="fleshing out more ahci functionality x2" />
-    <MESSAGE value="fleshing out more ahci functionality x3" />
-    <MESSAGE value="Renamed P2V and V2P macros, also more ahci controller device enumeration logic" />
-    <MESSAGE value="More ahci setup &amp; incorporating into pci device enumeration" />
-    <MESSAGE value="Set up limine module to pass a filesystem image in, as opposed to using the ahci and nvme driver for now." />
-    <MESSAGE value="removing auxiliary block devices from qemu flags" />
-    <MESSAGE value="setting up disk reading , need to map the full disk into memory first" />
-    <MESSAGE value="using the image as the disk instead of allocating and copying" />
-    <MESSAGE value="Registering disk image fs function written, need to ensure it is working as expected" />
-    <MESSAGE value="trying to figure out where the page fault in tmpfs_mkfs is coming from" />
     <MESSAGE value="disk image is properly mapped now need to chase the bugs particularly in tmpfs creation, the null p derefs in the ktheads are likely related to the botched tmpfs init" />
     <MESSAGE value="Need to address vnode caching now" />
     <MESSAGE value="some debugging and moving code blocks around to address vfs functionality when not cached, causing null derefs" />
@@ -865,7 +853,22 @@
     <MESSAGE value="readme" />
     <MESSAGE value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
     <MESSAGE value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
-    <option name="LAST_COMMIT_MESSAGE" value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
+    <MESSAGE value="Adding file embedding from the local files directory in mkdiosfs will need to debug" />
+    <MESSAGE value="still debugging , same freezeup as before seems to be an infinite loop" />
+    <MESSAGE value="Still unsure where this lock is being held from... I dont see any branches that take the vfs lock and do not release it" />
+    <MESSAGE value="Fixed it ,was a recursive lock issue that I resolved by putting a unqiue lock on the vnode_alloc function" />
+    <MESSAGE value="Using the new list lock in vnode_free as well" />
+    <MESSAGE value="now issue lies in read not returning any data" />
+    <MESSAGE value="Still debugging, I think it is has to do with the mkdiosfs write bytes to inode logic I will review that against the main kernel diosfs functions" />
+    <MESSAGE value="The issue appears to be a bad block offset calculation in mkdiosfs,likely due to raw block number not including the data block offset, will fix" />
+    <MESSAGE value="Writing then reading works, so it must have to do with the writing in mkdiosfs" />
+    <MESSAGE value="investigating mkdiosfs writing" />
+    <MESSAGE value="Fixed mkdiosfs writing issue, loop was not executing properly due to start and end block being 0" />
+    <MESSAGE value="Added some new fonts and some other test reads to kthread code" />
+    <MESSAGE value="Removing some debug prints, attempting to fix the tmpfs reading now in the procfs filesystem" />
+    <MESSAGE value="Fixed ret check in kthread_main" />
+    <MESSAGE value="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -902,13 +905,13 @@
           <option name="timeStamp" value="276" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>205</line>
           <option name="timeStamp" value="302" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>204</line>
           <option name="timeStamp" value="303" />
@@ -972,63 +975,78 @@
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="3" />
+          <dependency id="2" master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="1" />
+          <dependency id="1" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="2" />
+          <dependency master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="2" />
+          <dependency id="0" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/sched/dfs.c</url>
           <line>45</line>
           <option name="timeStamp" value="442" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
           <line>424</line>
           <option name="timeStamp" value="444" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
           <line>921</line>
           <option name="timeStamp" value="445" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/drivers/block/nvme.c</url>
           <line>780</line>
           <option name="timeStamp" value="451" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>285</line>
+          <line>286</line>
           <option name="timeStamp" value="478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>383</line>
-          <option name="timeStamp" value="482" />
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
+          <line>421</line>
+          <option name="timeStamp" value="507" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>562</line>
-          <option name="timeStamp" value="492" />
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
+          <line>1399</line>
+          <option name="timeStamp" value="509" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/include/drivers/block/ramdisk.h</url>
+          <line>7</line>
+          <option name="timeStamp" value="511" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/scheduling/kthread.c</url>
+          <line>82</line>
+          <option name="timeStamp" value="513" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/scheduling/kthread.c</url>
+          <line>89</line>
+          <option name="timeStamp" value="514" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
