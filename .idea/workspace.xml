@@ -26,9 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/include/definitions/definitions.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/scheduling/kthread.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -428,15 +428,7 @@
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
       <workItem from="1745996199303" duration="36420000" />
-      <workItem from="1746353384954" duration="36201000" />
-    </task>
-    <task id="LOCAL-00276" summary="fleshing out ahci initialize function">
-      <option name="closed" value="true" />
-      <created>1744877638086</created>
-      <option name="number" value="00276" />
-      <option name="presentableId" value="LOCAL-00276" />
-      <option name="project" value="LOCAL" />
-      <updated>1744877638086</updated>
+      <workItem from="1746353384954" duration="37929000" />
     </task>
     <task id="LOCAL-00277" summary="more ahci driver fleshing out">
       <option name="closed" value="true" />
@@ -822,7 +814,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746518107589</updated>
     </task>
-    <option name="localTasksCounter" value="325" />
+    <task id="LOCAL-00325" summary="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd.">
+      <option name="closed" value="true" />
+      <created>1746519439605</created>
+      <option name="number" value="00325" />
+      <option name="presentableId" value="LOCAL-00325" />
+      <option name="project" value="LOCAL" />
+      <updated>1746519439605</updated>
+    </task>
+    <option name="localTasksCounter" value="326" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -843,7 +843,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="disk image is properly mapped now need to chase the bugs particularly in tmpfs creation, the null p derefs in the ktheads are likely related to the botched tmpfs init" />
     <MESSAGE value="Need to address vnode caching now" />
     <MESSAGE value="some debugging and moving code blocks around to address vfs functionality when not cached, causing null derefs" />
     <MESSAGE value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
@@ -868,7 +867,8 @@
     <MESSAGE value="Removing some debug prints, attempting to fix the tmpfs reading now in the procfs filesystem" />
     <MESSAGE value="Fixed ret check in kthread_main" />
     <MESSAGE value="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers" />
+    <MESSAGE value="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd." />
+    <option name="LAST_COMMIT_MESSAGE" value="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1045,7 +1045,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/scheduling/kthread.c</url>
-          <line>89</line>
+          <line>88</line>
           <option name="timeStamp" value="514" />
         </line-breakpoint>
       </breakpoints>

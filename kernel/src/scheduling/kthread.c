@@ -84,9 +84,8 @@ void kthread_main() {
     uint8_t cpu_no = my_cpu()->cpu_number;
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
-    kthread_work(NULL,NULL);
     char *buffer = kmalloc(PAGE_SIZE);
-
+    kthread_work(NULL,NULL);
     int64_t handle = open("/temp/procfs/kernel_messages");
     DEBUG_PRINT("HANDLE %i\n", handle);
     if (handle < 0) {
@@ -129,6 +128,7 @@ void kthread_work(worker_function function, void *args) {
 
     ksprintf(message_buffer, "Kernel thread %i is exiting, called function located at %x.64\n",current_process()->process_id, function);
     kfree(message_buffer);
+    return;
     sched_exit();
 }
 
