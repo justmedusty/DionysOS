@@ -26,9 +26,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Adding more debug statements, the file has the wrong function pointers">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -428,15 +427,7 @@
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
       <workItem from="1745996199303" duration="36420000" />
-      <workItem from="1746353384954" duration="44024000" />
-    </task>
-    <task id="LOCAL-00278" summary="ownership passoff ahci function">
-      <option name="closed" value="true" />
-      <created>1744961305598</created>
-      <option name="number" value="00278" />
-      <option name="presentableId" value="LOCAL-00278" />
-      <option name="project" value="LOCAL" />
-      <updated>1744961305601</updated>
+      <workItem from="1746353384954" duration="44848000" />
     </task>
     <task id="LOCAL-00279" summary="Added pci functions , setting up bus mastering since I believe this might be the case of why the nvme controller is unable to read any memory I pass to it">
       <option name="closed" value="true" />
@@ -822,7 +813,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746605551463</updated>
     </task>
-    <option name="localTasksCounter" value="327" />
+    <task id="LOCAL-00327" summary="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating.">
+      <option name="closed" value="true" />
+      <created>1746689397539</created>
+      <option name="number" value="00327" />
+      <option name="presentableId" value="LOCAL-00327" />
+      <option name="project" value="LOCAL" />
+      <updated>1746689397539</updated>
+    </task>
+    <option name="localTasksCounter" value="328" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -843,7 +842,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some debugging and moving code blocks around to address vfs functionality when not cached, causing null derefs" />
     <MESSAGE value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
     <MESSAGE value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
     <MESSAGE value="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk" />
@@ -868,7 +866,8 @@
     <MESSAGE value="Removed empty panic in diosfs.c and replaced with a verbose warning message, the issue is kernel_messages is being invoked with diosfs function pointers and not tmpfs function pointers" />
     <MESSAGE value="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd." />
     <MESSAGE value="Adding more debug statements, the file has the wrong function pointers" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adding more debug statements, the file has the wrong function pointers" />
+    <MESSAGE value="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating." />
+    <option name="LAST_COMMIT_MESSAGE" value="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

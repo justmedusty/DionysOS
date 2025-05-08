@@ -416,11 +416,10 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     }
 
     mounted_vnode->vnode_parent = mount_point;
-    mounted_vnode->is_mounted = 1;
+    mounted_vnode->is_mounted = TRUE;
 
-    mount_point->is_mount_point = 1;
+    mount_point->is_mount_point = TRUE;
     mount_point->mounted_vnode = mounted_vnode;
-
     release_spinlock(&vfs_lock);
     return KERN_SUCCESS;
 }
