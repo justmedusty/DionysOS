@@ -283,7 +283,6 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     }
     struct vnode *vnode_to_be_mounted = vnode_lookup(directory_to_mount_onto);
     if (vnode_to_be_mounted == NULL) {
-
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
@@ -309,9 +308,12 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
 
     serial_printf("TMPFS: Created tmpfs root directory\n");
+    DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
+    DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
     struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
+    DEBUG_PRINT("PROC FS PARENT %s\n",procfs->vnode_parent->vnode_name);
 
     serial_printf("TMPFS: Created procfs directory\n");
     char *path = vnode_get_canonical_path(procfs);
@@ -327,7 +329,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     procfs_root = procfs;
     kernel_message = kernel_messages;
     procfs_online = true;
-
+    panic("");
     log_kernel_message("Tmpfs initialized.");
 }
 

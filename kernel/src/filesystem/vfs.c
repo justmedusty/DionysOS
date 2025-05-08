@@ -207,12 +207,15 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     struct vnode *parent_directory = vnode_lookup(path);
 
     if (parent_directory == NULL) {
-        kprintf("PATH %s\n",path);
+        warn_printf("PATH NOT VALID %s\n",path);
         //handle null response, maybe want to return something descriptive later
         return NULL;
     }
+    DEBUG_PRINT("PARENT DIR %s IS MOUNT POINT %i\n",parent_directory->vnode_name,parent_directory->is_mount_point);
     if (parent_directory->is_mount_point) {
+        DEBUG_PRINT("MOUNT: MOVING FROM VNODE %s TO %s\n",parent_directory->vnode_name,parent_directory->mounted_vnode->vnode_name);
         parent_directory = parent_directory->mounted_vnode;
+        panic("mount");
     }
 
     if (!(parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
@@ -413,8 +416,9 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     }
 
     mounted_vnode->vnode_parent = mount_point;
-    mounted_vnode->is_mounted = true;
-    mount_point->is_mount_point = true;
+    mounted_vnode->is_mounted = 1;
+
+    mount_point->is_mount_point = 1;
     mount_point->mounted_vnode = mounted_vnode;
 
     release_spinlock(&vfs_lock);
@@ -559,6 +563,10 @@ static struct vnode *parse_path(char *path) {
 
         //Clear the token to be filled again next go round, this is important
         memset(current_token, 0, VFS_MAX_NAME_LENGTH);
+    }
+
+    if(current_vnode->is_mount_point){
+        current_vnode = current_vnode->mounted_vnode;
     }
 
     kfree(current_token);
