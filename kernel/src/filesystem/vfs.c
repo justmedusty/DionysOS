@@ -417,10 +417,13 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     }
 
     mounted_vnode->vnode_parent = mount_point;
-    mounted_vnode->is_mounted = TRUE;
+    mounted_vnode->is_mounted = true;
 
-    mount_point->is_mount_point = TRUE;
+    mount_point->is_mount_point = true;
     mount_point->mounted_vnode = mounted_vnode;
+
+    //Set cached to true otherwise on lookup the entire array of children dentries will be queried and the mount will be removed
+    mount_point->is_cached = true;
     release_spinlock(&vfs_lock);
     return KERN_SUCCESS;
 }
@@ -439,6 +442,9 @@ int64_t vnode_unmount(struct vnode *vnode) {
     vnode->is_mount_point = false;
     // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
     vnode->mounted_vnode = NULL;
+
+    //Set cached to false so that next time this vnode is queried it will fill its children array
+    vnode->is_cached = false;
     release_spinlock(&vfs_lock);
     return KERN_SUCCESS;
 }
