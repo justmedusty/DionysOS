@@ -26,8 +26,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating.">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Setting the field is_mounted field does not show any change when printing or inspecting the value, still investigating">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -427,15 +428,7 @@
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
       <workItem from="1745996199303" duration="36420000" />
-      <workItem from="1746353384954" duration="44848000" />
-    </task>
-    <task id="LOCAL-00279" summary="Added pci functions , setting up bus mastering since I believe this might be the case of why the nvme controller is unable to read any memory I pass to it">
-      <option name="closed" value="true" />
-      <created>1745050254866</created>
-      <option name="number" value="00279" />
-      <option name="presentableId" value="LOCAL-00279" />
-      <option name="project" value="LOCAL" />
-      <updated>1745050254866</updated>
+      <workItem from="1746353384954" duration="50400000" />
     </task>
     <task id="LOCAL-00280" summary="Getting somewhere , going to keep tinkering with the pci config">
       <option name="closed" value="true" />
@@ -821,7 +814,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746689397539</updated>
     </task>
-    <option name="localTasksCounter" value="328" />
+    <task id="LOCAL-00328" summary="Setting the field is_mounted field does not show any change when printing or inspecting the value, still investigating">
+      <option name="closed" value="true" />
+      <created>1746690173951</created>
+      <option name="number" value="00328" />
+      <option name="presentableId" value="LOCAL-00328" />
+      <option name="project" value="LOCAL" />
+      <updated>1746690173951</updated>
+    </task>
+    <option name="localTasksCounter" value="329" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -842,7 +843,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Appear to have fixed the caching issue, there was some null pointer deref in diosfs.c this has been fixed" />
     <MESSAGE value="Fixed debug print bug, drawing before lock is acquired leading to some framebuffer fuckery to say the least" />
     <MESSAGE value="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk" />
     <MESSAGE value="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref" />
@@ -867,7 +867,8 @@
     <MESSAGE value="kernel log file seems to attempt to use diosfs functions on occasion which is not correct and I am not sure why this is happening. Will investigate. Changing readsize made it read with the proper tmpfs function pointer but otherwise it seems to call into diosfs function pointers? Odd." />
     <MESSAGE value="Adding more debug statements, the file has the wrong function pointers" />
     <MESSAGE value="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating." />
-    <option name="LAST_COMMIT_MESSAGE" value="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating." />
+    <MESSAGE value="Setting the field is_mounted field does not show any change when printing or inspecting the value, still investigating" />
+    <option name="LAST_COMMIT_MESSAGE" value="Setting the field is_mounted field does not show any change when printing or inspecting the value, still investigating" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1019,7 +1020,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>289</line>
+          <line>291</line>
           <option name="timeStamp" value="478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -1043,14 +1044,24 @@
           <option name="timeStamp" value="515" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>418</line>
-          <option name="timeStamp" value="517" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
           <line>276</line>
           <option name="timeStamp" value="519" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
+          <line>363</line>
+          <option name="timeStamp" value="520" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
+          <line>332</line>
+          <option name="timeStamp" value="524" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
+          <line>329</line>
+          <option name="timeStamp" value="525" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -205,7 +205,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode *parent_directory = vnode_lookup(path);
-
+    DEBUG_PRINT("PARENT DIRECTORY %s\n",parent_directory->vnode_name);
     if (parent_directory == NULL) {
         warn_printf("PATH NOT VALID %s\n",path);
         //handle null response, maybe want to return something descriptive later
@@ -223,6 +223,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     }
 
     struct vnode *new_vnode;
+
     if (vnode_type == VNODE_DIRECTORY || vnode_type == VNODE_FILE) {
         new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
     } else {
@@ -469,7 +470,6 @@ int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t b
 char *vnode_get_canonical_path(struct vnode *vnode) {
     char *buffer = kzmalloc(PAGE_SIZE);
     char *final_buffer = kzmalloc(PAGE_SIZE);
-    memset(final_buffer,0,PAGE_SIZE);
     struct vnode *pointer = vnode;
 
 

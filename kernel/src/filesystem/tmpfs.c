@@ -286,6 +286,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
+    DEBUG_PRINT("VNODE TO BE MOUNTED NAME %s\n",vnode_to_be_mounted->vnode_name);
 
     struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
     memset(root, 0, sizeof(struct tmpfs_node));
@@ -329,7 +330,6 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     procfs_root = procfs;
     kernel_message = kernel_messages;
     procfs_online = true;
-    panic("");
     log_kernel_message("Tmpfs initialized.");
 }
 
