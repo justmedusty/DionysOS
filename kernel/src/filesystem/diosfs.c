@@ -409,6 +409,7 @@ void diosfs_rename(const struct vnode *vnode, char *new_name) {
 }
 
 int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, const uint64_t bytes) {
+    DEBUG_PRINT("DIOSFS READ : VNODE %s\n",vnode->vnode_name);
     struct diosfs_filesystem_context *fs = vnode->filesystem_object;
     acquire_spinlock(fs->lock);
     if (vnode->vnode_type == VNODE_HARD_LINK) {

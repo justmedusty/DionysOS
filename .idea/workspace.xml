@@ -26,10 +26,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="I think I found where the mount issue is happening, I believe I can resolve it by setting mount points to cached and unset it when they are unmounted">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="Setting cached flag in mount doesn't seem to fix , may have to do with tmpfs_lookup not filling the vnode and marking it cached. Will check it out">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/diosfs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,6 +98,7 @@
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.jetbrains.cidr.cpp.cmake.workspace.CMakeCacheInvalidator.marker&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/dustyn/CLionProjects/DionysOS/tools/mkfs/mkdiosfs.c&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -428,15 +429,9 @@
       <workItem from="1744547936947" duration="77585000" />
       <workItem from="1745767660924" duration="15829000" />
       <workItem from="1745996199303" duration="36420000" />
-      <workItem from="1746353384954" duration="52186000" />
-    </task>
-    <task id="LOCAL-00281" summary="Added timout logic since timer isnt turned on yet during NVME setup">
-      <option name="closed" value="true" />
-      <created>1745060006201</created>
-      <option name="number" value="00281" />
-      <option name="presentableId" value="LOCAL-00281" />
-      <option name="project" value="LOCAL" />
-      <updated>1745060006201</updated>
+      <workItem from="1746353384954" duration="53122000" />
+      <workItem from="1746817904973" duration="27000" />
+      <workItem from="1746817948162" duration="2184000" />
     </task>
     <task id="LOCAL-00282" summary="keep it this way since this appears to be correct, just need to solve the timeouts.">
       <option name="closed" value="true" />
@@ -822,7 +817,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746775222036</updated>
     </task>
-    <option name="localTasksCounter" value="330" />
+    <task id="LOCAL-00330" summary="Setting cached flag in mount doesn't seem to fix , may have to do with tmpfs_lookup not filling the vnode and marking it cached. Will check it out">
+      <option name="closed" value="true" />
+      <created>1746776840182</created>
+      <option name="number" value="00330" />
+      <option name="presentableId" value="LOCAL-00330" />
+      <option name="project" value="LOCAL" />
+      <updated>1746776840182</updated>
+    </task>
+    <option name="localTasksCounter" value="331" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -843,7 +846,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="In the midst of debugging the first infinite loop and now null deref when trying to find a vnode that does not exist on disk" />
     <MESSAGE value="Appear to have fixed the issue! Fuck yeah. Added a little size check in diosfs lookup to not bother with lookups with a 0 size inode for obvious reasons, this resolved the null deref" />
     <MESSAGE value="readme" />
     <MESSAGE value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
@@ -868,7 +870,8 @@
     <MESSAGE value="Bad function pointer are a cause of the mount not actually changing the is_mounted field in the /temp directory. Investigating." />
     <MESSAGE value="Setting the field is_mounted field does not show any change when printing or inspecting the value, still investigating" />
     <MESSAGE value="I think I found where the mount issue is happening, I believe I can resolve it by setting mount points to cached and unset it when they are unmounted" />
-    <option name="LAST_COMMIT_MESSAGE" value="I think I found where the mount issue is happening, I believe I can resolve it by setting mount points to cached and unset it when they are unmounted" />
+    <MESSAGE value="Setting cached flag in mount doesn't seem to fix , may have to do with tmpfs_lookup not filling the vnode and marking it cached. Will check it out" />
+    <option name="LAST_COMMIT_MESSAGE" value="Setting cached flag in mount doesn't seem to fix , may have to do with tmpfs_lookup not filling the vnode and marking it cached. Will check it out" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -922,7 +925,7 @@
           <option name="timeStamp" value="306" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="0" />
+          <dependency master-id="3" />
           <url>file://$PROJECT_DIR$/kernel/src/mm/pmm.c</url>
           <line>357</line>
           <option name="timeStamp" value="339" />
@@ -969,31 +972,31 @@
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="3" />
+          <dependency id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>107</line>
           <option name="timeStamp" value="428" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="2" master-id="3" />
+          <dependency id="2" master-id="1" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/binary_tree.c</url>
           <line>198</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="1" master-id="2" />
+          <dependency id="0" master-id="2" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>84</line>
           <option name="timeStamp" value="432" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency master-id="1" />
+          <dependency master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>54</line>
           <option name="timeStamp" value="433" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <dependency id="0" master-id="1" />
+          <dependency id="3" master-id="0" />
           <url>file://$PROJECT_DIR$/kernel/src/data_structures/singly_linked_list.c</url>
           <line>224</line>
           <option name="timeStamp" value="440" />
@@ -1025,12 +1028,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>421</line>
+          <line>422</line>
           <option name="timeStamp" value="507" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
-          <line>1399</line>
+          <line>1400</line>
           <option name="timeStamp" value="509" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -1055,12 +1058,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
-          <line>332</line>
+          <line>331</line>
           <option name="timeStamp" value="524" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
-          <line>329</line>
+          <line>328</line>
           <option name="timeStamp" value="525" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

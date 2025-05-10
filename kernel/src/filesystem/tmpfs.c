@@ -318,19 +318,19 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
 
     serial_printf("TMPFS: Created procfs directory\n");
     char *path = vnode_get_canonical_path(procfs);
+    DEBUG_PRINT("PROCFS PATH %s\n",path);
     struct vnode *sched = vnode_create(path, "sched", VNODE_DIRECTORY);
     serial_printf("TMPFS: Created sched directory under procfs\n");
     struct vnode *kernel_messages = vnode_create(path, "kernel_messages", VNODE_FILE);
 
     serial_printf("TMPFS: Created kernel_messages file under procfs\n");
-    vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
-    serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
     kprintf("Tmpfs filesystem created.\n");
-
+    kfree(path);
     procfs_root = procfs;
     kernel_message = kernel_messages;
     procfs_online = true;
     log_kernel_message("Tmpfs initialized.");
+    panic("");
 }
 
 /*
