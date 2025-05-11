@@ -406,6 +406,7 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     if (mount_point->vnode_type != VNODE_DIRECTORY) {
         //may want to return an integer to indicate what went wrong but this is ok for now
         release_spinlock(&vfs_lock);
+        panic("wrong type");
         return KERN_WRONG_TYPE;
     }
 
@@ -417,9 +418,9 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     }
 
     mounted_vnode->vnode_parent = mount_point;
-    mounted_vnode->is_mounted = true;
+    mounted_vnode->is_mounted = 1;
 
-    mount_point->is_mount_point = true;
+    mount_point->is_mount_point = 1;
     mount_point->mounted_vnode = mounted_vnode;
 
     //Set cached to true otherwise on lookup the entire array of children dentries will be queried and the mount will be removed
@@ -483,6 +484,7 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
 
         if(pointer->is_mounted){
             pointer = pointer->vnode_parent;
+
         }
 
         strcat(buffer, "/");

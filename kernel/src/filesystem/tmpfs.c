@@ -288,8 +288,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     }
     DEBUG_PRINT("VNODE TO BE MOUNTED NAME %s\n",vnode_to_be_mounted->vnode_name);
 
-    struct tmpfs_node *root = kmalloc(sizeof(struct tmpfs_node));
-    memset(root, 0, sizeof(struct tmpfs_node));
+    struct tmpfs_node *root = kzmalloc(sizeof(struct tmpfs_node));
 
     root->superblock = &superblock[filesystem_id];
     struct tmpfs_filesystem_context *context = kzmalloc(sizeof(struct tmpfs_filesystem_context));
@@ -324,6 +323,8 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct vnode *kernel_messages = vnode_create(path, "kernel_messages", VNODE_FILE);
 
     serial_printf("TMPFS: Created kernel_messages file under procfs\n");
+    vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
+    serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
     kprintf("Tmpfs filesystem created.\n");
     kfree(path);
     procfs_root = procfs;
