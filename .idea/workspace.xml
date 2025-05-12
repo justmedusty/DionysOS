@@ -26,9 +26,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="more debugging issues trying to fix the mounting problems with tmpfs">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="issue appears to be vnode_create the vnode is not mounted when it is surely mounted before. There is some special case here because the root mount works still">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -431,15 +430,7 @@
       <workItem from="1745996199303" duration="36420000" />
       <workItem from="1746353384954" duration="53122000" />
       <workItem from="1746817904973" duration="27000" />
-      <workItem from="1746817948162" duration="12103000" />
-    </task>
-    <task id="LOCAL-00283" summary="Wait ready appears to work it is just for commands that it does not work properly">
-      <option name="closed" value="true" />
-      <created>1745062400976</created>
-      <option name="number" value="00283" />
-      <option name="presentableId" value="LOCAL-00283" />
-      <option name="project" value="LOCAL" />
-      <updated>1745062400976</updated>
+      <workItem from="1746817948162" duration="17184000" />
     </task>
     <task id="LOCAL-00284" summary="removed redundant pci macro, swapped nvme print statement to DEBUG_PRINT macro so only compiles when DEBUG flag present">
       <option name="closed" value="true" />
@@ -825,7 +816,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746861607474</updated>
     </task>
-    <option name="localTasksCounter" value="332" />
+    <task id="LOCAL-00332" summary="issue appears to be vnode_create the vnode is not mounted when it is surely mounted before. There is some special case here because the root mount works still">
+      <option name="closed" value="true" />
+      <created>1746949423183</created>
+      <option name="number" value="00332" />
+      <option name="presentableId" value="LOCAL-00332" />
+      <option name="project" value="LOCAL" />
+      <updated>1746949423183</updated>
+    </task>
+    <option name="localTasksCounter" value="333" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -846,7 +845,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="readme" />
     <MESSAGE value="adding some default files to be inserted into the filesystem images spun up by mkdiosfs filesystem too" />
     <MESSAGE value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
     <MESSAGE value="Adding file embedding from the local files directory in mkdiosfs will need to debug" />
@@ -871,7 +869,8 @@
     <MESSAGE value="I think I found where the mount issue is happening, I believe I can resolve it by setting mount points to cached and unset it when they are unmounted" />
     <MESSAGE value="Setting cached flag in mount doesn't seem to fix , may have to do with tmpfs_lookup not filling the vnode and marking it cached. Will check it out" />
     <MESSAGE value="more debugging issues trying to fix the mounting problems with tmpfs" />
-    <option name="LAST_COMMIT_MESSAGE" value="more debugging issues trying to fix the mounting problems with tmpfs" />
+    <MESSAGE value="issue appears to be vnode_create the vnode is not mounted when it is surely mounted before. There is some special case here because the root mount works still" />
+    <option name="LAST_COMMIT_MESSAGE" value="issue appears to be vnode_create the vnode is not mounted when it is surely mounted before. There is some special case here because the root mount works still" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1075,6 +1074,11 @@
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
           <line>398</line>
           <option name="timeStamp" value="539" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
+          <line>277</line>
+          <option name="timeStamp" value="540" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

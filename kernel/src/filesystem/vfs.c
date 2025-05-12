@@ -400,6 +400,7 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     //handle already mounted case
     if (mount_point->is_mount_point) {
         release_spinlock(&vfs_lock);
+        panic("here");
         return KERN_EXISTS;
     }
 
@@ -414,6 +415,7 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     //can you mount a mount point? I will say no for now that seems silly
     if (mounted_vnode->is_mount_point) {
         release_spinlock(&vfs_lock);
+        panic("here");
         return KERN_EXISTS;
     }
 
