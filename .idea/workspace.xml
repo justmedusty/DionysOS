@@ -26,7 +26,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="putting a panic into tmpfs_mkfs to make it more easy to tell when the bug is fixed">
+    <list default="true" id="51f992fc-ac3f-4f81-a2b9-90fce3445e6f" name="Changes" comment="trying a new function to handle the mounting issue for now but this likely wont be the solution I am looking for just tinkering until I see where the problem is">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/kernel/src/filesystem/vfs.c" afterDir="false" />
@@ -432,15 +432,7 @@
       <workItem from="1745996199303" duration="36420000" />
       <workItem from="1746353384954" duration="53122000" />
       <workItem from="1746817904973" duration="27000" />
-      <workItem from="1746817948162" duration="19388000" />
-    </task>
-    <task id="LOCAL-00285" summary="lengthening nvme timeout while i debug what it causing it to spin forever">
-      <option name="closed" value="true" />
-      <created>1745141196081</created>
-      <option name="number" value="00285" />
-      <option name="presentableId" value="LOCAL-00285" />
-      <option name="project" value="LOCAL" />
-      <updated>1745141196081</updated>
+      <workItem from="1746817948162" duration="22045000" />
     </task>
     <task id="LOCAL-00286" summary="Setting up more AHCI setup code">
       <option name="closed" value="true" />
@@ -826,7 +818,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747033726717</updated>
     </task>
-    <option name="localTasksCounter" value="334" />
+    <task id="LOCAL-00334" summary="trying a new function to handle the mounting issue for now but this likely wont be the solution I am looking for just tinkering until I see where the problem is">
+      <option name="closed" value="true" />
+      <created>1747120041439</created>
+      <option name="number" value="00334" />
+      <option name="presentableId" value="LOCAL-00334" />
+      <option name="project" value="LOCAL" />
+      <updated>1747120041439</updated>
+    </task>
+    <option name="localTasksCounter" value="335" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -847,7 +847,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="some light housekeeping in mkdiosfs, have yet to implement the file pulling from the default_files dir" />
     <MESSAGE value="Adding file embedding from the local files directory in mkdiosfs will need to debug" />
     <MESSAGE value="still debugging , same freezeup as before seems to be an infinite loop" />
     <MESSAGE value="Still unsure where this lock is being held from... I dont see any branches that take the vfs lock and do not release it" />
@@ -872,7 +871,8 @@
     <MESSAGE value="more debugging issues trying to fix the mounting problems with tmpfs" />
     <MESSAGE value="issue appears to be vnode_create the vnode is not mounted when it is surely mounted before. There is some special case here because the root mount works still" />
     <MESSAGE value="putting a panic into tmpfs_mkfs to make it more easy to tell when the bug is fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="putting a panic into tmpfs_mkfs to make it more easy to tell when the bug is fixed" />
+    <MESSAGE value="trying a new function to handle the mounting issue for now but this likely wont be the solution I am looking for just tinkering until I see where the problem is" />
+    <option name="LAST_COMMIT_MESSAGE" value="trying a new function to handle the mounting issue for now but this likely wont be the solution I am looking for just tinkering until I see where the problem is" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1024,7 +1024,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>326</line>
+          <line>291</line>
           <option name="timeStamp" value="478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -1063,34 +1063,19 @@
           <option name="timeStamp" value="534" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
-          <line>315</line>
-          <option name="timeStamp" value="537" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>433</line>
+          <line>398</line>
           <option name="timeStamp" value="538" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>434</line>
+          <line>399</line>
           <option name="timeStamp" value="539" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/tmpfs.c</url>
-          <line>277</line>
-          <option name="timeStamp" value="540" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/kernel/src/filesystem/diosfs.c</url>
           <line>160</line>
           <option name="timeStamp" value="541" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/kernel/src/filesystem/vfs.c</url>
-          <line>244</line>
-          <option name="timeStamp" value="543" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

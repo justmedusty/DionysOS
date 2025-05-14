@@ -178,5 +178,3 @@ void vnode_close(uint64_t handle);
 void vnode_rename(struct vnode *vnode, char *new_name);
 
 struct vnode *handle_to_vnode(uint64_t handle_id);
-
-struct vnode *vnode_create_without_path(struct vnode *parent_directory, char *name, uint8_t vnode_type);

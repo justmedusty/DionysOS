@@ -313,7 +313,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
 
-    struct vnode *procfs = vnode_create_without_path(vnode_to_be_mounted,"procfs",VNODE_DIRECTORY);
+    struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
 
 #ifdef _DEBUG_
     #include "include/filesystem/diosfs.h"

@@ -205,54 +205,18 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     //If they include the new name in there then this could be an issue, sticking a proverbial pin in it with this comment
     //might need to change this later
     struct vnode *parent_directory = vnode_lookup(path);
-    DEBUG_PRINT("PARENT DIRECTORY %s\n",parent_directory->vnode_name);
+
     if (parent_directory == NULL) {
         warn_printf("PATH NOT VALID %s\n",path);
         //handle null response, maybe want to return something descriptive later
         return NULL;
     }
-    DEBUG_PRINT("PARENT DIR %s IS MOUNT POINT %i\n",parent_directory->vnode_name,parent_directory->is_mount_point);
-    if (parent_directory->is_mount_point) {
-        DEBUG_PRINT("MOUNT: MOVING FROM VNODE %s TO %s\n",parent_directory->vnode_name,parent_directory->mounted_vnode->vnode_name);
-        parent_directory = parent_directory->mounted_vnode;
-        panic("mount");
-    }
-
-    if (!(parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
-        vnode_directory_alloc_children(parent_directory);
-    }
-
-    struct vnode *new_vnode;
-
-    if (vnode_type == VNODE_DIRECTORY || vnode_type == VNODE_FILE) {
-        new_vnode = parent_directory->vnode_ops->create(parent_directory, name, vnode_type);
-    } else {
-        new_vnode = vnode_create_special(parent_directory, name, vnode_type);
-    }
-
-    if (vnode_type == VNODE_DIRECTORY) {
-        new_vnode->is_cached = true;
-    }
-
-    new_vnode->vnode_parent = parent_directory;
-
-    parent_directory->vnode_children[parent_directory->num_children++] = new_vnode;
-    return new_vnode;
-}
-
-struct vnode *vnode_create_without_path(struct vnode *parent_directory, char *name, uint8_t vnode_type) {
-
-
-    if (parent_directory == NULL) {
-        warn_printf("vnode_create_without_path passed NULL parent dir!\n");
-        //handle null response, maybe want to return something descriptive later
-        return NULL;
-    }
     DEBUG_PRINT("PARENT DIRECTORY %s\n",parent_directory->vnode_name);
     DEBUG_PRINT("PARENT DIR %s IS MOUNT POINT %i\n",parent_directory->vnode_name,parent_directory->is_mount_point);
     if (parent_directory->is_mount_point) {
         DEBUG_PRINT("MOUNT: MOVING FROM VNODE %s TO %s\n",parent_directory->vnode_name,parent_directory->mounted_vnode->vnode_name);
         parent_directory = parent_directory->mounted_vnode;
+        panic("mount");
     }
 
     if (!(parent_directory->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)) {
