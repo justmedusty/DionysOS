@@ -2,3 +2,10 @@
 /ovmf
 *.iso
 *.hdd
+/bin
+/.idea
+/obj
+qemu_debug.log
+nvme.trace
+template.iso
+core

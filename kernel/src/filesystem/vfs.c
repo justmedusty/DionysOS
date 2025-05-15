@@ -369,6 +369,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 
     if (vnode->is_cached == false) {
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
+        vnode->is_cached = true;
         release_spinlock(&vfs_lock);
         return child;
     }
@@ -380,7 +381,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     struct vnode *child = vnode->vnode_children[index];
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child != NULL && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
+        if (child  && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
             release_spinlock(&vfs_lock);
             return child;
         }
@@ -452,6 +453,69 @@ int64_t vnode_unmount(struct vnode *vnode) {
     release_spinlock(&vfs_lock);
     return KERN_SUCCESS;
 }
+/*
+ * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
+ */
+int64_t vnode_mount_path(char *mount_point_path, struct vnode *mounted_vnode) {
+    acquire_spinlock(&vfs_lock);
+
+    struct vnode *mount_point = parse_path(mount_point_path);
+    //handle already mounted case
+    if (mount_point->is_mount_point) {
+        release_spinlock(&vfs_lock);
+        panic("here");
+        return KERN_EXISTS;
+    }
+
+    if (mount_point->vnode_type != VNODE_DIRECTORY) {
+        //may want to return an integer to indicate what went wrong but this is ok for now
+        release_spinlock(&vfs_lock);
+        panic("wrong type");
+        return KERN_WRONG_TYPE;
+    }
+
+
+    //can you mount a mount point? I will say no for now that seems silly
+    if (mounted_vnode->is_mount_point) {
+        release_spinlock(&vfs_lock);
+        panic("here");
+        return KERN_EXISTS;
+    }
+
+    mounted_vnode->vnode_parent = mount_point;
+    mounted_vnode->is_mounted = 1;
+
+    mount_point->is_mount_point = 1;
+    mount_point->mounted_vnode = mounted_vnode;
+
+    //Set cached to true otherwise on lookup the entire array of children dentries will be queried and the mount will be removed
+    mount_point->is_cached = true;
+    release_spinlock(&vfs_lock);
+    return KERN_SUCCESS;
+}
+
+/*
+ * Clears mount data from the vnode, clearing it as a mount point.
+ */
+int64_t vnode_unmount_path(char *path) {
+    struct vnode *vnode = parse_path(path);
+    acquire_spinlock(&vfs_lock);
+    if (!vnode->is_mount_point) {
+        release_spinlock(&vfs_lock);
+        return KERN_NOT_FOUND;
+    }
+    //only going to allow mounting of whole filesystems so this works
+    vnode->mounted_vnode->vnode_parent = NULL;
+    vnode->is_mount_point = false;
+    // I will need to think about how I want to handle freeing and alloc of vnodes, yes the buffer cache handles data but the actual vnode structure I will likely want a pool and free/alloc often
+    vnode->mounted_vnode = NULL;
+
+    //Set cached to false so that next time this vnode is queried it will fill its children array
+    vnode->is_cached = false;
+    release_spinlock(&vfs_lock);
+    return KERN_SUCCESS;
+}
+
 
 /*
  * Invokes the read function pointer. Filesystem dependent.

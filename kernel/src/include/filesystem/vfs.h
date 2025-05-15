@@ -178,3 +178,6 @@ void vnode_close(uint64_t handle);
 void vnode_rename(struct vnode *vnode, char *new_name);
 
 struct vnode *handle_to_vnode(uint64_t handle_id);
+
+int64_t vnode_unmount_path(char *path);
+int64_t vnode_mount_path(char *mount_point_path, struct vnode *mounted_vnode) ;
