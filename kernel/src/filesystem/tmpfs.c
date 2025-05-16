@@ -312,7 +312,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
     DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
-
+    warn_printf("PARENT DIR ADDR %x.64\n",vnode_to_be_mounted);
     struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
 
 #ifdef _DEBUG_

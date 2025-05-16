@@ -211,6 +211,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
         //handle null response, maybe want to return something descriptive later
         return NULL;
     }
+    warn_printf("PARENT DIR ADDR %x.64\n",parent_directory);
     DEBUG_PRINT("PARENT DIRECTORY %s\n",parent_directory->vnode_name);
     DEBUG_PRINT("PARENT DIR %s IS MOUNT POINT %i\n",parent_directory->vnode_name,parent_directory->is_mount_point);
     if (parent_directory->is_mount_point) {
