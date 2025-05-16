@@ -369,6 +369,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     size_t index = 0;
 
     if (vnode->is_cached == false) {
+        DEBUG_PRINT("LOOKUP!\n");
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         release_spinlock(&vfs_lock);
@@ -383,6 +384,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
         if (child  && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
+            DEBUG_PRINT("find_vnode_child: child %s index is %i\n",child->vnode_name,index);
             release_spinlock(&vfs_lock);
             return child;
         }
@@ -390,7 +392,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         child = vnode->vnode_children[++index];
     }
     release_spinlock(&vfs_lock);
-
+    DEBUG_PRINT("find_vnode_child: NULL RETURN\n");
     return NULL;;
 }
 
