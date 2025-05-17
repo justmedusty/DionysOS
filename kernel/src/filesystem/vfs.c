@@ -67,16 +67,18 @@ void vfs_init() {
  */
 struct vnode *vnode_alloc() {
     acquire_spinlock(&list_lock);
-
+    DEBUG_PRINT("VNODE_ALLOC!\n");
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
         release_spinlock(&list_lock);
+        DEBUG_PRINT("NEW VNODE : %x.64\n",new_node);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
     release_spinlock(&list_lock);
+    DEBUG_PRINT("POOL VNODE : %x.64\n",vnode);
     return vnode;
 }
 
@@ -182,13 +184,9 @@ struct vnode *vnode_create_special(struct vnode *parent, char *name, uint8_t vno
     safe_strcpy(new_vnode->vnode_name, name,VFS_MAX_NAME_LENGTH);
     switch (vnode_type) {
         case VNODE_BLOCK_DEV:
-            break;
         case VNODE_CHAR_DEV:
-            break;
         case VNODE_NET_DEV:
-            break;
         case VNODE_SPECIAL_FILE:
-            break;
         case VNODE_SPECIAL:
             break;
         default:
