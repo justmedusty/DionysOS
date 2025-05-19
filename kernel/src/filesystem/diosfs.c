@@ -550,29 +550,33 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
                               : inode.size;
 
 
+    if(!(parent->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)){
+        parent->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
+        parent->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
+    }
+
     for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
-        if (fill_vnode) {
-
-            if(!(parent->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED)){
-                parent->vnode_children = kmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
-                parent->vnode_flags |= VNODE_CHILD_MEMORY_ALLOCATED;
-            }
-            DEBUG_PRINT("BEFORE PARENT CHILDREN %x.64\n",parent->vnode_children);
-            parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
-            parent->num_children++;
-
-        }
-        /*
-         * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
-         */
 
         if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH)) {
             child = diosfs_directory_entry_to_vnode(parent, entry, fs);
             if (!fill_vnode) {
                 goto done;
             }
+            continue;
         }
+
+        if (fill_vnode) {
+            DEBUG_PRINT("DIOSFS LOOKUP NAME %s %i SIZE\n",parent->vnode_name,parent->vnode_size);
+            parent->vnode_children[i] = diosfs_directory_entry_to_vnode(parent, entry, fs);
+            DEBUG_PRINT("PARENTS ADDED %s\n",parent->vnode_children[i]->vnode_name);
+            parent->num_children++;
+            parent->vnode_size++;
+
+        }
+        /*
+         * Check child so we don't strcmp every time after we find it in the case of filling the parent vnode with its children
+         */
     }
 
     done:
@@ -750,6 +754,7 @@ static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struc
                           : 0;
     vnode->filesystem_object = fs;
     vnode->vnode_parent = parent;
+    DEBUG_PRINT("DIOSFS DIRENT2VNODE NAME %s ADDR %x.64\n",vnode->vnode_name,vnode);
 
     return vnode;
 }
