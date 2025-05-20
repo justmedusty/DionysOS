@@ -557,9 +557,12 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
 
     for (uint64_t i = 0; i < max_directories; i++) {
         struct diosfs_directory_entry *entry = &entries[i];
-
+        warn_printf("ENTRY NAME %s\n",entry->name);
         if (child == NULL && safe_strcmp(name, entry->name, VFS_MAX_NAME_LENGTH)) {
             child = diosfs_directory_entry_to_vnode(parent, entry, fs);
+            parent->vnode_children[i] = child;
+            parent->num_children++;
+            parent->vnode_size++;
             if (!fill_vnode) {
                 goto done;
             }

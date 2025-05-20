@@ -341,7 +341,6 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     kernel_message = kernel_messages;
     procfs_online = true;
     log_kernel_message("Tmpfs initialized.");
-    panic("");
 }
 
 /*

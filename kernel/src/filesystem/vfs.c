@@ -423,9 +423,9 @@ int64_t vnode_mount(struct vnode *mount_point, struct vnode *mounted_vnode) {
     }
 
     mounted_vnode->vnode_parent = mount_point;
-    mounted_vnode->is_mounted = 1;
+    mounted_vnode->is_mounted = true;
 
-    mount_point->is_mount_point = 1;
+    mount_point->is_mount_point = true;
     mount_point->mounted_vnode = mounted_vnode;
 
     //Set cached to true otherwise on lookup the entire array of children dentries will be queried and the mount will be removed
