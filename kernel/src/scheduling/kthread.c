@@ -118,6 +118,7 @@ void kthread_work(worker_function function, void *args) {
     char *message_buffer = kmalloc(PAGE_SIZE);
     ksprintf(message_buffer, "Kernel thread %i is starting, calling function located at %x.64\n",
              current_process()->process_id, function);
+    warn_printf("%s\n",message_buffer);
     log_kernel_message(message_buffer);
 
     if (function) {

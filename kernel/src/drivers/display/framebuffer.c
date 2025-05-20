@@ -564,7 +564,7 @@ void ksprintf(char *buffer, char *str, ...) {
                     uint64_t value = va_arg(args, uint64_t);
 
                     if (value == 0) {
-                        buffer[index++] = 0;
+                        buffer[index++] = '0';
                         break;
                     }
 
