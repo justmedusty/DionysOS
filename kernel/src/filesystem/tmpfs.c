@@ -306,9 +306,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
 
     serial_printf("TMPFS: Created tmpfs root directory\n");
-    DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
-    DEBUG_PRINT("VNODE TO BE MOUNTED IS MOUNTED %i\n",vnode_to_be_mounted->is_mount_point);
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
     warn_printf("PARENT DIR ADDR %x.64\n",vnode_to_be_mounted);
     struct vnode *vnode_to_be_mounted2  = vnode_lookup(directory_to_mount_onto);
@@ -338,7 +336,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     procfs_root = procfs;
     kernel_message = kernel_messages;
     procfs_online = true;
-    log_kernel_message("Tmpfs initialized.");
+    log_kernel_message("Tmpfs initialized.\n");
 }
 
 /*

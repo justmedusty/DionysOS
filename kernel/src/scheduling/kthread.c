@@ -98,11 +98,9 @@ void kthread_main() {
     char *buffer = kmalloc(PAGE_SIZE);
     kthread_work(NULL,NULL);
     int64_t handle = open("/temp/procfs/kernel_messages");
-    DEBUG_PRINT("HANDLE %i\n", handle);
     if (handle < 0) {
         goto done;
     }
-    DEBUG_PRINT("SIZE IS %i\n", get_size(handle));
     int64_t ret = read(handle,buffer, get_size(handle));
 
     if(ret < 0){
@@ -110,15 +108,21 @@ void kthread_main() {
         sched_exit();
     }
 
-    DEBUG_PRINT("KERNEL LOG MESSAGES %s\n",buffer);
-    seek(handle, SEEK_END);
-    close(handle);
-
     done:
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
     timer_sleep(10);
     serial_printf("Thread %i exiting\n", cpu_no);
+     ret = read(handle,buffer, get_size(handle));
+
+    if(ret < 0){
+        warn_printf("kthread_main: Could not read file!");
+        sched_exit();
+    }
+
+    seek(handle, SEEK_END);
+    close(handle);
+
     kfree(buffer);
     sched_exit();
 }
@@ -128,7 +132,6 @@ void kthread_work(worker_function function, void *args) {
     char *message_buffer = kmalloc(PAGE_SIZE);
     ksprintf(message_buffer, "Kernel thread %i is starting, calling function located at %x.64\n",
              current_process()->process_id, function);
-    warn_printf("%s\n",message_buffer);
     log_kernel_message(message_buffer);
 
     if (function) {

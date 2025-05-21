@@ -67,18 +67,15 @@ void vfs_init() {
  */
 struct vnode *vnode_alloc() {
     acquire_spinlock(&list_lock);
-    DEBUG_PRINT("VNODE_ALLOC!\n");
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
         release_spinlock(&list_lock);
-        DEBUG_PRINT("NEW VNODE : %x.64\n",new_node);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
     release_spinlock(&list_lock);
-    DEBUG_PRINT("POOL VNODE : %x.64\n",vnode);
     return vnode;
 }
 
@@ -210,8 +207,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
         return NULL;
     }
     warn_printf("PARENT DIR ADDR %x.64\n",parent_directory);
-    DEBUG_PRINT("PARENT DIRECTORY %s\n",parent_directory->vnode_name);
-    DEBUG_PRINT("PARENT DIR %s IS MOUNT POINT %i\n",parent_directory->vnode_name,parent_directory->is_mount_point);
+
     if (parent_directory->is_mount_point) {
         DEBUG_PRINT("MOUNT: MOVING FROM VNODE %s TO %s\n",parent_directory->vnode_name,parent_directory->mounted_vnode->vnode_name);
         parent_directory = parent_directory->mounted_vnode;
@@ -367,7 +363,6 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     size_t index = 0;
 
     if (vnode->is_cached == false) {
-        DEBUG_PRINT("LOOKUP!\n");
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         release_spinlock(&vfs_lock);
@@ -382,7 +377,6 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
         if (child  && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
-            DEBUG_PRINT("find_vnode_child: child %s index is %i\n",child->vnode_name,index);
             release_spinlock(&vfs_lock);
             return child;
         }
