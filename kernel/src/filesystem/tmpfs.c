@@ -268,10 +268,7 @@ void log_kernel_message(const char *message) {
         acquire_spinlock(&kernel_message_lock);
         uint64_t len = strlen(message);
         uint64_t offset = kernel_message->vnode_size;
-        DEBUG_PRINT("OFFSET %i LEN %i\n",offset,len);
-        DEBUG_PRINT("SIZE %i\n",kernel_message->vnode_size);
         vnode_write(kernel_message, offset, len, message);
-        DEBUG_PRINT("SIZE %i\n",kernel_message->vnode_size);
         release_spinlock(&kernel_message_lock);
     }
 }
@@ -288,7 +285,6 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
         warn_printf("Path passed to tmpfs_mkfs does not return a valid vnode!\n");
         return;
     }
-    DEBUG_PRINT("VNODE TO BE MOUNTED NAME %s\n",vnode_to_be_mounted->vnode_name);
 
     struct tmpfs_node *root = kzmalloc(sizeof(struct tmpfs_node));
 

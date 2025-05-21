@@ -15,9 +15,19 @@
 #include "include/memory/kalloc.h"
 #include "include/scheduling/process.h"
 
+static uint64_t kthread_pid = 50000;
 /*
  * Initialize a kthread and add it to the local run-queue
  */
+
+static uint64_t get_kthread_pid(){
+    //Just reserve 50k+ for kthread pids
+    kthread_pid++;
+    if(kthread_pid == 0){
+        kthread_pid = 50000;
+    }
+    return kthread_pid;
+}
 void kthread_init() {
     struct process *proc = kzmalloc(sizeof(struct process));
 
@@ -43,6 +53,7 @@ void kthread_init() {
     proc->parent_process_id = 0;
     proc->process_type = KERNEL_THREAD;
     proc->current_register_state = kmalloc(sizeof(struct register_state));
+    proc->process_id = get_kthread_pid();
     memset(proc->current_register_state, 0, sizeof(struct register_state));
 
     /*
@@ -91,7 +102,6 @@ void kthread_main() {
     if (handle < 0) {
         goto done;
     }
-    DEBUG_PRINT("HANDLE IS %i\n",handle);
     DEBUG_PRINT("SIZE IS %i\n", get_size(handle));
     int64_t ret = read(handle,buffer, get_size(handle));
 
