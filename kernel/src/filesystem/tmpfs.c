@@ -269,6 +269,7 @@ void log_kernel_message(const char *message) {
         uint64_t len = strlen(message);
         uint64_t offset = kernel_message->vnode_size;
         vnode_write(kernel_message, offset, len, message);
+        DEBUG_PRINT("VNODE SIZE %i OFFSET %i LEN %i\n",kernel_message->vnode_size,offset,len);
         release_spinlock(&kernel_message_lock);
     }
 }

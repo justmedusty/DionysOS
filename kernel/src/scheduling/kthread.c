@@ -101,13 +101,16 @@ void kthread_main() {
     if (handle < 0) {
         goto done;
     }
-    int64_t ret = read(handle,buffer, get_size(handle));
+    timer_sleep(1000);
+    DEBUG_PRINT("READING ON KTHREAD %i\n",current_process()->process_id);
+    int64_t ret = read(handle,buffer, 0);
 
     if(ret < 0){
         warn_printf("kthread_main: Could not read file!");
         sched_exit();
     }
 
+    DEBUG_PRINT("KERNELMSG FILE: %s\n",buffer);
     done:
     sched_yield();
     serial_printf("Thread %i back online\n", cpu_no);
@@ -115,13 +118,6 @@ void kthread_main() {
     serial_printf("Thread %i exiting\n", cpu_no);
     seek(handle, SEEK_END);
     close(handle);
-     ret = read(handle,buffer, get_size(handle));
-
-    if(ret < 0){
-        warn_printf("kthread_main: Could not read file!\n");
-    }
-
-
 
     kfree(buffer);
     sched_exit();

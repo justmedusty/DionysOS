@@ -516,10 +516,16 @@ int64_t vnode_unmount_path(char *path) {
  *
  * Handles mount points properly.
  */
-int64_t vnode_read(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, char *buffer) {
+int64_t vnode_read(struct vnode *vnode, const uint64_t offset,  uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         panic("reading a directory");
     }
+
+    // If the passed size is 0 read the whole thing
+    if(bytes == 0){
+        bytes = vnode->vnode_size;
+    }
+    DEBUG_PRINT("READING %i BYTES SIZE IS %i\n",bytes,vnode->vnode_size);
     //Let the specific impl handle this
     return vnode->vnode_ops->read(vnode, offset, buffer, bytes);
 }
