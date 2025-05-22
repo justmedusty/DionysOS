@@ -681,13 +681,13 @@ struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
 
-    do {
+    while(node != NULL){
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
             return handle->vnode;
         }
         node = node->next;
-    } while (node->next != NULL);
+    }
 
     return NULL;
 }

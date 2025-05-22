@@ -113,15 +113,15 @@ void kthread_main() {
     serial_printf("Thread %i back online\n", cpu_no);
     timer_sleep(10);
     serial_printf("Thread %i exiting\n", cpu_no);
+    seek(handle, SEEK_END);
+    close(handle);
      ret = read(handle,buffer, get_size(handle));
 
     if(ret < 0){
-        warn_printf("kthread_main: Could not read file!");
-        sched_exit();
+        warn_printf("kthread_main: Could not read file!\n");
     }
 
-    seek(handle, SEEK_END);
-    close(handle);
+
 
     kfree(buffer);
     sched_exit();
