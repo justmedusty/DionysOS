@@ -516,6 +516,7 @@ int64_t vnode_unmount_path(char *path) {
  *
  * Handles mount points properly.
  */
+#include "include/architecture/arch_timer.h"
 int64_t vnode_read(struct vnode *vnode, const uint64_t offset,  uint64_t bytes, char *buffer) {
     if (vnode->is_mount_point) {
         panic("reading a directory");
@@ -523,6 +524,8 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset,  uint64_t bytes, 
 
     // If the passed size is 0 read the whole thing
     if(bytes == 0){
+        timer_sleep(1000);
+        DEBUG_PRINT("VNODE %s SIZE %i ADDRESS %x.64\n",vnode->vnode_name,vnode->vnode_size,vnode);
         bytes = vnode->vnode_size;
     }
     DEBUG_PRINT("READING %i BYTES SIZE IS %i\n",bytes,vnode->vnode_size);

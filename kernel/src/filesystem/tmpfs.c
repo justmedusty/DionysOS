@@ -164,6 +164,7 @@ void tmpfs_remove(const struct vnode *vnode) {
  * it is required to do so.
  */
 int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+    DEBUG_PRINT("VNODE %s OFFSET %i BYTES %i SIZE %i\n",vnode->vnode_name,offset,bytes,vnode->vnode_size);
     struct tmpfs_filesystem_context *context = vnode->filesystem_object;
     acquire_spinlock(&context->fs_lock);
     struct tmpfs_node *node = find_tmpfs_node_from_vnode(vnode);
@@ -176,6 +177,9 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
     while (bytes > 0) {
         bool new_size = false;
         char *data_page = (char *) target->page_list[page / PAGES_PER_TMPFS_ENTRY];
+        if( buffer[copy_index] == '\0'){
+            panic("null term");
+        }
         data_page[offset] = buffer[copy_index];
 
         copy_index++;
@@ -199,6 +203,8 @@ int64_t tmpfs_write(struct vnode *vnode, uint64_t offset, const char *buffer, ui
     }
 
     vnode->vnode_size += total_bytes - bytes;
+    DEBUG_PRINT("NODE SIZE %i VNODE SIZE %i\n",node->tmpfs_node_size,vnode->vnode_size);
+    DEBUG_PRINT("VNODE ADDRESS %x.64\n",vnode);
     release_spinlock(&context->fs_lock);
     return (int64_t)(total_bytes - bytes);
 }

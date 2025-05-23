@@ -101,7 +101,7 @@ void kthread_main() {
     if (handle < 0) {
         goto done;
     }
-    timer_sleep(1000);
+
     DEBUG_PRINT("READING ON KTHREAD %i\n",current_process()->process_id);
     int64_t ret = read(handle,buffer, 0);
 
