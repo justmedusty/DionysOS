@@ -69,12 +69,14 @@ struct vnode *vnode_alloc() {
     acquire_spinlock(&list_lock);
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
+        DEBUG_PRINT("VNODE ALLOC %x.64\n",new_node);
         release_spinlock(&list_lock);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
+    DEBUG_PRINT("VNODE ALLOC %x.64\n",vnode);
     release_spinlock(&list_lock);
     return vnode;
 }
@@ -775,6 +777,7 @@ int64_t read(uint64_t handle, char *buffer, uint64_t bytes) {
     if (!handle_vnode) {
         return KERN_NOT_FOUND;
     }
+    DEBUG_PRINT("Vnode resolved %x.64, %s, size %i REAL vnode : %x.64, %s size %i\n",handle_vnode,handle_vnode->vnode_name,handle_vnode->vnode_size,kernel_message,kernel_message->vnode_name,kernel_message->vnode_size);
 
     const int64_t offset = handle_to_offset(handle);
 

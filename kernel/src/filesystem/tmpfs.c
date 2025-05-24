@@ -313,17 +313,13 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct vnode *tmpfs_root = tmpfs_node_to_vnode(root);
 
     serial_printf("TMPFS: Created tmpfs root directory\n");
+
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
+
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
-    struct vnode *vnode_to_be_mounted2  = vnode_lookup(directory_to_mount_onto);
+
     struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
 
-#ifdef _DEBUG_
-    #include "include/filesystem/diosfs.h"
-    if(procfs->vnode_ops == &diosfs_vnode_ops){
-        panic("mount bug!");
-    }
-#endif
     DEBUG_PRINT("PROC FS PARENT %s\n",procfs->vnode_parent->vnode_name);
 
     serial_printf("TMPFS: Created procfs directory\n");
@@ -334,13 +330,19 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     struct vnode *kernel_messages = vnode_create(path, "kernel_messages", VNODE_FILE);
 
     serial_printf("TMPFS: Created kernel_messages file under procfs\n");
-    vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
+    struct vnode *tmp = vnode_create(directory_to_mount_onto, "tmp", VNODE_DIRECTORY);
     serial_printf("TMPFS: Created tmp directory under %s\n", directory_to_mount_onto);
     kprintf("Tmpfs filesystem created.\n");
     kfree(path);
     procfs_root = procfs;
     kernel_message = kernel_messages;
+
+    tmpfs_root->is_cached = true;
+    sched->is_cached = true;
+    procfs->is_cached = true;
+    tmp->is_cached = true;
     procfs_online = true;
+    kprintf("Tmpfs Initialized\n");
     log_kernel_message("Tmpfs initialized.\n");
 }
 
@@ -397,6 +399,7 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
  */
 static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     struct vnode *vnode = vnode_alloc();
+    DEBUG_PRINT("NODE NAME %s\n",node->node_name);
     memset(vnode, 0, sizeof(struct vnode));
     vnode->filesystem_object = node->superblock->filesystem;
     vnode->is_cached = false;
@@ -421,10 +424,12 @@ static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnod
     for (size_t i = 0; i < num_entries; i++) {
         vnode->vnode_children[i] = tmpfs_node_to_vnode(entries->entries[i]);
         vnode->vnode_children[i]->vnode_parent = vnode;
+        DEBUG_PRINT("ENTRY NAME %s ADDR %x.64 SIZE %i\n",vnode->vnode_children[i]->vnode_name,vnode->vnode_children[i],vnode->vnode_children[i]->vnode_size);
         if (safe_strcmp(vnode->vnode_children[i]->vnode_name, target_name, VFS_MAX_NAME_LENGTH)) {
             ret = vnode->vnode_children[i];
         }
     }
+
     return ret;
 }
 
