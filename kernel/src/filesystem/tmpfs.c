@@ -85,9 +85,14 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
     struct tmpfs_node *child_node = tmpfs_find_child(target_node, name);
 
 
-    struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
-            vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
-    vnode->num_children = target_node->tmpfs_node_size;
+    if (vnode->vnode_size == 0) {
+        struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
+          vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
+        vnode->num_children = target_node->tmpfs_node_size;
+    }else {
+     //grab out of vnode
+    }
+
     release_spinlock(&context->fs_lock);
     return child;
 }
@@ -420,6 +425,8 @@ static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
 static struct vnode *insert_tmpfs_children_nodes_into_vnode_children(struct vnode *vnode,
                                                                      const struct tmpfs_directory_entries *entries,
                                                                      const size_t num_entries, char *target_name) {
+
+
     struct vnode *ret = NULL;
     for (size_t i = 0; i < num_entries; i++) {
         vnode->vnode_children[i] = tmpfs_node_to_vnode(entries->entries[i]);
