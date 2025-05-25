@@ -83,16 +83,12 @@ struct vnode *tmpfs_lookup(struct vnode *vnode, char *name) {
         return NULL; // linter purposes
     }
     struct tmpfs_node *child_node = tmpfs_find_child(target_node, name);
-
-
     if (vnode->vnode_size == 0) {
-        struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
-          vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
-        vnode->num_children = target_node->tmpfs_node_size;
-    }else {
-     //grab out of vnode
-    }
 
+    }
+    struct vnode *child = insert_tmpfs_children_nodes_into_vnode_children(
+            vnode, &target_node->directory_entries, target_node->tmpfs_node_size, name);
+    vnode->num_children = target_node->tmpfs_node_size;
     release_spinlock(&context->fs_lock);
     return child;
 }
