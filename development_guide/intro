@@ -1,0 +1,7 @@
+[Foreword]
+I will be authoring a development guide and explaining interfaces and systems that I have built / am building in DionysOS to further any collaboration either now or in the future.
+My eventual vision for this project is to not just be some other operating system spewed out into the github ether of dead projects but to stay as a collaborative project as well as 
+being a learning tool for those interested in operating system developement and just learning about operating system development. This guide will serve to anyone who wishes to either contribute
+to the mainline proect or for anyone who forks / downloads a private copy to play with for learning purposes or just for fun. Most of the operating system projects out there have little to no documentation and are pretty well purely personal projects, I would like to set mine apart in this aspect.
+
+I have a lot of things I would like to do with this project into the future but even if I end up moving on, I want this to remain useful and accessible and easily understandable to anyone who is interested in operating system development and wants a proper intro project that has proper documentation and is designed to be collaborative not just poorly or not at all documented personal projects that stay that way forever. Operating system development is a lot of fun and should be as accessible as possible without having to read through the entire codebase to begin to understand how they designed their project.
