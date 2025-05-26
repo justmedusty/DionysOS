@@ -1,4 +1,10 @@
+[Files]
+
+include/memory/pmm.h
+kernel/src/memory/pmm.c
+
 [Public Functions]
+
 The physical memory management layer has 3 main public functions, with 2 being the only ones you would need to worry about most times.
 
 int phys_init() : This function initializes the physical memory management layer by reading a bootloader provided memory map
@@ -9,3 +15,9 @@ based on the buddy system, powers of two are used, the next highest power of two
 of pages is not already a power of two.
 
 void phys_dealloc(void *address) : This function just deallocates a range, pass the starting address and it will deallocate the range.
+
+[Notes]
+
+The PMM layer does not contain any locking mechanism, so functions like phys_alloc and phys_dealloc are not safe to be accessed on their own. You can change this in your own copy if you want, otherwise
+the regular virtual alloc functions kmalloc and kfree contain the required locks. I usually would just use kmalloc and then the VirtToPhys macro if I just need the physical address, just make sure when
+you free, you free the result of the PhysToVirt macro on the address otherwise it will probably panic.
