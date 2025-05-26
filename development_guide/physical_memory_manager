@@ -1,0 +1,11 @@
+[Public Functions]
+The physical memory management layer has 3 main public functions, with 2 being the only ones you would need to worry about most times.
+
+int phys_init() : This function initializes the physical memory management layer by reading a bootloader provided memory map
+
+void *phys_alloc(uint64_t pages,uint8_t zone) : This function is for requesting a range of physical page frames, the zone is used to pass which zone you wish. The memory 
+zones are separated mainly into kernel and user physical pages, with more being put aside for userspace than for kernel space. Since the implementation behind the system is 
+based on the buddy system, powers of two are used, the next highest power of two will be derived by via the next_power_of_tw0 function, assuming the value passed for number 
+of pages is not already a power of two.
+
+void phys_dealloc(void *address) : This function just deallocates a range, pass the starting address and it will deallocate the range.
