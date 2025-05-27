@@ -316,6 +316,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     serial_printf("TMPFS: Created tmpfs root directory\n");
 
     vnode_mount(vnode_to_be_mounted, tmpfs_root);
+    vnode_to_be_mounted->is_cached = true;
 
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
 
@@ -342,7 +343,9 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     sched->is_cached = true;
     procfs->is_cached = true;
     tmp->is_cached = true;
+
     procfs_online = true;
+
     kprintf("Tmpfs Initialized\n");
     log_kernel_message("Tmpfs initialized.\n");
 }
@@ -399,6 +402,10 @@ static struct tmpfs_node *tmpfs_find_child(struct tmpfs_node *node, char *name) 
  * Simply creates a vnode with the attributes from a given tmpfs node
  */
 static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
+    static int num = 0;
+    if(strcmp(node->node_name,"kernel_messages")){
+        warn_printf("CREATING KERNEL MESSAGES %i!",++num);
+    }
     struct vnode *vnode = vnode_alloc();
     DEBUG_PRINT("NODE NAME %s\n",node->node_name);
     memset(vnode, 0, sizeof(struct vnode));
