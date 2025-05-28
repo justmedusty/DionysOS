@@ -321,7 +321,7 @@ void tmpfs_mkfs(const uint64_t filesystem_id, char *directory_to_mount_onto) {
     serial_printf("TMPFS: Mounted tmpfs onto %s\n", directory_to_mount_onto);
 
     struct vnode *procfs = vnode_create(directory_to_mount_onto, "procfs", VNODE_DIRECTORY);
-
+    procfs->is_cached = true;
     DEBUG_PRINT("PROC FS PARENT %s\n",procfs->vnode_parent->vnode_name);
 
     serial_printf("TMPFS: Created procfs directory\n");

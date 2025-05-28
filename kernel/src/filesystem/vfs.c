@@ -363,8 +363,8 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
 
     size_t index = 0;
 
-    if (vnode->is_cached == false) {
-        warn_printf("NOT CACHED!\n");
+    if (vnode->is_cached == false && vnode->num_children == 0) {
+        warn_printf("NOT CACHED %s!\n",vnode->vnode_name);
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         release_spinlock(&vfs_lock);
