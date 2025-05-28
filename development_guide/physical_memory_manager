@@ -16,8 +16,25 @@ of pages is not already a power of two.
 
 void phys_dealloc(void *address) : This function just deallocates a range, pass the starting address and it will deallocate the range.
 
+[Private Functions]
+
+static void buddy_coalesce(struct buddy_block *block) : This function attempts to coleasce (combine) a block with its buddy when it becomes free , if it is possible to do so.
+
+static struct buddy_block *buddy_alloc(uint64_t pages,uint8_t zone) : This is the core alloc function for allocing a range of buddy blocks, will return the range of buddy blocks.
+
+static void buddy_free(void *address) : This is the core free function will free the block(s) and attempt to coalesce if possible to do so
+
+static void buddy_block_free(struct buddy_block *block) : This function is for freeing the actual buddy block data structure from a buddy block cache and returning it back to the cache
+
+static struct buddy_block *buddy_block_get() : This function is for getting the actual buddy block data structure from a buddy block cache
+
+static struct buddy_block *buddy_split(struct buddy_block *block) : This is for splitting a buddy block into two when there is not a small enough block available
+
+
 [Notes]
 
 The PMM layer does not contain any locking mechanism, so functions like phys_alloc and phys_dealloc are not safe to be accessed on their own. You can change this in your own copy if you want, otherwise
 the regular virtual alloc functions kmalloc and kfree contain the required locks. I usually would just use kmalloc and then the VirtToPhys macro if I just need the physical address, just make sure when
 you free, you free the result of the PhysToVirt macro on the address otherwise it will probably panic.
+
+
