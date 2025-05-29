@@ -1,0 +1,32 @@
+[Files]
+Top Level:
+include/memory/vmm.h
+kernel/src/memory/vmm.c
+
+x86_64:
+kernel/src/architecture/architecture_specific/x86_64/memory/vmm.c
+kernel/src/include/architecture/arch_vmm.h
+
+[Public Functions]
+
+void arch_kvm_init(p4d_t *pgdir) : This just copies the kernel page map into the given page directory, mostly only used when creating kernel threads
+
+void arch_vmm_init() : This function is the first vmm function called and maps kernel memory to drop the bootloader mapped page tables that are initially present
+
+struct virtual_region *create_region(uint64_t start_address, uint64_t size_pages, uint64_t type, uint64_t perms, bool contiguous) : This creates a region of the passed type of
+the given size, permissions, and is contiguous if requested to be so. The region returned must be held onto until stored somewhere or attached.
+
+void attach_region(struct virt_map *map, struct virtual_region *region) : This function attaches the passed region to the passed virtual map
+
+void detach_region(struct virt_map *map, struct virtual_region *region) : This function detaches the given region from the given virtual map
+
+void arch_dealloc_page_table(p4d_t *pgdir) : This function frees all of the pages in a passed page table, it is important to never pass the kernel page map to this function
+
+void arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms, uint64_t size) : This just maps pages starting from the given phys addr to the passed size, if you need to map
+in a non contiguous manner, this function must be called in a loop
+
+
+[Private Functions]
+
+
+[Notes]
