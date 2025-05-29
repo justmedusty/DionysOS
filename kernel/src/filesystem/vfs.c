@@ -210,7 +210,6 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     }
 
     if (parent_directory->is_mount_point) {
-        DEBUG_PRINT("MOUNT: MOVING FROM VNODE %s TO %s\n",parent_directory->vnode_name,parent_directory->mounted_vnode->vnode_name);
         parent_directory = parent_directory->mounted_vnode;
         panic("mount");
     }
@@ -528,10 +527,8 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset,  uint64_t bytes, 
     // If the passed size is 0 read the whole thing
     if(bytes == 0){
         timer_sleep(1000);
-        DEBUG_PRINT("VNODE %s SIZE %i ADDRESS %x.64\n",vnode->vnode_name,vnode->vnode_size,vnode);
         bytes = vnode->vnode_size;
     }
-    DEBUG_PRINT("READING %i BYTES SIZE IS %i\n",bytes,vnode->vnode_size);
     //Let the specific impl handle this
     return vnode->vnode_ops->read(vnode, offset, buffer, bytes);
 }
@@ -778,7 +775,6 @@ int64_t read(uint64_t handle, char *buffer, uint64_t bytes) {
     if (!handle_vnode) {
         return KERN_NOT_FOUND;
     }
-    DEBUG_PRINT("Vnode resolved %x.64, %s, size %i REAL vnode : %x.64, %s size %i\n",handle_vnode,handle_vnode->vnode_name,handle_vnode->vnode_size,kernel_message,kernel_message->vnode_name,kernel_message->vnode_size);
 
     const int64_t offset = handle_to_offset(handle);
 
