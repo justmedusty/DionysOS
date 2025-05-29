@@ -51,7 +51,7 @@ void init_vmm() {
     serial_printf("VMM mapped and initialized\n");
 }
 
-void reload_vmm() {
+void load_vmm() {
     switch_page_table(kernel_pg_map->top_level);
 }
 

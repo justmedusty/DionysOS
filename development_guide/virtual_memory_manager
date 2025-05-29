@@ -28,5 +28,25 @@ in a non contiguous manner, this function must be called in a loop
 
 [Private Functions]
 
+[x86_64]
+
+void init_vmm() : This is the initial init function for x86, mapping the text, data, rodata etc segments into the kernel page tables and then loading CR3 register
+
+void switch_page_table(p4d_t *page_dir) : This function simply switches page tables by loading CR3 with the passed page directory
+
+int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, uint64_t perms, uint64_t size) : This is just your mapping function, essentially functions the same way as the high level
+function that invokes it, walks page tables and maps
+
+uint64_t dealloc_va(p4d_t *pgdir, uint64_t address) : This deallocs a single page of memory from the given page directory at the given address
+
+void dealloc_va_range(p4d_t *pgdir, uint64_t address, uint64_t size) : Same as above except loops over the range instead of a single page
+
+void map_kernel_address_space(p4d_t *pgdir) : This simply maps tthe kernel data ,text , rodata etc into the passed page directory. This should only be called by init vmm it is wasteful to call
+on each new kthread spawn
+
+void load_vmm() : This function just loads the kernel page tables into CR3 register
+
+pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) : This is the function for actually walking the page tables for mapping
+
 
 [Notes]
