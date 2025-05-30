@@ -11,7 +11,7 @@
 #include <include/drivers/serial/uart.h>
 
 #include "include/definitions/types.h"
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include "include/definitions/definitions.h"
 
 /*

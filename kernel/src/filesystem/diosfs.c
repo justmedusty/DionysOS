@@ -10,7 +10,7 @@
 #include "include/data_structures/spinlock.h"
 #include "include/definitions/definitions.h"
 #include <include/drivers/serial/uart.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include "include/drivers/block/ramdisk.h"
 #include "include/memory/mem.h"
 /*

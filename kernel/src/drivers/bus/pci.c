@@ -7,7 +7,7 @@
 #include "include/drivers/display/framebuffer.h"
 #include"include/data_structures/doubly_linked_list.h"
 #include "include/definitions/definitions.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/string.h"
 #include "include/memory/mem.h"

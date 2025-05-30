@@ -4,7 +4,7 @@
 
 #include "include/data_structures/hash_table.h"
 #include <include/architecture/arch_cpu.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include "include/definitions/definitions.h"
 
 /*

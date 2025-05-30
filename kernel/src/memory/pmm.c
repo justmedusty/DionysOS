@@ -8,7 +8,7 @@
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>
 #include <include/drivers/display/framebuffer.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include <include/memory/slab.h>
 #include "limine.h"
 #include "include/memory/mem.h"

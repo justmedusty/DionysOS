@@ -13,7 +13,7 @@
 #include <include/data_structures/spinlock.h>
 #include <include/definitions/string.h>
 #include <include/drivers/display/framebuffer.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include <include/scheduling/sched.h>
 #include <include/scheduling/kthread.h>
 

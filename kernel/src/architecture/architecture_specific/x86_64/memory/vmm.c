@@ -17,7 +17,7 @@
 #include "include/memory/mem.h"
 #include "include/architecture/arch_paging.h"
 #include "include/memory/pmm.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 #include "include/memory/mem_bounds.h"
 #include "include/drivers/serial/uart.h"
 #include "include/architecture//arch_vmm.h"

@@ -8,7 +8,7 @@
 #include <include/drivers/display/framebuffer.h>
 
 #include "include/architecture/arch_vmm.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 struct virt_map* kernel_pg_map;
 
 /*

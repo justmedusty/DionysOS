@@ -1,0 +1,34 @@
+[Files]
+kernel/src/memory/kmalloc.c
+kernel/src/memory/slab.c
+kernel/src/include/memory/slab.h
+kernel/src/include/memory/kmalloc.h
+
+[Public Functions]
+
+void *kmalloc(uint64_t size) : This is the standard malloc function you get for any allocations inside the kernel, allocates specifically earmarked kernel memory and is properly locked. These
+functions deal with virtual addresses only.
+
+void *krealloc(void *address, uint64_t new_size) : This is for a reallocation just like the typical realloc function is, I have not used it once but it is available
+
+void kfree(void *address) : Free a virtual address that you received from kmalloc
+
+void *kzmalloc(uint64_t size) : Same as kmalloc but zeros the memory before  passing it, saving a call to memcpy for the caller
+
+void *umalloc(uint64_t pages) : Functions essentially same as kmalloc except only returns memory that was in the earmarked user pool.
+
+[Private Functions]
+
+void *_kalloc(uint64_t size) : Original function that was not threadsafe, wrapped in kmalloc with a lock
+
+void _kfree(void *address) : Original kfree that was not threadsafe, wrapped in kfre with a lock
+
+int heap_init() : Initializes the slab cache on boot
+
+void heap_create_slab(struct slab *slab, uint64_t entry_size,uint64_t pages) : create a entry in the passed slab object of size and how many pages (size would be your sub page size EG 32B)
+
+void *heap_allocate_from_slab(struct slab *slab) : Allocates from a specific slab
+
+void heap_free_in_slab(struct slab *slab, void *address) : Frees an address from a specific slab, has to be the start of the entry of course
+
+[Notes]

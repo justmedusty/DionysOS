@@ -5,7 +5,7 @@
 #include "include/data_structures/queue.h"
 #include "include/data_structures/spinlock.h"
 #include <include/definitions/definitions.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include <include/definitions/types.h>
 #include <include/architecture/arch_cpu.h>
 

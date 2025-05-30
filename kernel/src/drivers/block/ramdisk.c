@@ -7,7 +7,7 @@
 #include "include/definitions/types.h"
 #include "include/drivers/serial/uart.h"
 #include "include/filesystem/diosfs.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 #include "include/memory/mem.h"
 #include "include/memory/pmm.h"
 #include "include/definitions/definitions.h"

@@ -6,7 +6,7 @@
 #define _PROCESS_H_
 
 #include "include/filesystem/vfs.h"
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include "include/architecture/arch_cpu.h"
 #include "include/architecture/arch_vmm.h"
 #include "include/scheduling/process.h"

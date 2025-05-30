@@ -19,7 +19,7 @@
 #include "include/architecture/arch_smp.h"
 #include "include/architecture/arch_cpu.h"
 #include "include/definitions/string.h"
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include <include/memory/mem.h>
 
 

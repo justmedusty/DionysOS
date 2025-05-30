@@ -7,7 +7,7 @@
 #include "include/definitions/string.h"
 #include <include/architecture/arch_cpu.h>
 #include <include/drivers/serial/uart.h>
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 
 /* Local Definitions */
 

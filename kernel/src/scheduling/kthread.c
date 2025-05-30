@@ -12,7 +12,7 @@
 #include <include/filesystem/vfs.h>
 #include <include/scheduling/sched.h>
 #include "include/definitions/definitions.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 #include "include/scheduling/process.h"
 
 static uint64_t kthread_pid = 50000;

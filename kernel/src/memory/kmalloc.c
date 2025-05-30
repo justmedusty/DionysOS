@@ -3,7 +3,7 @@
 //
 #include "include/definitions/types.h"
 #include "include/memory/pmm.h"
-#include "include/memory/kalloc.h"
+#include "include/memory/kmalloc.h"
 
 #include <include/data_structures/hash_table.h>
 #include <include/data_structures/spinlock.h>

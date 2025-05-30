@@ -5,7 +5,7 @@
 
 #ifdef __x86_64__
 #pragma once
-#include <include/memory/kalloc.h>
+#include <include/memory/kmalloc.h>
 #include "include/architecture/x86_64/asm_functions.h"
 #include "include/scheduling/process.h"
 
