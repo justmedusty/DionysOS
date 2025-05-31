@@ -53,6 +53,7 @@ struct process {
     uint8_t file_descriptors[16];
     bool inside_kernel;
     void *stack;
+    void *kernel_stack;
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
     struct virt_map *page_map;
@@ -87,3 +88,8 @@ struct register_state {
 
 
 #endif
+
+void exit();
+void sleep(void *channel);
+void wakeup(void *channel);
+void switch_kernel_stack(struct process *incoming_process);
