@@ -33,7 +33,7 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
         case SYS_RENAME:
             return rename((char *) args->arg1, (char *) args->arg2);
         case SYS_EXIT:
-            exit_process();
+            exit();
             return KERN_SUCCESS;
         default:
             return KERN_NO_SYS; // Return an error for unknown syscalls

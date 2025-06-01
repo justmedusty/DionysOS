@@ -248,6 +248,7 @@ void sched_claim_process() {
 /*
  * Exit  for when a process is finished execution. The process will be added to the dead list, and we jump back into scheduler context
  */
+__attribute__((noreturn))
 void sched_exit() {
     struct cpu *cpu = my_cpu();
     struct process *process = cpu->running_process;
@@ -310,8 +311,4 @@ static void promote_processes() {
 
 }
 
-//just for the system call prototype in definitions.h
-void exit_process(){
-    sched_exit();
-}
 //#endif

@@ -1,15 +1,14 @@
 //
 // Created by dustyn on 7/2/24.
 //
-#include <include/architecture/x86_64/gdt.h>
-#include <include/architecture/x86_64/idt.h>
+
 #include <include/architecture/arch_cpu.h>
 #include <include/architecture/arch_interrupts.h>
 #include <include/architecture/arch_memory_init.h>
 #include <include/architecture/arch_smp.h>
 #include <include/architecture/arch_timer.h>
 #include <include/architecture/arch_vmm.h>
-#include <include/architecture/x86_64/asm_functions.h>
+
 #include <include/data_structures/spinlock.h>
 #include <include/definitions/string.h>
 #include <include/drivers/display/framebuffer.h>
@@ -21,14 +20,23 @@
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include "limine.h"
+#include "include/scheduling/process.h"
+
+
+
 extern volatile int32_t ready;
 uint8_t panicked = 0;
 struct cpu cpu_list[MAX_CPUS];
 struct queue local_run_queues[MAX_CPUS];
 
 struct spinlock bootstrap_lock;
+
 #ifdef __x86_64__
 
+
+#include <include/architecture/x86_64/asm_functions.h>
+#include <include/architecture/x86_64/gdt.h>
+#include <include/architecture/x86_64/idt.h>
 
 __attribute__((noreturn)) void panic(const char* str) {
     cli();
@@ -73,5 +81,9 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     while (!ready){} /* Just to make entry print message cleaner and grouped together */
     kthread_init();
     scheduler_main();
+}
+
+void switch_current_kernel_stack(struct process *incoming_process){
+    tss_set_kernel_stack(incoming_process->kernel_stack,my_cpu());
 }
 #endif

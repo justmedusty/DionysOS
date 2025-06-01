@@ -73,5 +73,6 @@ void panic(const char* str);
 struct cpu* my_cpu();
 struct process* current_process();
 void arch_initialise_cpu(struct limine_smp_info* smp_info);
+void switch_current_kernel_stack(struct process *incoming_process);
 // For other processors panicking the next PIT interrupt
 extern uint8_t panicked;

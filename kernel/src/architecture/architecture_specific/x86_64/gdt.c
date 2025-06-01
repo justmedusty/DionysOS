@@ -128,4 +128,4 @@ void gdt_reload() {
     gdt_init();
 }
 
-void tss_set_kernel_stack(void *rsp0,struct cpu *cpu) { cpu_list->tss->rsp0 = (uint64_t)rsp0; }
+void tss_set_kernel_stack(void *rsp0,struct cpu *cpu) { cpu->tss->rsp0 = (uint64_t)rsp0; }

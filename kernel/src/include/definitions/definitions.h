@@ -184,7 +184,6 @@ void err_printf(char *str, ...);
 
 void debug_printf(char *str, ...);
 
-void exit_process();
 
 void log_kernel_message(const char *message);
 

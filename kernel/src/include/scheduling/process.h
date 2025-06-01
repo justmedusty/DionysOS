@@ -92,4 +92,3 @@ struct register_state {
 void exit();
 void sleep(void *channel);
 void wakeup(void *channel);
-void switch_kernel_stack(struct process *incoming_process);

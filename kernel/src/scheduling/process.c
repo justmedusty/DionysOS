@@ -13,7 +13,7 @@ int32_t exec(char *path_to_executable, char **argv) {
 
 }
 
-
+__attribute__((noreturn))
 void exit() {
     sched_exit();
 }
@@ -28,6 +28,4 @@ void wakeup(void *channel) {
 }
 
 
-void switch_kernel_stack(struct process *incoming_process){
 
-}
