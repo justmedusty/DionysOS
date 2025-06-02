@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include "include/definitions/definitions.h"
 
+
+
+
 #define VFS_MAX_NAME_LENGTH 128
 #define VFS_STATIC_POOL_SIZE 100
 
@@ -73,6 +76,7 @@ struct vnode {
     struct vnode *mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
     void *filesystem_object;
+    struct spinlock node_lock;
     uint64_t vnode_size;
     uint64_t last_updated;
     uint64_t vnode_inode_number;

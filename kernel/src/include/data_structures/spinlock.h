@@ -13,6 +13,8 @@ struct spinlock{
     struct cpu *cpu;
     void *reserved;
 };
+
+//bootstrap bool so we can avoid cpu stuff while boostrapping
 extern bool bsp;
 
 void initlock(struct spinlock *spinlock,uint64_t id);

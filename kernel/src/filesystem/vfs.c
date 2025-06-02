@@ -26,6 +26,7 @@ struct vnode vfs_root;
 //VFS lock
 struct spinlock vfs_lock;
 struct spinlock list_lock;
+
 //static prototype
 static struct vnode *parse_path(char *path);
 
@@ -69,14 +70,16 @@ struct vnode *vnode_alloc() {
     acquire_spinlock(&list_lock);
     if (vnode_static_pool.head == NULL) {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
-        DEBUG_PRINT("VNODE ALLOC %x.64\n",new_node);
+        DEBUG_PRINT("VNODE ALLOC %x.64\n", new_node);
         release_spinlock(&list_lock);
+        initlock(&new_node->node_lock, VFS_LOCK);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
-    DEBUG_PRINT("VNODE ALLOC %x.64\n",vnode);
+    DEBUG_PRINT("VNODE ALLOC %x.64\n", vnode);
+    initlock(&vnode->node_lock);
     release_spinlock(&list_lock);
     return vnode;
 }
@@ -180,7 +183,7 @@ int64_t vnode_unlink(struct vnode *link) {
 struct vnode *vnode_create_special(struct vnode *parent, char *name, uint8_t vnode_type) {
     struct vnode *new_vnode = vnode_alloc();
     memset(new_vnode, 0, sizeof(struct vnode));
-    safe_strcpy(new_vnode->vnode_name, name,VFS_MAX_NAME_LENGTH);
+    safe_strcpy(new_vnode->vnode_name, name, VFS_MAX_NAME_LENGTH);
     switch (vnode_type) {
         case VNODE_BLOCK_DEV:
         case VNODE_CHAR_DEV:
@@ -204,7 +207,7 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
     struct vnode *parent_directory = vnode_lookup(path);
 
     if (parent_directory == NULL) {
-        warn_printf("PATH NOT VALID %s\n",path);
+        warn_printf("PATH NOT VALID %s\n", path);
         //handle null response, maybe want to return something descriptive later
         return NULL;
     }
@@ -290,6 +293,8 @@ int64_t vnode_open(char *path) {
         return KERN_NOT_FOUND;
     }
 
+    vnode->vnode_refcount++;
+
     if (vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
@@ -299,7 +304,8 @@ int64_t vnode_open(char *path) {
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
-    new_handle->handle_id = (uint64_t) ret;
+    new_handle->handle_id = (uint64_t)
+    ret;
 
     doubly_linked_list_insert_head(list->handle_list, new_handle);
     list->num_handles++;
@@ -317,6 +323,7 @@ void vnode_close(uint64_t handle) {
         struct virtual_handle *virtual_handle = (struct virtual_handle *) node->data;
         if (virtual_handle->handle_id == handle) {
             virtual_handle->vnode->vnode_ops->close(virtual_handle->vnode, handle);
+            virtual_handle->vnode->vnode_refcount--;
             kfree(virtual_handle);
             doubly_linked_list_remove_node_by_address(list->handle_list, node);
             return;
@@ -363,7 +370,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     size_t index = 0;
 
     if (vnode->is_cached == false && vnode->num_children == 0) {
-        warn_printf("NOT CACHED %s!\n",vnode->vnode_name);
+        warn_printf("NOT CACHED %s!\n", vnode->vnode_name);
         struct vnode *child = vnode->vnode_ops->lookup(vnode, token);
         vnode->is_cached = true;
         release_spinlock(&vfs_lock);
@@ -377,7 +384,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     struct vnode *child = vnode->vnode_children[index];
     /* Will I need to manually set last dirent to null to make this work properly? Maybe, will stick a pin in it in case it causes issues later */
     while (index < vnode->num_children) {
-        if (child  && (safe_strcmp(child->vnode_name, token,VFS_MAX_NAME_LENGTH))) {
+        if (child && (safe_strcmp(child->vnode_name, token, VFS_MAX_NAME_LENGTH))) {
             release_spinlock(&vfs_lock);
             return child;
         }
@@ -449,6 +456,7 @@ int64_t vnode_unmount(struct vnode *vnode) {
     release_spinlock(&vfs_lock);
     return KERN_SUCCESS;
 }
+
 /*
  * Mounts a vnode, will mark the target as a mount_point and link the vnode that is now mounted on it
  */
@@ -519,32 +527,41 @@ int64_t vnode_unmount_path(char *path) {
  * Handles mount points properly.
  */
 #include "include/architecture/arch_timer.h"
-int64_t vnode_read(struct vnode *vnode, const uint64_t offset,  uint64_t bytes, char *buffer) {
+
+int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, char *buffer) {
+    acquire_spinlock(&vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("reading a directory");
     }
 
     // If the passed size is 0 read the whole thing
-    if(bytes == 0){
+    if (bytes == 0) {
         timer_sleep(1000);
         bytes = vnode->vnode_size;
     }
     //Let the specific impl handle this
-    return vnode->vnode_ops->read(vnode, offset, buffer, bytes);
+    int32_t ret = vnode->vnode_ops->read(vnode, offset, buffer, bytes);
+    release_spinlock(&vnode->node_lock);
+    return ret;
 }
 
 
 int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, const char *buffer) {
+    acquire_spinlock(&vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("writing to a directory");
     }
-    return vnode->vnode_ops->write(vnode, offset, buffer, bytes);
+    int32_t ret =vnode->vnode_ops->write(vnode, offset, buffer, bytes);
+    release_spinlock(&vnode->node_lock);
+    return ret;
 }
 
 /*
  * Gets a canonical path, whether it be for a symlink or something else
  */
 char *vnode_get_canonical_path(struct vnode *vnode) {
+    //global lock to ensure that nothing gets changed or deleted under us
+    acquire_spinlock(&vfs_lock);
     char *buffer = kzmalloc(PAGE_SIZE);
     char *final_buffer = kzmalloc(PAGE_SIZE);
     struct vnode *pointer = vnode;
@@ -552,7 +569,7 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
 
     while (pointer && pointer != &vfs_root) {
 
-        if(pointer->is_mounted){
+        if (pointer->is_mounted) {
             pointer = pointer->vnode_parent;
 
         }
@@ -562,7 +579,7 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
         /*
          * This check exists because otherwise you end up with // when you get to root, which will cause issues with the way I implemented searching
          */
-        if(*pointer->vnode_name != '/'){
+        if (*pointer->vnode_name != '/') {
             strcat(buffer, pointer->vnode_name);
         }
         pointer = pointer->vnode_parent;
@@ -583,6 +600,7 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
 
     kfree(buffer);
     kfree(temp);
+    release_spinlock(&vfs_lock);
     return final_buffer;
 }
 
@@ -601,9 +619,10 @@ char *vnode_get_canonical_path(struct vnode *vnode) {
  */
 static struct vnode *parse_path(char *path) {
     //Assign to the root node by default
+    acquire_spinlock(&vfs_lock);
     struct vnode *current_vnode = &vfs_root;
 
-    if(current_vnode->is_mount_point){
+    if (current_vnode->is_mount_point) {
         current_vnode = current_vnode->mounted_vnode;
     }
 
@@ -615,7 +634,7 @@ static struct vnode *parse_path(char *path) {
         path++;
     }
 
-    while(*path == '/'){
+    while (*path == '/') {
         path++;
     }
 
@@ -642,11 +661,12 @@ static struct vnode *parse_path(char *path) {
         memset(current_token, 0, VFS_MAX_NAME_LENGTH);
     }
 
-    if(current_vnode->is_mount_point){
+    if (current_vnode->is_mount_point) {
         current_vnode = current_vnode->mounted_vnode;
     }
 
     kfree(current_token);
+    release_spinlock(&vfs_lock);
     return current_vnode;
 }
 
@@ -690,7 +710,7 @@ struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
 
-    while(node != NULL){
+    while (node != NULL) {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
             return handle->vnode;
@@ -707,7 +727,7 @@ int64_t handle_to_offset(uint64_t handle_id) {
     do {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
-            return (int64_t ) handle->offset;
+            return (int64_t) handle->offset;
         }
         node = node->next;
     } while (node->next != NULL);
@@ -734,7 +754,7 @@ struct virtual_handle *find_handle(int64_t handle_id) {
 
     struct virtual_handle *handle = node->data;
 
-    while (node->data && handle->handle_id != (uint64_t ) handle_id) {
+    while (node->data && handle->handle_id != (uint64_t) handle_id) {
         node = node->next;
         if (!node) {
             return NULL;
@@ -850,7 +870,7 @@ int64_t rename(char *path, char *new_name) {
 }
 
 int64_t create(char *path, char *name, uint64_t type) {
-    if (safe_strlen(name,VFS_MAX_NAME_LENGTH) < 0) {
+    if (safe_strlen(name, VFS_MAX_NAME_LENGTH) < 0) {
         return KERN_OVERFLOW;
     }
 
