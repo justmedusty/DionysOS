@@ -680,15 +680,15 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
-    acquire_spinlock(&vfs_lock);
+
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
-            release_spinlock(&vfs_lock);
+
             return i;
         }
     }
-    release_spinlock(&vfs_lock);
+
     return KERN_MAX_REACHED;
 }
 
