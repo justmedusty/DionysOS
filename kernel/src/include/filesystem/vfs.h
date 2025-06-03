@@ -3,7 +3,6 @@
 //
 
 #pragma once
-
 #include "include/data_structures/spinlock.h"
 #include <stddef.h>
 #include "include/definitions/definitions.h"
@@ -20,8 +19,6 @@
 #define ROOT_DIRECTORY_NAME "/"
 
 extern struct vnode vfs_root;
-
-
 
 /* Device Types */
 enum vnode_device_types {
@@ -76,7 +73,7 @@ struct vnode {
     struct vnode *mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
     void *filesystem_object;
-    struct spinlock node_lock;
+    struct spinlock *node_lock;
     uint64_t vnode_size;
     uint64_t last_updated;
     uint64_t vnode_inode_number;

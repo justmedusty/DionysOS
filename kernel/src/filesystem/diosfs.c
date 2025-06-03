@@ -756,6 +756,8 @@ static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struc
                           : 0;
     vnode->filesystem_object = fs;
     vnode->vnode_parent = parent;
+    vnode->node_lock = kzmalloc(sizeof (struct spinlock));
+    initlock(vnode->node_lock,DIOSFS_LOCK);
     DEBUG_PRINT("DIOSFS DIRENT2VNODE NAME %s ADDR %x.64\n",vnode->vnode_name,vnode);
 
     return vnode;

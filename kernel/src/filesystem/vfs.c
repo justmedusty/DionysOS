@@ -58,6 +58,7 @@ void vfs_init() {
     vfs_root.vnode_parent = NULL;
     vfs_root.vnode_ops = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_VNODE_ROOT;
+    vfs_root.node_lock = kmalloc(sizeof (struct spinlock));
     kprintf("Virtual Filesystem Initialized\n");
     serial_printf("VFS initialized\n");
 }
@@ -72,14 +73,16 @@ struct vnode *vnode_alloc() {
         struct vnode *new_node = kmalloc(sizeof(struct vnode));
         DEBUG_PRINT("VNODE ALLOC %x.64\n", new_node);
         release_spinlock(&list_lock);
-        initlock(&new_node->node_lock, VFS_LOCK);
+        new_node->node_lock = kzmalloc(sizeof(struct spinlock));
+        initlock(new_node->node_lock, VFS_LOCK);
         return new_node;
     }
 
     struct vnode *vnode = vnode_static_pool.head->data;
     singly_linked_list_remove_head(&vnode_static_pool);
     DEBUG_PRINT("VNODE ALLOC %x.64\n", vnode);
-    initlock(&vnode->node_lock);
+    vnode->node_lock = kzmalloc(sizeof(struct spinlock));
+    initlock(vnode->node_lock,VFS_LOCK);
     release_spinlock(&list_lock);
     return vnode;
 }
@@ -127,6 +130,7 @@ void vnode_free(struct vnode *vnode) {
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
+        kfree(vnode->node_lock);
         release_spinlock(&list_lock);
         return;
     }
@@ -140,7 +144,7 @@ void vnode_free(struct vnode *vnode) {
     if (vnode->vnode_flags & VNODE_CHILD_MEMORY_ALLOCATED) {
         kfree(vnode->vnode_children);
     }
-
+    kfree(vnode->node_lock);
     kfree(vnode);
     release_spinlock(&list_lock);
 }
@@ -529,7 +533,8 @@ int64_t vnode_unmount_path(char *path) {
 #include "include/architecture/arch_timer.h"
 
 int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, char *buffer) {
-    acquire_spinlock(&vnode->node_lock);
+    DEBUG_PRINT("HERE\n");
+    acquire_spinlock(vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("reading a directory");
     }
@@ -541,18 +546,21 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, c
     }
     //Let the specific impl handle this
     int32_t ret = vnode->vnode_ops->read(vnode, offset, buffer, bytes);
-    release_spinlock(&vnode->node_lock);
+    release_spinlock(vnode->node_lock);
     return ret;
 }
 
 
 int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, const char *buffer) {
-    acquire_spinlock(&vnode->node_lock);
+    DEBUG_PRINT("THERE\n");
+    acquire_spinlock(vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("writing to a directory");
     }
     int32_t ret =vnode->vnode_ops->write(vnode, offset, buffer, bytes);
-    release_spinlock(&vnode->node_lock);
+    DEBUG_PRINT("DONE\n");
+    release_spinlock(vnode->node_lock);
+    DEBUG_PRINT("DONE2\n");
     return ret;
 }
 
