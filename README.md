@@ -3,7 +3,7 @@
 [Link 1](https://www.worldhistory.org/Dionysos/) [Link 2](http://dionysia.org/greek/dionysos/thompson/dionysos.html)
 
 # Why Dionysos?
-As someone who appreciates Greek mythology, the choice of Dionysos as a symbolic reference for an operating system feels fitting. Dionysos, known for his associations with wine, chaos, and transformation, parallels the themes that underpin operating system design. An OS must reconcile chaos and order—hardware and users are inherently unpredictable, while the OS acts as a mediator that brings structure and consistency to their interactions.
+As someone who appreciates Greek mythology, the choice of Dionysos as a symbolic reference for an operating system feels fitting. Dionysos, known for his associations with wine, chaos, and transformation, parallels the themes that underpin operating system design. An OS must reconcile chaos and order, hardware and users are inherently unpredictable, while the OS acts as a mediator that brings structure and consistency to their interactions.
 
 The fertility often associated with Dionysos also connects well. Operating systems are foundational; all software depends on them to function. In a way, the OS “gives birth” to applications and manages their life cycles, nurturing them by providing resources and structure.
 
