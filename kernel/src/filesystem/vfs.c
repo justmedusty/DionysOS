@@ -541,7 +541,6 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, c
 
     // If the passed size is 0 read the whole thing
     if (bytes == 0) {
-        timer_sleep(1000);
         bytes = vnode->vnode_size;
     }
     //Let the specific impl handle this
