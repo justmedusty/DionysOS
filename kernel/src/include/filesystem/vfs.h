@@ -73,6 +73,7 @@ struct vnode {
     struct vnode *mounted_vnode;
     char vnode_name[VFS_MAX_NAME_LENGTH];
     void *filesystem_object;
+    struct filesystem_info *filesystem_info;
     struct spinlock *node_lock;
     uint64_t vnode_size;
     uint64_t last_updated;
@@ -87,6 +88,13 @@ struct vnode {
     uint16_t is_mount_point;
     uint16_t is_mounted;
     uint64_t is_cached;
+};
+
+//This will be used for deletion, making sure we don't remove or unmount when a child subdirectory somewhere is being used
+//This will be a generic structure used across every fs unlike the filesystem_object which is reserved for filesystem specific bookkeeping
+//We can add things to this as we add more bookkeeping
+struct filesystem_info {
+    uint64_t filesystem_reference_count;
 };
 
 struct date_time {

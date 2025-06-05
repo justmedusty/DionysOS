@@ -129,8 +129,8 @@ void vnode_free(struct vnode *vnode) {
 
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
-        singly_linked_list_insert_tail(&vnode_static_pool, vnode);
         kfree(vnode->node_lock);
+        singly_linked_list_insert_tail(&vnode_static_pool, vnode);
         release_spinlock(&list_lock);
         return;
     }
@@ -172,7 +172,9 @@ struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t t
         return NULL;
     }
 
-    return vnode->vnode_ops->create(vnode, new_vnode->vnode_name, type);
+    struct vnode *child = vnode->vnode_ops->create(vnode, new_vnode->vnode_name, type);
+    child->filesystem_info = vnode->filesystem_info;
+    return child;
 }
 
 int64_t vnode_unlink(struct vnode *link) {
@@ -564,7 +566,7 @@ int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t b
 }
 
 /*
- * Gets a canonical path, whether it be for a symlink or something else
+ * Gets a canonical path, whether it be for a symlink or something git pu
  */
 char *vnode_get_canonical_path(struct vnode *vnode) {
     //global lock to ensure that nothing gets changed or deleted under us

@@ -24,7 +24,8 @@
 #define NUM_FILESYSTEM_OBJECTS 10
 struct spinlock diosfs_lock[10] = {0};
 struct diosfs_superblock diosfs_superblock[10] = {0};
-
+struct filesystem_info diosfs_fs_info[NUM_FILESYSTEM_OBJECTS];
+uint64_t diosfs_fs_id_bitmap = 0;
 struct device_driver driver[10] = {
         [0] = {
                 .device = NULL,
@@ -311,6 +312,7 @@ void diosfs_create_new_ramdisk_fs(const uint64_t device_id, const uint64_t devic
     diosfs_write_inode(fs, &root);
 
     struct vnode *vnode = vnode_alloc();
+    vnode->filesystem_info = &diosfs_fs_info[fs->filesystem_id];
     memset(vnode, 0, sizeof(struct vnode));
     strcpy((char *) vnode->vnode_name, "/");
     vnode->filesystem_object = fs;
@@ -359,13 +361,15 @@ void diosfs_register_filesystem(const uint64_t device_id, const uint64_t device_
     diosfs_read_inode(fs, &root, ROOT_INODE);
     DEBUG_PRINT("ROOT SIZE %i INODE NO %i NAME %s\n",root.size,root.inode_number,root.name);
     struct vnode *vnode = vnode_alloc();
+
+    vnode->filesystem_info = &diosfs_fs_info[fs->filesystem_id];
     memset(vnode, 0, sizeof(struct vnode));
     strcpy((char *) vnode->vnode_name, "/");
     vnode->filesystem_object = fs;
     vnode->vnode_inode_number = root.inode_number;
     vnode->vnode_type = VNODE_DIRECTORY;
     vnode->vnode_ops = &diosfs_vnode_ops;
-    vnode->vnode_refcount = 1;
+    vnode->vnode_refcount = 0;
     vnode->vnode_parent = NULL;
     vnode->vnode_children = NULL;
     vnode->vnode_filesystem_id = VNODE_FS_DIOSFS;
@@ -605,7 +609,10 @@ struct vnode *diosfs_create(struct vnode *parent, char *name, const uint8_t vnod
 
     struct diosfs_filesystem_context *fs = parent->filesystem_object;
     acquire_spinlock(fs->lock);
+
     struct vnode *new_vnode = vnode_alloc();
+    new_vnode->filesystem_info = &diosfs_fs_info[fs->filesystem_id];
+
     struct diosfs_inode parent_inode;
     struct diosfs_inode inode;
     diosfs_get_free_inode_and_mark_bitmap(parent->filesystem_object, &inode);
@@ -737,6 +744,8 @@ void diosfs_unlink(struct vnode *vnode) {
 static struct vnode *diosfs_directory_entry_to_vnode(struct vnode *parent, struct diosfs_directory_entry *entry,
                                                      struct diosfs_filesystem_context *fs) {
     struct vnode *vnode = vnode_alloc();
+    vnode->filesystem_info = &diosfs_fs_info[fs->filesystem_id];
+
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
     vnode->vnode_type = entry->type;
