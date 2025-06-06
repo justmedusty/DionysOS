@@ -299,6 +299,10 @@ int64_t vnode_open(char *path) {
         return KERN_NOT_FOUND;
     }
 
+    if(vnode->filesystem_info){
+        vnode->filesystem_info->filesystem_reference_count++;
+    }
+
     vnode->vnode_refcount++;
 
     if (vnode->is_mount_point) {
@@ -330,6 +334,11 @@ void vnode_close(uint64_t handle) {
         if (virtual_handle->handle_id == handle) {
             virtual_handle->vnode->vnode_ops->close(virtual_handle->vnode, handle);
             virtual_handle->vnode->vnode_refcount--;
+
+            if(virtual_handle->vnode->filesystem_info){
+                virtual_handle->vnode->filesystem_info->filesystem_reference_count--;
+            }
+
             kfree(virtual_handle);
             doubly_linked_list_remove_node_by_address(list->handle_list, node);
             return;
