@@ -76,6 +76,7 @@ struct device {
     bool uses_dma;
     struct device_driver *driver;
     struct pci_device *pci_device;
+    struct device_node *node;
     void *device_info; /* Just so it is clear, this holds the specific device struct */
 };
 
