@@ -9,7 +9,7 @@
 #include "include/scheduling/sched.h"
 
 // We will just have a 10mb sensible max for our elf files since I want to read the whole thing into memory on execute
-#define SENSIBLE_FILE_SIZE (10 << 30)
+#define SENSIBLE_FILE_SIZE (10 << 20)
 
 int32_t exec(char *path_to_executable, char **argv) {
     uint64_t *top_level_page_table = alloc_virtual_map();
@@ -46,11 +46,6 @@ int32_t exec(char *path_to_executable, char **argv) {
 
     map_kernel_address_space(top_level_page_table);
 
-
-
-
-
-
 }
 
 __attribute__((noreturn))
@@ -62,7 +57,7 @@ void sleep(void *channel) {
     sched_sleep(channel);
 }
 
-void wakeup(void *channel) {
+void wakeup(const void *channel) {
     sched_wakeup(channel);
 }
 

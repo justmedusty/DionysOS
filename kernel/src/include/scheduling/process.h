@@ -91,4 +91,4 @@ struct register_state {
 
 void exit();
 void sleep(void *channel);
-void wakeup(void *channel);
+void wakeup(const void *channel);

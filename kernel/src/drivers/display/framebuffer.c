@@ -119,29 +119,8 @@ static void scroll_framebuffer(struct framebuffer *fb) {
 
     uint64_t *dest = fb->address;
     uint64_t *src = fb->address + row_size;
-/*
- * We speed this up by going two pixels at a time. This DRAMATICALLY increases the speed as which the frame
- * buffer is able to scroll on real hardware.
- * Since most pixels are blank and a lot stay the same, this is the way to go.
- * Before we were using a memmove call on the entire region this solution below speeds it up by possibly 60-70%
- */
-    for (size_t i = 0; i < rows_size / sizeof(uint64_t); i++) {
-        if (dest[i] != src[i]) {
-            uint32_t lower_dest = (uint32_t) (dest[i] & UINT32_MAX);
-            uint32_t upper_dest = (uint32_t) ((dest[i] >> 32) & UINT32_MAX);
-            uint32_t lower_src = (uint32_t) (src[i] & UINT32_MAX);
-            uint32_t upper_src = (uint32_t) ((src[i] >> 32) & UINT32_MAX);
 
-            if (lower_dest != lower_src) {
-                lower_dest = lower_src;
-            }
-            if (upper_dest != upper_src) {
-                upper_dest = upper_src;
-            }
-
-            dest[i] = ((uint64_t) upper_dest << 32) | lower_dest;
-        }
-    }
+    memcpy(dest, src, rows_size);
 
     // Clear the bottom portion of the framebuffer
     memset(fb->address + rows_size, 0, row_size);
