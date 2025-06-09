@@ -11,6 +11,8 @@
 #include <include/memory/kmalloc.h>
 #include "include/architecture/arch_cpu.h"
 #include "include/memory/mem.h"
+#include "include/architecture/arch_timer.h"
+
 
 //Used to hold the free nodes in the static pool
 struct singly_linked_list vnode_static_pool = {};
@@ -541,7 +543,7 @@ int64_t vnode_unmount_path(char *path) {
  *
  * Handles mount points properly.
  */
-#include "include/architecture/arch_timer.h"
+
 
 int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, char *buffer) {
     DEBUG_PRINT("HERE\n");
@@ -555,7 +557,7 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, c
         bytes = vnode->vnode_size;
     }
     //Let the specific impl handle this
-    int32_t ret = vnode->vnode_ops->read(vnode, offset, buffer, bytes);
+    const int64_t ret = vnode->vnode_ops->read(vnode, offset, buffer, bytes);
     release_spinlock(vnode->node_lock);
     return ret;
 }

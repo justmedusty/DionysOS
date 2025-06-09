@@ -17,6 +17,14 @@ struct virt_map* kernel_pg_map;
 void arch_kvm_init(p4d_t *pgdir){
     map_kernel_address_space(pgdir);
 }
+
+uint64_t *alloc_virtual_map() {
+    return Virt2Phys(kzmalloc(PAGE_SIZE));
+}
+
+void free_virtual_map(uint64_t *virtual_map) {
+    kfree(Phys2Virt(virtual_map));
+}
 /*
  * Architecture agnostic vmm init function
  */

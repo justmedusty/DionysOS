@@ -821,7 +821,7 @@ static uint64_t diosfs_directory_entry_free(struct diosfs_filesystem_context *fs
         diosfs_read_inode(fs, &parent_inode, inode->parent_inode_number);
     }
 
-    uint64_t inode_to_remove = entry == NULL ? inode->inode_number : entry->inode_number;
+    const uint64_t inode_to_remove = entry == NULL ? inode->inode_number : entry->inode_number;
     char *buffer = kmalloc(PAGE_SIZE);
     struct diosfs_directory_entry *entries = (struct diosfs_directory_entry *) buffer;
 

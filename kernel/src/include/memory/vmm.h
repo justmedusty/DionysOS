@@ -66,4 +66,8 @@ void arch_dealloc_page_table(p4d_t *pgdir);
 
 void arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms, uint64_t size);
 
+void free_virtual_map(uint64_t *virtual_map);
+
+uint64_t *alloc_virtual_map();
+
 #endif
