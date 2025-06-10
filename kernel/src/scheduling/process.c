@@ -6,6 +6,7 @@
 #include "include/definitions/elf.h"
 #include "include/filesystem/vfs.h"
 #include "include/memory/vmm.h"
+#include "include/architecture/arch_cpu.h"
 #include "include/scheduling/sched.h"
 
 // We will just have a 10mb sensible max for our elf files since I want to read the whole thing into memory on execute
@@ -13,8 +14,7 @@
 
 int32_t exec(char *path_to_executable, char **argv) {
     uint64_t *top_level_page_table = alloc_virtual_map();
-    struct elfhdr elf_header;
-    struct proghdr program_header;
+    struct proghdr *program_header;
     struct process *current = current_process();
 
     struct vnode *node = vnode_lookup(path_to_executable);
@@ -45,6 +45,33 @@ int32_t exec(char *path_to_executable, char **argv) {
     }
 
     map_kernel_address_space(top_level_page_table);
+
+    uint64_t offset = header->phoff;
+    int32_t ret;
+
+    for (size_t i = 0; i < header->phnum; i++,offset += sizeof(struct proghdr)) {
+        program_header = (struct proghdr *)  &elf_image[offset];
+
+        if (program_header->type != ELF_PROG_LOAD) {
+            continue;
+        }
+
+        if (program_header->memsz < program_header->filesz) {
+            goto no_bueno;
+        }
+
+        if (program_header->vaddr + program_header->memsz < program_header->vaddr) {
+            goto no_bueno;
+        }
+
+
+    }
+
+
+    no_bueno:
+    kfree(elf_image);
+    return KERN_FS_CORRUPTED;
+
 
 }
 
