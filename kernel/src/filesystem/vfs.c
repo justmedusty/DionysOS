@@ -726,6 +726,15 @@ static int64_t vnode_update_children_array(const struct vnode *vnode) {
     return KERN_NOT_FOUND;
 }
 
+
+void vlock(struct vnode *vnode) {
+    acquire_spinlock(vnode->node_lock);
+}
+
+void vunlock(struct vnode *vnode) {
+    release_spinlock(vnode->node_lock);
+}
+
 struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;

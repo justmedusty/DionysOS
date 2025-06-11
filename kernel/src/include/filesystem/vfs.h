@@ -171,6 +171,10 @@ int64_t vnode_unlink(struct vnode *link);
 
 struct vnode *vnode_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
 
+void vunlock(struct vnode *vnode);
+
+void vlock(struct vnode *vnode);
+
 void vfs_init();
 
 char *vnode_get_canonical_path(

@@ -17,6 +17,8 @@ int32_t exec(char *path_to_executable, char **argv) {
     struct proghdr *program_header;
     struct process *current = current_process();
 
+    uint64_t size = 0;
+
     struct vnode *node = vnode_lookup(path_to_executable);
 
     if(!node){
@@ -27,7 +29,7 @@ int32_t exec(char *path_to_executable, char **argv) {
     if (node->vnode_size > SENSIBLE_FILE_SIZE) {
         return KERN_TOO_BIG;
     }
-
+    vlock(node);
     char *elf_image = kzmalloc(node->vnode_size);
 
     int64_t result = vnode_read(node,0,0,elf_image);
@@ -64,11 +66,25 @@ int32_t exec(char *path_to_executable, char **argv) {
             goto no_bueno;
         }
 
+        if ((size = map_pages(top_level_page_table,size,(uint64_t *)program_header->vaddr,USER,program_header->memsz)) != KERN_SUCCESS) {
+            goto no_bueno;
+        }
+
+        if (program_header->vaddr % PAGE_SIZE) {
+            goto no_bueno;
+        }
+
+
+
 
     }
 
 
+    vunlock(node);
     no_bueno:
+    arch_dealloc_page_table(top_level_page_table);
+    free_virtual_map(top_level_page_table);
+    vunlock(node);
     kfree(elf_image);
     return KERN_FS_CORRUPTED;
 

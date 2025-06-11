@@ -33,6 +33,12 @@ void arch_vmm_init(){
     init_vmm();
     kprintf("Virtual Memory Manager Initialized And Address Space Mapped\n");
 }
+
+
+void arch_dealloc_page_table(p4d_t *pgdir) {
+    dealloc_va_range(pgdir, 0, 0xFFFFFFFFFFFFFFFF & ~0xFFF);
+}
+
 /*
  * Architecture agnostic map pages function
  */

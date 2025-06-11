@@ -201,9 +201,6 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
     }
 }
 
-void arch_dealloc_page_table(p4d_t *pgdir) {
-    dealloc_va_range(pgdir, 0, 0xFFFFFFFFFFFFFFFF & ~0xFFF);
-}
 
 void setup_pat() {
     uint64_t pat =
