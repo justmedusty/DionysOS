@@ -248,6 +248,7 @@ int phys_init() {
 
 
             if ((uintptr_t) buddy_block_static_pool[index].start_address > USER_SPAN_SIZE) {
+
                 tree = &buddy_free_list_zone[KERNEL_POOL];
                 buddy_block_static_pool[index].zone = KERNEL_POOL;
                 kcount++;
@@ -552,7 +553,7 @@ static void buddy_free(void *address) {
  */
 static struct buddy_block *buddy_split(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], block->order, block,NULL);
+        remove_tree_node(&buddy_free_list_zone[block->zone], block->order, block,NULL);
         block->flags &= ~IN_TREE_FLAG;
     }
     if (block->order > MAX_ORDER) {
@@ -583,7 +584,7 @@ static struct buddy_block *buddy_split(struct buddy_block *block) {
 
 
     new_block->flags |= IN_TREE_FLAG;
-    const uint64_t ret = insert_tree_node(&buddy_free_list_zone[KERNEL_POOL], new_block, new_block->order);
+    const uint64_t ret = insert_tree_node(&buddy_free_list_zone[block->zone], new_block, new_block->order);
 
     if (ret == KERN_SUCCESS) {
         return block;
@@ -616,7 +617,7 @@ static struct buddy_block *buddy_block_get() {
  */
 static void buddy_block_free(struct buddy_block *block) {
     if (block->flags & IN_TREE_FLAG) {
-        remove_tree_node(&buddy_free_list_zone[KERNEL_POOL], block->order, block,NULL);
+        remove_tree_node(&buddy_free_list_zone[block->zone], block->order, block,NULL);
     }
     if (block->flags & STATIC_POOL_FLAG) {
         block->is_free = UNUSED;

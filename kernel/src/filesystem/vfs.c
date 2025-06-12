@@ -253,9 +253,12 @@ struct vnode *vnode_create(char *path, char *name, uint8_t vnode_type) {
 int32_t vnode_remove(struct vnode *vnode, char *path) {
     struct vnode *target;
 
+    acquire_spinlock(vnode->node_lock);
+
     if (vnode != NULL) {
         target = vnode;
     } else if ((target = vnode_lookup(path)) == NULL) {
+        release_spinlock(vnode->node_lock);
         return KERN_NOT_FOUND;
     }
 
@@ -266,13 +269,14 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
     }
 
     if (vnode->vnode_active_references != 0) {
-        release_spinlock(&vfs_lock);
+        release_spinlock(vnode->node_lock);
         return KERN_BUSY;
     }
 
     target->vnode_ops->remove(target);
     vnode_update_children_array(target);
     vnode_free(target);
+    release_spinlock(vnode->node_lock);
     return KERN_SUCCESS;
 }
 

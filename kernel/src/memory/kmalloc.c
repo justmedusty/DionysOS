@@ -58,9 +58,12 @@ void *kmalloc(uint64_t size) {
     return ret;
 }
 
+/*
+ *  Umalloc and free will JUST deal with physical addresses, wrapped here with a lock and so dont need to worry about specifying the zone flag when called around the codebase
+ */
 void *umalloc(uint64_t pages) {
     acquire_spinlock(&userlock);
-    void *return_value = Phys2Virt(phys_alloc(pages,USER_POOL));
+    void *return_value = phys_alloc(pages,USER_POOL);
 
     if (return_value == NULL) {
         release_spinlock(&userlock);
@@ -68,6 +71,13 @@ void *umalloc(uint64_t pages) {
     }
     release_spinlock(&userlock);
     return return_value;
+}
+
+
+void ufree(void *address) {
+    acquire_spinlock(&userlock);
+    phys_dealloc(address);
+    release_spinlock(&userlock);
 }
 
 /*

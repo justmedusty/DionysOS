@@ -36,7 +36,7 @@ enum permissions {
 #endif
 struct virtual_region {
     uint64_t va;
-    uint64_t pa;
+    uint64_t pa; // this is only of any use if the region is physically contiguous
     uint64_t end_addr;
     uint64_t num_pages;
     uint64_t flags;
@@ -69,5 +69,7 @@ void arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perm
 void free_virtual_map(uint64_t *virtual_map);
 
 uint64_t *alloc_virtual_map();
+
+
 
 #endif

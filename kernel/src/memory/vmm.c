@@ -48,6 +48,7 @@ void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_
 /*
  * Creates a virtual memory region , takes size, start, type (stack heap memmap etc) , perms, contiguous (do one big contiguous range or a lot of single page allocs)
  *
+ *  For now I will not bother with including the physical backings, if I want to introduce paging or copying I will need to but for now I am fine not including all of the physical mappings
  */
 struct virtual_region* create_region(const uint64_t start_address, const uint64_t size_pages, const uint64_t type, const uint64_t perms,const bool contiguous){
 

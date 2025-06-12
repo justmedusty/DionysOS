@@ -20,4 +20,6 @@ void kfree(void *address);
 void *kzmalloc(uint64_t size);
 
 void *umalloc(uint64_t pages);
+
+void ufree(void *address);
 #endif //KERNEL_KALLOC_H

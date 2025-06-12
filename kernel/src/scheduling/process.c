@@ -29,7 +29,9 @@ int32_t exec(char *path_to_executable, char **argv) {
     if (node->vnode_size > SENSIBLE_FILE_SIZE) {
         return KERN_TOO_BIG;
     }
+
     vlock(node);
+
     char *elf_image = kzmalloc(node->vnode_size);
 
     int64_t result = vnode_read(node,0,0,elf_image);
