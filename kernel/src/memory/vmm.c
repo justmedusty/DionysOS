@@ -94,6 +94,7 @@ void attach_region(struct virt_map *map,struct virtual_region *region){
     }
 
 }
+
 /*
  * detach a passed region to a virt map structure. Will free the region
  */
@@ -106,5 +107,41 @@ void detach_region(struct virt_map *map,struct virtual_region *region){
 
     for (size_t i = 0; i < region->num_pages; i++) {
         dealloc_va(map->top_level,region->va + (i * PAGE_SIZE));
+    }
+}
+
+
+
+void attach_user_region(struct virt_map *map,struct virtual_region *region){
+    if(map->vm_regions == NULL){
+        map->vm_regions = kmalloc(sizeof(struct doubly_linked_list));
+        doubly_linked_list_init(map->vm_regions);
+    }
+    doubly_linked_list_insert_tail(map->vm_regions,region);
+
+    if (region->contiguous) {
+        /*
+         * Using kmalloc and removing the offset because kmalloc is locked phys_alloc is not
+         * This is ugly and I will likely change it in the future
+         */
+        arch_map_pages(map->top_level,(uint64_t)umalloc((uint64_t)(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
+        return;
+    }
+
+    for (size_t i = 0; i < region->num_pages; i++) {
+        map_pages(map->top_level,(uint64_t) umalloc((uint64_t)(1)),(uint64_t *) region->va + (i * PAGE_SIZE),region->perms,1);
+    }
+
+}
+
+void detach_user_region(struct virt_map *map,struct virtual_region *region){
+    doubly_linked_list_remove_node_by_data_address(map->vm_regions,region);
+    if (region->contiguous) {
+        dealloc_user_va_range(map->top_level,region->va,region->num_pages);
+        return;
+    }
+
+    for (size_t i = 0; i < region->num_pages; i++) {
+        dealloc_user_va(map->top_level,region->va + (i * PAGE_SIZE));
     }
 }

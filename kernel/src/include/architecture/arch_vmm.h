@@ -54,4 +54,8 @@ void map_kernel_address_space(p4d_t *pgdir);
 
 void load_vmm();
 
+void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size);
+
+uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address);
+
 pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags);

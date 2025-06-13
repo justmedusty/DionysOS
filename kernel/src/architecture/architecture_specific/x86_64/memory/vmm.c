@@ -201,31 +201,6 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
     }
 }
 
-uint64_t user_dealloc_va(p4d_t *pgdir, const uint64_t address) {
-    uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
-    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
-
-    if (entry == 0) {
-        panic("dealloc_va");
-        return 0;
-    }
-    if (*entry & PTE_P) {
-        kfree(Virt2Phys((void *) PTE_ADDR(*entry)));
-        *entry = 0;
-        native_flush_tlb_single(aligned_address);
-        return 1;
-    }
-
-    return 0;
-}
-
-void user_dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
-    uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
-    for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
-        user_dealloc_va(pgdir, address + i);
-    }
-}
-
 
 void setup_pat() {
     uint64_t pat =
@@ -234,6 +209,33 @@ void setup_pat() {
 
     wrmsr(PAT_MSR, pat);
 }
+
+uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address) {
+    uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
+    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
+
+    if (entry == 0) {
+        panic("dealloc_va");
+        return 0;
+    }
+    if (*entry & PTE_P) {
+        ufree(((void *) PTE_ADDR(*entry)));
+        *entry = 0;
+        native_flush_tlb_single(aligned_address);
+        return 1;
+    }
+
+    return 0;
+}
+
+void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
+    uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
+    serial_printf("Aligned size %x.64\n", aligned_size);
+    for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
+        dealloc_user_va(pgdir, address + i);
+    }
+}
+
 
 #endif
 
