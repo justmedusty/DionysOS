@@ -320,9 +320,12 @@ typedef struct {
 typedef struct {
     Elf_Addr at_entry;
     Elf_Addr at_phdr;
-    size_t at_phent;
-    size_t at_phnum;
+    uint64_t at_phent;
+    uint64_t at_phnum;
     char *ld_path;
 } ElfInfo;
+
+
+void *elf_section_get(void *elf, const char *name);
 
 #endif
