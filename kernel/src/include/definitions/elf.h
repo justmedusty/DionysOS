@@ -210,22 +210,8 @@
 #define EI_ARCH_MACHINE EM_X86_64
 #endif
 
-// Aliases for ELF types
-#define Elf_Hdr Elf64_Hdr
-#define Elf_Phdr Elf64_Phdr
-#define Elf_Dyn Elf64_Dyn
-#define Elf_Ehdr Elf64_Ehdr
-#define Elf_Shdr Elf64_Shdr
-#define Elf_Addr Elf64_Addr
-#define Elf_Off Elf64_Off
-#define Elf_Sym Elf64_Sym
-#define Elf_Rel Elf64_Rel
-#define Elf_Rela Elf64_Rela
-#define Elf_Nhdr Elf64_Nhdr
-#define Elf_Auxv Elf64_Auxv
-
-typedef uint64_t Elf64_Addr;
-typedef uint64_t Elf64_Off;
+typedef uint64_t elf64_addr;
+typedef uint64_t elf64_off;
 
 // ELF header
 typedef struct [[gnu::packed]] {
@@ -233,9 +219,9 @@ typedef struct [[gnu::packed]] {
     uint16_t e_type;
     uint16_t e_machine;
     uint32_t e_version;
-    Elf64_Addr e_entry;
-    Elf64_Off e_phoff;
-    Elf64_Off e_shoff;
+    elf64_addr e_entry;
+    elf64_off e_phoff;
+    elf64_off e_shoff;
     uint32_t e_flags;
     uint16_t e_ehsize;
     uint16_t e_phentsize;
@@ -243,33 +229,33 @@ typedef struct [[gnu::packed]] {
     uint16_t e_shentsize;
     uint16_t e_shnum;
     uint16_t e_shstrndx;
-} Elf64_Hdr;
+} elf64_hdr;
 
 // Program header
 typedef struct [[gnu::packed]] {
     uint32_t p_type;
     uint32_t p_flags;
-    Elf64_Off p_offset;
-    Elf64_Addr p_vaddr;
-    Elf64_Addr p_paddr;
+    elf64_off p_offset;
+    elf64_addr p_vaddr;
+    elf64_addr p_paddr;
     uint64_t p_filesz;
     uint64_t p_memsz;
     uint64_t p_align;
-} Elf64_Phdr;
+} elf64_phdr;
 
 // Section header
 typedef struct [[gnu::packed]] {
     uint32_t sh_name;
     uint32_t sh_type;
     uint64_t sh_flags;
-    Elf64_Addr sh_addr;
-    Elf64_Off sh_offset;
+    elf64_addr sh_addr;
+    elf64_off sh_offset;
     uint64_t sh_size;
     uint32_t sh_link;
     uint32_t sh_info;
     uint64_t sh_addralign;
     uint64_t sh_entsize;
-} Elf64_Shdr;
+} elf64_shdr;
 
 // Symbol table entry
 typedef struct [[gnu::packed]] {
@@ -277,53 +263,53 @@ typedef struct [[gnu::packed]] {
     uint8_t st_info;
     uint8_t st_other;
     uint16_t st_shndx;
-    Elf64_Addr st_value;
+    elf64_addr st_value;
     uint64_t st_size;
-} Elf64_Sym;
+} elf64_sym;
 
 // Dynamic table entry
 typedef struct [[gnu::packed]] {
     int64_t d_tag;
     union {
         uint64_t d_val;
-        Elf64_Addr d_ptr;
+        elf64_addr d_ptr;
     } d_un;
-} Elf64_Dyn;
+} elf64_dyn;
 
 // Relocation entry (without addend)
 typedef struct [[gnu::packed]] {
-    Elf64_Addr r_offset;
+    elf64_addr r_offset;
     uint64_t r_info;
-} Elf64_Rel;
+} elf64_rel;
 
 // Relocation entry (with addend)
 typedef struct [[gnu::packed]] {
-    Elf64_Addr r_offset;
+    elf64_addr r_offset;
     uint64_t r_info;
     int64_t r_addend;
-} Elf64_Rela;
+} elf64_rela;
 
 // Note header
 typedef struct {
     uint64_t n_namesz;
     uint64_t n_descsz;
     uint64_t n_type;
-} Elf64_Nhdr;
+} elf64_nhdr;
 
 // Auxiliary vector
 typedef struct {
     uint32_t atype;
     uint32_t avalue;
-} Elf64_Auxv;
+} elf64_auxv;
 
 // ELF runtime info
 typedef struct {
-    Elf_Addr at_entry;
-    Elf_Addr at_phdr;
+    elf64_addr at_entry;
+    elf64_addr at_phdr;
     uint64_t at_phent;
     uint64_t at_phnum;
     char *ld_path;
-} ElfInfo;
+} elf_info;
 
 
 void *elf_section_get(void *elf, const char *name);
