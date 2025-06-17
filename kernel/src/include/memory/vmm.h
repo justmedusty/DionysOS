@@ -28,6 +28,7 @@ enum region_type {
 };
 #ifdef __x86_64__
 enum permissions {
+    READ = PTE_P,
     READWRITE = PTE_RW,
     NO_EXECUTE = PTE_NX,
     USER = PTE_U,

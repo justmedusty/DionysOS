@@ -8,6 +8,9 @@
 #include "include/memory/mem.h"
 #include <stddef.h>
 #include <stdint.h>
+
+#include "../include/definitions/definitions.h"
+#include "../include/memory/vmm.h"
 #include "include/definitions/definitions.h"
 
 
@@ -57,4 +60,46 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
         header.e_machine != EI_ARCH_MACHINE || header.e_phentsize != sizeof(elf64_phdr)) {
         return KERN_WRONG_TYPE;
     }
+
+    elf64_phdr program_header;
+    for (size_t i = 0; i < header.e_phnum; i++) {
+        size_t program_header_offset = header.e_phoff + (i * sizeof(elf64_phdr));
+
+        if (read(handle, (char *) &program_header, sizeof(elf64_phdr)) < 0) {
+            return KERN_BAD_DESCRIPTOR;    }
+
+        switch (program_header.p_type) {
+            case PT_LOAD:
+                uint64_t memory_protection = 0;
+
+                if (program_header.p_flags & PF_R) {
+                    memory_protection |= READ;
+                }else {
+                    return KERN_BAD_DESCRIPTOR;
+                }
+
+                if (program_header.p_flags & PF_W) {
+                    memory_protection |= READWRITE;
+                }
+
+                if (program_header.p_flags & PF_X) {
+                    //nothing
+                }else {
+                    memory_protection |= NO_EXECUTE;
+                }
+
+
+
+                break;
+            case PT_PHDR:
+                break;
+            case PT_INTERP:
+                break;
+        }
+    }
+    info->at_entry = base_address + header.e_entry;
+    info->at_phnum = header.e_phnum;
+    info->at_phent = header.e_phentsize;
+
+    return KERN_SUCCESS;
 }
