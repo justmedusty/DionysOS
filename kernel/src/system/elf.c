@@ -13,6 +13,7 @@
 #include "../include/memory/kmalloc.h"
 #include "../include/memory/pmm.h"
 #include "../include/memory/vmm.h"
+#include "../include/scheduling/process.h"
 #include "include/definitions/definitions.h"
 
 
@@ -74,6 +75,7 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
         switch (program_header.p_type) {
             case PT_LOAD:
                 uint64_t memory_protection = 0;
+                memory_protection |= USER;
 
                 if (program_header.p_flags & PF_R) {
                     memory_protection |= READ;
@@ -97,12 +99,16 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
                 uint64_t page_count= ALIGN_UP(program_header.p_memsz + aligned_diff ,PAGE_SIZE) / PAGE_SIZE;
 
                 for (size_t j = 0; j < page_count; j++) {
+
                     uint64_t *physical_page = umalloc(1);
+                    arch_map_pages(process->page_map->top_level,(uint64_t) physical_page,(uint64_t * )aligned_address + (uint64_t)(j * PAGE_SIZE),memory_protection,PAGE_SIZE);
 
                 }
+
+
                 break;
             case PT_PHDR:
-                info->at_phdr = base + program_header.p_vaddr;
+                info->at_phdr = base_address + program_header.p_vaddr;
                 break;
             case PT_INTERP:
                 info->ld_path = kzmalloc(program_header.p_filesz);
