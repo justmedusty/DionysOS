@@ -10,6 +10,8 @@
 #include <stdint.h>
 
 #include "../include/definitions/definitions.h"
+#include "../include/memory/kmalloc.h"
+#include "../include/memory/pmm.h"
 #include "../include/memory/vmm.h"
 #include "include/definitions/definitions.h"
 
@@ -66,7 +68,8 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
         size_t program_header_offset = header.e_phoff + (i * sizeof(elf64_phdr));
 
         if (read(handle, (char *) &program_header, sizeof(elf64_phdr)) < 0) {
-            return KERN_BAD_DESCRIPTOR;    }
+            return KERN_BAD_DESCRIPTOR;
+        }
 
         switch (program_header.p_type) {
             case PT_LOAD:
@@ -74,7 +77,7 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
                 if (program_header.p_flags & PF_R) {
                     memory_protection |= READ;
-                }else {
+                } else {
                     return KERN_BAD_DESCRIPTOR;
                 }
 
@@ -84,16 +87,29 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
                 if (program_header.p_flags & PF_X) {
                     //nothing
-                }else {
+                } else {
                     memory_protection |= NO_EXECUTE;
                 }
 
+                uint64_t aligned_address = ALIGN_DOWN(program_header.p_vaddr, PAGE_SIZE);
+                uint64_t aligned_diff = program_header.p_vaddr + base_address - aligned_address;
 
+                uint64_t page_count= ALIGN_UP(program_header.p_memsz + aligned_diff ,PAGE_SIZE) / PAGE_SIZE;
 
+                for (size_t j = 0; j < page_count; j++) {
+                    uint64_t *physical_page = umalloc(1);
+
+                }
                 break;
             case PT_PHDR:
+                info->at_phdr = base + program_header.p_vaddr;
                 break;
             case PT_INTERP:
+                info->ld_path = kzmalloc(program_header.p_filesz);
+                seek(handle, program_header.p_offset);
+                read(handle, info->ld_path, program_header.p_filesz);
+                break;
+            default:
                 break;
         }
     }
