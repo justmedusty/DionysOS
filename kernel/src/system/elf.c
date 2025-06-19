@@ -102,8 +102,13 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
                     uint64_t *physical_page = umalloc(1);
                     arch_map_pages(process->page_map->top_level,(uint64_t) physical_page,(uint64_t * )aligned_address + (uint64_t)(j * PAGE_SIZE),memory_protection,PAGE_SIZE);
-
                 }
+
+
+
+
+
+
 
 
                 break;

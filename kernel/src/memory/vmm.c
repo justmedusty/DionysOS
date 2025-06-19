@@ -25,6 +25,10 @@ uint64_t *alloc_virtual_map() {
 void free_virtual_map(uint64_t *virtual_map) {
     kfree(Phys2Virt(virtual_map));
 }
+
+uint64_t get_current_page_map() {
+    return get_page_table();
+}
 /*
  * Architecture agnostic vmm init function
  */
@@ -44,6 +48,25 @@ void arch_dealloc_page_table(p4d_t *pgdir) {
  */
 void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size) {
     map_pages(pgdir, physaddr, va, perms, size);
+}
+
+void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
+    return walk_page_directory(page_map,virtual_address,0);
+}
+
+void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
+    uint64_t pages_mapped = 0;
+    uint64_t page_map = get_current_page_map();
+    uint64_t current_address = (uint64_t) va;
+    while (pages_mapped != size) {
+        arch_map_pages((p4d_t *)page_map,(uint64_t) arch_get_physical_address(va,user_page_table),(uint64_t *) current_address,READWRITE,PAGE_SIZE);
+        current_address += PAGE_SIZE;
+        pages_mapped++;
+    }
+}
+
+void arch_unmap_foreign(uint64_t *va, uint64_t size) {
+
 }
 /*
  * Creates a virtual memory region , takes size, start, type (stack heap memmap etc) , perms, contiguous (do one big contiguous range or a lot of single page allocs)

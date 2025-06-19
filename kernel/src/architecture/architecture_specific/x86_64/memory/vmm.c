@@ -34,6 +34,10 @@ void switch_page_table(p4d_t *page_dir) {
     lcr3((uint64_t) (page_dir));
 }
 
+uint64_t get_page_table() {
+    return rcr3();
+}
+
 void init_vmm() {
     kernel_pg_map = kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = Virt2Phys(kzmalloc(PAGE_SIZE));
