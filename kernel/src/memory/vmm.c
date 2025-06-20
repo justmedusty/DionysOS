@@ -54,19 +54,25 @@ void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
     return walk_page_directory(page_map,virtual_address,0);
 }
 
+/*
+ *  This will only support one foreign mapping for now
+ */
+
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
     uint64_t pages_mapped = 0;
     uint64_t page_map = get_current_page_map();
-    uint64_t current_address = (uint64_t) va;
+    uint64_t current_address = (uint64_t) KERNEL_FOREIGN_MAP_BASE;
+    uint64_t virtual_address = (uint64_t) va;
     while (pages_mapped != size) {
-        arch_map_pages((p4d_t *)page_map,(uint64_t) arch_get_physical_address(va,user_page_table),(uint64_t *) current_address,READWRITE,PAGE_SIZE);
+        arch_map_pages((p4d_t *)page_map,(uint64_t) arch_get_physical_address((void *)virtual_address,user_page_table),(uint64_t *) current_address,READWRITE,PAGE_SIZE);
         current_address += PAGE_SIZE;
         pages_mapped++;
+        virtual_address += PAGE_SIZE;
     }
 }
 
-void arch_unmap_foreign(uint64_t *va, uint64_t size) {
-
+void arch_unmap_foreign(uint64_t size) {
+    dealloc_va_range((p4d_t *) get_current_page_map(),KERNEL_FOREIGN_MAP_BASE,size);
 }
 /*
  * Creates a virtual memory region , takes size, start, type (stack heap memmap etc) , perms, contiguous (do one big contiguous range or a lot of single page allocs)

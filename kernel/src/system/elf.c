@@ -4,16 +4,17 @@
 
 #include "../include/definitions/elf.h"
 #include "include/definitions/elf.h"
-
 #include "include/memory/mem.h"
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../include/definitions/definitions.h"
-#include "../include/memory/kmalloc.h"
 #include "../include/memory/pmm.h"
-#include "../include/memory/vmm.h"
-#include "../include/scheduling/process.h"
+#include "include/architecture/arch_vmm.h"
+#include "include/definitions/string.h"
+#include "include/memory/kmalloc.h"
+#include "include/memory/pmm.h"
+#include "include/memory/vmm.h"
+#include "include/scheduling/process.h"
 #include "include/definitions/definitions.h"
 
 
@@ -96,19 +97,18 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
                 uint64_t aligned_address = ALIGN_DOWN(program_header.p_vaddr, PAGE_SIZE);
                 uint64_t aligned_diff = program_header.p_vaddr + base_address - aligned_address;
 
-                uint64_t page_count= ALIGN_UP(program_header.p_memsz + aligned_diff ,PAGE_SIZE) / PAGE_SIZE;
+                uint64_t page_count = ALIGN_UP(program_header.p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
 
                 for (size_t j = 0; j < page_count; j++) {
-
                     uint64_t *physical_page = umalloc(1);
-                    arch_map_pages(process->page_map->top_level,(uint64_t) physical_page,(uint64_t * )aligned_address + (uint64_t)(j * PAGE_SIZE),memory_protection,PAGE_SIZE);
+                    arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
+                                   (uint64_t *) aligned_address + (uint64_t) (j * PAGE_SIZE), memory_protection,
+                                   PAGE_SIZE);
                 }
 
+                arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, PAGE_SIZE * page_count);
 
-
-
-
-
+                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE, page_count * PAGE_SIZE);
 
 
                 break;

@@ -9,6 +9,7 @@
 
 #define USER_SPAN_SIZE (((highest_address / 2)) + ((highest_address) / 4)) // how much of memory is going to be assigned to the user pool
 
+#define KERNEL_FOREIGN_MAP_BASE  0xFFFF900000000000ULL
 enum {
     ALLOC = 1,
     DEBUG = 2
@@ -41,7 +42,7 @@ extern char kernel_start[];
 extern char kernel_end[];
 
 void init_vmm();
-
+uint64_t get_page_table();
 void switch_page_table(p4d_t *page_dir);
 
 int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, uint64_t perms, uint64_t size);
@@ -59,3 +60,6 @@ void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t 
 uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address);
 
 pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags);
+
+void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size);
+void arch_unmap_foreign(uint64_t size);
