@@ -2,13 +2,13 @@
 // Created by dustyn on 6/15/25.
 //
 
-#include "../include/definitions/elf.h"
+#include "include/definitions/elf.h"
 #include "include/definitions/elf.h"
 #include "include/memory/mem.h"
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../include/memory/pmm.h"
+#include "include/memory/pmm.h"
 #include "include/architecture/arch_vmm.h"
 #include "include/definitions/string.h"
 #include "include/memory/kmalloc.h"
