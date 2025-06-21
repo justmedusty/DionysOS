@@ -108,7 +108,11 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, PAGE_SIZE * page_count);
 
-                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE, page_count * PAGE_SIZE);
+                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, page_count * PAGE_SIZE);
+                memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, 0,
+                       program_header.p_memsz - program_header.p_filesz);
+
+                arch_unmap_foreign(PAGE_SIZE * page_count);
 
 
                 break;
