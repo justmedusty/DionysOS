@@ -52,6 +52,7 @@ struct process {
     uint64_t start_time;
     uint8_t file_descriptors[16];
     bool inside_kernel;
+    bool interrupt_state; //for use in saving/restoring interrupt state with spinlocks
     void *stack;
     void *kernel_stack;
     void *sleep_channel;
@@ -86,9 +87,14 @@ struct register_state {
     bool interrupts_enabled;
 };
 
+struct spawn_options {
+    bool match_priority;
+    bool copy_on_write;
 
-#endif
+};
 
 void exit();
 void sleep(void *channel);
 void wakeup(const void *channel);
+
+#endif

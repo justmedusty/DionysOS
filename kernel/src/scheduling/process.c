@@ -15,8 +15,6 @@
 int32_t exec(char *path_to_executable, char **argv) {
     uint64_t *top_level_page_table = alloc_virtual_map();
     struct process *current = current_process();
-
-
 }
 
 __attribute__((noreturn))
@@ -30,6 +28,10 @@ void sleep(void *channel) {
 
 void wakeup(const void *channel) {
     sched_wakeup(channel);
+}
+
+int64_t spawn(char *path_to_executable,uint64_t flags, struct spawn_options *options) {
+
 }
 
 
