@@ -51,6 +51,7 @@ struct process {
     uint8_t process_type;
     uint64_t start_time;
     uint8_t file_descriptors[16];
+    uint64_t affinity;
     bool inside_kernel;
     bool interrupt_state; //for use in saving/restoring interrupt state with spinlocks
     void *stack;
@@ -87,11 +88,27 @@ struct register_state {
     bool interrupts_enabled;
 };
 
-struct spawn_options {
-    bool match_priority;
-    bool copy_on_write;
-
+enum spawn_flags {
+    SPAWN_FLAG_NONE            = 0,        // No special flags
+    SPAWN_FLAG_INHERIT_FILES   = 1 << 0,   // Inherit file handles/descriptors
+    SPAWN_FLAG_INHERIT_ENV     = 1 << 1,   // Inherit environment variables
+    SPAWN_FLAG_COPY_ADDRESS    = 1 << 2,   // Copy parent address space
+    SPAWN_FLAG_SHARE_ADDRESS   = 1 << 3,   // Share address space (thread-like)
+    SPAWN_FLAG_NEW_PROCESS     = 1 << 4,   // Spawn as a new process (default)
+    SPAWN_FLAG_NEW_THREAD      = 1 << 5,   // Spawn as a thread in same process
+    SPAWN_FLAG_DETACHED        = 1 << 6,   // Detached from parent
+    SPAWN_FLAG_NEW_SESSION     = 1 << 7,   // Start in new session
+    SPAWN_FLAG_SET_PRIORITY    = 1 << 8,   // Set custom priority
+    SPAWN_FLAG_CUSTOM_STACK    = 1 << 9,   // Use custom stack memory
+    SPAWN_FLAG_ISOLATE_FS      = 1 << 10,  // Filesystem isolation (virtual FS)
+    SPAWN_FLAG_ISOLATE_NET     = 1 << 11,  // Network isolation
+    SPAWN_FLAG_DEBUGGABLE      = 1 << 12,  // Allow debugger to attach
+    SPAWN_FLAG_NO_WAIT         = 1 << 13,  // Parent doesn't wait on child
+    SPAWN_FLAG_INIT_PROCESS    = 1 << 14,  // Mark as system init/root process
 };
+
+
+
 
 void exit();
 void sleep(void *channel);

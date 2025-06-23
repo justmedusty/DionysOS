@@ -30,8 +30,26 @@ void wakeup(const void *channel) {
     sched_wakeup(channel);
 }
 
-int64_t spawn(char *path_to_executable,uint64_t flags, struct spawn_options *options) {
+int64_t spawn(char *path_to_executable,uint64_t flags, void *aux_arguments) {
+    uint64_t *top_level_page_table = alloc_virtual_map();
+    struct process *current = current_process();
 
+    int64_t handle = open(path_to_executable);
+
+    if (handle != KERN_SUCCESS) {
+        return KERN_BAD_HANDLE;
+    }
+    elf_info info;
+
+    int64_t ret = load_elf(current,handle,0,&info);
+
+    if (ret != KERN_SUCCESS) {
+        return ret;
+    }
+
+
+
+    return KERN_SUCCESS;
 }
 
 

@@ -5,7 +5,9 @@
 #ifndef _ELF_H
 #define _ELF_H
 // Format of an ELF executable file
+#pragma once
 #include <stdint.h>
+#include <stddef.h>
 // ELF Header Identification
 #define ELF_MAG (const char[4]) {0x7F, 'E', 'L', 'F'}
 
@@ -312,6 +314,7 @@ typedef struct {
 } elf_info;
 
 
-void *elf_section_get(void *elf, const char *name);
 
+void *elf_section_get(void *elf, const char *name);
+int64_t load_elf(struct process *process, int64_t handle, size_t base_address, elf_info *info);
 #endif
