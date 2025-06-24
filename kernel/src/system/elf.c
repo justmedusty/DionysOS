@@ -2,7 +2,7 @@
 // Created by dustyn on 6/15/25.
 //
 
-#include "include/definitions/elf.h"
+
 #include "include/memory/mem.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@
 #include "include/memory/vmm.h"
 #include "include/scheduling/process.h"
 #include "include/definitions/definitions.h"
-
+#include "include/definitions/elf.h"
 
 void *elf_section_get(void *elf, const char *name) {
     if (!elf || !name) {
@@ -91,7 +91,7 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
                     memory_protection |= NO_EXECUTE;
                 }
 
-                uint64_t aligned_address = ALIGN_DOWN(program_header.p_vaddr, PAGE_SIZE);
+                uint64_t aligned_address = ALIGN_DOWN(program_header.p_vaddr + base_address, PAGE_SIZE);
                 uint64_t aligned_diff = program_header.p_vaddr + base_address - aligned_address;
 
                 uint64_t page_count = ALIGN_UP(program_header.p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
@@ -103,10 +103,10 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
                                    PAGE_SIZE);
                 }
 
-                arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, PAGE_SIZE * page_count);
-
-                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, page_count * PAGE_SIZE);
-                memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, 0,
+                arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
+                seek(handle,program_header.p_offset);
+                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, program_header.p_filesz);
+                memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header.p_filesz, 0,
                        program_header.p_memsz - program_header.p_filesz);
 
                 arch_unmap_foreign(PAGE_SIZE * page_count);
