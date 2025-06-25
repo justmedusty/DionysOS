@@ -24,6 +24,8 @@ void *elf_section_get(void *elf, const char *name) {
         return NULL;
     }
 
+    void *result = NULL;
+
     elf64_hdr *elf_64 = elf;
     elf64_shdr *elf_shdr = elf + elf_64->e_shoff;
     char *shstrtab = elf + elf_shdr[elf_64->e_shstrndx].sh_offset;
@@ -36,9 +38,11 @@ void *elf_section_get(void *elf, const char *name) {
             continue;
 
         if (memcmp(name, shstrtab + elf_shdr[i].sh_name, min(name_len, sect_len)) == 0) {
-            return elf_shdr + i;
+            result = elf_shdr + i;
+            break;
         }
     }
+    return result;
 }
 
 int64_t load_elf(struct process *process, int64_t handle, size_t base_address, elf_info *info) {
@@ -65,6 +69,8 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
     elf64_phdr program_header;
     for (size_t i = 0; i < header.e_phnum; i++) {
         size_t program_header_offset = header.e_phoff + (i * sizeof(elf64_phdr));
+
+        seek(handle,program_header_offset);
 
         if (read(handle, (char *) &program_header, sizeof(elf64_phdr)) < 0) {
             return KERN_BAD_DESCRIPTOR;
@@ -104,7 +110,7 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
                 }
 
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
-                seek(handle,program_header.p_offset);
+                seek(handle, program_header.p_offset);
                 read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, program_header.p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header.p_filesz, 0,
                        program_header.p_memsz - program_header.p_filesz);
@@ -131,3 +137,50 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
     return KERN_SUCCESS;
 }
+/*
+int64_t elf_relocate(elf64_rela *relocation, elf64_sym symtab_tab, char *strtab_data,elf64_shdr *section_headers,void *virtual_base) {
+    elf64_sym* symbol = symtab_tab + ELF64_R_SYM(relocation->r_info);
+    const char* symbol_name = strtab_data + symbol->st_name;
+
+    void* location = virtual_base + relocation->r_offset;
+
+    switch (ELF_R_TYPE(relocation->r_info))
+    {
+#if defined(__x86_64__)
+        case R_X86_64_64:
+        case R_X86_64_GLOB_DAT:
+        case R_X86_64_JUMP_SLOT:
+#endif
+        {
+            void* resolved;
+            if (symbol->st_shndx == 0)
+            {
+                elf64_sym resolved_sym = symbol_name);
+                if (resolved_sym.st_value == 0)
+                {
+
+                    return KERN_NOT_FOUND;
+                }
+                resolved = (void*)resolved_sym.st_value;
+            }
+            else
+                resolved = virtual_base + symbol->st_value;
+
+            *(void**)location = resolved + relocation->r_addend;
+            break;
+        }
+#if defined(__x86_64__)
+        case R_X86_64_RELATIVE:
+#endif
+        {
+            *(void**)location = virtual_base + relocation->r_addend;
+            break;
+        }
+        default:
+        {
+            return KERN_NOT_FOUND;
+        }
+    }
+    return KERN_SUCCESS;
+}
+*/
