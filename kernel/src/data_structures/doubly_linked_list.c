@@ -204,6 +204,8 @@ void doubly_linked_list_destroy(struct doubly_linked_list* list,bool free_data) 
     while (current != NULL) {
         struct doubly_linked_list_node* next = current->next;
         if(free_data){
+            //TODO
+            //We may want to pass a function pointer that handles this in the case of it being a more complex data structure
             kfree(current->data); // this is really iffy since we do not know what data is so I will put it behind a bool
         }
         kfree(current);

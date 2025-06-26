@@ -105,6 +105,7 @@ enum spawn_flags {
     SPAWN_FLAG_DEBUGGABLE      = 1 << 12,  // Allow debugger to attach
     SPAWN_FLAG_NO_WAIT         = 1 << 13,  // Parent doesn't wait on child
     SPAWN_FLAG_INIT_PROCESS    = 1 << 14,  // Mark as system init/root process
+    SPAWN_FLAG_SHARED_PAGE_MAP  = 1 << 15, // Share page map (for threading)
 };
 
 
