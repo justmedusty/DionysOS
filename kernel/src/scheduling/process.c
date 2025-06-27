@@ -89,7 +89,7 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
     uint64_t *top_level_page_table = alloc_virtual_map();
     struct process *current = current_process();
 
-    struct process *new_process = kzmalloc(sizeof(struct process));
+    struct process *new_process = alloc_process(PROCESS_READY,true,current);
 
     int64_t handle = open(path_to_executable);
 
