@@ -43,6 +43,24 @@ void device_node_free(struct device_node *node){
     kfree(node);
 }
 
+struct device* vnode_to_device(struct vnode *vnode) {
+    struct device* device;
+
+    if (vnode->vnode_type != VNODE_BLOCK_DEV && vnode->vnode_type != VNODE_CHAR_DEV && vnode->vnode_type != VNODE_NET_DEV ) {
+        return NULL;
+    }
+
+    device = vnode->filesystem_object;
+
+    //Redundant? I will probably change this later and add a system for pointer errors
+    if (!device) {
+        return NULL;
+    }
+
+    return device;
+}
+
+
 struct vnode *device_lookup(struct vnode *vnode, char *name) {
     return NULL;
 }
@@ -59,6 +77,13 @@ void device_rename(const struct vnode *vnode, char *new_name) {
 
 
 int64_t device_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+
+    struct device *device = vnode_to_device(vnode);
+
+    if (!device) {
+        return KERN_BAD_HANDLE;
+    }
+
     return 0;
 }
 
