@@ -146,6 +146,26 @@ struct framebuffer_ops {
     void (*draw_pixel)(struct device *dev, int16_t x, int16_t y, uint16_t color);
 };
 
+
+struct device_vnode_ops {
+
+    void (*remove)(const struct vnode *vnode);
+
+    void (*rename)(const struct vnode *vnode, char *new_name);
+
+    int64_t (*write)(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+
+    int64_t (*read)(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes);
+
+    struct vnode *(*link)(struct vnode *vnode, struct vnode *new_vnode, uint8_t type);
+
+    void (*unlink)(struct vnode *vnode);
+
+    int64_t (*open)(struct vnode *vnode);
+
+    void (*close)(struct vnode *vnode, uint64_t handle);
+};
+
 struct device_ops {
     int32_t (*init)(struct device *dev, void *extra_arguments);
 
@@ -157,6 +177,8 @@ struct device_ops {
 
     int32_t (*configure)(struct device *dev, void *args);
 
+    struct device_vnode_ops *vnode_ops;
+
     union {
         struct block_device_ops *block_device_ops;
 
@@ -167,6 +189,8 @@ struct device_ops {
         struct framebuffer_ops *framebuffer_ops;
     };
 };
+
+
 
 void init_system_device_tree();
 
