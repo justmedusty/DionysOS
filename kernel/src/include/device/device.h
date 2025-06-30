@@ -178,7 +178,6 @@ struct device_ops {
     int32_t (*configure)(struct device *dev, void *args);
 
     struct device_vnode_ops *vnode_ops;
-
     union {
         struct block_device_ops *block_device_ops;
 

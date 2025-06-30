@@ -84,12 +84,26 @@ int64_t device_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
         return KERN_BAD_HANDLE;
     }
 
-    return 0;
+    if(!device->driver) {
+      return KERN_DEVICE_NOT_READY;
+    }
+
+    return device->driver->device_ops->vnode_ops->write(vnode,offset,buffer,bytes);
 }
 
 
 int64_t device_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
-    return 0;
+     struct device *device = vnode_to_device(vnode);
+
+    if (!device) {
+        return KERN_BAD_HANDLE;
+    }
+
+    if(!device->driver) {
+      return KERN_DEVICE_NOT_READY;
+    }
+
+    return device->driver->device_ops->vnode_ops->read(vnode,offset,buffer,bytes);
 }
 
 
@@ -103,7 +117,7 @@ void device_unlink(struct vnode *vnode) {
 
 
 int64_t device_open(struct vnode *vnode) {
-    return 0;
+  return vnode_open(vnode_get_canonical_path(vnode));
 }
 
 void device_close(struct vnode *vnode, uint64_t handle) {
