@@ -121,4 +121,5 @@ int64_t device_open(struct vnode *vnode) {
 }
 
 void device_close(struct vnode *vnode, uint64_t handle) {
+  return vnode_close(handle);
 }

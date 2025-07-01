@@ -39,12 +39,10 @@ void kthread_init() {
 
     proc->handle_list = kmalloc(sizeof(struct virtual_handle_list));
 
-    proc->handle_list->handle_list = kmalloc(sizeof(struct doubly_linked_list));
+    proc->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list));
 
     doubly_linked_list_init(proc->handle_list->handle_list);
 
-    proc->handle_list->handle_id_bitmap = 0;
-    proc->handle_list->num_handles = 0;
 
     struct virt_map *kthread_map = kmalloc(sizeof(struct virt_map));
     kthread_map->top_level = kernel_pg_map->top_level;
