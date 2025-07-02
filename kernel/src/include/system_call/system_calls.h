@@ -7,10 +7,15 @@
 
 #include "stdint.h"
 
+#define FOREIGN_MAP_BASE   0xffffea0000000000UL
+#define FOREIGN_MAP_END    0xfffff00000000000UL
+
+
 /*
  * x86_64 requires writing to the MSR defined below the address of the syscall handler so that when syscall instruction
  * is used in userspace after CS changes to ring 0, it will jump to the handler we set here
  */
+
 #ifdef __x86_64__
 #include "include/architecture/x86_64/msr.h"
 

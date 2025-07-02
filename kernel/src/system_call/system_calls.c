@@ -6,6 +6,7 @@
 #include "include/definitions/definitions.h"
 #include "include/scheduling/process.h"
 
+
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         return KERN_NO_SYS;
@@ -46,8 +47,9 @@ void register_syscall_dispatch() {
 
 void *user_to_kernel_pointer(void *pointer){
     void *phys_addr = (void *)((uint64_t )pointer & 0x1000); //shed off the rest if this is some unaligned object so we can work with page aligned address
-    struct process *user_process = my_cpu()->running_process;
+    struct process *user_process = current_process();
     phys_addr = walk_page_directory(user_process->page_map->top_level,phys_addr,0);
+
 
 }
 
