@@ -27,6 +27,36 @@ const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
         [DEVICE_MAJOR_TMPFS] = "TMPFS"
 };
 
+char *device_minor_to_string(uint64_t minor) {
+    if (minor > 20) {
+        return NULL;
+    }
+    char string[16];
+    uint64_t i = 0;
+    while (minor > 0) {
+        string[i++] = '0' + (minor % 10);
+        minor /= 10;
+    }
+    char *result = kzmalloc(strlen(string) + 1);
+
+    const uint64_t j = i;
+    while (i--) {
+        result[j - i] = string[i];
+    }
+
+    result[j] = '\0';
+
+    return result;
+
+}
+char *get_device_node_name(struct device *device) {
+    char *string = kzmalloc(64);
+    strcpy(string,(char *) device_major_strings[device->device_major]);
+    char *minor = device_minor_to_string(device->device_minor);
+    strcpy(string + strlen(string), minor);
+    kfree(minor);
+    string[strlen(string)] = '\0';
+}
 static struct device_group *get_device_group(uint64_t device_major);
 
 void insert_device_into_device_group(struct device *device, struct device_group *device_group);
@@ -34,7 +64,6 @@ void insert_device_into_device_group(struct device *device, struct device_group 
 struct device_group *alloc_new_device_group(uint64_t device_major);
 
 void init_system_device_tree() {
-
     init_tree(&system_device_tree, REGULAR_TREE, 0);
     serial_printf("System device tree created\n");
     kprintf("System device tree created\n");
