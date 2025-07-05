@@ -69,7 +69,7 @@ Diosfs : I wrote a custom filesystem to be used for my operating system, it is n
 
 🔴Write a shell program
 
-🔴Set up a userspace terminal with pre-compiled shell programs that can be executed
+🟡Set up a userspace terminal with pre-compiled shell programs that can be executed
 
 
 # Screeshots
