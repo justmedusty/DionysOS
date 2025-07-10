@@ -30,9 +30,6 @@ $(eval $(call DEFAULT_VAR,KCPPFLAGS,$(DEFAULT_KCPPFLAGS)))
 override DEFAULT_KNASMFLAGS := -F dwarf -g
 $(eval $(call DEFAULT_VAR,KNASMFLAGS,$(DEFAULT_KNASMFLAGS)))
 
-# User controllable linker flags. We set none by default.
-override DEFAULT_KLDFLAGS :=
-$(eval $(call DEFAULT_VAR,KLDFLAGS,$(DEFAULT_KLDFLAGS)))
 
 # Internal C flags that should not be changed by the user.
 override KCFLAGS += \
@@ -48,15 +45,42 @@ override KCFLAGS += \
     -march=x86-64 \
     -mno-80387 \
     -mno-mmx \
-    -mno-sse \
-    -mno-sse2 \
     -mno-red-zone \
    	-g \
-   	-D_DFS_ \
-   	-D_SERIAL_\
-   	-D_CREATE_RAMDISK_\
-   	-D_DEBUG_ \
-   	-DMAX_CPUS=32\
    	-fanalyzer \
    	-Wno-unused-variable \
    	-Wno-unused-function \
+
+override KNASMFLAGS += \
+    -Wall \
+    -f elf64
+
+override CFILES := $(shell cd src && find -L * -type f -name '*.c')
+override ASFILES := $(shell cd src && find -L * -type f -name '*.S')
+override NASMFILES := $(shell cd src && find -L * -type f -name '*.asm')
+override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
+override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
+
+
+# Include header dependencies.
+-include $(HEADER_DEPS)
+
+# Compilation rules for *.c files.
+obj/%.c.o: %.c Makefile
+	mkdir -p "$$(dirname $@)"
+	$(KCC) $(KCFLAGS) $(KCPPFLAGS) -c $< -o $@
+
+# Compilation rules for *.S files.
+obj/%.S.o: %.S Makefile
+	mkdir -p "$$(dirname $@)"
+	$(KCC) $(KCFLAGS) $(KCPPFLAGS) -c $< -o $@
+
+# Compilation rules for *.asm (nasm) files.
+obj/%.asm.o: %.asm Makefile
+	mkdir -p "$$(dirname $@)"
+	nasm $(KNASMFLAGS) $< -o $@
+
+# Remove object files and the final executables.
+.PHONY: clean
+clean:
+	rm -rf bin obj
