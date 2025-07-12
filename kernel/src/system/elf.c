@@ -137,9 +137,9 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
 
     return KERN_SUCCESS;
 }
-/*
-int64_t elf_relocate(elf64_rela *relocation, elf64_sym symtab_tab, char *strtab_data,elf64_shdr *section_headers,void *virtual_base) {
-    elf64_sym* symbol = symtab_tab + ELF64_R_SYM(relocation->r_info);
+
+int64_t elf_relocate(elf64_rela *relocation, elf64_sym *symtab_data, char *strtab_data,elf64_shdr *section_headers,void *virtual_base) {
+    elf64_sym* symbol = (elf64_sym *) ((uint64_t)symtab_data + (uint64_t) ELF64_R_SYM(relocation->r_info));
     const char* symbol_name = strtab_data + symbol->st_name;
 
     void* location = virtual_base + relocation->r_offset;
@@ -187,4 +187,3 @@ int64_t elf_relocate(elf64_rela *relocation, elf64_sym symtab_tab, char *strtab_
     }
     return KERN_SUCCESS;
 }
-*/

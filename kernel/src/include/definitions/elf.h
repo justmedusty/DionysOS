@@ -317,4 +317,5 @@ typedef struct {
 
 void *elf_section_get(void *elf, const char *name);
 int64_t load_elf(struct process *process, int64_t handle, size_t base_address, elf_info *info);
+int64_t elf_relocate(elf64_rela *relocation, elf64_sym *symtab_data, char *strtab_data,elf64_shdr *section_headers,void *virtual_base);
 #endif
