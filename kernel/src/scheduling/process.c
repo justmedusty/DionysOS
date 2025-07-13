@@ -98,11 +98,15 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
     }
     elf_info info;
 
-    int64_t ret = load_elf(current,handle,0,&info);
+    int64_t ret = load_elf(new_process,handle,0,&info);
 
     if (ret != KERN_SUCCESS) {
         return ret;
     }
+
+
+
+
 
 
 

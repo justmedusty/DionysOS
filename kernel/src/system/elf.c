@@ -135,6 +135,10 @@ int64_t load_elf(struct process *process, int64_t handle, size_t base_address, e
     info->at_phnum = header.e_phnum;
     info->at_phent = header.e_phentsize;
 
+#ifdef __x86_64__
+    process->current_register_state->rip = header.e_entry;
+#endif
+
     return KERN_SUCCESS;
 }
 
@@ -157,10 +161,8 @@ int64_t elf_relocate(elf64_rela *relocation, elf64_sym *symtab_data, char *strta
             {
 
                    //Need to write a symbol resolving function
-
-
-                //elf64_sym resolved_sym = symbol_name);
-               // if (resolved_sym.st_value == 0)
+                elf64_sym resolved_sym = {0};
+                if (resolved_sym.st_value == 0)
                 {
 
                     return KERN_NOT_FOUND;
