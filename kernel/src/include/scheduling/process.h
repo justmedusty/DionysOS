@@ -115,5 +115,5 @@ enum spawn_flags {
 void exit();
 void sleep(void *channel);
 void wakeup(const void *channel);
-
+void set_kernel_stack(void *kernel_stack);
 #endif

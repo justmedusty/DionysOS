@@ -7,6 +7,7 @@
 #include "include/filesystem/vfs.h"
 #include "include/memory/vmm.h"
 #include "include/architecture/arch_cpu.h"
+#include "include/architecture/x86_64/gdt.h"
 #include "include/data_structures/doubly_linked_list.h"
 #include "include/scheduling/sched.h"
 
@@ -48,6 +49,9 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->current_register_state = kzmalloc(sizeof(struct register_state));
     process->process_type = USER_PROCESS;
     process->stack = umalloc(DEFAULT_STACK_SIZE);
+    process->effective_priority = parent->effective_priority;
+    process->priority = parent->priority;
+
 
 
     doubly_linked_list_init(process->page_map->vm_regions);
@@ -108,18 +112,13 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
     new_process->current_register_state->rsp = (uint64_t) new_process->stack;
 #endif
 
-
-
-
-
-
-
-
-
-
-
     return KERN_SUCCESS;
 }
 
 
 
+void set_kernel_stack(void *kernel_stack) {
+#ifdef __x86_64__
+    my_cpu()->tss->rsp0 = (uint64_t) kernel_stack;
+#endif
+}
