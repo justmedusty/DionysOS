@@ -311,4 +311,11 @@ static void promote_processes() {
 
 }
 
+
+void global_enqueue_process(struct process *process) {
+    acquire_spinlock(&sched_global_lock);
+    enqueue(&sched_global_queue,process, process->priority);
+    release_spinlock(&sched_global_lock);
+}
+
 //#endif

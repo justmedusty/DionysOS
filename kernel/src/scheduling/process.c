@@ -112,6 +112,8 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
     new_process->current_register_state->rsp = (uint64_t) new_process->stack;
 #endif
 
+    global_enqueue_process(new_process);
+
     return KERN_SUCCESS;
 }
 
