@@ -97,12 +97,12 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
 
     int64_t handle = open(path_to_executable);
 
-    if (handle != KERN_SUCCESS) {
+    if (handle < 0) {
         return KERN_BAD_HANDLE;
     }
     elf_info info;
 
-    int64_t ret = load_elf(new_process,handle,0,&info);
+    const int64_t ret = load_elf(new_process,handle,0,&info);
 
     if (ret != KERN_SUCCESS) {
         return ret;

@@ -27,4 +27,5 @@ void sched_exit(void);
 _Noreturn void scheduler_main(void);
 void sched_sleep(void *sleep_channel);
 void sched_wakeup(const void *wakeup_channel);
+void global_enqueue_process(struct process *process);
 #endif
