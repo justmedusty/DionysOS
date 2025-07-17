@@ -442,7 +442,6 @@ uint64_t remove_binary_tree(struct binary_tree *tree, uint64_t key, void *addres
              */
 
             if (current->right == NULL) {
-
                 if (current->parent->left == current) {
                     current->parent->left = current->left;
                 } else {
@@ -542,3 +541,45 @@ void init_binary_tree(struct binary_tree *tree) {
     initlock(&tree->lock, BTREE_LOCK);
 }
 
+
+void for_each_node_in_tree(struct binary_tree *tree,
+                           void (*callback)(struct binary_tree_node *)){
+    if (!tree || !callback) return;
+
+    acquire_spinlock(&tree->lock);
+
+    struct binary_tree_node *root = tree->root;
+    if (!root) {
+        release_spinlock(&tree->lock);
+        return;
+    }
+
+    // Create a stack to simulate recursion
+    struct binary_tree_node **stack = kzmalloc(sizeof(struct binary_tree_node*) * tree->node_count);
+    if (!stack) {
+        release_spinlock(&tree->lock);
+        return;
+    }
+
+    int32_t top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct binary_tree_node *current = stack[top--];
+        if (current) {
+            callback(current);
+
+            // Push right first so left is processed first
+            if (current->right) {
+                stack[++top] = current->right;
+            }
+            if (current->left) {
+                stack[++top] = current->left;
+            }
+        }
+    }
+
+    kfree(stack);
+    release_spinlock(&tree->lock);
+
+}
