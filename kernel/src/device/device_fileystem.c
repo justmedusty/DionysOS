@@ -6,23 +6,23 @@
 #include "include/device/device.h"
 #include "include/device/device_filesystem.h"
 #include "include/memory/kmalloc.h"
-
+#include "include/data_structures/binary_tree.h"
 struct filesystem_info device_filesystem_info = {0};
 
 struct vnode_operations device_filesystem_ops = {
-        .lookup = device_lookup,
-        .create = device_create,
-        .remove = device_remove,
-        .rename = device_rename,
-        .write  = device_write,
-        .read   = device_read,
-        .link   = device_link,
-        .unlink = device_unlink,
-        .open   = device_open,
-        .close  = device_close
+    .lookup = device_lookup,
+    .create = device_create,
+    .remove = device_remove,
+    .rename = device_rename,
+    .write = device_write,
+    .read = device_read,
+    .link = device_link,
+    .unlink = device_unlink,
+    .open = device_open,
+    .close = device_close
 };
 
-struct device_node *device_node_alloc(struct device *device){
+struct device_node *device_node_alloc(struct device *device) {
     struct device_node *node = kzmalloc(sizeof(struct device_node));
     node->driver = device->driver;
     node->device_major = device->device_major;
@@ -37,16 +37,17 @@ struct device_node *device_node_alloc(struct device *device){
 }
 
 //This will have to be called after children are handled recursively
-void device_node_free(struct device_node *node){
+void device_node_free(struct device_node *node) {
     kfree(node->children);
     node->device->node = NULL;
     kfree(node);
 }
 
-struct device* vnode_to_device(struct vnode *vnode) {
-    struct device* device;
+struct device *vnode_to_device(struct vnode *vnode) {
+    struct device *device;
 
-    if (vnode->vnode_type != VNODE_BLOCK_DEV && vnode->vnode_type != VNODE_CHAR_DEV && vnode->vnode_type != VNODE_NET_DEV ) {
+    if (vnode->vnode_type != VNODE_BLOCK_DEV && vnode->vnode_type != VNODE_CHAR_DEV && vnode->vnode_type !=
+        VNODE_NET_DEV) {
         return NULL;
     }
 
@@ -77,33 +78,32 @@ void device_rename(const struct vnode *vnode, char *new_name) {
 
 
 int64_t device_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
-
     struct device *device = vnode_to_device(vnode);
 
     if (!device) {
         return KERN_BAD_HANDLE;
     }
 
-    if(!device->driver) {
-      return KERN_DEVICE_NOT_READY;
+    if (!device->driver) {
+        return KERN_DEVICE_NOT_READY;
     }
 
-    return device->driver->device_ops->vnode_ops->write(vnode,offset,buffer,bytes);
+    return device->driver->device_ops->vnode_ops->write(vnode, offset, buffer, bytes);
 }
 
 
 int64_t device_read(struct vnode *vnode, uint64_t offset, char *buffer, uint64_t bytes) {
-     struct device *device = vnode_to_device(vnode);
+    struct device *device = vnode_to_device(vnode);
 
     if (!device) {
         return KERN_BAD_HANDLE;
     }
 
-    if(!device->driver) {
-      return KERN_DEVICE_NOT_READY;
+    if (!device->driver) {
+        return KERN_DEVICE_NOT_READY;
     }
 
-    return device->driver->device_ops->vnode_ops->read(vnode,offset,buffer,bytes);
+    return device->driver->device_ops->vnode_ops->read(vnode, offset, buffer, bytes);
 }
 
 
@@ -117,9 +117,54 @@ void device_unlink(struct vnode *vnode) {
 
 
 int64_t device_open(struct vnode *vnode) {
-  return vnode_open(vnode_get_canonical_path(vnode));
+    return vnode_open(vnode_get_canonical_path(vnode));
 }
 
 void device_close(struct vnode *vnode, uint64_t handle) {
-  return vnode_close(handle);
+    return vnode_close(handle);
+}
+
+
+struct vnode *device_to_vnode(struct device *device) {
+    struct vnode *vnode = vnode_alloc();
+
+    vnode->vnode_ops = &device_filesystem_ops;
+    switch (device->device_major) {
+        case DEVICE_MAJOR_AHCI:
+        case DEVICE_MAJOR_RAMDISK:
+        case DEVICE_MAJOR_TMPFS:
+        case DEVICE_MAJOR_NVME:
+            vnode->vnode_type = VNODE_BLOCK_DEV;
+            break;
+
+        case DEVICE_MAJOR_FRAMEBUFFER:
+        case DEVICE_MAJOR_KEYBOARD:
+        case DEVICE_MAJOR_MOUSE:
+        case DEVICE_MAJOR_SERIAL:
+        case DEVICE_MAJOR_USB_CONTROLLER:
+            vnode->vnode_type = VNODE_CHAR_DEV;
+            break;
+
+        case DEVICE_MAJOR_NETWORK_CARD:
+        case DEVICE_MAJOR_WIFI_ADAPTER:
+            vnode->vnode_type = VNODE_NET_DEV;
+
+            //May want some other kind of identifier because this would be invalid value
+        default: vnode->vnode_type = VNODE_SPECIAL;
+            break;
+    }
+
+    vnode->vnode_device_id = DEVICE_FS_FILESYSTEM_ID;
+
+
+
+    return vnode;
+}
+
+void tree_pluck(const struct binary_tree_node *node) {
+    struct device *dev = node->data.head->data;
+}
+
+void dev_fs_init() {
+    struct vnode *dev_fs_root = vnode_alloc();
 }

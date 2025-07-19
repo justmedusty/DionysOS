@@ -7,6 +7,7 @@
 #include "stdint.h"
 #include "include/device/device.h"
 
+#define DEVICE_FS_FILESYSTEM_ID 0xF1F2F3
 #define MAX_DEVICE_NODE_CHILDREN 16
 #define MAX_DEVICE_NODE_CHILDREN_SIZE (sizeof(uintptr_t) * MAX_DEVICE_NODE_CHILDREN)
 struct device_node {
