@@ -143,4 +143,3 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -f src/limine.h
