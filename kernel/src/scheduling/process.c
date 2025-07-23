@@ -117,6 +117,21 @@ int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
     return KERN_SUCCESS;
 }
 
+int64_t fork(uint64_t flags, uint64_t aux_arguments) {
+    uint64_t *top_level_page_table = alloc_virtual_map();
+    struct process *current = current_process();
+
+    struct process *new_process = alloc_process(PROCESS_READY,true,current);
+
+#ifdef __x86_64__
+    new_process->current_register_state->rsp = (uint64_t) new_process->stack;
+#endif
+
+    global_enqueue_process(new_process);
+
+    return KERN_SUCCESS;
+}
+
 
 
 void set_kernel_stack(void *kernel_stack) {
