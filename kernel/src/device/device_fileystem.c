@@ -8,6 +8,10 @@
 #include "include/memory/kmalloc.h"
 #include "include/data_structures/binary_tree.h"
 struct filesystem_info device_filesystem_info = {0};
+struct vnode *dev_fs_root;
+struct spinlock dev_fs_root_lock;
+
+struct vnode *device_to_vnode(struct device *device);
 
 struct vnode_operations device_filesystem_ops = {
     .lookup = device_lookup,
@@ -59,6 +63,12 @@ struct device *vnode_to_device(struct vnode *vnode) {
     }
 
     return device;
+}
+
+int64_t add_device_to_devfs_tree(struct device *device) {
+    struct vnode *node = device_to_vnode(device);
+    acquire_spinlock(&dev_fs_root_lock);
+
 }
 
 
@@ -166,5 +176,7 @@ void tree_pluck(const struct binary_tree_node *node) {
 }
 
 void dev_fs_init() {
-    struct vnode *dev_fs_root = vnode_alloc();
+    initlock(&dev_fs_root_lock, VFS_LOCK);
+    dev_fs_root = vnode_alloc();
+
 }
