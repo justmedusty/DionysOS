@@ -16,6 +16,7 @@
 #include "include/architecture/x86_64/acpi.h"
 #include "include/architecture/arch_timer.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
+#include "include/device/device_filesystem.h"
 #include "include/scheduling/sched.h"
 #include "include/filesystem/diosfs.h"
 #include "include/system_call/system_calls.h"
@@ -67,6 +68,7 @@ void kernel_bootstrap() {
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
     timer_init(1000);
+    dev_fs_init();
     info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,
                 (usable_pages * (PAGE_SIZE / 1024)) / 1024);
     register_syscall_dispatch();

@@ -31,7 +31,7 @@ struct vnode *device_link(struct vnode *vnode, struct vnode *new_vnode, uint8_t 
 void device_unlink(struct vnode *vnode);
 int64_t device_open(struct vnode *vnode);
 void device_close(struct vnode *vnode, uint64_t handle);
-
+void dev_fs_init();
 
 
 

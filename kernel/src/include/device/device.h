@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include "include/drivers/bus/pci.h"
-
+extern struct binary_tree system_device_tree;
 #define DEVICE_GROUP_SIZE 32
 #define DEVICE_NAME_LEN 30
 #define NUM_DEVICE_MAJOR_CLASSIFICATIONS 11

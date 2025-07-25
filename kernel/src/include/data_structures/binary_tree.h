@@ -32,28 +32,37 @@
 
 struct binary_tree {
     struct spinlock lock; /* Optional */
-    struct binary_tree_node* root;
+    struct binary_tree_node *root;
     uint64_t node_count;
     uint64_t mode;
     uint64_t flags; /* Unused for now */
 };
 
 struct binary_tree_node {
-    struct binary_tree_node* parent;
-    struct binary_tree_node* left;
-    struct binary_tree_node* right;
-    uint32_t key; /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
+    struct binary_tree_node *parent;
+    struct binary_tree_node *left;
+    struct binary_tree_node *right;
+    uint32_t key;
+    /* This is a duplicate value but I have to put it here to allow void pointers otherwise I would be limited by type */
     struct singly_linked_list data;
     uint16_t color; /* Only for RB tree */
     uint16_t flags;
     uint8_t index;
 };
 
-uint64_t init_tree(struct binary_tree* tree, uint64_t mode, uint64_t flags);
-uint64_t insert_tree_node(struct binary_tree* tree, void* data, uint64_t key);
-uint64_t remove_tree_node(struct binary_tree *tree, uint64_t key,void *address,struct binary_tree_node *node /* Optional */);
-uint64_t destroy_tree(struct binary_tree* tree);
-void* lookup_tree(struct binary_tree* tree, uint64_t key,uint8_t remove);
+uint64_t init_tree(struct binary_tree *tree, uint64_t mode, uint64_t flags);
+
+uint64_t insert_tree_node(struct binary_tree *tree, void *data, uint64_t key);
+
+uint64_t remove_tree_node(struct binary_tree *tree, uint64_t key, void *address,
+                          struct binary_tree_node *node /* Optional */);
+
+uint64_t destroy_tree(struct binary_tree *tree);
+
+void *lookup_tree(struct binary_tree *tree, uint64_t key, uint8_t remove);
+
+void for_each_node_in_tree(struct binary_tree *tree,
+                           void (*callback)(struct binary_tree_node *));
 
 /*
  * The PMM tree ops cannot have locked memory functions since it will cause a deadlock,
@@ -64,14 +73,12 @@ if (IS_PMM_TREE) {\
     name = pmm_node_alloc();\
 }else {\
     name = node_alloc();\
-}\
-
+}
 #define NODE_FREE(name) \
 if (IS_PMM_TREE) {\
 pmm_node_free(name);\
 }else {\
 node_free(name);\
-}\
-
+}
 extern struct binary_tree buddy_free_list_zone[2];
 #define IS_PMM_TREE (tree == &buddy_free_list_zone[0] || tree == &buddy_free_list_zone[1] )

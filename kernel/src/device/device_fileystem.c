@@ -66,9 +66,17 @@ struct device *vnode_to_device(struct vnode *vnode) {
 }
 
 int64_t add_device_to_devfs_tree(struct device *device) {
+
     struct vnode *node = device_to_vnode(device);
     acquire_spinlock(&dev_fs_root_lock);
 
+    if (dev_fs_root->num_children == VNODE_MAX_DIRECTORY_ENTRIES) {
+        //Extreme but just want to know if it happens
+        panic("Ran out of room for devfs children!");
+    }
+
+    dev_fs_root->vnode_children[dev_fs_root->num_children++] = node;
+    release_spinlock(&dev_fs_root_lock);
 }
 
 
@@ -159,7 +167,7 @@ struct vnode *device_to_vnode(struct device *device) {
         case DEVICE_MAJOR_WIFI_ADAPTER:
             vnode->vnode_type = VNODE_NET_DEV;
 
-            //May want some other kind of identifier because this would be invalid value
+        //May want some other kind of identifier because this would be invalid value
         default: vnode->vnode_type = VNODE_SPECIAL;
             break;
     }
@@ -167,16 +175,17 @@ struct vnode *device_to_vnode(struct device *device) {
     vnode->vnode_device_id = DEVICE_FS_FILESYSTEM_ID;
 
 
-
     return vnode;
 }
 
-void tree_pluck(const struct binary_tree_node *node) {
+void tree_pluck(struct binary_tree_node *node) {
     struct device *dev = node->data.head->data;
+    add_device_to_devfs_tree(dev);
 }
 
 void dev_fs_init() {
     initlock(&dev_fs_root_lock, VFS_LOCK);
     dev_fs_root = vnode_alloc();
-
+    for_each_node_in_tree(&system_device_tree,tree_pluck);
+    kprintf("Device Filesystem Initialized");
 }
