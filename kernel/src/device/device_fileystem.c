@@ -70,6 +70,7 @@ int64_t add_device_to_devfs_tree(struct device *device) {
     struct vnode *node = device_to_vnode(device);
     acquire_spinlock(&dev_fs_root_lock);
 
+
     if (dev_fs_root->num_children == VNODE_MAX_DIRECTORY_ENTRIES) {
         //Extreme but just want to know if it happens
         panic("Ran out of room for devfs children!");
@@ -179,8 +180,12 @@ struct vnode *device_to_vnode(struct device *device) {
 }
 
 void tree_pluck(struct binary_tree_node *node) {
-    struct device *dev = node->data.head->data;
-    add_device_to_devfs_tree(dev);
+    struct device_group *device_group = node->data.head->data;
+
+    for (size_t i = 0; i < device_group->num_devices; i++) {
+        struct device *dev = device_group->devices[i];
+        add_device_to_devfs_tree(dev);
+    }
 }
 
 void dev_fs_init() {
