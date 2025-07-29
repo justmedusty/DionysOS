@@ -184,7 +184,6 @@ void tree_pluck(struct binary_tree_node *node) {
 
     for (size_t i = 0; i < device_group->num_devices; i++) {
         struct device *dev = device_group->devices[i];
-        err_printf("DEVICE MAJ %i MIN %i",dev->device_major,dev->device_minor);
         add_device_to_devfs_tree(dev);
     }
 }
@@ -192,6 +191,7 @@ void tree_pluck(struct binary_tree_node *node) {
 void dev_fs_init() {
     initlock(&dev_fs_root_lock, VFS_LOCK);
     dev_fs_root = vnode_alloc();
+    dev_fs_root->vnode_children = kzmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     for_each_node_in_tree(&system_device_tree,tree_pluck);
     kprintf("Device Filesystem Initialized");
 }
