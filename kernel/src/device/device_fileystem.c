@@ -7,6 +7,7 @@
 #include "include/device/device_filesystem.h"
 #include "include/memory/kmalloc.h"
 #include "include/data_structures/binary_tree.h"
+#include "include/definitions/string.h"
 struct filesystem_info device_filesystem_info = {0};
 struct vnode *dev_fs_root;
 struct spinlock dev_fs_root_lock;
@@ -69,7 +70,10 @@ int64_t add_device_to_devfs_tree(struct device *device) {
 
     struct vnode *node = device_to_vnode(device);
     acquire_spinlock(&dev_fs_root_lock);
+    char *name = get_device_node_name(device);
 
+    safe_strcpy((char *) &node->vnode_name, name,128);
+    kfree(name);
 
     if (dev_fs_root->num_children == VNODE_MAX_DIRECTORY_ENTRIES) {
        return KERN_NO_SPACE;

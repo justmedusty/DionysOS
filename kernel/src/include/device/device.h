@@ -29,6 +29,7 @@ enum major {
 
 extern const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS];
 extern uint64_t device_minor_map[NUM_DEVICE_MAJOR_CLASSIFICATIONS];
+
 enum {
     DEVICE_TYPE_BLOCK,
     DEVICE_TYPE_CHAR,
@@ -45,23 +46,23 @@ struct device_group {
 
 struct usb_driver {
     struct device_driver *generic_driver; // Base driver struct for common operations
-    uint8_t interface_class;     // USB interface class (e.g., HID, Mass Storage)
-    uint8_t subclass;            // Subclass code
-    uint8_t protocol;            // Protocol code
+    uint8_t interface_class; // USB interface class (e.g., HID, Mass Storage)
+    uint8_t subclass; // Subclass code
+    uint8_t protocol; // Protocol code
 };
 
 struct i2c_driver {
     struct device_driver *generic_driver; // Base driver struct for common operations
     uint32_t i2c_address; // I2C device address
-    uint32_t speed;       // Communication speed
+    uint32_t speed; // Communication speed
 };
 
 struct rs232_driver {
     struct device_driver *generic_driver; // Base driver struct for common operations
-    uint32_t baud_rate;   // Baud rate for serial communication
-    uint8_t parity;       // Parity (e.g., none, even, odd)
-    uint8_t stop_bits;    // Number of stop bits
-    uint8_t data_bits;    // Data bits (e.g., 7, 8)
+    uint32_t baud_rate; // Baud rate for serial communication
+    uint8_t parity; // Parity (e.g., none, even, odd)
+    uint8_t stop_bits; // Number of stop bits
+    uint8_t data_bits; // Data bits (e.g., 7, 8)
 };
 
 
@@ -83,7 +84,6 @@ struct device {
 
 //not sure if I will use this yet
 struct device_driver {
-
     struct device *device;
 
     union {
@@ -148,7 +148,6 @@ struct framebuffer_ops {
 
 
 struct device_vnode_ops {
-
     void (*remove)(const struct vnode *vnode);
 
     void (*rename)(const struct vnode *vnode, char *new_name);
@@ -178,6 +177,7 @@ struct device_ops {
     int32_t (*configure)(struct device *dev, void *args);
 
     struct device_vnode_ops *vnode_ops;
+
     union {
         struct block_device_ops *block_device_ops;
 
@@ -190,7 +190,6 @@ struct device_ops {
 };
 
 
-
 void init_system_device_tree();
 
 void create_device(struct device *device, uint64_t device_major, char *name, struct device_ops *device_ops,
@@ -200,4 +199,7 @@ void insert_device_into_kernel_tree(struct device *device);
 
 struct device *query_device(uint64_t device_major, uint64_t device_minor);
 
+char *device_minor_to_string(uint64_t minor);
+
+char *get_device_node_name(struct device *device);
 #endif //DIONYSOS_DEVICE_H

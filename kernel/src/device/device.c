@@ -24,7 +24,8 @@ const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
         [DEVICE_MAJOR_SERIAL] = "SERIAL",
         [DEVICE_MAJOR_USB_CONTROLLER] = "USB_CONTROLLER",
         [DEVICE_MAJOR_WIFI_ADAPTER] = "WIFI_ADAPTER",
-        [DEVICE_MAJOR_TMPFS] = "TMPFS"
+        [DEVICE_MAJOR_TMPFS] = "TMPFS",
+        [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
 };
 
 char *device_minor_to_string(uint64_t minor) {
@@ -53,9 +54,12 @@ char *get_device_node_name(struct device *device) {
     char *string = kzmalloc(64);
     strcpy(string,(char *) device_major_strings[device->device_major]);
     char *minor = device_minor_to_string(device->device_minor);
+
     strcpy(string + strlen(string), minor);
     kfree(minor);
-    string[strlen(string)] = '\0';
+
+    kprintf("STRING : %s\n",string);
+    return string;
 }
 static struct device_group *get_device_group(uint64_t device_major);
 
