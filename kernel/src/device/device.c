@@ -34,18 +34,35 @@ char *device_minor_to_string(uint64_t minor) {
     }
     char string[16];
     uint64_t i = 0;
-    while (minor > 0) {
-        string[i++] = '0' + (minor % 10);
-        minor /= 10;
-    }
-    char *result = kzmalloc(strlen(string) + 1);
 
+    if (minor == 0) {
+        string[0] = '0';
+        i = 1;
+    }else {
+        while (minor > 0) {
+            string[i++] = (char) ('0' + (char) (minor % 10));
+            minor /= 10;
+        }
+    }
+
+    char *result = kzmalloc(8);
+
+    if (minor == 0) {
+        result[0] = '0';
+        result[i] = '\0';
+        info_printf("MINOR : %s NUMBER : %i\n",result,minor);
+        return result;
+    }
+
+    string[15] = '\0';
     const uint64_t j = i;
     while (i--) {
         result[j - i] = string[i];
     }
 
-    result[j] = '\0';
+    result[j + 1] = '\0';
+
+
 
     return result;
 
