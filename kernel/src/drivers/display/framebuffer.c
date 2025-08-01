@@ -12,6 +12,7 @@
 #include "include/memory/mem.h"
 #include "include/drivers/display/font.h"
 #include "include/architecture/arch_timer.h"
+#include "include/device/device_filesystem.h"
 
 struct framebuffer main_framebuffer;
 #define MAIN_FB 0
@@ -1048,4 +1049,24 @@ void kprintf_color(uint32_t color, char *str, ...) {
 
 void framebuffer_init() {
     insert_device_into_kernel_tree(&framebuffer_device);
+}
+
+
+
+int64_t framebuffer_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+    if (vnode->vnode_type != VNODE_CHAR_DEV) {
+        return KERN_WRONG_TYPE;
+    }
+
+    if (vnode->vnode_filesystem_id != DEVICE_FS_FILESYSTEM_ID) {
+        return KERN_WRONG_TYPE;
+    }
+
+    struct device *priv = vnode_to_device(vnode);
+
+    if (!priv) {
+        return KERN_WRONG_TYPE;
+    }
+
+
 }

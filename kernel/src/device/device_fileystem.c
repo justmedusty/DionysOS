@@ -49,14 +49,12 @@ void device_node_free(struct device_node *node) {
 }
 
 struct device *vnode_to_device(struct vnode *vnode) {
-    struct device *device;
-
     if (vnode->vnode_type != VNODE_BLOCK_DEV && vnode->vnode_type != VNODE_CHAR_DEV && vnode->vnode_type !=
         VNODE_NET_DEV) {
         return NULL;
     }
 
-    device = vnode->filesystem_object;
+    struct device *device = vnode->filesystem_object;
 
     //Redundant? I will probably change this later and add a system for pointer errors
     if (!device) {
