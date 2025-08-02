@@ -94,6 +94,7 @@ uint64_t inode_bitmap_start = 0;
  *  home
  *  mnt
  *  var
+ *  dev
  *
  *  You can add files by adding arguments in this fashion :
  *  mkdiosfs name.img size-gigs -f file_to_add other_file_to_add etc
@@ -254,6 +255,11 @@ int main(const int argc, char **argv) {
 
     diosfs_create(&inode, "temp", DIOSFS_DIRECTORY);
     printf("Created temp directory\n");
+
+#define DEV_INO 8
+
+    diosfs_create(&inode, "dev", DIOSFS_DIRECTORY);
+    printf("Created dev directory\n");
 
     //include any passed files in, they automatically end up in the home directory
     if (files) {

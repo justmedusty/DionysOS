@@ -5,7 +5,7 @@
 #include "systemcall_wrappers.h"
 
 int main(int argc, char *argv[]) {
-    int64_t handle = sys_open("/dev/fb0");
+    int64_t handle = sys_open("/dev/FRAMEBUFFER0");
 
     if (handle < 0) {
         sys_exit(-1);

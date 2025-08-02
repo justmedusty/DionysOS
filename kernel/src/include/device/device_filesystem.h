@@ -32,7 +32,7 @@ void device_unlink(struct vnode *vnode);
 int64_t device_open(struct vnode *vnode);
 void device_close(struct vnode *vnode, uint64_t handle);
 void dev_fs_init();
-
+struct device *vnode_to_device(struct vnode *vnode);
 
 
 

@@ -195,5 +195,6 @@ void dev_fs_init() {
     dev_fs_root = vnode_alloc();
     dev_fs_root->vnode_children = kzmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     for_each_node_in_tree(&system_device_tree,tree_pluck);
+    vnode_mount_path("/dev", dev_fs_root);
     kprintf("Device Filesystem Initialized");
 }
