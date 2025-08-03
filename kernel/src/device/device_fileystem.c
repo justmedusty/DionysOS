@@ -95,11 +95,12 @@ void device_remove(const struct vnode *vnode) {
 }
 
 void device_rename(const struct vnode *vnode, char *new_name) {
+    vnode_rename(vnode, new_name);
 }
 
 
 int64_t device_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
-    struct device *device = vnode_to_device(vnode);
+   struct device *device = vnode_to_device(vnode);
 
     if (!device) {
         return KERN_BAD_HANDLE;
@@ -181,8 +182,11 @@ struct vnode *device_to_vnode(struct device *device) {
     return vnode;
 }
 
+/*
+ * Function passed to for_each_node_in_tree, function pointer defined in the function prototype
+ */
 void tree_pluck(struct binary_tree_node *node) {
-    struct device_group *device_group = node->data.head->data;
+    const struct device_group *device_group = node->data.head->data;
 
     for (size_t i = 0; i < device_group->num_devices; i++) {
         struct device *dev = device_group->devices[i];
@@ -196,5 +200,5 @@ void dev_fs_init() {
     dev_fs_root->vnode_children = kzmalloc(sizeof(struct vnode *) * VNODE_MAX_DIRECTORY_ENTRIES);
     for_each_node_in_tree(&system_device_tree,tree_pluck);
     vnode_mount_path("/dev", dev_fs_root);
-    kprintf("Device Filesystem Initialized");
+    kprintf("Device Filesystem Initialized\n");
 }
