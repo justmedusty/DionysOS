@@ -58,6 +58,8 @@ ovmf:
 	cd ovmf && curl -Lo OVMF.fd https://retrage.github.io/edk2-nightly/bin/RELEASEX64_OVMF.fd
 
 limine/limine:
+	rm -rf limine
+	git clone https://github.com/limine-bootloader/limine.git --branch=v7.x-binary --depth=1
 	$(MAKE) -C limine
 
 .PHONY: kernel

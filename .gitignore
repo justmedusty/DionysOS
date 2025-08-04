@@ -8,3 +8,4 @@ qemu_debug.log
 nvme.trace
 template.iso
 core
+/limine
