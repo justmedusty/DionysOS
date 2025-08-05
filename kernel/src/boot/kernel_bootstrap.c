@@ -16,6 +16,7 @@
 #include "include/architecture/x86_64/acpi.h"
 #include "include/architecture/arch_timer.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
+#include "include/definitions/elf.h"
 #include "include/device/device_filesystem.h"
 #include "include/scheduling/sched.h"
 #include "include/filesystem/diosfs.h"
@@ -39,7 +40,13 @@ void welcome_message() {
     kprintf_color(CYAN, "DionysOS Booting...\n");
 }
 
+void setup_init() {
+    char *path = "/bin/init";
+    struct process *process = kzmalloc(sizeof(struct process));
+    elf_info *elfinfo = kzmalloc(sizeof(elf_info));
 
+    load_elf(process,"/bin/init",0,elfinfo);
+}
 void kernel_bootstrap() {
     initlock(framebuffer_device.lock, FRAME_LOCK);
     welcome_message();

@@ -45,12 +45,17 @@ void *elf_section_get(void *elf, const char *name) {
     return result;
 }
 
-int64_t load_elf(struct process *process, int64_t handle, size_t base_address, elf_info *info) {
-    if (handle < 0) {
+int64_t load_elf(struct process *process, char *path, size_t base_address, elf_info *info) {
+    if (!path) {
         return KERN_BAD_HANDLE;
     }
 
     elf64_hdr header;
+
+    int64_t handle = open(path);
+    if (handle <= 0) {
+        return KERN_BAD_HANDLE;
+    }
 
     if (read(handle, (char *) &header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
         return KERN_BAD_DESCRIPTOR;
