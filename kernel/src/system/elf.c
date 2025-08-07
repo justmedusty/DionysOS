@@ -172,7 +172,7 @@ int64_t elf_relocate(elf64_rela *relocation, elf64_sym *symtab_data, char *strta
 
                     return KERN_NOT_FOUND;
                 }
-              //  resolved = (void*)resolved_sym.st_value;
+              resolved = (void*)resolved_sym.st_value;
             }
             else
                 resolved = virtual_base + symbol->st_value;

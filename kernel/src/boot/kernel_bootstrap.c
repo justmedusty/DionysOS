@@ -41,11 +41,10 @@ void welcome_message() {
 }
 
 void setup_init() {
-    char *path = "/bin/init";
     struct process *process = kzmalloc(sizeof(struct process));
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
-
     load_elf(process,"/bin/init",0,elfinfo);
+    global_enqueue_process(process);
 }
 void kernel_bootstrap() {
     initlock(framebuffer_device.lock, FRAME_LOCK);
@@ -82,6 +81,7 @@ void kernel_bootstrap() {
     kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();
+    setup_init();
     ready = 1;
     scheduler_main();
 }

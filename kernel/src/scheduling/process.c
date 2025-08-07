@@ -43,6 +43,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list*));
     process->current_working_dir = parent->current_working_dir;
     process->page_map = kzmalloc(sizeof(struct virt_map));
+    process->page_map->top_level = alloc_virtual_map();
     process->page_map->vm_regions = kzmalloc(sizeof( struct doubly_linked_list));
     process->parent_process_id = parent->process_id;
     process->process_id = get_process_id();
@@ -65,6 +66,7 @@ void free_process(struct process *process) {
     free_virtual_map(process->page_map->top_level);
     doubly_linked_list_destroy(process->page_map->vm_regions,true);
     kfree(process->page_map->vm_regions);
+    free_virtual_map(process->page_map->top_level);
     kfree(process->page_map);
     doubly_linked_list_destroy(process->handle_list->handle_list,true);
     kfree(process->handle_list->handle_list);
@@ -90,19 +92,13 @@ void wakeup(const void *channel) {
 }
 
 int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
-    uint64_t *top_level_page_table = alloc_virtual_map();
     struct process *current = current_process();
 
     struct process *new_process = alloc_process(PROCESS_READY,true,current);
 
-    int64_t handle = open(path_to_executable);
-
-    if (handle < 0) {
-        return KERN_BAD_HANDLE;
-    }
     elf_info info;
 
-    const int64_t ret = load_elf(new_process,handle,0,&info);
+    const int64_t ret = load_elf(new_process,path_to_executable,0,&info);
 
     if (ret != KERN_SUCCESS) {
         return ret;
