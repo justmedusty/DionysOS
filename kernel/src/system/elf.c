@@ -49,25 +49,41 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
     if (!path) {
         return KERN_BAD_HANDLE;
     }
-
+    bool init = false;
     elf64_hdr header;
-
+    //This must be init setup
+    if (current_process() == NULL) {
+        init = true;
+        my_cpu()->running_process = process;
+    }
     int64_t handle = open(path);
     if (handle <= 0) {
+        if (init) {
+            my_cpu()->running_process = NULL;
+        }
         return KERN_BAD_HANDLE;
     }
 
     if (read(handle, (char *) &header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
+        if (init) {
+            my_cpu()->running_process = NULL;
+        }
         return KERN_BAD_DESCRIPTOR;
     }
 
     if (memcmp(header.e_ident, ELF_MAG, sizeof(ELF_MAG)) != 0) {
+        if (init) {
+            my_cpu()->running_process = NULL;
+        }
         return KERN_WRONG_TYPE;
     }
 
     if (header.e_ident[EI_CLASS] != EI_ARCH_CLASS || header.e_ident[EI_DATA] != EI_ARCH_DATA ||
         header.e_ident[EI_VERSION] != EV_CURRENT || header.e_ident[EI_OSABI] != ELFOSABI_SYSV ||
         header.e_machine != EI_ARCH_MACHINE || header.e_phentsize != sizeof(elf64_phdr)) {
+        if (init) {
+            my_cpu()->running_process = NULL;
+        }
         return KERN_WRONG_TYPE;
     }
 
@@ -78,6 +94,9 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         seek(handle,program_header_offset);
 
         if (read(handle, (char *) &program_header, sizeof(elf64_phdr)) < 0) {
+            if (init) {
+                my_cpu()->running_process = NULL;
+            }
             return KERN_BAD_DESCRIPTOR;
         }
 
@@ -89,6 +108,9 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
                 if (program_header.p_flags & PF_R) {
                     memory_protection |= READ;
                 } else {
+                    if (init) {
+                        my_cpu()->running_process = NULL;
+                    }
                     return KERN_BAD_DESCRIPTOR;
                 }
 
@@ -143,7 +165,9 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
 #ifdef __x86_64__
     process->current_register_state->rip = header.e_entry;
 #endif
-
+    if (init) {
+        my_cpu()->running_process = NULL;
+    }
     return KERN_SUCCESS;
 }
 
