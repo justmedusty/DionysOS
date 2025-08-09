@@ -41,7 +41,7 @@ void welcome_message() {
 }
 
 void setup_init() {
-    struct process *process = kzmalloc(sizeof(struct process));
+    struct process *process = alloc_process(PROCESS_READY,true,NULL);
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
     load_elf(process,"/bin/init",0,elfinfo);
     global_enqueue_process(process);

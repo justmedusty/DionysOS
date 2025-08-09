@@ -20,7 +20,7 @@ struct spinlock lock;
 
 uint64_t get_process_id() {
     if (!lock_set) {
-        initlock(&lock,ALLOC_LOCK);
+        initlock(&lock, ALLOC_LOCK);
         lock_set = true;
     }
 
@@ -38,46 +38,63 @@ int32_t exec(char *path_to_executable, char **argv) {
 struct process *alloc_process(uint64_t state, bool user, struct process *parent) {
     struct process *process = kzmalloc(sizeof(struct process));
 
+    bool init = parent == NULL ? true : false;
+
     process->kernel_stack = kzmalloc(DEFAULT_STACK_SIZE);
-    process->handle_list = kzmalloc(sizeof(struct virtual_handle_list*));
-    process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list*));
-    process->current_working_dir = parent->current_working_dir;
+    process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
+    process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
+
     process->page_map = kzmalloc(sizeof(struct virt_map));
     process->page_map->top_level = alloc_virtual_map();
-    process->page_map->vm_regions = kzmalloc(sizeof( struct doubly_linked_list));
-    process->parent_process_id = parent->process_id;
+    process->page_map->vm_regions = kzmalloc(sizeof(struct doubly_linked_list));
+
     process->process_id = get_process_id();
     process->current_register_state = kzmalloc(sizeof(struct register_state));
     process->process_type = USER_PROCESS;
     process->stack = umalloc(DEFAULT_STACK_SIZE);
-    process->effective_priority = parent->effective_priority;
-    process->priority = parent->priority;
 
+    if (!init) {
+        process->current_working_dir = parent->current_working_dir;
+        process->parent_process_id = parent->process_id;
+        process->effective_priority = parent->effective_priority;
+        process->priority = parent->priority;
+    } else {
+        process->current_working_dir = &vfs_root;
+        process->priority = HIGH;
+        process->effective_priority = HIGH;
+        process->parent_process_id = 0;
+    }
 
 
     doubly_linked_list_init(process->page_map->vm_regions);
-    doubly_linked_list_init( process->handle_list->handle_list);
+    doubly_linked_list_init(process->handle_list->handle_list);
 
     return process;
 }
 
 void free_process(struct process *process) {
+
     kfree(process->kernel_stack);
-    free_virtual_map(process->page_map->top_level);
-    doubly_linked_list_destroy(process->page_map->vm_regions,true);
-    kfree(process->page_map->vm_regions);
-    free_virtual_map(process->page_map->top_level);
-    kfree(process->page_map);
+
+    if ((process->page_map->top_level != kernel_pg_map->top_level)) {
+        arch_dealloc_page_table(process->page_map->top_level);
+        free_virtual_map(process->page_map->top_level);
+        doubly_linked_list_destroy(process->page_map->vm_regions,true);
+        ufree(process->stack);
+        kfree(process->page_map);
+        kfree(process->page_map->vm_regions);
+    }
+
     doubly_linked_list_destroy(process->handle_list->handle_list,true);
     kfree(process->handle_list->handle_list);
     kfree(process->handle_list);
     kfree(process->current_register_state);
-    ufree(process->stack);
+
 
 
     kfree(process);
-
 }
+
 __attribute__((noreturn))
 void exit() {
     sched_exit();
@@ -91,14 +108,14 @@ void wakeup(const void *channel) {
     sched_wakeup(channel);
 }
 
-int64_t spawn(char *path_to_executable,uint64_t flags, uint64_t aux_arguments) {
+int64_t spawn(char *path_to_executable, uint64_t flags, uint64_t aux_arguments) {
     struct process *current = current_process();
 
-    struct process *new_process = alloc_process(PROCESS_READY,true,current);
+    struct process *new_process = alloc_process(PROCESS_READY,true, current);
 
     elf_info info;
 
-    const int64_t ret = load_elf(new_process,path_to_executable,0,&info);
+    const int64_t ret = load_elf(new_process, path_to_executable, 0, &info);
 
     if (ret != KERN_SUCCESS) {
         return ret;
@@ -117,7 +134,7 @@ int64_t fork(uint64_t flags, uint64_t aux_arguments) {
     uint64_t *top_level_page_table = alloc_virtual_map();
     struct process *current = current_process();
 
-    struct process *new_process = alloc_process(PROCESS_READY,true,current);
+    struct process *new_process = alloc_process(PROCESS_READY,true, current);
 
 #ifdef __x86_64__
     new_process->current_register_state->rsp = (uint64_t) new_process->stack;
@@ -127,7 +144,6 @@ int64_t fork(uint64_t flags, uint64_t aux_arguments) {
 
     return KERN_SUCCESS;
 }
-
 
 
 void set_kernel_stack(void *kernel_stack) {

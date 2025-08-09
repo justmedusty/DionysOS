@@ -116,4 +116,6 @@ void exit();
 void sleep(void *channel);
 void wakeup(const void *channel);
 void set_kernel_stack(void *kernel_stack);
+struct process *alloc_process(uint64_t state, bool user, struct process *parent);
+void free_process(struct process *process);
 #endif

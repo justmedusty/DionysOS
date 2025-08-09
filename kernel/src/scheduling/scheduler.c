@@ -37,30 +37,7 @@ static void look_for_process();
 
 extern void context_switch(struct register_state *old, struct register_state *new);
 
-/*
- * This function frees all the internal datastructures and does other housekeeping for after a process has
- * terminated and we need to remove its struct from memory
- */
-static void free_process(struct process *process) {
-    process->current_working_dir->vnode_active_references--;
 
-    kfree(process->stack);
-
-    kfree(process->current_register_state);
-    doubly_linked_list_destroy(process->handle_list->handle_list, true);
-
-    kfree(process->handle_list);
-
-    if (process->page_map->top_level != kernel_pg_map->top_level) {
-        arch_dealloc_page_table(process->page_map->top_level);
-        kfree(Phys2Virt(process->page_map->top_level)); // we do this because kfree is locked, phys_dealloc is not
-    }
-
-    doubly_linked_list_destroy(process->page_map->vm_regions, true);
-    kfree(process->page_map->vm_regions);
-    kfree(process->page_map);
-
-}
 
 /*
  * Simple init function that sets up data structures for us
