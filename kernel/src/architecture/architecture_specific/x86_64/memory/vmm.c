@@ -184,7 +184,7 @@ uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
     pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
 
     if (entry == 0) {
-        panic("dealloc_va");
+
         return 0;
     }
     if (*entry & PTE_P) {
@@ -201,8 +201,10 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
+        kprintf("ADDRESS %x.64\n",address + i);
         dealloc_va(pgdir, address + i);
     }
+    panic("");
 }
 
 

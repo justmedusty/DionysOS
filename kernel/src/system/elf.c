@@ -132,7 +132,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
                 for (size_t j = 0; j < page_count; j++) {
                     uint64_t *physical_page = umalloc(1);
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
-                                   (uint64_t *) aligned_address + (uint64_t) (j * PAGE_SIZE), memory_protection,
+                                   (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
                 }
 

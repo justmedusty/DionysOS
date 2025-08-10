@@ -43,7 +43,12 @@ void welcome_message() {
 void setup_init() {
     struct process *process = alloc_process(PROCESS_READY,true,NULL);
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
-    load_elf(process,"/bin/init",0,elfinfo);
+    int64_t ret = load_elf(process,"/bin/init",0,elfinfo);
+    if (ret != KERN_SUCCESS) {
+        free_process(process);
+        kfree(elfinfo);
+        return;
+    }
     global_enqueue_process(process);
 }
 void kernel_bootstrap() {
@@ -80,8 +85,8 @@ void kernel_bootstrap() {
     register_syscall_dispatch();
     kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
-    kthread_init();
     setup_init();
+    kthread_init();
     ready = 1;
     scheduler_main();
 }
