@@ -63,3 +63,4 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags);
 
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size);
 void arch_unmap_foreign(uint64_t size);
+void free_page_tables(p4d_t *pgdir);

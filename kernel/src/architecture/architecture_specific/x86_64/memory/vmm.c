@@ -148,6 +148,14 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
     return entry;
 }
 
+static void *get_next_level(void *table, uint64_t index) {
+    uint64_t *entries = (uint64_t *) Phys2Virt(table);
+    if (!(entries[index] & PTE_P)) {
+        return NULL;
+    }
+    return Phys2Virt(PTE_ADDR(entries[index]));
+}
+
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
@@ -206,7 +214,35 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
     }
     panic("");
 }
+#define ENTRIES_PER_TABLE 512
+void free_page_tables(p4d_t *pgdir) {
+    for (int p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
+        pud_t *pud = get_next_level(pgdir, p4d_idx);
+        if (!pud) continue;
 
+        for (int pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
+            pmd_t *pmd = get_next_level(pud, pud_idx);
+            if (!pmd) continue;
+
+            for (int pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
+                pte_t *pte = get_next_level(pmd, pmd_idx);
+                if (!pte) continue;
+
+                for (int pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
+                    if (pte[pte_idx] & PTE_P) {
+                        void *page = (void *) PTE_ADDR(pte[pte_idx]);
+                        kfree(Virt2Phys(page));
+                        pte[pte_idx] = 0;
+                    }
+                }
+                kfree(pte);
+            }
+            kfree(pmd);
+        }
+        kfree(pud);
+    }
+    kfree(pgdir);
+}
 
 void setup_pat() {
     uint64_t pat =
