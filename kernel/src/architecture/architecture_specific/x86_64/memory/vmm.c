@@ -211,7 +211,7 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
 
 static void *get_next_level(void *table, uint64_t index) {
     uint64_t *entries = (uint64_t *) Phys2Virt(table);
-    kprintf("ENTRIES %x.64\n",entries);
+
     if (!(entries[index] & PTE_P)) {
         return NULL;
     }
@@ -219,23 +219,22 @@ static void *get_next_level(void *table, uint64_t index) {
 }
 
 void free_page_tables(p4d_t *pgdir) {
-    kprintf("HERE\n");
-    for (int p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
+
+    for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
         pud_t *pud = get_next_level(pgdir, p4d_idx);
         if (!pud) continue;
-        kprintf("HERE2\n");
-        for (int pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
-            pmd_t *pmd = get_next_level(pud, pud_idx);
+        for (size_t pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
+            pmd_t *pmd = get_next_level((pud), pud_idx);
             if (!pmd) continue;\
-            kprintf("HERE3\n");
-            for (int pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
-                pte_t *pte = get_next_level(pmd, pmd_idx);
+
+            for (size_t pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
+                pte_t *pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
-                kprintf("HERE4\n");
-                for (int pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
+
+                for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
                     if (pte[pte_idx] & PTE_P) {
                         void *page = (void *) PTE_ADDR(pte[pte_idx]);
-                        kfree(Virt2Phys(page));
+                        kfree((page));
                         pte[pte_idx] = 0;
                     }
                 }
@@ -245,7 +244,6 @@ void free_page_tables(p4d_t *pgdir) {
         }
         kfree(pud);
     }
-    kfree(pgdir);
 
 }
 
