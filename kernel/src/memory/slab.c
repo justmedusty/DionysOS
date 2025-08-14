@@ -65,8 +65,9 @@ void *heap_allocate_from_slab(struct slab *slab) {
 
 void heap_free_in_slab(struct slab *slab, void *address) {
     if (slab == NULL) {
-        serial_printf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64 Slab Address %x.16\n", address,
+        kprintf("NULL Slab Found Aborting Free. Leaked Memory. Address : %x.64 Slab Address %x.16\n", address,
                       slab);
+
         panic("NULL Slab");
     }
     if (address == NULL) {
