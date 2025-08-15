@@ -51,7 +51,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->process_id = get_process_id();
     process->current_register_state = kzmalloc(sizeof(struct register_state));
     process->process_type = USER_PROCESS;
-    process->stack = umalloc(DEFAULT_STACK_SIZE);
+    process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
 
     if (!init) {
         process->current_working_dir = parent->current_working_dir;

@@ -44,11 +44,13 @@ void setup_init() {
     struct process *process = alloc_process(PROCESS_READY,true,NULL);
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
     int64_t ret = load_elf(process,"/bin/init",0,elfinfo);
+
     if (ret != KERN_SUCCESS) {
         free_process(process);
         kfree(elfinfo);
         return;
     }
+
     global_enqueue_process(process);
 }
 void kernel_bootstrap() {
