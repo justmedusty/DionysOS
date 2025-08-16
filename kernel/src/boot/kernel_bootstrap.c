@@ -50,7 +50,6 @@ void setup_init() {
         kfree(elfinfo);
         return;
     }
-
     global_enqueue_process(process);
 }
 void kernel_bootstrap() {

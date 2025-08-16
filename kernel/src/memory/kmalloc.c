@@ -194,6 +194,9 @@ void *krealloc(void *address, uint64_t new_size) {
 
 
 void kfree(void *address) {
+    if (address == (void *)0xFFFF80028AD20000) {
+        kprintf("HERE");
+    }
     acquire_spinlock(&alloc_lock);
     _kfree(address);
     release_spinlock(&alloc_lock);
