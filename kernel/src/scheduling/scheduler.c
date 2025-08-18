@@ -244,6 +244,7 @@ static void purge_dead_processes() {
     }
     acquire_spinlock(&purge_lock[current_cpu->cpu_id]);
     const struct singly_linked_list_node *node = dead_processes[current_cpu->cpu_id].head;
+    kprintf("Purging Procs on CPU %i\n",my_cpu()->cpu_id);
     while (node != NULL) {
         struct process *p = node->data;
 
