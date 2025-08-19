@@ -90,8 +90,6 @@ void free_process(struct process *process) {
     kfree(process->handle_list);
     kfree(process->current_register_state);
 
-
-
     kfree(process);
 }
 

@@ -58,6 +58,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
     }
     int64_t handle = open(path);
     if (handle <= 0) {
+        panic("INIT NOT FOUND!\n");
         if (init) {
             my_cpu()->running_process = NULL;
         }

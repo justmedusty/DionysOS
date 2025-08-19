@@ -251,7 +251,6 @@ static void purge_dead_processes() {
         free_process(node->data);
         singly_linked_list_remove_head(&dead_processes[current_cpu->cpu_id]);
         node = dead_processes[current_cpu->cpu_id].head;
-
     }
     release_spinlock(&purge_lock[current_cpu->cpu_id]);
 }
