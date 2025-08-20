@@ -15,6 +15,8 @@
 #include "include/definitions/definitions.h"
 #include "include/definitions/elf.h"
 
+#include "../include/filesystem/vfs.h"
+
 void *elf_section_get(void *elf, const char *name) {
     if (!elf || !name) {
         return NULL;
@@ -56,7 +58,8 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         init = true;
         my_cpu()->running_process = process;
     }
-    int64_t handle = open(path);
+
+    int64_t handle = vnode_open(path);
     if (handle <= 0) {
         panic("INIT NOT FOUND!\n");
         if (init) {
