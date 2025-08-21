@@ -221,42 +221,48 @@ int main(const int argc, char **argv) {
     /*
      * create default directories
      */
-#define BIN_INO 1
+
+#define BOOT_INO 1
+
+    diosfs_create(&inode, "boot", DIOSFS_DIRECTORY);
+    printf("Created bin directory\n");
+
+#define BIN_INO 2
 
     diosfs_create(&inode, "bin", DIOSFS_DIRECTORY);
     printf("Created bin directory\n");
 
-#define ETC_INO 2
+#define ETC_INO 3
 
     diosfs_create(&inode, "etc", DIOSFS_DIRECTORY);
     printf("Created etc directory\n");
 
-#define HOME_INO 3
+#define HOME_INO 4
 
     diosfs_create(&inode, "home", DIOSFS_DIRECTORY);
     printf("Created home directory\n");
 
-#define ROOT_INO 4
+#define ROOT_INO 5
 
     diosfs_create(&inode, "root", DIOSFS_DIRECTORY);
     printf("Created root directory\n");
 
-#define MNT_INO 5
+#define MNT_INO 6
 
     diosfs_create(&inode, "mnt", DIOSFS_DIRECTORY);
     printf("Created mnt directory\n");
 
-#define VAR_INO 6
+#define VAR_INO 7
 
     diosfs_create(&inode, "var", DIOSFS_DIRECTORY);
     printf("Created var directory\n");
 
-#define TEMP_INO 7
+#define TEMP_INO 8
 
     diosfs_create(&inode, "temp", DIOSFS_DIRECTORY);
     printf("Created temp directory\n");
 
-#define DEV_INO 8
+#define DEV_INO 9
 
     diosfs_create(&inode, "dev", DIOSFS_DIRECTORY);
     printf("Created dev directory\n");
