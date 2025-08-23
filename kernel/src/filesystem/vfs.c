@@ -408,6 +408,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
         if (child) serial_printf("CHILD NAME %s\n",child->vnode_name);
         if (child && (safe_strcmp(child->vnode_name, token, VFS_MAX_NAME_LENGTH))) {
             release_spinlock(&vfs_lock);
+            serial_printf("CHILD NAME EXIT\n");
             return child;
         }
 
@@ -415,6 +416,7 @@ struct vnode *find_vnode_child(struct vnode *vnode, char *token) {
     }
     release_spinlock(&vfs_lock);
     DEBUG_PRINT("find_vnode_child: NULL RETURN\n");
+    serial_printf("CHILD NAMD EXIT NOT FOUND\n");
     return NULL;;
 }
 
