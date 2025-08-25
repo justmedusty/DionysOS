@@ -225,7 +225,7 @@ int main(const int argc, char **argv) {
 #define BOOT_INO 1
 
     diosfs_create(&inode, "boot", DIOSFS_DIRECTORY);
-    printf("Created bin directory\n");
+    printf("Created boot directory\n");
 
 #define BIN_INO 2
 
