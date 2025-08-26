@@ -527,10 +527,12 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
         release_spinlock(fs->lock);
         return NULL;
     }
-
+    serial_printf("INODE %s\n",inode.name);
     for(size_t i = 0; i < inode.size; i++){
-        DEBUG_PRINT("ENTRY NAME %s ENTRY SIZE %i\n",entries[i].name,entries[i].size);
+        serial_printf("ENTRY NAME %s ENTRY SIZE %i\n",entries[i].name,entries[i].size);
     }
+
+    serial_printf("DONE\n");
 
     uint64_t fill_vnode = false;
 
