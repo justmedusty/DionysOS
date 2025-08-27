@@ -318,6 +318,8 @@ int main(const int argc, char **argv) {
     free(block);
     free(disk_buffer);
     printf("Successfully created diosfs image %s\n", argv[1]);
+
+    printf("INODE SIZE %u ",inode.size);
     exit(0);
 }
 
