@@ -466,6 +466,8 @@ uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(parent, &entry);
     diosfs_write_inode(parent);
+
+    printf("inode name %s\n",inode.name);
     return inode.inode_number;
 }
 
