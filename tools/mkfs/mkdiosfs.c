@@ -443,6 +443,7 @@ void read_inode(uint64_t inode_number, struct diosfs_inode *inode) {
 
 void write_inode(struct diosfs_inode *inode) {
     memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], inode, sizeof(struct diosfs_inode));
+    printf("INODE BYTE OFFSET %lu\n",INODE_TO_BYTE_OFFSET(inode->inode_number));
 }
 
 uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint8_t inode_type) {
@@ -466,8 +467,7 @@ uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(parent, &entry);
     diosfs_write_inode(parent);
-
-    printf("inode name %s\n",inode.name);
+    printf("INODE NO %u INODE NAME %s",inode.inode_number,inode.name);
     return inode.inode_number;
 }
 
@@ -571,7 +571,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode *inode,
     diosfs_read_inode(inode, inode->inode_number);
     uint64_t block = inode->size / DIOSFS_MAX_FILES_IN_DIRENT_BLOCK;
     uint64_t entry_in_block = (inode->size % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK);
-
+    printf("BLOCK %lu ENTRY %lu\n",block,entry_in_block);
     //allocate a new block when needed
     if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0) {
         inode->blocks[block] = diosfs_get_free_block_and_mark_bitmap();
