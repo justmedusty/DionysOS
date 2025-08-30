@@ -1290,9 +1290,10 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
         return DIOSFS_BUFFER_TOO_SMALL;
     }
 
-
+    serial_printf("INODE NAME %s INODE SIZE %i\n",inode.name,inode.size);
     while (1) {
         block_number = inode.blocks[directory_block++];
+        serial_printf("BLOCK %i\n",directory_block);
         /*Should be okay to leave this unrestrained since we check children size and inode size */
 
         diosfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
@@ -1302,6 +1303,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
                 goto done;
             }
             children[directory_entries_read++] = directory_entries[i];
+            serial_printf("DIRENT NAME %s DIRENT ADDRESS %x.64\n",directory_entries[i].name,&directory_entries[i]);
         }
     }
 
