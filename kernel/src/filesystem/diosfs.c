@@ -1281,6 +1281,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
     uint64_t block_number = 0;
 
     diosfs_read_inode(fs, &inode, inode_number);
+    serial_printf("INODE SIZE %i\n",inode.size);
     if (inode.type != VNODE_DIRECTORY) {
         kfree(buffer);
         return DIOSFS_NOT_A_DIRECTORY;
@@ -1303,7 +1304,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
                 goto done;
             }
             children[directory_entries_read++] = directory_entries[i];
-            serial_printf("DIRENT NAME %s DIRENT ADDRESS %x.64\n",directory_entries[i].name,&directory_entries[i]);
+            serial_printf("DIRENT NAME %s DIRENT ADDRESS %x.64 , DIRENT SIZE %i \n",directory_entries[i].name,&directory_entries[i], directory_entries[i].size);
         }
     }
 

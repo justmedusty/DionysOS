@@ -133,7 +133,7 @@ uint64_t ramdisk_read(char *buffer, uint64_t block, uint64_t offset, uint64_t re
     char *read_start = ramdisk[ramdisk_id].ramdisk_start + (block * ramdisk[ramdisk_id].block_size) + offset;
 
     uint64_t index = 0;
-
+    serial_printf("RAMDISK BLOCK %i\n",block);
     while (index < read_size) {
         buffer[index] = read_start[index];
         index++;

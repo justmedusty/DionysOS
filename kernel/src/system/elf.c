@@ -4,7 +4,7 @@
 
 
 #include "include/memory/mem.h"
-#include <stddef.h>
+#include "include/definitions/definitions.h"
 #include <stdint.h>
 #include "include/memory/pmm.h"
 #include "include/architecture/arch_vmm.h"
@@ -12,7 +12,6 @@
 #include "include/memory/kmalloc.h"
 #include "include/memory/vmm.h"
 #include "include/scheduling/process.h"
-#include "include/definitions/definitions.h"
 #include "include/definitions/elf.h"
 
 #include "../include/filesystem/vfs.h"
