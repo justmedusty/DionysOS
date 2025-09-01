@@ -1292,6 +1292,7 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
     }
 
     serial_printf("INODE NAME %s INODE SIZE %i\n",inode.name,inode.size);
+    serial_printf("INODE BLOCK 1 %i INODE BLOCK 2 %i",inode.blocks[0],inode.blocks[1]);
     while (1) {
         block_number = inode.blocks[directory_block++];
         serial_printf("BLOCK %i\n",directory_block);
@@ -1863,9 +1864,6 @@ static void diosfs_read_block_by_number(const uint64_t block_number, char *buffe
     uint64_t ret = fs->device->driver->device_ops->block_device_ops->block_read(
             fs->superblock->block_start_pointer +
             block_number, 1, buffer, fs->device);
-
-    DEBUG_PRINT("BLOCK NO %i\n", fs->superblock->block_start_pointer +
-                                 block_number);
 
     if (ret != DIOSFS_SUCCESS) {
         HANDLE_DISK_ERROR(ret, "diosfs_read_block_by_number");
