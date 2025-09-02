@@ -510,7 +510,7 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap() {
 
 
     found_free:
-
+    printf("FOUND_FREE: block %lu\n",block_number);
     return block_number;
 }
 
@@ -573,7 +573,8 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode *inode,
     uint64_t entry_in_block = (inode->size % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK);
     printf("BLOCK %lu ENTRY %lu\n",block,entry_in_block);
     //allocate a new block when needed
-    if ((entry_in_block == 0 && block > inode->block_count) || inode->block_count == 0) {
+    printf("DIOSFS_WRITE_DIRENT 1: ENTRY IN BLOCK %lu BLOCK %lu\n",entry_in_block,block);
+    if (entry_in_block == 0 || inode->block_count == 0) {
         inode->blocks[block] = diosfs_get_free_block_and_mark_bitmap();
         inode->block_count++;
     }
@@ -590,6 +591,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode *inode,
     diosfs_write_inode(inode);
 
     free(read_buffer);
+    printf("DIOSFS_WRITE_DIRENT 2: ENTRY IN BLOCK %lu BLOCK %lu\n",entry_in_block,block);
     return DIOSFS_SUCCESS;
 }
 
