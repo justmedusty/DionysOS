@@ -319,7 +319,6 @@ int main(const int argc, char **argv) {
     free(disk_buffer);
     printf("Successfully created diosfs image %s\n", argv[1]);
 
-    printf("INODE SIZE %u ",inode.size);
     exit(0);
 }
 
@@ -414,8 +413,6 @@ static void fill_directory(uint64_t inode_number, char* directory_path) {
 
         struct diosfs_inode new_inode;
         diosfs_read_inode(&new_inode, new_inode_num);
-        printf("INODE NAME %s INO %lu\n",new_inode.name,new_inode.inode_number);
-        printf("%s BYTES READ %lu\n",file_buffer,bytes_read);
         diosfs_write_bytes_to_inode(&new_inode, file_buffer, bytes_read, 0, bytes_read);
         printf("Created file %s\n", entry->d_name);
 
@@ -443,7 +440,6 @@ void read_inode(uint64_t inode_number, struct diosfs_inode *inode) {
 
 void write_inode(struct diosfs_inode *inode) {
     memcpy(&disk_buffer[INODE_TO_BYTE_OFFSET(inode->inode_number)], inode, sizeof(struct diosfs_inode));
-    printf("INODE BYTE OFFSET %lu\n",INODE_TO_BYTE_OFFSET(inode->inode_number));
 }
 
 uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint8_t inode_type) {
@@ -467,7 +463,6 @@ uint64_t diosfs_create(struct diosfs_inode *parent, const char *name, const uint
     entry.type = inode.type;
     uint64_t ret = diosfs_write_dirent(parent, &entry);
     diosfs_write_inode(parent);
-    printf("INODE NO %u INODE NAME %s",inode.inode_number,inode.name);
     return inode.inode_number;
 }
 
@@ -510,7 +505,6 @@ static uint64_t diosfs_get_free_block_and_mark_bitmap() {
 
 
     found_free:
-    printf("FOUND_FREE: block %lu\n",block_number);
     return block_number;
 }
 
@@ -571,9 +565,7 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode *inode,
     diosfs_read_inode(inode, inode->inode_number);
     uint64_t block = inode->size / DIOSFS_MAX_FILES_IN_DIRENT_BLOCK;
     uint64_t entry_in_block = (inode->size % DIOSFS_MAX_FILES_IN_DIRENT_BLOCK);
-    printf("BLOCK %lu ENTRY %lu\n",block,entry_in_block);
     //allocate a new block when needed
-    printf("DIOSFS_WRITE_DIRENT 1: ENTRY IN BLOCK %lu BLOCK %lu\n",entry_in_block,block);
     if (entry_in_block == 0 || inode->block_count == 0) {
         inode->blocks[block] = diosfs_get_free_block_and_mark_bitmap();
         inode->block_count++;
@@ -591,7 +583,6 @@ static uint64_t diosfs_write_dirent(struct diosfs_inode *inode,
     diosfs_write_inode(inode);
 
     free(read_buffer);
-    printf("DIOSFS_WRITE_DIRENT 2: ENTRY IN BLOCK %lu BLOCK %lu\n",entry_in_block,block);
     return DIOSFS_SUCCESS;
 }
 
