@@ -527,12 +527,7 @@ struct vnode *diosfs_lookup(struct vnode *parent, char *name) {
         release_spinlock(fs->lock);
         return NULL;
     }
-    serial_printf("INODE %s\n",inode.name);
-    for(size_t i = 0; i < inode.size; i++){
-        serial_printf("ENTRY NAME %s ENTRY SIZE %i\n",entries[i].name,entries[i].size);
-    }
 
-    serial_printf("DONE\n");
 
     uint64_t fill_vnode = false;
 
@@ -1281,7 +1276,6 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
     uint64_t block_number = 0;
 
     diosfs_read_inode(fs, &inode, inode_number);
-    serial_printf("INODE SIZE %i\n",inode.size);
     if (inode.type != VNODE_DIRECTORY) {
         kfree(buffer);
         return DIOSFS_NOT_A_DIRECTORY;
@@ -1291,11 +1285,9 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
         return DIOSFS_BUFFER_TOO_SMALL;
     }
 
-    serial_printf("INODE NAME %s INODE SIZE %i\n",inode.name,inode.size);
-    serial_printf("INODE BLOCK 1 %i INODE BLOCK 2 %i",inode.blocks[0],inode.blocks[1]);
+
     while (1) {
         block_number = inode.blocks[directory_block++];
-        serial_printf("BLOCK %i\n",directory_block);
         /*Should be okay to leave this unrestrained since we check children size and inode size */
 
         diosfs_read_block_by_number(block_number, buffer, fs, 0, fs->superblock->block_size);
@@ -1305,7 +1297,6 @@ static uint64_t diosfs_get_directory_entries(struct diosfs_filesystem_context *f
                 goto done;
             }
             children[directory_entries_read++] = directory_entries[i];
-            serial_printf("DIRENT NAME %s DIRENT ADDRESS %x.64 , DIRENT SIZE %i \n",directory_entries[i].name,&directory_entries[i], directory_entries[i].size);
         }
     }
 
