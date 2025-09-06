@@ -14,6 +14,7 @@
 #include "include/scheduling/process.h"
 #include "include/definitions/elf.h"
 
+#include "../include/definitions/definitions.h"
 #include "../include/filesystem/vfs.h"
 
 void *elf_section_get(void *elf, const char *name) {
@@ -171,6 +172,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
     if (init) {
         my_cpu()->running_process = NULL;
     }
+    DEBUG_PRINT("LOAD SUCCESSFUL!");
     return KERN_SUCCESS;
 }
 
