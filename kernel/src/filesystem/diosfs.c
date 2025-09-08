@@ -424,8 +424,10 @@ int64_t diosfs_read(struct vnode *vnode, const uint64_t offset, char *buffer, co
 
     struct diosfs_inode inode;
     diosfs_read_inode(fs, &inode, vnode->vnode_inode_number);
+    DEBUG_PRINT("INODE %s NUMBER %i SIZE %i BLOCK COUNT %i BLOCK 0 %i 1 %i 2 %i",inode.name,inode.inode_number,inode.size,inode.block_count,inode.blocks[0],inode.blocks[1],inode.blocks[2]);
     uint64_t ret = diosfs_read_bytes_from_inode(fs, &inode, buffer, PGROUNDUP(bytes),
                                                 offset % fs->superblock->block_size, bytes);
+
     release_spinlock(fs->lock);
     return ret;
 }

@@ -15,6 +15,9 @@
 #include "include/definitions/elf.h"
 
 #include "include/definitions/definitions.h"
+#include "include/drivers/serial/uart.h"
+#include "include/definitions/definitions.h"
+
 #include "include/filesystem/vfs.h"
 
 void *elf_section_get(void *elf, const char *name) {
@@ -52,7 +55,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         return KERN_BAD_HANDLE;
     }
     bool init = false;
-    elf64_hdr header;
+    elf64_hdr *header = kzmalloc(sizeof(elf64_hdr));
     //This must be init setup
     if (current_process() == NULL) {
         init = true;
@@ -68,61 +71,63 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         return KERN_BAD_HANDLE;
     }
 
-    if (read(handle, (char *) &header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
+    if (read(handle, (char *) header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
         if (init) {
             my_cpu()->running_process = NULL;
         }
         return KERN_BAD_DESCRIPTOR;
     }
 
-DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header.e_type,header.e_machine,
-    header.e_version,
-    (unsigned long)header.e_entry,
-    (unsigned long)header.e_phoff,
-    (unsigned long)header.e_shoff,
-    header.e_flags,
-    header.e_ehsize,
-    header.e_phentsize,
-    header.e_phnum,
-    header.e_shentsize,
-    header.e_shnum,
-    header.e_shstrndx
+DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header->e_type,header->e_machine,
+    header->e_version,
+    (unsigned long)header->e_entry,
+    (unsigned long)header->e_phoff,
+    (unsigned long)header->e_shoff,
+    header->e_flags,
+    header->e_ehsize,
+    header->e_phentsize,
+    header->e_phnum,
+    header->e_shentsize,
+    header->e_shnum,
+    header->e_shstrndx
 );
-    if (memcmp(header.e_ident, ELF_MAG, sizeof(ELF_MAG)) != 0) {
+    if (memcmp(header->e_ident, ELF_MAG, sizeof(ELF_MAG)) != 0) {
         if (init) {
             my_cpu()->running_process = NULL;
         }
         return KERN_WRONG_TYPE;
     }
 
-    if (header.e_ident[EI_CLASS] != EI_ARCH_CLASS || header.e_ident[EI_DATA] != EI_ARCH_DATA ||
-        header.e_ident[EI_VERSION] != EV_CURRENT || header.e_ident[EI_OSABI] != ELFOSABI_SYSV ||
-        header.e_machine != EI_ARCH_MACHINE || header.e_phentsize != sizeof(elf64_phdr)) {
+    if (header->e_ident[EI_CLASS] != EI_ARCH_CLASS || header->e_ident[EI_DATA] != EI_ARCH_DATA ||
+        header->e_ident[EI_VERSION] != EV_CURRENT || header->e_ident[EI_OSABI] != ELFOSABI_SYSV ||
+        header->e_machine != EI_ARCH_MACHINE || header->e_phentsize != sizeof(elf64_phdr)) {
         if (init) {
             my_cpu()->running_process = NULL;
         }
         return KERN_WRONG_TYPE;
     }
 
-    elf64_phdr program_header;
-    for (size_t i = 0; i < header.e_phnum; i++) {
-        size_t program_header_offset = header.e_phoff + (i * sizeof(elf64_phdr));
-
+    elf64_phdr *program_header = kzmalloc(sizeof(elf64_phdr));
+    for (size_t i = 0; i < header->e_phnum; i++) {
+        size_t program_header_offset = header->e_phoff + (i * sizeof(elf64_phdr));
+        DEBUG_PRINT("I %i HEAD OFFSET %i PROGRAM HEADER OFFSET %i\n",i,header->e_phoff,program_header_offset);
         seek(handle,program_header_offset);
-
-        if (read(handle, (char *) &program_header, sizeof(elf64_phdr)) < 0) {
+        memset(program_header, 0, sizeof(elf64_phdr));
+        DEBUG_PRINT("BEFORE READ %i HANDLE %i",header->e_phoff,handle);
+        if (read(handle, (char *) program_header, sizeof(elf64_phdr)) < 0) {
             if (init) {
                 my_cpu()->running_process = NULL;
             }
             return KERN_BAD_DESCRIPTOR;
         }
-
-        switch (program_header.p_type) {
+        DEBUG_PRINT("AFTER READ %i HANDLE %i\n",header->e_phoff,handle);
+        DEBUG_PRINT("P TYPE IS %i\n",program_header->p_type);
+        switch (program_header->p_type) {
             case PT_LOAD:
                 uint64_t memory_protection = 0;
                 memory_protection |= USER;
 
-                if (program_header.p_flags & PF_R) {
+                if (program_header->p_flags & PF_R) {
                     memory_protection |= READ;
                 } else {
                     if (init) {
@@ -131,56 +136,57 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     return KERN_BAD_DESCRIPTOR;
                 }
 
-                if (program_header.p_flags & PF_W) {
+                if (program_header->p_flags & PF_W) {
                     memory_protection |= READWRITE;
                 }
 
-                if (program_header.p_flags & PF_X) {
+                if (program_header->p_flags & PF_X) {
                     //nothing
                 } else {
                     memory_protection |= NO_EXECUTE;
                 }
 
-                uint64_t aligned_address = ALIGN_DOWN(program_header.p_vaddr + base_address, PAGE_SIZE);
-                uint64_t aligned_diff = program_header.p_vaddr + base_address - aligned_address;
+                uint64_t aligned_address = ALIGN_DOWN(program_header->p_vaddr + base_address, PAGE_SIZE);
+                uint64_t aligned_diff = program_header->p_vaddr + base_address - aligned_address;
 
-                uint64_t page_count = ALIGN_UP(program_header.p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
+                uint64_t page_count = ALIGN_UP(program_header->p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
 
                 for (size_t j = 0; j < page_count; j++) {
                     uint64_t *physical_page = umalloc(1);
+                    serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
                                    (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
                 }
 
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
-                seek(handle, program_header.p_offset);
-                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, program_header.p_filesz);
-                memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header.p_filesz, 0,
-                       program_header.p_memsz - program_header.p_filesz);
-
+                seek(handle, program_header->p_offset);
+                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, program_header->p_filesz);
+                memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
+                       program_header->p_memsz - program_header->p_filesz);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
 
 
                 break;
             case PT_PHDR:
-                info->at_phdr = base_address + program_header.p_vaddr;
+                info->at_phdr = base_address + program_header->p_vaddr;
                 break;
             case PT_INTERP:
-                info->ld_path = kzmalloc(program_header.p_filesz);
-                seek(handle, program_header.p_offset);
-                read(handle, info->ld_path, program_header.p_filesz);
+                info->ld_path = kzmalloc(program_header->p_filesz);
+                seek(handle, program_header->p_offset);
+                read(handle, info->ld_path, program_header->p_filesz);
                 break;
             default:
+                DEBUG_PRINT("ELF SECTION NOT GOOD!\n");
                 break;
         }
     }
-    info->at_entry = base_address + header.e_entry;
-    info->at_phnum = header.e_phnum;
-    info->at_phent = header.e_phentsize;
+    info->at_entry = base_address + header->e_entry;
+    info->at_phnum = header->e_phnum;
+    info->at_phent = header->e_phentsize;
 
 #ifdef __x86_64__
-    process->current_register_state->rip = header.e_entry;
+    process->current_register_state->rip = header->e_entry;
 #endif
     if (init) {
         my_cpu()->running_process = NULL;

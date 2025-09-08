@@ -51,9 +51,9 @@ enum {
 #define SPRINTF_MAX_LEN 4096
 
 enum seek_values {
-    SEEK_BEGIN = 0,
-    SEEK_CUR = 1,
-    SEEK_END = 2,
+    SEEK_BEGIN = 0xFFFFFFFFFFFFFFFF,
+    SEEK_CUR = 0xFFFFFFFFFFFFFFFE,
+    SEEK_END = 0xFFFFFFFFFFFFFFFD,
 };
 
 

@@ -12,6 +12,7 @@
 #include "include/architecture/arch_cpu.h"
 #include "include/memory/mem.h"
 #include "include/architecture/arch_timer.h"
+#include "include/definitions/definitions.h"
 
 
 //Used to hold the free nodes in the static pool
@@ -948,8 +949,8 @@ int64_t seek(uint64_t handle, uint64_t whence) {
             break;
 
         default:
-            return KERN_INVALID_ARG;
+            vhandle->offset = whence;
     }
-
+    DEBUG_PRINT("OFFSET %i\n",vhandle->offset);
     return KERN_SUCCESS;
 }
