@@ -14,8 +14,8 @@
 #include "include/scheduling/process.h"
 #include "include/definitions/elf.h"
 
-#include "../include/definitions/definitions.h"
-#include "../include/filesystem/vfs.h"
+#include "include/definitions/definitions.h"
+#include "include/filesystem/vfs.h"
 
 void *elf_section_get(void *elf, const char *name) {
     if (!elf || !name) {
@@ -75,6 +75,19 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         return KERN_BAD_DESCRIPTOR;
     }
 
+DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header.e_type,header.e_machine,
+    header.e_version,
+    (unsigned long)header.e_entry,
+    (unsigned long)header.e_phoff,
+    (unsigned long)header.e_shoff,
+    header.e_flags,
+    header.e_ehsize,
+    header.e_phentsize,
+    header.e_phnum,
+    header.e_shentsize,
+    header.e_shnum,
+    header.e_shstrndx
+);
     if (memcmp(header.e_ident, ELF_MAG, sizeof(ELF_MAG)) != 0) {
         if (init) {
             my_cpu()->running_process = NULL;
@@ -172,7 +185,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
     if (init) {
         my_cpu()->running_process = NULL;
     }
-    DEBUG_PRINT("LOAD SUCCESSFUL!");
+    DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64",info->at_entry);
     return KERN_SUCCESS;
 }
 
