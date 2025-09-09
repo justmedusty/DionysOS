@@ -106,21 +106,20 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
         }
         return KERN_WRONG_TYPE;
     }
+    struct vnode *elf = handle_to_vnode(handle);
+    char *elf_file = kzmalloc(elf->vnode_size);
 
-    elf64_phdr *program_header = kzmalloc(sizeof(elf64_phdr));
+    int64_t ret = vnode_read(elf,0,elf->vnode_size,elf_file);
+    if (ret != KERN_SUCCESS) {
+        kprintf("vnode_read failed!\n");
+        panic("COULD NOT READ ELF FILE!\n");
+    }
+
+    elf64_phdr *program_header;
     for (size_t i = 0; i < header->e_phnum; i++) {
         size_t program_header_offset = header->e_phoff + (i * sizeof(elf64_phdr));
         DEBUG_PRINT("I %i HEAD OFFSET %i PROGRAM HEADER OFFSET %i\n",i,header->e_phoff,program_header_offset);
-        seek(handle,program_header_offset);
-        memset(program_header, 0, sizeof(elf64_phdr));
-        DEBUG_PRINT("BEFORE READ %i HANDLE %i",header->e_phoff,handle);
-        if (read(handle, (char *) program_header, sizeof(elf64_phdr)) < 0) {
-            if (init) {
-                my_cpu()->running_process = NULL;
-            }
-            return KERN_BAD_DESCRIPTOR;
-        }
-        DEBUG_PRINT("AFTER READ %i HANDLE %i\n",header->e_phoff,handle);
+        program_header = (elf64_phdr *) ((size_t) elf_file + program_header_offset);
         DEBUG_PRINT("P TYPE IS %i\n",program_header->p_type);
         switch (program_header->p_type) {
             case PT_LOAD:
@@ -160,8 +159,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 }
 
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
-                seek(handle, program_header->p_offset);
-                read(handle, (char *) KERNEL_FOREIGN_MAP_BASE + aligned_diff, program_header->p_filesz);
+                memcpy(((void *)((uint64_t) KERNEL_FOREIGN_MAP_BASE + aligned_diff)),elf_file + program_header->p_offset,program_header->p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
                        program_header->p_memsz - program_header->p_filesz);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
@@ -173,8 +171,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 break;
             case PT_INTERP:
                 info->ld_path = kzmalloc(program_header->p_filesz);
-                seek(handle, program_header->p_offset);
-                read(handle, info->ld_path, program_header->p_filesz);
+                info->ld_path = (char *) ((uint64_t) elf_file + program_header->p_filesz);
                 break;
             default:
                 DEBUG_PRINT("ELF SECTION NOT GOOD!\n");
@@ -192,6 +189,8 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
         my_cpu()->running_process = NULL;
     }
     DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64",info->at_entry);
+    kfree(header);
+    kfree(program_header);
     return KERN_SUCCESS;
 }
 
