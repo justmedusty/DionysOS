@@ -20,9 +20,6 @@ I may add a posix compliant layer at some point but for the time being I think I
 # Unique Features
 Diosfs : I wrote a custom filesystem to be used for my operating system, it is non journaling and has similiarties to the original unix filesystem albeit a little bit simpler.
 
-# LoC To Date (Excluding all bootloader files & Includng .c, .h, .asm)
-~26,500 (The line_count script under the scripts directory can show the most current figure)
-
 # Overall Progress (🟢 : Done 🟡 : In progress 🔴 : Not yet started) 
 
 🟢Serial
