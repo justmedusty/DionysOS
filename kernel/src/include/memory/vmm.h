@@ -17,8 +17,9 @@ extern struct virt_map *kernel_pg_map;
 
 #define KERNEL_MEM 0x100000000
 #define DIV_ROUND_UP(x, y) (x + (y -1)) / y
-#define ALIGN_UP(x, y) DIV_ROUND_UP(x,y) * y
-#define ALIGN_DOWN(x, y) (x / y) * y
+#define ROUND_UP(value, to) (((value) + ((to) - 1)) / (to))
+#define ALIGN_DOWN(value, align) (((value) / (align)) * (align))
+#define ALIGN_UP(value, align) (ROUND_UP(value, align) * align)
 
 enum region_type {
     STACK,

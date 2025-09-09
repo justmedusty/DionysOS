@@ -150,6 +150,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
 
                 uint64_t page_count = ALIGN_UP(program_header->p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
 
+                DEBUG_PRINT("PAGE COUNT %i MEM SIZE %x.64 ALIGNED DIFF %x.64 ALIGNED ADDRES %x.64 PVIRT %x.64 BASE %x.64\n",page_count,program_header->p_memsz,aligned_diff,aligned_address,program_header->p_vaddr,base_address);
                 for (size_t j = 0; j < page_count; j++) {
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
@@ -157,7 +158,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                                    (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
                 }
-
+                DEBUG_PRINT("FOREIGN MAPPING NOW!\n");
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
                 memcpy(((void *)((uint64_t) KERNEL_FOREIGN_MAP_BASE + aligned_diff)),elf_file + program_header->p_offset,program_header->p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
