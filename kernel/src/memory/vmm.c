@@ -51,7 +51,7 @@ void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_
 }
 
 void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
-    return walk_page_directory(page_map,virtual_address,0);
+    return (void *)(PTE_ADDR(*walk_page_directory(page_map,virtual_address,0)));
 }
 
 /*
@@ -64,6 +64,7 @@ void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
     uint64_t current_address = (uint64_t) KERNEL_FOREIGN_MAP_BASE;
     uint64_t virtual_address = (uint64_t) va;
     while (pages_mapped != size) {
+        DEBUG_PRINT("FOREIGN MAP: PHYSICAL ADDR %x.64 VA %x.64 USER PAGE TABLE %x.64\n",arch_get_physical_address((void *)virtual_address,user_page_table),virtual_address,user_page_table);
         arch_map_pages((p4d_t *)page_map,(uint64_t) arch_get_physical_address((void *)virtual_address,user_page_table),(uint64_t *) current_address,READWRITE,PAGE_SIZE);
         current_address += PAGE_SIZE;
         pages_mapped++;

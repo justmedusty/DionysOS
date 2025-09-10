@@ -78,7 +78,7 @@ extern p4d_t *global_pg_dir;
 #define PAT_UC_MINUS 0x07 // uncached-
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xFFFULL)
+#define PTE_ADDR(pte)   ((uint64_t)(pte) & ~0xF000000000000FFFULL)
 #define PTE_FLAGS(pte)  ((uint64_t)(pte) &  0xFFFULL)
 
 #endif

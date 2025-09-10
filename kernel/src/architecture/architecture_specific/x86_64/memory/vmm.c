@@ -166,8 +166,8 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
         }
 
         if ((perms & PTE_U) && *pte & PTE_P) {
-            //err_printf("PTE %x.64\n",*pte);
-           // panic("remap");
+            err_printf("PTE %x.64\n",*pte);
+            panic("remap");
         }
 
         *pte = physaddr | perms | PTE_P;
