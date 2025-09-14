@@ -160,7 +160,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 }
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
-                DEBUG_PRINT("FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE + aligned_address);
+                DEBUG_PRINT("FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE);
                 memcpy(((void *)((uint64_t) KERNEL_FOREIGN_MAP_BASE)),elf_file + program_header->p_offset,program_header->p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
                        program_header->p_memsz - program_header->p_filesz);
