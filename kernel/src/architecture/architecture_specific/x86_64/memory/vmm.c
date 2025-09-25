@@ -193,7 +193,7 @@ uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
         return 0;
     }
     if (*entry & PTE_P) {
-        kfree(Virt2Phys((void *) PTE_ADDR(*entry)));
+        kfree(Phys2Virt((void *) PTE_ADDR(*entry)));
         *entry = 0;
         native_flush_tlb_single(aligned_address);
         return 1;
@@ -204,9 +204,9 @@ uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
 
 void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
+    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n",aligned_size,size);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
-        kprintf("ADDRESS %x.64\n",address + i);
         dealloc_va(pgdir, address + i);
     }
     panic("");

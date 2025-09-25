@@ -110,6 +110,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     char *elf_file = kzmalloc(elf->vnode_size);
 
     int64_t ret = vnode_read(elf,0,elf->vnode_size,elf_file);
+
     if (ret != KERN_SUCCESS) {
         kprintf("vnode_read failed!\n");
         panic("COULD NOT READ ELF FILE!\n");
@@ -155,8 +156,9 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
-                                   (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)), memory_protection,
+                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
+
                 }
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
@@ -165,7 +167,6 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
                        program_header->p_memsz - program_header->p_filesz);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
-
 
                 break;
             case PT_PHDR:
