@@ -201,6 +201,31 @@ uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
 
     return 0;
 }
+uint64_t dealloc_va_foreign(p4d_t *pgdir, const uint64_t address) {
+    uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
+    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
+
+    if (entry == 0) {
+
+        return 0;
+    }
+    if (*entry & PTE_P) {
+        *entry = 0;
+        native_flush_tlb_single(aligned_address);
+        return 1;
+    }
+
+    return 0;
+}
+
+void dealloc_va_range_foreign(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
+    uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
+    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n",aligned_size,size);
+    serial_printf("Aligned size %x.64\n", aligned_size);
+    for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
+        dealloc_va_foreign(pgdir, address + i);
+    }
+}
 
 void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
@@ -209,7 +234,6 @@ void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size)
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
         dealloc_va(pgdir, address + i);
     }
-    panic("");
 }
 #define ENTRIES_PER_TABLE 512
 

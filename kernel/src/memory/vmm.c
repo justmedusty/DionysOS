@@ -10,6 +10,7 @@
 #include "include/architecture/arch_vmm.h"
 #include "include/memory/kmalloc.h"
 struct virt_map* kernel_pg_map;
+struct spinlock foreign_map_lock;
 
 /*
  * Architecture agnostic map kernel address space function
@@ -34,6 +35,7 @@ uint64_t get_current_page_map() {
  */
 void arch_vmm_init(){
     kprintf("Initializing Virtual Memory And Mapping Address Space...\n");
+    initlock(&foreign_map_lock, ALLOC_LOCK);
     init_vmm();
     kprintf("Virtual Memory Manager Initialized And Address Space Mapped\n");
 }
@@ -59,6 +61,7 @@ void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
  */
 
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
+    acquire_spinlock(&foreign_map_lock);
     uint64_t pages_mapped = 0;
     uint64_t page_map = get_current_page_map();
     uint64_t current_address = (uint64_t) KERNEL_FOREIGN_MAP_BASE;
@@ -74,7 +77,8 @@ void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
 }
 
 void arch_unmap_foreign(uint64_t size) {
-    dealloc_va_range((p4d_t *) get_current_page_map(),KERNEL_FOREIGN_MAP_BASE,size);
+    dealloc_va_range_foreign((p4d_t *) get_current_page_map(),KERNEL_FOREIGN_MAP_BASE,size);
+    release_spinlock(&foreign_map_lock);
 }
 /*
  * Creates a virtual memory region , takes size, start, type (stack heap memmap etc) , perms, contiguous (do one big contiguous range or a lot of single page allocs)
