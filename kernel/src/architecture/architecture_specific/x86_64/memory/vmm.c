@@ -157,9 +157,6 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
 
-    if (physaddr == 0x0000000100020000 || physaddr == 0x0000000100021000) {
-        DEBUG_PRINT("PGDIR %x.64 PHYS %x.64 VA %x.64 SIZE %i\n",pgdir,physaddr,va,size);
-    }
     for (;;) {
         if ((pte = walk_page_directory(pgdir, (void *) address, ALLOC)) == 0) {
             return -1;

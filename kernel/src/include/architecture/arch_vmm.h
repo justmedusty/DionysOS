@@ -51,6 +51,8 @@ uint64_t dealloc_va(p4d_t *pgdir, uint64_t address);
 
 void dealloc_va_range(p4d_t *pgdir, uint64_t address, uint64_t size);
 
+void dealloc_va_range_foreign(p4d_t *pgdir, uint64_t address, uint64_t size);
+
 void map_kernel_address_space(p4d_t *pgdir);
 
 void load_vmm();
