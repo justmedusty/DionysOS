@@ -5137,5 +5137,5 @@ static uint8_t linux_font_2[256][16] = {
 font default_font = {
         .width = FONT_BASIC_WIDTH,
         .height = FONT_BASIC_HEIGHT,
-        .data = (uint8_t *) &linux_sun_font
+        .data = (uint8_t *) &linux_font_2
 };
