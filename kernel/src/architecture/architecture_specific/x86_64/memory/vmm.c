@@ -164,6 +164,10 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
 
 
         if ((perms & PTE_U) && *pte & PTE_P) {
+            /*
+             * Until I find the root cause this will have to stay , for some reason the second page handed out by umalloc shows as mapped when it is not mapped
+             * I have no idea why it is only the second page
+             */
             if (!check_phys_addr_usage((void *)PTE_ADDR(pte))) {
                 DEBUG_PRINT("PTE SHOWING P BUT ADDR NOT IN USE!\n");
                 goto skip;
