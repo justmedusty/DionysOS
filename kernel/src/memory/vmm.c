@@ -49,6 +49,7 @@ void arch_dealloc_page_table(p4d_t *pgdir) {
  * Architecture agnostic map pages function
  */
 void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size) {
+    DEBUG_PRINT("arch_map_pages: pgdir %x.64 phys %x.64 va %x.64 perms %i size %i\n",pgdir,physaddr,va,perms,size);
     map_pages(pgdir, physaddr, va, perms, size);
 }
 
@@ -77,7 +78,7 @@ void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
 }
 
 void arch_unmap_foreign(uint64_t size) {
-    dealloc_va_range_foreign((p4d_t *) get_current_page_map(),KERNEL_FOREIGN_MAP_BASE,size);
+    dealloc_va_range_foreign((p4d_t *) kernel_pg_map->top_level,KERNEL_FOREIGN_MAP_BASE,size);
     release_spinlock(&foreign_map_lock);
 }
 /*
@@ -158,6 +159,7 @@ void attach_user_region(struct virt_map *map,struct virtual_region *region){
         /*
          * Using kmalloc and removing the offset because kmalloc is locked phys_alloc is not
          * This is ugly and I will likely change it in the future
+         * TODO fix this i dont know its calling umalloc here that doesnt make sense
          */
         arch_map_pages(map->top_level,(uint64_t)umalloc((uint64_t)(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
         return;

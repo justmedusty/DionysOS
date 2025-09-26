@@ -158,6 +158,8 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
                                    (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
+                    DEBUG_PRINT("VA %x.64\n",(uint64_t *) (aligned_address +  (j * PAGE_SIZE)));
+                    DEBUG_PRINT("PHYSICAL %x.64\n",physical_page);
 
                 }
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
@@ -166,6 +168,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 memcpy(((void *)((uint64_t) KERNEL_FOREIGN_MAP_BASE)),elf_file + program_header->p_offset,program_header->p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
                        program_header->p_memsz - program_header->p_filesz);
+                DEBUG_PRINT("unmap size: %i\n",PAGE_SIZE * page_count);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
 
                 break;
