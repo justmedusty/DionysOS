@@ -37,6 +37,7 @@ void *phys_alloc(uint64_t pages,uint8_t zone);
 void phys_dealloc(void *address);
 uint64_t next_power_of_two(uint64_t x);
 bool is_power_of_two(uint64_t x);
+bool check_phys_addr_usage(void *addr) ;
 
 struct contiguous_page_range {
       uint64_t start_address;

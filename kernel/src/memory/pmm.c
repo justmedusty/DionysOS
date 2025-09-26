@@ -291,6 +291,7 @@ int phys_init() {
  */
 
 void *phys_alloc(uint64_t pages,uint8_t zone) {
+
     struct buddy_block *block = buddy_alloc(pages,zone);
     if (block == NULL) {
         panic("phys_alloc cannot allocate");
@@ -300,7 +301,12 @@ void *phys_alloc(uint64_t pages,uint8_t zone) {
     void *return_value = (void *) block->start_address;
     return return_value;
 }
-
+/*
+ * Debugging function
+ */
+bool check_phys_addr_usage(void *addr) {
+    return static_hash_table_check(&used_buddy_hash_table,hash((uint64_t) addr,HASH_TABLE_STATIC_POOL_SIZE),addr);
+}
 void *phys_zalloc(uint64_t pages,uint8_t zone) {
     struct buddy_block *block = buddy_alloc(pages,zone);
     if (block == NULL) {

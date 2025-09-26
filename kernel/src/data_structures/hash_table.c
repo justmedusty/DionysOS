@@ -90,6 +90,19 @@ void static_hash_table_insert(struct static_hash_table* table, uint64_t key, voi
     uint64_t hash_key = hash(key, table->size);
     singly_linked_list_insert_head(&table->table[hash_key], data);
 }
+
+bool static_hash_table_check(struct static_hash_table* table, uint64_t hash_key,void *data) {
+    struct singly_linked_list* hash_bucket = &table->table[hash_key];
+    struct singly_linked_list_node* current_node = hash_bucket->head;
+    while (current_node != NULL) {
+        if (current_node->data == data) {
+            return true;
+        }
+        current_node = current_node->next;
+    }
+
+    return false;
+}
 /*
  * Retrieve a hash bucket based on a key passed
  */
@@ -97,7 +110,6 @@ struct singly_linked_list* static_hash_table_retrieve(struct static_hash_table* 
     struct singly_linked_list* hash_bucket = &table->table[hash_key];
     return hash_bucket;
 }
-
 
 void hash_table_init(struct hash_table *table, uint64_t size) {
     if (table == NULL) {

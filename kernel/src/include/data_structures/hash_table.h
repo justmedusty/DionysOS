@@ -37,3 +37,5 @@ void hash_table_destroy(struct hash_table *table);
 void hash_table_insert(struct hash_table *table, uint64_t key, void *data);
 
 struct singly_linked_list *hash_table_retrieve(struct hash_table *table, uint64_t hash_key);
+
+bool static_hash_table_check(struct static_hash_table* table, uint64_t hash_key,void *data);

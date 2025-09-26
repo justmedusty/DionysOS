@@ -156,19 +156,15 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
     pte_t *pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
-    if (physaddr == 0x00000000100021000) {
-        err_printf("\nPROBLEM ADDRESS HERE!\n");
-    }
 
     for (;;) {
         if ((pte = walk_page_directory(pgdir, (void *) address, ALLOC)) == 0) {
             return -1;
         }
 
-        if (PTE_ADDR(*pte) == 0x00000000100021000) {
-            err_printf("PROBLEM PTE HERE!\n");
-        }
+
         if ((perms & PTE_U) && *pte & PTE_P) {
+
             err_printf("PTE %x.64\n",*pte);
             panic("remap");
         }
