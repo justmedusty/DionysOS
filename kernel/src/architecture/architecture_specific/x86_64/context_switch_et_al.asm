@@ -1,7 +1,8 @@
 
 
-global context_switch             ;context_switch(struct register_state *old, struct register_state *new)
+global context_switch             ;context_switch(struct register_state *old, struct register_state *new, bool user_proc)
 context_switch
+
         mov [rdi + 0], rax        ; register_state.rax = rax
         mov [rdi + 8], rbx        ; register_state.rbx = rbx
         mov [rdi + 16], rcx       ; register_state.rcx = rcx
@@ -19,7 +20,6 @@ context_switch
         mov [rdi + 104], r12      ; register_state.r12 = r12
         mov [rdi + 112], r13      ; register_state.r13 = r13
         mov [rdi + 120], r14      ; register_state.r14 = r14
-        mov [rdi + 128], r15      ; register_state.r15 = r15
 
                                   ; save the interrupt flag
         pushfq                    ;push flag onto stack
@@ -27,6 +27,8 @@ context_switch
         shl rax, 9                ; bring flag bit over
         and rax, 1                ; isolate flag bit
         mov [rdi + 136], rax      ; move the flag bit into the struct
+
+        mov r15, rdx
 
         mov rbx, [rsi + 8]        ; rbx = register_state.rbx
         mov rcx, [rsi + 16]       ; rcx = register_state.rcx
@@ -43,8 +45,6 @@ context_switch
         mov r12, [rsi + 104]      ; r12 = register_state.r12
         mov r13, [rsi + 112]      ; r13 = register_state.r13
         mov r14, [rsi + 120]      ; r14 = register_state.r14
-        mov r15, [rsi + 128]      ; r15 = register_state.r15
-
 
                                   ; restore the interrupt flag
         pushfq
@@ -71,5 +71,12 @@ context_switch
         mov rax, [rsi + 0]        ; rax = register_state.rax; since we use rax for IF shenanigans above,restore it after
         mov rsi, [rsi + 40]       ; rsi = register_state.rsi this has to be done last to preserve the pointer argument for flag restoration
 
+        cmp r15, 1
+        jne kernel
+
+        sysretq
+
+
+        kernel:
         ret
         

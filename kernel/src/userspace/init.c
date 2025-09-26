@@ -12,5 +12,5 @@ int main(int argc, char *argv[]) {
     }
 
     sys_write(handle, "Hello World!\n", 13);
-    sys_exit(0);
+    sys_exit();
 }

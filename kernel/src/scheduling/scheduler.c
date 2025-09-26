@@ -35,7 +35,7 @@ static void purge_dead_processes();
 
 static void look_for_process();
 
-extern void context_switch(struct register_state *old, struct register_state *new);
+extern void context_switch(struct register_state *old, struct register_state *new, bool user_process);
 
 
 
@@ -98,7 +98,7 @@ void sched_yield() {
     struct process *process = my_cpu()->running_process;
     process->current_state = PROCESS_READY;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
-    context_switch(my_cpu()->running_process->current_register_state, my_cpu()->scheduler_state);
+    context_switch(my_cpu()->running_process->current_register_state, my_cpu()->scheduler_state, false);
 }
 
 /*
@@ -135,7 +135,7 @@ void sched_run() {
     cpu->running_process->start_time = timer_get_current_count(); // will be used for timekeeping
 
 
-    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state);
+    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type == USER_THREAD);
 }
 
 /*
@@ -149,7 +149,7 @@ void sched_preempt() {
     process->start_time = 0;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
     process->current_state = PROCESS_READY;
-    context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state);
+    context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state,false);
 }
 
 /*
@@ -164,7 +164,7 @@ void sched_sleep(void *sleep_channel) {
     process->current_state = PROCESS_SLEEPING;
     process->ticks_taken += process->start_time;
     process->start_time = timer_get_current_count();
-    context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state);
+    context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state,false);
 }
 
 void sched_wakeup(const void *wakeup_channel) {
@@ -231,7 +231,7 @@ void sched_exit() {
     struct process *process = cpu->running_process;
     singly_linked_list_insert_head(&dead_processes[cpu->cpu_id], process);
     my_cpu()->running_process = NULL;
-    context_switch(process->current_register_state, cpu->scheduler_state);
+    context_switch(process->current_register_state, cpu->scheduler_state, false);
 }
 
 /*

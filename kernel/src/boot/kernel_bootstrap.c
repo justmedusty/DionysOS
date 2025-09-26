@@ -86,8 +86,8 @@ void kernel_bootstrap() {
     register_syscall_dispatch();
     kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
-    setup_init();
     kthread_init();
+    setup_init();
     ready = 1;
     scheduler_main();
 }
