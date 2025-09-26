@@ -12,7 +12,7 @@ define DEFAULT_VAR =
         override $(1) := $(2)
     endif
 endef
-DEFAULT_CPU_COUNT := 8
+DEFAULT_CPU_COUNT := 2
 CPUS := $(shell nproc)
 MEMORY := 12G
 

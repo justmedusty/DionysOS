@@ -19,7 +19,6 @@ context_switch
         mov [rdi + 96], r11       ; register_state.r11 = r11
         mov [rdi + 104], r12      ; register_state.r12 = r12
         mov [rdi + 112], r13      ; register_state.r13 = r13
-        mov [rdi + 120], r14      ; register_state.r14 = r14
 
                                   ; save the interrupt flag
         pushfq                    ;push flag onto stack
@@ -28,6 +27,7 @@ context_switch
         and rax, 1                ; isolate flag bit
         mov [rdi + 136], rax      ; move the flag bit into the struct
 
+        mov cr3, rcx                  ;load the new page table
         mov r15, rdx
 
         mov rbx, [rsi + 8]        ; rbx = register_state.rbx
@@ -44,7 +44,6 @@ context_switch
         mov r11, [rsi + 96]       ; r11 = register_state.r11
         mov r12, [rsi + 104]      ; r12 = register_state.r12
         mov r13, [rsi + 112]      ; r13 = register_state.r13
-        mov r14, [rsi + 120]      ; r14 = register_state.r14
 
                                   ; restore the interrupt flag
         pushfq

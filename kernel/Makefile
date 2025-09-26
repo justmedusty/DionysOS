@@ -63,7 +63,6 @@ override KCFLAGS += \
    	-g \
    	-D_DFS_ \
    	-D_SERIAL_\
-   	-D_DEBUG_\
    	-D_CREATE_RAMDISK_\
    	-DMAX_CPUS=32\
    	-fanalyzer \

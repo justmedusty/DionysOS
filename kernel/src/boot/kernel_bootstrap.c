@@ -50,7 +50,8 @@ void setup_init() {
         kfree(elfinfo);
         return;
     }
-    global_enqueue_process(process);
+    enqueue(my_cpu()->local_run_queue, process, process->priority);
+    scheduler_main();
 }
 void kernel_bootstrap() {
     initlock(framebuffer_device.lock, FRAME_LOCK);
@@ -87,7 +88,6 @@ void kernel_bootstrap() {
     kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
     kthread_init();
-    setup_init();
     ready = 1;
-    scheduler_main();
+    setup_init();
 }

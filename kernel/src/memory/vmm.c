@@ -33,6 +33,11 @@ uint64_t get_current_page_map() {
 /*
  * Architecture agnostic vmm init function
  */
+
+void arch_switch_page_table(void *top_level) {
+    switch_page_table(top_level);
+}
+
 void arch_vmm_init(){
     kprintf("Initializing Virtual Memory And Mapping Address Space...\n");
     initlock(&foreign_map_lock, ALLOC_LOCK);

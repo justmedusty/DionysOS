@@ -46,6 +46,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
 
     process->page_map = kzmalloc(sizeof(struct virt_map));
     process->page_map->top_level = alloc_virtual_map();
+    map_kernel_address_space(process->page_map->top_level);
     process->page_map->vm_regions = kzmalloc(sizeof(struct doubly_linked_list));
 
     process->process_id = get_process_id();

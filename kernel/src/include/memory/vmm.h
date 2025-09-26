@@ -73,7 +73,7 @@ void free_virtual_map(uint64_t *virtual_map);
 uint64_t *alloc_virtual_map();
 
 void attach_user_region(struct virt_map *map,struct virtual_region *region);
-
+void arch_switch_page_table(void *top_level);
 
 
 #endif
