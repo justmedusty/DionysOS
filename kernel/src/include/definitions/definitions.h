@@ -12,7 +12,7 @@
 
 
 #ifdef _DEBUG_
-#define DEBUG_PRINT(string, ...) debug_printf(string, ## __VA_ARGS__)
+#define DEBUG_PRINT(string, ...) debug_printf(string, ## __VA_ARGS__); serial_printf(string, ## __VA_ARGS__);
 #else
 #define DEBUG_PRINT(string, ...)
 #endif
@@ -185,6 +185,7 @@ void err_printf(char *str, ...);
 
 void debug_printf(char *str, ...);
 
+void serial_printf(char *str,...);
 
 void log_kernel_message(const char *message);
 

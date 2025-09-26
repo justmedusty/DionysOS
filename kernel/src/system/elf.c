@@ -180,7 +180,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 info->ld_path = (char *) ((uint64_t) elf_file + program_header->p_filesz);
                 break;
             default:
-                DEBUG_PRINT("ELF SECTION NOT GOOD!\n");
+                DEBUG_PRINT("Unknown elf section!\n");
                 break;
         }
     }
