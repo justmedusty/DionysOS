@@ -13,7 +13,7 @@
 
 // We will just have a 10mb sensible max for our elf files since I want to read the whole thing into memory on execute
 #define SENSIBLE_FILE_SIZE (10 << 20)
-
+#define USER_STACK_TOP 0x7FFFFFFFF000
 uint64_t user_proc_ids = 0;
 bool lock_set = false;
 struct spinlock lock;
@@ -53,6 +53,8 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->current_register_state = kzmalloc(sizeof(struct register_state));
     process->process_type = USER_PROCESS;
     process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
+
+    arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)USER_STACK_TOP,READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
 
     if (!init) {
         process->current_working_dir = parent->current_working_dir;

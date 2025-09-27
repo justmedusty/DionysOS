@@ -1,6 +1,6 @@
 
 
-global context_switch             ;context_switch(struct register_state *old, struct register_state *new, bool user_proc)
+global context_switch             ;context_switch(struct register_state *old, struct register_state *new, bool user_proc, void *page_table)
 context_switch
 
         mov [rdi + 0], rax        ; register_state.rax = rax
