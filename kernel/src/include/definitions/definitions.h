@@ -17,6 +17,15 @@
 #define DEBUG_PRINT(string, ...)
 #endif
 
+#define USER_STACK_TOP 0x7FFFFFFFF000
+#define KERNEL_BASE  0xFFFFFFFF80000000
+#define KERNEL_SIZE (4 << 30)
+#define STACK_SIZE   0x4000     // 16 KiB
+
+#define KERNEL_STACK_BOTTOM (KERNEL_BASE + KERNEL_SIZE + 0x10000)
+#define KERNEL_STACK_TOP    (KERNEL_STACK_BOTTOM + STACK_SIZE)
+
+
 typedef unsigned char byte;
 
 #define BIT(bit) ((1UL << bit))

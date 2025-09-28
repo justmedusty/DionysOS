@@ -316,7 +316,6 @@ void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t 
     }
 }
 
-
 #endif
 
 

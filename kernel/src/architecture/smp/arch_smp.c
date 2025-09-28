@@ -56,13 +56,11 @@ void smp_init() {
         /*
          *  Index into the cpu array based on the LAPIC ID which should be easier to get in the case that they do not line up with processor id
          */
-        cpu_list[smp_info[i]->lapic_id].cpu_number = smp_info[i]->processor_id;
-
 #ifdef __x86_64__
+        cpu_list[smp_info[i]->lapic_id].cpu_number = smp_info[i]->processor_id;
         cpu_list[smp_info[i]->lapic_id].cpu_id = smp_info[i]->lapic_id;
-#endif
-
         cpu_list[smp_info[i]->lapic_id].scheduler_state = kmalloc(sizeof(struct register_state));
+#endif
         //puts rest of CPUs online, works so will leave this commented out for now since I need to create or refactor functions for this
         smp_info[i]->goto_address = arch_initialise_cpu;
         i++;
@@ -72,7 +70,9 @@ void smp_init() {
     while ((volatile uint8_t) cpus_online != cpu_count) {
         nop();
     }
+
     smp_enabled = 1;
+
     kprintf("All CPUs Online\n");
     serial_printf("\n\nAll CPUs online......\n\n\n");
 }

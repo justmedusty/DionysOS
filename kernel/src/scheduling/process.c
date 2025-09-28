@@ -13,7 +13,8 @@
 
 // We will just have a 10mb sensible max for our elf files since I want to read the whole thing into memory on execute
 #define SENSIBLE_FILE_SIZE (10 << 20)
-#define USER_STACK_TOP 0x7FFFFFFFF000
+extern uint64_t get_current_stack();
+extern uint64_t get_current_base();
 uint64_t user_proc_ids = 0;
 bool lock_set = false;
 struct spinlock lock;
@@ -29,7 +30,10 @@ uint64_t get_process_id() {
     release_spinlock(&lock);
     return ret;
 }
-
+/*
+ * Under construction
+ * *jack hammer noises*
+ */
 int32_t exec(char *path_to_executable, char **argv) {
     uint64_t *top_level_page_table = alloc_virtual_map();
     struct process *current = current_process();
@@ -37,10 +41,9 @@ int32_t exec(char *path_to_executable, char **argv) {
 
 struct process *alloc_process(uint64_t state, bool user, struct process *parent) {
     struct process *process = kzmalloc(sizeof(struct process));
-
     bool init = parent == NULL ? true : false;
 
-    process->kernel_stack = kzmalloc(DEFAULT_STACK_SIZE);
+    process->kernel_stack = Virt2Phys(kzmalloc(DEFAULT_STACK_SIZE));
     process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
 
@@ -55,6 +58,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
 
     arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)USER_STACK_TOP,READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
+
 
     if (!init) {
         process->current_working_dir = parent->current_working_dir;

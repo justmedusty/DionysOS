@@ -80,6 +80,8 @@ void kernel_bootstrap() {
     bsp = false;
     // set bsp bool for acquire_spinlock so that my_cpu will be called and assigned when a processor takes a lock
     smp_init();
+    my_cpu()->scheduler_state->rsp = (uint64_t)kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
+    set_kernel_stack((void *)my_cpu()->scheduler_state->rsp);
     timer_init(1000);
     dev_fs_init();
     info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,

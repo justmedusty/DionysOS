@@ -75,10 +75,11 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
      my_cpu()->scheduler_state = kmalloc(sizeof(struct register_state));
     }
     my_cpu()->page_map = kernel_pg_map;
-
+    my_cpu()->scheduler_state->rsp = (uint64_t)kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
+    set_kernel_stack((void *)my_cpu()->scheduler_state->rsp);
     release_spinlock(&bootstrap_lock);
     cpus_online++;
-    while (!ready){} /* Just to make entry print message cleaner and grouped together */
+    while (!ready){}/* Just to make entry print message cleaner and grouped together */
     kthread_init();
     scheduler_main();
 }
