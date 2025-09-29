@@ -73,6 +73,9 @@ context_switch
         cmp r15, 1
         jne kernel
 
+
+        pop rcx                   ;sysretq expects user ret addr to be in rcx
+        mov rsp, rbp
         sysretq
 
 

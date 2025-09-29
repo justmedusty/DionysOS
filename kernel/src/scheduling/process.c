@@ -43,7 +43,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     struct process *process = kzmalloc(sizeof(struct process));
     bool init = parent == NULL ? true : false;
 
-    process->kernel_stack = Virt2Phys(kzmalloc(DEFAULT_STACK_SIZE));
+    process->kernel_stack = kzmalloc(DEFAULT_STACK_SIZE);
     process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
 
@@ -57,7 +57,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->process_type = USER_PROCESS;
     process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
 
-    arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)USER_STACK_TOP,READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
+    arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)(uint64_t)(USER_STACK_TOP - DEFAULT_STACK_SIZE),READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
 
 
     if (!init) {
@@ -70,6 +70,9 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
         process->priority = HIGH;
         process->effective_priority = HIGH;
         process->parent_process_id = 0;
+#ifdef __x86_64__
+    process->current_register_state->rsp = (uint64_t) process->kernel_stack;
+#endif
     }
 
 

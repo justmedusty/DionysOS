@@ -35,8 +35,8 @@ enum process_type {
 };
 
 
-//16 pages
-#define DEFAULT_STACK_SIZE 0x16000
+//2 pages
+#define DEFAULT_STACK_SIZE 0x2000ULL
 
 struct process {
     uint8_t current_state;

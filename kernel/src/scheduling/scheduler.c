@@ -23,6 +23,9 @@
 #include <include/memory/kmalloc.h>
 #include <include/memory/mem.h>
 
+#ifdef __x86_64__
+#include "include/architecture/x86_64/gdt.h"
+#endif
 
 struct queue sched_global_queue; // this is where processes will be stuck for CPUs to poach when they aren't busy
 struct doubly_linked_list global_sleep_queue;
@@ -134,6 +137,13 @@ void sched_run() {
 
     dequeue(cpu->local_run_queue);
     cpu->running_process->start_time = timer_get_current_count(); // will be used for timekeeping
+
+#ifdef __x86_64__
+    /*
+     * If this is an x86 machine set the tss
+     */
+    cpu->tss->rsp0 = (uint64_t) cpu->running_process->kernel_stack + STACK_SIZE;
+#endif
 
     context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type == USER_THREAD,cpu->running_process->page_map->top_level);
 }
