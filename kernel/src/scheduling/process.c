@@ -55,9 +55,13 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->process_id = get_process_id();
     process->current_register_state = kzmalloc(sizeof(struct register_state));
     process->process_type = USER_PROCESS;
-    process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
 
-    arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)(uint64_t)(USER_STACK_TOP - DEFAULT_STACK_SIZE),READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
+    if (user) {
+        process->stack = umalloc(DEFAULT_STACK_SIZE / PAGE_SIZE);
+        arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)(uint64_t)(USER_STACK_TOP - DEFAULT_STACK_SIZE),READWRITE | NO_EXECUTE,DEFAULT_STACK_SIZE);
+    }
+
+
 
 
     if (!init) {

@@ -76,7 +76,18 @@ context_switch
 
         pop rcx                   ;sysretq expects user ret addr to be in rcx
         mov rsp, rbp
-        sysretq
+        xor rbp, rbp
+
+        mov rax, 0x1B
+        mov ds, ax
+        mov ax, es
+        push rax
+        push rsp
+        push 0x202
+        push 0x23
+        push rcx
+
+        iretq
 
 
         kernel:

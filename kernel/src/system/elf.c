@@ -191,7 +191,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
 #ifdef __x86_64__
     process->current_register_state->rip = header->e_entry;
     process->current_register_state->rsp = (uint64_t) (process->kernel_stack + DEFAULT_STACK_SIZE);
-    process->current_register_state->rbp = (uint64_t) (process->stack + DEFAULT_STACK_SIZE);
+    process->current_register_state->rbp = USER_STACK_TOP;
 #endif
     if (init) {
         my_cpu()->running_process = NULL;
