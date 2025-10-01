@@ -74,20 +74,16 @@ context_switch
         jne kernel
 
 
-        pop rcx                   ;sysretq expects user ret addr to be in rcx
+        pop rcx                   ;move rip so we can push it back on the bottom of the stack
         mov rsp, rbp
-        xor rbp, rbp
 
-        mov rax, 0x1B
-        mov ds, ax
-        mov ax, es
-        push rax
+        push 0x23
         push rsp
         push 0x202
-        push 0x23
+        push 0x1B
         push rcx
 
-        iretq
+        iretfq
 
 
         kernel:
