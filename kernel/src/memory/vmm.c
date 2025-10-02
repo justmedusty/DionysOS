@@ -72,6 +72,7 @@ void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
     uint64_t page_map = get_current_page_map();
     uint64_t current_address = (uint64_t) KERNEL_FOREIGN_MAP_BASE;
     uint64_t virtual_address = (uint64_t) va;
+    DEBUG_PRINT("arch_map_foreign: current page map = %x.64\n",page_map);
     while (pages_mapped != size) {
         DEBUG_PRINT("FOREIGN MAP: PHYSICAL ADDR %x.64 VA %x.64 USER PAGE TABLE %x.64\n",arch_get_physical_address((void *)virtual_address,user_page_table),virtual_address,user_page_table);
         DEBUG_PRINT("PHYS %x.64\n",  arch_get_physical_address((void *)virtual_address,user_page_table));
