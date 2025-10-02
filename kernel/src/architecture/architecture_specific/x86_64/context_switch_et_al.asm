@@ -74,16 +74,11 @@ context_switch
         jne kernel
 
 
-        pop rcx                   ;move rip so we can push it back on the bottom of the stack
-        mov rsp, rbp
 
-        push 0x23
-        push rsp
-        push 0x202
-        push 0x1B
-        push rcx
 
-        iretfq
+        pop rcx
+        mov r11, 0x202
+        o64 sysret
 
 
         kernel:

@@ -32,6 +32,8 @@ struct syscall_args {
 __attribute__((always_inline))
 extern int syscall_entry();
 
+extern void enable_syscalls();
+
 static inline void set_syscall_handler() {
     wrmsr(IA32_LSTAR, (uint64_t) syscall_entry);
 }
