@@ -75,6 +75,7 @@ context_switch
 
         pop rcx
         mov r11, 0x202
+        mov rsp, rbp
         o64 sysret
 
 
