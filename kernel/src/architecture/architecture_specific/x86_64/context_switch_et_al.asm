@@ -73,9 +73,6 @@ context_switch
         cmp r15, 1
         jne kernel
 
-
-
-
         pop rcx
         mov r11, 0x202
         o64 sysret
