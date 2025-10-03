@@ -162,6 +162,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     DEBUG_PRINT("PHYSICAL %x.64\n",physical_page);
 
                 }
+
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
                 DEBUG_PRINT("FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE);

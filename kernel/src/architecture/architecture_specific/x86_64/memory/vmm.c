@@ -169,7 +169,9 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
              * I have no idea why it is only the second page
              */
             if (!check_phys_addr_usage((void *)PTE_ADDR(pte))) {
+                DEBUG_PRINT("ADDRESS %x.64 PHYS %x.64\n",pte, PTE_ADDR(pte));
                 DEBUG_PRINT("PTE SHOWING P BUT ADDR NOT IN USE!\n");
+                *pte = 0;
                 goto skip;
             }
             err_printf("PTE %x.64\n",*pte);
