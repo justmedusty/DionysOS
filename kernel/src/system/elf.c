@@ -159,10 +159,10 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                                    (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
                     DEBUG_PRINT("VA %x.64\n",(uint64_t *) (aligned_address +  (j * PAGE_SIZE)));
-                    DEBUG_PRINT("PHYSICAL %x.64\n",physical_page);
+                    DEBUG_PRINT("PHYSICAL %x.64 J %i\n",physical_page,j);
 
                 }
-
+                warn_printf("enter\n");
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
                 DEBUG_PRINT("FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE);
@@ -171,7 +171,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                        program_header->p_memsz - program_header->p_filesz);
                 DEBUG_PRINT("unmap size: %i\n",PAGE_SIZE * page_count);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
-
+                warn_printf("exit\n");
                 break;
             case PT_PHDR:
                 info->at_phdr = base_address + program_header->p_vaddr;
@@ -199,6 +199,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     }
     DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64",info->at_entry);
     kfree(header);
+    panic("");
     return KERN_SUCCESS;
 }
 

@@ -69,14 +69,17 @@ void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
     acquire_spinlock(&foreign_map_lock);
     uint64_t pages_mapped = 0;
-    uint64_t page_map = get_current_page_map();
+    uint64_t page_map = (uint64_t) kernel_pg_map->top_level;
     uint64_t current_address = (uint64_t) KERNEL_FOREIGN_MAP_BASE;
     uint64_t virtual_address = (uint64_t) va;
-    DEBUG_PRINT("arch_map_foreign: current page map = %x.64\n",page_map);
+    DEBUG_PRINT("arch_map_foreign: current page map = %x.64 passed page map %x.64\n",page_map,user_page_table);
     while (pages_mapped != size) {
         DEBUG_PRINT("FOREIGN MAP: PHYSICAL ADDR %x.64 VA %x.64 USER PAGE TABLE %x.64\n",arch_get_physical_address((void *)virtual_address,user_page_table),virtual_address,user_page_table);
         DEBUG_PRINT("PHYS %x.64\n",  arch_get_physical_address((void *)virtual_address,user_page_table));
-        arch_map_pages((p4d_t *)page_map,(uint64_t) arch_get_physical_address((void *)virtual_address,user_page_table),(uint64_t *) current_address,READWRITE,PAGE_SIZE);
+        DEBUG_PRINT("ENTER\n");
+        uint64_t physical_address = (uint64_t) arch_get_physical_address((void *)virtual_address,user_page_table);
+        DEBUG_PRINT("EXIT\n");
+        arch_map_pages((p4d_t *)page_map,physical_address,(uint64_t *) current_address,READWRITE,PAGE_SIZE);
         current_address += PAGE_SIZE;
         pages_mapped++;
         virtual_address += PAGE_SIZE;
