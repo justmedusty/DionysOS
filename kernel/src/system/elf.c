@@ -199,7 +199,6 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     }
     DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64",info->at_entry);
     kfree(header);
-    panic("");
     return KERN_SUCCESS;
 }
 
