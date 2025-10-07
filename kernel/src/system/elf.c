@@ -143,6 +143,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 if (program_header->p_flags & PF_X) {
                     //nothing
                 } else {
+                    DEBUG_PRINT("NO X!\n");
                     memory_protection |= NO_EXECUTE;
                 }
 
@@ -156,12 +157,13 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
-                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
+                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection | USER,
                                    PAGE_SIZE);
                     DEBUG_PRINT("VA %x.64\n",(uint64_t *) (aligned_address +  (j * PAGE_SIZE)));
                     DEBUG_PRINT("PHYSICAL %x.64 J %i\n",physical_page,j);
 
                 }
+
                 warn_printf("enter\n");
                 DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
@@ -197,7 +199,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     if (init) {
         my_cpu()->running_process = NULL;
     }
-    DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64",info->at_entry);
+    DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64 PAGE TABLE IS %x.64\n",info->at_entry,process->page_map->top_level);
     kfree(header);
     return KERN_SUCCESS;
 }
