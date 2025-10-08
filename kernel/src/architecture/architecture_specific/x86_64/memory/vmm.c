@@ -148,7 +148,13 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
     return entry;
 }
 
-
+/*
+ * Addr needs to be on page boundary not in the middle of a page
+ */
+uint64_t check_page_mapping(uint64_t *pagemap, void *address) {
+    uint64_t ret = (uint64_t) walk_page_directory(pagemap,address,0);
+    return ret;
+}
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
@@ -168,6 +174,7 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
             if (!check_phys_addr_usage((void *)PTE_ADDR(*pte))) {
                 DEBUG_PRINT("ADDRESS %x.64 PHYS %x.64 PTE addr %x.64\n",address ,physaddr, PTE_ADDR(*pte));
                 DEBUG_PRINT("PTE SHOWING P BUT ADDR NOT IN USE!\n");
+                return 0;
                 goto skip;
             }
             err_printf("PTE %x.64\n",*pte);

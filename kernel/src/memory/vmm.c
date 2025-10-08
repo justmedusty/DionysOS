@@ -65,6 +65,11 @@ void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
 /*
  *  This will only support one foreign mapping for now
  */
+uint64_t arch_check_page_mapping(uint64_t *pagemap, void *address) {
+#ifdef  __x86_64__
+    return  check_page_mapping(pagemap,address);
+#endif
+}
 
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
     acquire_spinlock(&foreign_map_lock);

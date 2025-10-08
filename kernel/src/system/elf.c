@@ -157,11 +157,10 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
                     arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
-                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection | USER,
+                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
                                    PAGE_SIZE);
                     DEBUG_PRINT("VA %x.64\n",(uint64_t *) (aligned_address +  (j * PAGE_SIZE)));
                     DEBUG_PRINT("PHYSICAL %x.64 J %i\n",physical_page,j);
-
                 }
 
                 warn_printf("enter\n");
@@ -199,6 +198,17 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     if (init) {
         my_cpu()->running_process = NULL;
     }
+
+#ifdef  _DEBUG_
+    uint64_t *page = (uint64_t *)(check_page_mapping(process->page_map->top_level,(void *)0x0401000));
+    DEBUG_PRINT("PAGE DIR %x.64\n",process->page_map->top_level);
+    if (page != 0) {
+        DEBUG_PRINT("INSTR PAGE : PTE %x.64 , PTE ADDR : %x.64 PERMS %x.64\n",*page,PTE_ADDR(*page),PTE_FLAGS(*page));
+    }else {
+        panic("Page is not mapped");
+    }
+#endif
+
     DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64 PAGE TABLE IS %x.64\n",info->at_entry,process->page_map->top_level);
     kfree(header);
     return KERN_SUCCESS;

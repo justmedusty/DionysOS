@@ -62,7 +62,7 @@ void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t 
 uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address);
 
 pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags);
-
+uint64_t check_page_mapping(uint64_t *pagemap, void *address);
 void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size);
 void arch_unmap_foreign(uint64_t size);
 void free_page_tables(p4d_t *pgdir);
