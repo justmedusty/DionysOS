@@ -38,6 +38,15 @@ uint64_t get_page_table() {
     return rcr3();
 }
 
+void toggle_smep(bool on) {
+    uint64_t val = rcr4();
+    if (on) {
+        lcr4(val | 0x20);
+    }else {
+        lcr4(val & ~0x20);
+    }
+}
+
 void init_vmm() {
     kernel_pg_map = kmalloc(PAGE_SIZE);
     kernel_pg_map->top_level = Virt2Phys(kzmalloc(PAGE_SIZE));
@@ -155,6 +164,23 @@ uint64_t check_page_mapping(uint64_t *pagemap, void *address) {
     uint64_t ret = (uint64_t) walk_page_directory(pagemap,address,0);
     return ret;
 }
+
+
+int map_single_page(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_t perms) {
+    pte_t *pte;
+    if ((pte = walk_page_directory(pgdir, (void *) va, ALLOC)) == 0) {
+        return -1;
+    }
+
+    if ((perms & PTE_U) && *pte & PTE_P) {
+        err_printf("PTE %x.64\n",*pte);
+        panic("remap");
+    }
+
+    *pte = physaddr | perms | PTE_P;
+
+    return KERN_SUCCESS;
+}
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
@@ -170,17 +196,9 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
 
 
         if ((perms & PTE_U) && *pte & PTE_P) {
-
-            if (!check_phys_addr_usage((void *)PTE_ADDR(*pte))) {
-                DEBUG_PRINT("ADDRESS %x.64 PHYS %x.64 PTE addr %x.64\n",address ,physaddr, PTE_ADDR(*pte));
-                DEBUG_PRINT("PTE SHOWING P BUT ADDR NOT IN USE!\n");
-                return 0;
-                goto skip;
-            }
             err_printf("PTE %x.64\n",*pte);
             panic("remap");
         }
-        skip:
 
         *pte = physaddr | perms | PTE_P;
 

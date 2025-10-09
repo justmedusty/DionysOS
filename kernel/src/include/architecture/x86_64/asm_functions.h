@@ -151,6 +151,18 @@ static inline uint64_t rcr3(void) {
     return destination;
 }
 
+// Loads a value into the CR4 register.
+static inline void lcr4(uint64_t val) {
+    asm volatile("movq %0,%%cr4" : : "r" (val));
+}
+
+// reads a value from the CR4 register.
+static inline uint64_t rcr4(void) {
+    uint64_t destination;
+    asm volatile("mov %%cr4,%0" : "=r"(destination));
+    return destination;
+}
+
 
 static inline void flush_tlb() {
     asm volatile("mov %%cr3, %%rax\n\t"

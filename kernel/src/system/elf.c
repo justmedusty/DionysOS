@@ -156,11 +156,11 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 for (size_t j = 0; j < page_count; j++) {
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
-                    arch_map_pages(process->page_map->top_level, (uint64_t) physical_page,
-                                   (uint64_t *) (aligned_address +  (j * PAGE_SIZE)), memory_protection,
-                                   PAGE_SIZE);
-                    DEBUG_PRINT("VA %x.64\n",(uint64_t *) (aligned_address +  (j * PAGE_SIZE)));
+                    arch_map_single_page(process->page_map->top_level, (uint64_t) physical_page,
+                                  (uint64_t *) (( uint64_t)(aligned_address +  (j * PAGE_SIZE))), memory_protection);
+                    DEBUG_PRINT("VA %x.64\n",(uint64_t *) (( uint64_t)(aligned_address +  (j * PAGE_SIZE))));
                     DEBUG_PRINT("PHYSICAL %x.64 J %i\n",physical_page,j);
+
                 }
 
                 warn_printf("enter\n");

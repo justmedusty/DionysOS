@@ -35,6 +35,10 @@ enum permissions {
     USER = PTE_U,
     DISABLE_CACHE = PTE_PCD,
 };
+
+void toggle_smep(bool on);
+
+
 #endif
 struct virtual_region {
     uint64_t va;
@@ -67,7 +71,7 @@ void detach_region(struct virt_map *map, struct virtual_region *region);
 void arch_dealloc_page_table(p4d_t *pgdir);
 
 void arch_map_pages(p4d_t *pgdir, uint64_t physaddr, uint64_t *va, uint64_t perms, uint64_t size);
-
+void arch_map_single_page(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms);
 void free_virtual_map(uint64_t *virtual_map);
 
 uint64_t *alloc_virtual_map();

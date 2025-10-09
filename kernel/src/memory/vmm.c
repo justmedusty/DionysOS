@@ -6,9 +6,9 @@
 
 #include <include/data_structures/doubly_linked_list.h>
 #include <include/drivers/display/framebuffer.h>
-
 #include "include/architecture/arch_vmm.h"
 #include "include/memory/kmalloc.h"
+
 struct virt_map* kernel_pg_map;
 struct spinlock foreign_map_lock;
 
@@ -56,6 +56,10 @@ void arch_dealloc_page_table(p4d_t *pgdir) {
 void arch_map_pages(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms, const uint64_t size) {
     DEBUG_PRINT("arch_map_pages: pgdir %x.64 phys %x.64 va %x.64 perms %i size %i\n",pgdir,physaddr,va,perms,size);
     map_pages(pgdir, physaddr, va, perms, size);
+}
+
+void arch_map_single_page(p4d_t* pgdir, uint64_t physaddr, uint64_t* va, const uint64_t perms) {
+    map_single_page(pgdir,physaddr,va,perms);
 }
 
 void *arch_get_physical_address(void *virtual_address,uint64_t *page_map) {
