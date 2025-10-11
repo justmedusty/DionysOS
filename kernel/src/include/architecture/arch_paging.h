@@ -62,7 +62,7 @@ extern p4d_t *global_pg_dir;
 #define PTE_U           0x004ULL   // User
 #define PTE_A           0x020ULL  //accessed , for demand paging
 #define PTE_PS          0x080ULL   // Page Size
-#define PTE_NX          1ULL << 63ULL// no execute
+#define PTE_NX          (1ULL << 63ULL)// no execute
 #define PTE_PCD         0x010ULL // page cache disable
 #define PTE_PWT         0x008ULL //page write through
 
