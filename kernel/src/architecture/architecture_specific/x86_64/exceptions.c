@@ -4,6 +4,7 @@
 #pragma once
 #include <include/architecture/arch_cpu.h>
 #include <include/drivers/display/framebuffer.h>
+#include <include/scheduling/sched.h>
 
 #include "include/architecture/x86_64/asm_functions.h"
 
@@ -90,6 +91,9 @@ void page_fault() {
     uint64_t faulting_address = rcr2();
     uint64_t cpu_no = my_cpu()->cpu_number;
     err_printf("Page Fault Occurred With Access %x.64 on CPU %i\n", faulting_address,cpu_no);
+    if (IS_USER_ADDRESS(faulting_address)) {
+        sched_exit();
+    }
     panic("Page Fault!");
 }
 
