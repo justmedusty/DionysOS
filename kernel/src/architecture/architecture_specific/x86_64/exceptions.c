@@ -89,8 +89,9 @@ void general_protection_fault(int32_t error_code) {
 // Exception 14: Page Fault
 void page_fault() {
     uint64_t faulting_address = rcr2();
+    uint64_t page_map = rcr3();
     uint64_t cpu_no = my_cpu()->cpu_number;
-    err_printf("Page Fault Occurred With Access %x.64 on CPU %i\n", faulting_address,cpu_no);
+    err_printf("Page Fault Occurred With Access %x.64 within page map %x.64 on CPU %i\n", faulting_address,page_map,cpu_no);
     if (IS_USER_ADDRESS(faulting_address)) {
         sched_exit();
     }
