@@ -88,7 +88,7 @@ void arch_map_foreign(p4d_t *user_page_table,uint64_t *va, uint64_t size) {
         DEBUG_PRINT("ENTER\n");
         uint64_t physical_address = (uint64_t) arch_get_physical_address((void *)virtual_address,user_page_table);
         DEBUG_PRINT("EXIT\n");
-        arch_map_pages((p4d_t *)page_map,physical_address,(uint64_t *) current_address,READWRITE,PAGE_SIZE);
+        arch_map_single_page((p4d_t *)page_map,physical_address,(uint64_t *) current_address,READWRITE);
         current_address += PAGE_SIZE;
         pages_mapped++;
         virtual_address += PAGE_SIZE;
