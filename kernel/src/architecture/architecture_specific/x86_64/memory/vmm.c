@@ -27,11 +27,11 @@
 #define FOUR_GB 0x100000000
 
 
-p4d_t *global_pg_dir = 0;
+p4d_t* global_pg_dir = 0;
 
 
-void switch_page_table(p4d_t *page_dir) {
-    lcr3((uint64_t) (page_dir));
+void switch_page_table(p4d_t* page_dir) {
+    lcr3((uint64_t)(page_dir));
 }
 
 uint64_t get_page_table() {
@@ -42,7 +42,8 @@ void toggle_smep(bool on) {
     uint64_t val = rcr4();
     if (on) {
         lcr4(val | 0x20);
-    }else {
+    }
+    else {
         lcr4(val & ~0x20);
     }
 }
@@ -68,28 +69,27 @@ void load_vmm() {
     switch_page_table(kernel_pg_map->top_level);
 }
 
-void map_kernel_address_space(p4d_t *pgdir) {
-
-    if (map_pages(pgdir, (uint64_t) (text_start - kernel_min) + kernel_phys_min, (uint64_t *) text_start, 0,
+void map_kernel_address_space(p4d_t* pgdir) {
+    if (map_pages(pgdir, (uint64_t)(text_start - kernel_min) + kernel_phys_min, (uint64_t*)text_start, 0,
                   text_end - text_start) == -1) {
         panic("Mapping text!");
     }
 
 
-    if (map_pages(pgdir, (uint64_t) (rodata_start - kernel_min) + kernel_phys_min, (uint64_t *) rodata_start, PTE_NX,
+    if (map_pages(pgdir, (uint64_t)(rodata_start - kernel_min) + kernel_phys_min, (uint64_t*)rodata_start, PTE_NX,
                   rodata_end - rodata_start) == -1) {
         panic("Mapping rodata!");
     }
 
 
-    if (map_pages(pgdir, (uint64_t) (data_start - kernel_min) + kernel_phys_min, (uint64_t *) data_start,
+    if (map_pages(pgdir, (uint64_t)(data_start - kernel_min) + kernel_phys_min, (uint64_t*)data_start,
                   PTE_NX | PTE_RW, data_end - data_start) == -1) {
         panic("Mapping data!");
     }
     /*
      * Map the first 4 GB since there is important stuff there
      */
-    if (map_pages(pgdir, 0, (uint64_t *) ((uint64_t) 0 + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
+    if (map_pages(pgdir, 0, (uint64_t*)((uint64_t)0 + (uint64_t)hhdm_offset), PTE_RW | PTE_NX,
                   FOUR_GB) == -1) {
         panic("Mapping First four gb!");
     }
@@ -97,7 +97,8 @@ void map_kernel_address_space(p4d_t *pgdir) {
     /*
      * Map only the end of user physical memory up to the highest address so the the kernel does not need to map all of user memory
      */
-    if (map_pages(pgdir, highest_user_phys_addr,(uint64_t *) ((uint64_t) highest_user_phys_addr + (uint64_t) hhdm_offset), PTE_RW | PTE_NX,
+    if (map_pages(pgdir, highest_user_phys_addr, (uint64_t*)((uint64_t)highest_user_phys_addr + (uint64_t)hhdm_offset),
+                  PTE_RW | PTE_NX,
                   highest_address - highest_user_phys_addr) == -1) {
         panic("Mapping address space!");
     }
@@ -107,7 +108,7 @@ void map_kernel_address_space(p4d_t *pgdir) {
  * Walk a page directory to find a physical address, or allocate all the way down if the alloc flag is set
  */
 
-pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
+pte_t* walk_page_directory(p4d_t* pgdir, const void* va, const int flags) {
     if (pgdir == 0) {
         panic("page dir zero");
     }
@@ -117,42 +118,56 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
     pmd_t pmd_idx = PMDX(va);
     pte_t pte_idx = PTX(va);
 
-    pud_t *pud = Phys2Virt(pgdir);
+    pud_t* pud = Phys2Virt(pgdir);
     pud += p4d_idx;
 
     if (!(*pud & PTE_P)) {
         if (flags & ALLOC) {
-            *pud = (pud_t) Virt2Phys(kzmalloc(PAGE_SIZE));
+            *pud = (pud_t)Virt2Phys(kzmalloc(PAGE_SIZE));
             *pud |= PTE_P | PTE_RW;
-        } else {
+            if (flags & USER_ALLOC) {
+                *pud |= PTE_U;
+            }
+
+        }
+        else {
             return 0;
         }
     }
 
-    pmd_t *pmd = Phys2Virt(PTE_ADDR(*pud));
+    pmd_t* pmd = Phys2Virt(PTE_ADDR(*pud));
     pmd += pud_idx;
     if (!(*pmd & PTE_P)) {
         if (flags & ALLOC) {
-            *pmd = (pmd_t) Virt2Phys(kzmalloc(PAGE_SIZE));
+            *pmd = (pmd_t)Virt2Phys(kzmalloc(PAGE_SIZE));
             *pmd |= PTE_P | PTE_RW;
-        } else {
+            if (flags & USER_ALLOC) {
+                *pmd |= PTE_U;
+            }
+        }
+        else {
             return 0;
         }
     }
 
-    pte_t *pte = Phys2Virt(PTE_ADDR(*pmd));
+    pte_t* pte = Phys2Virt(PTE_ADDR(*pmd));
     pte += pmd_idx;
 
     if (!(*pte & PTE_P)) {
         if (flags & ALLOC) {
-            *pte = (pte_t) Virt2Phys(kzmalloc(PAGE_SIZE));
+            *pte = (pte_t)Virt2Phys(kzmalloc(PAGE_SIZE));
             *pte |= PTE_P | PTE_RW;
-        } else {
+
+            if (flags & USER_ALLOC) {
+                *pte |= PTE_U;
+            }
+        }
+        else {
             return 0;
         }
     }
 
-    pte_t *entry = Phys2Virt(PTE_ADDR(*pte));
+    pte_t* entry = Phys2Virt(PTE_ADDR(*pte));
     entry += pte_idx;
     return entry;
 }
@@ -160,43 +175,58 @@ pte_t *walk_page_directory(p4d_t *pgdir, const void *va, const int flags) {
 /*
  * Addr needs to be on page boundary not in the middle of a page
  */
-uint64_t check_page_mapping(uint64_t *pagemap, void *address) {
-    uint64_t ret = (uint64_t) walk_page_directory(pagemap,address,0);
+uint64_t check_page_mapping(uint64_t* pagemap, void* address) {
+    uint64_t ret = (uint64_t)walk_page_directory(pagemap, address, 0);
     return ret;
 }
 
 
-int map_single_page(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_t perms) {
-    pte_t *pte;
-    if ((pte = walk_page_directory(pgdir, (void *) va, ALLOC)) == 0) {
+int map_single_page(p4d_t* pgdir, uint64_t physaddr, const uint64_t* va, const uint64_t perms) {
+    pte_t* pte;
+
+    uint64_t flags = ALLOC;
+
+    if (perms & PTE_U) {
+        flags |= USER_ALLOC;
+    }
+
+    if ((pte = walk_page_directory(pgdir, (void*)va, flags)) == 0) {
         return -1;
     }
 
     if ((perms & PTE_U) && *pte & PTE_P) {
-        err_printf("PTE %x.64\n",*pte);
+        err_printf("PTE %x.64\n", *pte);
         panic("remap");
     }
 
     *pte = physaddr | perms | PTE_P;
 
+    if (!(perms & PTE_NX)) {
+        *pte &= ~PTE_NX;
+    }
+    else {
+        DEBUG_PRINT("PTE IS NX %x.64\n", va);
+    }
+
     return KERN_SUCCESS;
 }
+
 /*
  * Maps pages from VA/PA to size in page size increments.
  */
-int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_t perms, const uint64_t size) {
-    pte_t *pte;
+int map_pages(p4d_t* pgdir, uint64_t physaddr, const uint64_t* va, const uint64_t perms, const uint64_t size) {
+    pte_t* pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
 
     for (;;) {
-        if ((pte = walk_page_directory(pgdir, (void *) address, ALLOC)) == 0) {
+        if ((pte = walk_page_directory(pgdir, (void*)address, ALLOC)) == 0) {
             return -1;
         }
 
 
         if ((perms & PTE_U) && *pte & PTE_P) {
-            err_printf("PTE %x.64\n",*pte);
+            err_printf("PTE %x.64\n", *pte);
             panic("remap");
         }
 
@@ -214,12 +244,11 @@ int map_pages(p4d_t *pgdir, uint64_t physaddr, const uint64_t *va, const uint64_
 }
 
 
-uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
+uint64_t dealloc_va(p4d_t* pgdir, const uint64_t address) {
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
-    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
+    pte_t* entry = walk_page_directory(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0) {
-
         return 0;
     }
     if (*entry & PTE_P) {
@@ -231,12 +260,12 @@ uint64_t dealloc_va(p4d_t *pgdir, const uint64_t address) {
 
     return 0;
 }
-uint64_t dealloc_va_foreign(p4d_t *pgdir, const uint64_t address) {
+
+uint64_t dealloc_va_foreign(p4d_t* pgdir, const uint64_t address) {
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
-    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
+    pte_t* entry = walk_page_directory(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0) {
-
         return 0;
     }
     if (*entry & PTE_P) {
@@ -248,50 +277,50 @@ uint64_t dealloc_va_foreign(p4d_t *pgdir, const uint64_t address) {
     return 0;
 }
 
-void dealloc_va_range_foreign(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
+void dealloc_va_range_foreign(p4d_t* pgdir, const uint64_t address, const uint64_t size) {
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
-    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n",aligned_size,size);
+    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n", aligned_size, size);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
         dealloc_va_foreign(pgdir, address + i);
     }
 }
 
-void dealloc_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
+void dealloc_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size) {
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
-    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n",aligned_size,size);
+    DEBUG_PRINT("dealloc_va_range: aligned size %i size %i\n", aligned_size, size);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {
         dealloc_va(pgdir, address + i);
     }
 }
+
 #define ENTRIES_PER_TABLE 512
 
-static void *get_next_level(void *table, uint64_t index) {
-    uint64_t *entries = (uint64_t *) Phys2Virt(table);
+static void* get_next_level(void* table, uint64_t index) {
+    uint64_t* entries = (uint64_t*)Phys2Virt(table);
 
     if (!(entries[index] & PTE_P)) {
         return NULL;
     }
-    return (void *)(PTE_ADDR(entries[index]));
+    return (void*)(PTE_ADDR(entries[index]));
 }
 
-void free_page_tables(p4d_t *pgdir) {
-
+void free_page_tables(p4d_t* pgdir) {
     for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
-        pud_t *pud = get_next_level(pgdir, p4d_idx);
+        pud_t* pud = get_next_level(pgdir, p4d_idx);
         if (!pud) continue;
         for (size_t pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
-            pmd_t *pmd = get_next_level((pud), pud_idx);
+            pmd_t* pmd = get_next_level((pud), pud_idx);
             if (!pmd) continue;\
 
             for (size_t pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
-                pte_t *pte = get_next_level((pmd), pmd_idx);
+                pte_t* pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
 
                 for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
                     if (pte[pte_idx] & PTE_P) {
-                        void *page = (void *) PTE_ADDR(pte[pte_idx]);
+                        void* page = (void*)PTE_ADDR(pte[pte_idx]);
                         kfree((page));
                         pte[pte_idx] = 0;
                     }
@@ -302,27 +331,26 @@ void free_page_tables(p4d_t *pgdir) {
         }
         kfree(pud);
     }
-
 }
 
 void setup_pat() {
     uint64_t pat =
-            (0ULL << 0) | (1ULL << 8) | (2ULL << 16) | (3ULL << 24) | (4ULL << 32) | (5ULL << 40) | (6ULL << 48) |
-            (7ULL << 56);
+        (0ULL << 0) | (1ULL << 8) | (2ULL << 16) | (3ULL << 24) | (4ULL << 32) | (5ULL << 40) | (6ULL << 48) |
+        (7ULL << 56);
 
     wrmsr(PAT_MSR, pat);
 }
 
-uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address) {
+uint64_t dealloc_user_va(p4d_t* pgdir, const uint64_t address) {
     uint64_t aligned_address = ALIGN_DOWN(address, PAGE_SIZE);
-    pte_t *entry = walk_page_directory(pgdir, (void *) aligned_address, 0);
+    pte_t* entry = walk_page_directory(pgdir, (void*)aligned_address, 0);
 
     if (entry == 0) {
         panic("dealloc_va");
         return 0;
     }
     if (*entry & PTE_P) {
-        ufree(((void *) PTE_ADDR(*entry)));
+        ufree(((void*)PTE_ADDR(*entry)));
         *entry = 0;
         native_flush_tlb_single(aligned_address);
         return 1;
@@ -331,7 +359,7 @@ uint64_t dealloc_user_va(p4d_t *pgdir, const uint64_t address) {
     return 0;
 }
 
-void dealloc_user_va_range(p4d_t *pgdir, const uint64_t address, const uint64_t size) {
+void dealloc_user_va_range(p4d_t* pgdir, const uint64_t address, const uint64_t size) {
     uint64_t aligned_size = ALIGN_UP(size, PAGE_SIZE);
     serial_printf("Aligned size %x.64\n", aligned_size);
     for (uint64_t i = 0; i <= aligned_size; i += PAGE_SIZE) {

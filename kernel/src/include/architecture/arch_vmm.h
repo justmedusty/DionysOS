@@ -12,7 +12,8 @@
 #define KERNEL_FOREIGN_MAP_BASE  0xFFFF900000000000ULL
 enum {
     ALLOC = 1,
-    DEBUG = 2
+    DEBUG = 2,
+    USER_ALLOC = 4
 };
 
 #ifdef __x86_64__
