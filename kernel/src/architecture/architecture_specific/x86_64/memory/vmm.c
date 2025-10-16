@@ -218,9 +218,13 @@ int map_pages(p4d_t* pgdir, uint64_t physaddr, const uint64_t* va, const uint64_
     pte_t* pte;
     uint64_t address = PGROUNDDOWN((uint64_t) va);
     uint64_t last = PGROUNDUP(((uint64_t) va) + size - 1);
+    uint64_t flags = ALLOC;
 
+    if (perms & PTE_U) {
+        flags |= USER_ALLOC;
+    }
     for (;;) {
-        if ((pte = walk_page_directory(pgdir, (void*)address, ALLOC)) == 0) {
+        if ((pte = walk_page_directory(pgdir, (void*)address, flags)) == 0) {
             return -1;
         }
 

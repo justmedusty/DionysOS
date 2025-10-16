@@ -19,7 +19,7 @@
 
 
 #define USER_STACK_TOP 0x7FFFFFFFF000ULL
-#define IS_USER_ADDRESS(addr) (addr < USER_STACK_TOP)
+#define IS_USER_ADDRESS(addr) (addr <= USER_STACK_TOP)
 #define KERNEL_BASE  0xFFFFFFFF80000000ULL
 #define KERNEL_SIZE (4 << 30)
 #define STACK_SIZE   0x2000ULL     // 16 KiB
