@@ -61,9 +61,6 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
         arch_map_pages(process->page_map->top_level,(uint64_t)process->stack ,(uint64_t *)(uint64_t)(USER_STACK_TOP - DEFAULT_STACK_SIZE),READWRITE | NO_EXECUTE | USER,DEFAULT_STACK_SIZE);
     }
 
-
-
-
     if (!init) {
         process->current_working_dir = parent->current_working_dir;
         process->parent_process_id = parent->process_id;
