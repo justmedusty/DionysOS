@@ -1,7 +1,7 @@
 extern system_call_dispatch
+extern panic
 global syscall_entry
 syscall_entry:
-    swapgs               ; Swap kernel and user GS base (if using per-cpu structures)
     push r11             ; Save RFLAGS
     push rcx             ; Save return address
     push rbx             ; Save callee-saved registers
@@ -42,5 +42,4 @@ syscall_entry:
     pop rcx              ; Restore return address for sysret
     pop r11              ; Restore RFLAGS
 
-    swapgs               ; Restore user GS base
     sysretq              ; Return to CS 3

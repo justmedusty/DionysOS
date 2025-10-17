@@ -46,8 +46,7 @@ static __inline__ __attribute__((always_inline)) int64_t syscall_stub(
         : "a"(syscall_no),
           "D"(arg1),
           "S"(arg2),
-          "d"(arg3),
-          "r"(r10), "r"(r8), "r"(r9)
+          "d"(arg3)
         : "rcx", "r11", "memory"
     );
     return ret;
