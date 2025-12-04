@@ -48,7 +48,7 @@ all: $(BINARIES)
 # Rule: compile and link each C file with shared NASM objects
 bin/%: %.c $(ASM_OBJ)
 	mkdir -p "$$(dirname $@)"
-	$(KCC) $(KCFLAGS) $(KCPPFLAGS) $< $(ASM_OBJ) -o $@
+	$(KCC) $(KCFLAGS) $(KCPPFLAGS) $< $(ASM_OBJ) -a -o $@
 
 # Compile NASM files to object files
 obj/%.asm.o: %.asm

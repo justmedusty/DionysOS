@@ -30,7 +30,7 @@ enum system_calls {
 
 
 #ifdef __x86_64__
-static __inline__ __attribute__((always_inline)) int64_t syscall_stub(
+int64_t syscall_stub(
     uint64_t syscall_no,
     uint64_t arg1, uint64_t arg2, uint64_t arg3,
     uint64_t arg4, uint64_t arg5, uint64_t arg6)

@@ -2,6 +2,7 @@ extern system_call_dispatch
 extern panic
 global syscall_entry
 syscall_entry:
+    call panic
     push r11             ; Save RFLAGS
     push rcx             ; Save return address
     push rbx             ; Save callee-saved registers
