@@ -28,7 +28,7 @@ override KCFLAGS += \
     -Wall -Wextra -std=gnu11 -ffreestanding -fno-stack-protector \
     -fno-stack-check -fno-lto -fno-pie -m64 -march=x86-64 -mno-80387 \
     -mno-mmx -mno-red-zone -g -fanalyzer \
-    -Wno-unused-variable -Wno-unused-function -no-pie
+    -Wno-unused-variable -Wno-unused-function -no-pie -fno-builtin -fno-builtin-memcpy -fno-builtin-memset -nostdlib -nostartfiles -nodefaultlibs
 
 override KNASMFLAGS += -Wall -f elf64
 
@@ -48,7 +48,7 @@ all: $(BINARIES)
 # Rule: compile and link each C file with shared NASM objects
 bin/%: %.c $(ASM_OBJ)
 	mkdir -p "$$(dirname $@)"
-	$(KCC) $(KCFLAGS) $(KCPPFLAGS) $< $(ASM_OBJ) -a -o $@
+	$(KCC) $(KCFLAGS) $(KCPPFLAGS) $< $(ASM_OBJ) -o $@
 
 # Compile NASM files to object files
 obj/%.asm.o: %.asm
