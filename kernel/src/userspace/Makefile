@@ -25,10 +25,25 @@ $(eval $(call DEFAULT_VAR,KNASMFLAGS,$(DEFAULT_KNASMFLAGS)))
 
 # === INTERNAL FLAGS ===
 override KCFLAGS += \
-    -Wall -Wextra -std=gnu11 -ffreestanding -fno-stack-protector \
-    -fno-stack-check -fno-lto -fno-pie -m64 -march=x86-64 -mno-80387 \
-    -mno-mmx -mno-red-zone -g -fanalyzer \
-    -Wno-unused-variable -Wno-unused-function -no-pie -fno-builtin -fno-builtin-memcpy -fno-builtin-memset -nostdlib -nostartfiles -nodefaultlibs
+      -Wall \
+      -Wextra \
+      -std=gnu11 \
+      -ffreestanding \
+      -fno-stack-protector \
+      -fno-stack-check \
+      -fno-lto \
+      -fPIE \
+      -m64 \
+      -march=x86-64 \
+      -mno-80387 \
+      -mno-mmx \
+      -mno-sse \
+      -mno-sse2 \
+      -mno-red-zone \
+      -g \
+      -fanalyzer \
+      -Wno-unused-variable \
+      -Wno-unused-function \
 
 override KNASMFLAGS += -Wall -f elf64
 
