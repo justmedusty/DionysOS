@@ -44,6 +44,8 @@ override KCFLAGS += \
       -fanalyzer \
       -Wno-unused-variable \
       -Wno-unused-function \
+      -nostartfiles \
+      -fno-builtin \
 
 override KNASMFLAGS += -Wall -f elf64
 
@@ -58,7 +60,19 @@ ASM_OBJ := $(addprefix obj/,$(NASMFILES:.asm=.asm.o))
 BINARIES := $(addprefix bin/,$(CFILES:.c=))
 
 .PHONY: all
-all: $(BINARIES)
+all:
+	 make clean
+	 $(BINARIES)
+	 cp bin/init ../../../../tools/mkfs/default_files/bin/init
+	 make diskmake
+
+IMG := disk.img
+IMG_SIZE := 500
+.PHONY: disk
+disk:
+	cd ../../../tools/mkfs && \
+	./mkdiosfs $(IMG) $(IMG_SIZE) && \
+	cp $(IMG) ../../../bin/$(IMG)
 
 # Rule: compile and link each C file with shared NASM objects
 bin/%: %.c $(ASM_OBJ)
