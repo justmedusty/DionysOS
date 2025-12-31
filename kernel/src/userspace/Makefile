@@ -60,19 +60,19 @@ ASM_OBJ := $(addprefix obj/,$(NASMFILES:.asm=.asm.o))
 BINARIES := $(addprefix bin/,$(CFILES:.c=))
 
 .PHONY: all
-all:
-	 make clean
-	 $(BINARIES)
-	 cp bin/init ../../../../tools/mkfs/default_files/bin/init
-	 make diskmake
+all: $(BINARIES)
+	 make disk
+.PHONY : userfiles
+userfiles: $(BINARIES)
 
 IMG := disk.img
 IMG_SIZE := 500
 .PHONY: disk
 disk:
-	cd ../../../tools/mkfs && \
+	cp bin/init ../../../tools/mkfs/default_files/bin && \
+	pushd ../../../tools/mkfs && \
 	./mkdiosfs $(IMG) $(IMG_SIZE) && \
-	cp $(IMG) ../../../bin/$(IMG)
+	cp $(IMG) ../../kernel/bin && popd
 
 # Rule: compile and link each C file with shared NASM objects
 bin/%: %.c $(ASM_OBJ)
