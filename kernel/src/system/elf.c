@@ -192,6 +192,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
 
 #ifdef __x86_64__
     process->current_register_state->rip = header->e_entry;
+    DEBUG_PRINT("ENTRY ADDRESS : %x.64\n",header->e_entry);
     process->current_register_state->rsp = (uint64_t) (process->kernel_stack + DEFAULT_STACK_SIZE);
     process->current_register_state->rbp = USER_STACK_TOP;
 #endif
@@ -200,7 +201,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     }
 
 #ifdef  _DEBUG_
-    uint64_t *page = (uint64_t *)(check_page_mapping(process->page_map->top_level,(void *)0x0401000));
+    uint64_t *page = (uint64_t *)(check_page_mapping(process->page_map->top_level,(void *)0x0001000));
     DEBUG_PRINT("PAGE DIR %x.64\n",process->page_map->top_level);
     if (page != 0) {
         DEBUG_PRINT("INSTR PAGE : PTE %x.64 , PTE ADDR : %x.64 PERMS %x.64\n",*page,PTE_ADDR(*page),PTE_FLAGS(*page));
