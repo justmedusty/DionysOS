@@ -82,12 +82,7 @@ void stack_exception() {
 
 // Exception 13: General Protection Fault
 void general_protection_fault(int32_t error_code) {
-    cli();
-    //err_printf("Error Code %i\n",error_code);
-    for (;;) {
-        asm("hlt");
-        asm("nop");
-    }
+    err_printf("Error Code %i\n",error_code);
     panic("General Protection Fault Occurred");
 }
 
