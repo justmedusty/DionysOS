@@ -8,7 +8,6 @@
 
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
-    panic("syscall entered successfully");
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         return KERN_NO_SYS;
     }

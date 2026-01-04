@@ -48,6 +48,7 @@ __attribute__((noreturn)) void panic(const char* str) {
         asm("hlt");
         asm("nop");
     }
+
 }
 
 struct cpu* my_cpu() {
