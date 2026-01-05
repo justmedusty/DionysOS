@@ -6,6 +6,7 @@
 #include "include/definitions/definitions.h"
 #include "include/scheduling/process.h"
 
+void *syscall_stack[MAX_CPUS];
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {

@@ -10,6 +10,7 @@
 #define FOREIGN_MAP_BASE   0xffffea0000000000UL
 #define FOREIGN_MAP_END    0xfffff00000000000UL
 
+extern void *syscall_stack[MAX_CPUS];
 
 /*
  * x86_64 requires writing to the MSR defined below the address of the syscall handler so that when syscall instruction
