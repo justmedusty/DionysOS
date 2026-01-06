@@ -44,6 +44,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     bool init = parent == NULL ? true : false;
 
     process->kernel_stack = kzmalloc(DEFAULT_STACK_SIZE);
+    process->syscall_stack = kzmalloc(DEFAULT_STACK_SIZE);
     process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
 
