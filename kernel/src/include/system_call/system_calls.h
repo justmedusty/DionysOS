@@ -44,7 +44,7 @@ static inline void set_syscall_handler() {
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args);
 
 void register_syscall_dispatch();
-
+void set_syscall_stack();
 enum system_calls {
     MIN_SYS,
     SYS_WRITE,

@@ -1,7 +1,10 @@
 extern system_call_dispatch
 extern panic
+extern set_syscall_stack
 global syscall_entry
 syscall_entry:
+    push rsp
+    call set_syscall_stack
     push r11             ; Save RFLAGS
     push rcx             ; Save return address
     push rbx             ; Save callee-saved registers
@@ -41,5 +44,6 @@ syscall_entry:
 
     pop rcx              ; Restore return address for sysret
     pop r11              ; Restore RFLAGS
+    pop rsp
 
     sysretq              ; Return to CS 3
