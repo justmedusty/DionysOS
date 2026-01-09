@@ -28,6 +28,7 @@ struct syscall_args {
     uint64_t arg5;
     uint64_t arg6;
 };
+
 #define IA32_LSTAR 0xC0000082
 
 __attribute__((always_inline))
@@ -40,6 +41,12 @@ static inline void set_syscall_handler() {
 }
 #endif
 
+#ifdef __x86_64__
+
+__attribute__((always_inline))
+extern void set_stack(uint64_t stack);
+
+#endif
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args);
 
