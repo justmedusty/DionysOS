@@ -46,6 +46,11 @@ syscall_entry:
 
     pop rcx              ; Restore return address for sysret
     pop r11              ; Restore RFLAGS
+
+    ; R11 = saved user RFLAGS
+    or   r11, 0x2        ; set reserved bit 1
+    and  r11, ~(1<<14)   ; clear NT
+    and  r11, ~(3<<12)   ; clear IOPL
     pop rsp
 
     sysretq             ; Return to CS 3
