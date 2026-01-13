@@ -9,6 +9,7 @@
 void *syscall_stack[MAX_CPUS];
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args) {
+    //DEBUG_PRINT("Entering syscall dispatch wioth syscall %i\n",syscall_no);
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         return KERN_NO_SYS;
     }
@@ -69,7 +70,7 @@ void *kernel_to_user_pointer(void *pointer){
     return pointer;
 }
 
-inline void set_syscall_stack() {
+void set_syscall_stack() {
     uint64_t *syscall_stack = current_process()->syscall_stack;
     asm volatile("mov %%rsp, %0" : "=m"(syscall_stack) : "r"(syscall_stack) : "memory");
 
