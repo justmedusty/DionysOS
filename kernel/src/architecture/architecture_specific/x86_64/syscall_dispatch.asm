@@ -4,7 +4,6 @@ extern set_syscall_stack
 global syscall_entry
 syscall_entry:
     push rsp
-    call set_syscall_stack
     push r11             ; Save RFLAGS
     push rcx             ; Save return address
     push rbx             ; Save callee-saved registers
