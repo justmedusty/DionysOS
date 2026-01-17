@@ -3,6 +3,7 @@ extern panic
 extern set_syscall_stack
 global syscall_entry
 syscall_entry:
+    cli
     ; Save user return state FIRST
     push r11             ; user RFLAGS
     push rcx             ; user RIP
@@ -50,5 +51,5 @@ syscall_entry:
     pop r11              ; user RFLAGS
 
     ; RAX already contains return value
-
+    sti
     sysretq              ; return to user mode
