@@ -65,6 +65,7 @@ IMG := disk.img
 IMG_SIZE := 500
 .PHONY: disk
 disk:
+	mkdir -p ../../../tools/mkfs/default_files/bin && \
 	cp bin/init ../../../tools/mkfs/default_files/bin && \
 	pushd ../../../tools/mkfs && \
 	./mkdiosfs $(IMG) $(IMG_SIZE) && \
