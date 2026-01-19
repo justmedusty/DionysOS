@@ -25,8 +25,12 @@ syscall_entry:
     push rdi
 
     ; Dispatcher arguments
-    mov rdi, rax         ; syscall number
-    mov rsi, rsp         ; pointer to saved arguments
+    mov rdi, rax      ; syscall number
+    mov rsi, rdi      ; arg1
+    mov rdx, rsi      ; arg2
+    mov rcx, rdx      ; arg3
+    mov r8,  r10      ; arg4
+    mov r9,  r8       ; arg5
 
     call system_call_dispatch
 
@@ -51,5 +55,4 @@ syscall_entry:
     pop r11              ; user RFLAGS
 
     ; RAX already contains return value
-    sti
     sysretq              ; return to user mode

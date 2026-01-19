@@ -48,7 +48,7 @@ extern void set_stack(uint64_t stack);
 
 #endif
 
-int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args *args);
+int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args);
 
 void register_syscall_dispatch();
 __attribute__((always_inline))
