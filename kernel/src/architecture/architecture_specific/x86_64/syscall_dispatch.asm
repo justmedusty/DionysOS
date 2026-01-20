@@ -4,6 +4,8 @@ extern set_syscall_stack
 global syscall_entry
 syscall_entry:
     cli
+    mov r15, rsp
+    call set_syscall_stack
     ; Save user return state FIRST
     push r11             ; user RFLAGS
     push rcx             ; user RIP
@@ -14,7 +16,6 @@ syscall_entry:
     push r12
     push r13
     push r14
-    push r15
 
     ; Save syscall arguments
     push r9
@@ -43,7 +44,6 @@ syscall_entry:
     pop r9
 
     ; Restore callee-saved registers
-    pop r15
     pop r14
     pop r13
     pop r12
@@ -53,6 +53,8 @@ syscall_entry:
     ; Restore user return state
     pop rcx              ; user RIP
     pop r11              ; user RFLAGS
+
+    mov rsp, r15
 
     ; RAX already contains return value
     sysretq              ; return to user mode
