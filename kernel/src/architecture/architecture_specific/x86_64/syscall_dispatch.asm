@@ -51,6 +51,6 @@ syscall_entry:
     pop rcx              ; user RIP
     pop r11              ; user RFLAGS
 
-
+    sti
     ; RAX already contains return value
     sysretq              ; return to user mode
