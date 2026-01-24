@@ -21,6 +21,7 @@ extern machine_check
 extern simd_floating_point_error
 extern irq_handler
 extern panic
+extern system_call_dispatch
 
 %macro pushaq 0
     push rax      ;save current rax
@@ -828,12 +829,41 @@ irq_wrapper_63:
 
 global irq_wrapper_64
 irq_wrapper_64:
-  pushaq
-  mov rdi, 64
-  push rdi
-  call irq_handler
-  pop rdi
-  popaq
+  cli
+
+    push r15
+    push r14
+    push r13
+    push r12
+    push r11
+    push r10
+    push r9
+    push r8
+    push rbp
+    push rdi
+    push rsi
+    push rdx
+    push rcx
+    push rbx
+
+    call system_call_dispatch
+
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rsi
+    pop rdi
+    pop rbp
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
+
+  sti
   iretq
 
 global irq_wrapper_65
