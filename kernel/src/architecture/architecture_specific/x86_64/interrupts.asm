@@ -829,8 +829,8 @@ irq_wrapper_63:
 
 global irq_wrapper_64
 irq_wrapper_64:
-  cli
-
+    cli
+    call panic
     push r15
     push r14
     push r13
@@ -862,9 +862,8 @@ irq_wrapper_64:
     pop r13
     pop r14
     pop r15
-
-  sti
-  iretq
+    sti
+    iretq
 
 global irq_wrapper_65
 irq_wrapper_65:
