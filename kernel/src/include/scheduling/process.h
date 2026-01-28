@@ -11,7 +11,8 @@
 #include "include/architecture/arch_vmm.h"
 #include "include/scheduling/process.h"
 
-
+#define GS_BASE 0xC0000101
+#define KERNEL_GS_BASE 0xC0000102
 /*
  *	Process states
  */

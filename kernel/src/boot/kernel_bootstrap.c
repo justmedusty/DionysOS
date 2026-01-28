@@ -84,6 +84,8 @@ void kernel_bootstrap() {
     smp_init();
     my_cpu()->scheduler_state->rsp = (uint64_t)kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
     set_kernel_stack((void *)my_cpu()->scheduler_state->rsp);
+    void *kernel_syscall_stack = kzmalloc(DEFAULT_STACK_SIZE);
+    wrmsr(KERNEL_GS_BASE,(uint64_t) kernel_syscall_stack);
     timer_init(1000);
     dev_fs_init();
     info_printf("Total MB Allocated %i out of %i\n", (total_allocated * (PAGE_SIZE / 1024)) / 1024,

@@ -20,6 +20,7 @@
 #include "include/drivers/serial/uart.h"
 #include "include/architecture/arch_local_interrupt_controller.h"
 #include "limine.h"
+#include "include/architecture/x86_64/msr.h"
 #include "include/scheduling/process.h"
 
 
@@ -37,6 +38,10 @@ struct spinlock bootstrap_lock;
 #include <include/architecture/x86_64/asm_functions.h>
 #include <include/architecture/x86_64/gdt.h>
 #include <include/architecture/x86_64/idt.h>
+
+#define GS_BASE 0xC0000101
+#define KERNEL_GS_BASE 0xC0000102
+
 
 __attribute__((noreturn)) void panic(const char* str) {
     cli();
@@ -67,7 +72,8 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     load_vmm();
     lapic_init();
     serial_printf("CPU %x.8  online, LAPIC ID %x.8 \n",smp_info->processor_id,get_lapid_id());
-
+    void *kernel_syscall_stack = kzmalloc(DEFAULT_STACK_SIZE);
+    wrmsr(KERNEL_GS_BASE,(uint64_t) kernel_syscall_stack);
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }
