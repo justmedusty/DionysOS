@@ -5,7 +5,15 @@ global syscall_entry
 syscall_entry:
     swapgs
     mov gs:16, rsp
-    mov rsp, gs
+    mov rsp, gs:8
+
+    cld
+    push 0x23
+    push gs:16
+    push r11
+    push 0x2b
+    push rcx
+
     ; Save user return state FIRST
     push r11             ; user RFLAGS
     push rcx             ; user RIP
@@ -32,7 +40,7 @@ syscall_entry:
     mov rcx, rdx      ; arg3
     mov r8,  r10      ; arg4
     mov r9,  r8       ; arg5
-
+    xor rbp, rbp
     call system_call_dispatch
 
     ; Restore syscall arguments
