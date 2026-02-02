@@ -72,8 +72,10 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
     load_vmm();
     lapic_init();
     serial_printf("CPU %x.8  online, LAPIC ID %x.8 \n",smp_info->processor_id,get_lapid_id());
-    void *kernel_syscall_stack = kzmalloc(DEFAULT_STACK_SIZE);
-    wrmsr(KERNEL_GS_BASE,(uint64_t) kernel_syscall_stack);
+    void *kernel_syscall_stack = kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
+    struct gs_stacks *gs_stacks = kmalloc(sizeof(struct gs_stacks));
+    gs_stacks->kernel_syscall_stack = kernel_syscall_stack;
+    wrmsr(KERNEL_GS_BASE,(uint64_t) gs_stacks);
     if(get_lapid_id() == 0) {
         panic("CANNOT GET LAPIC ID\n");
     }

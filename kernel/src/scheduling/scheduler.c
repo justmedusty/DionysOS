@@ -145,6 +145,7 @@ void sched_run() {
     cpu->tss->rsp0 = (uint64_t) cpu->running_process->kernel_stack + STACK_SIZE;
 #endif
     DEBUG_PRINT("CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n",cpu->running_process->page_map->top_level);
+    set_user_gs_stack(cpu->running_process->stack,cpu);
     context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type == USER_THREAD,cpu->running_process->page_map->top_level);
 }
 

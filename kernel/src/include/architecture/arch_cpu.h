@@ -14,7 +14,8 @@
 
 #ifdef __x86_64__
 
-typedef struct cpu_state {
+typedef struct cpu_state
+{
     uint64_t ds;
     uint64_t es;
     uint64_t rax;
@@ -40,21 +41,28 @@ typedef struct cpu_state {
     uint64_t ss;
 } cpu_state;
 
+struct gs_stacks
+{
+    void* kernel_syscall_stack;
+    void* user_syscall_stack;
+};
 
-
-struct cpu{
+struct cpu
+{
     uint8_t cpu_number;
     uint32_t cpu_id;
     cpu_state* cpu_state;
-    struct register_state *scheduler_state;
+    struct register_state* scheduler_state;
     struct tss* tss;
     struct virt_map* page_map;
     struct process* running_process;
     struct queue* local_run_queue;
+    struct gs_stacks* gs_stacks;
 };
 
-
-
+static inline void set_user_gs_stack(void* stack, struct cpu* cpu) {
+    cpu->gs_stacks->user_syscall_stack = stack;
+}
 #endif
 
 
@@ -73,6 +81,6 @@ void panic(const char* str);
 struct cpu* my_cpu();
 struct process* current_process();
 void arch_initialise_cpu(struct limine_smp_info* smp_info);
-void switch_current_kernel_stack(struct process *incoming_process);
+void switch_current_kernel_stack(struct process* incoming_process);
 // For other processors panicking the next PIT interrupt
 extern uint8_t panicked;
