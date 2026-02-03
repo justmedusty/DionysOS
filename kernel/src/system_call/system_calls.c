@@ -9,7 +9,7 @@
 void* syscall_stack[MAX_CPUS];
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
-    //DEBUG_PRINT("Entering syscall dispatch wioth syscall %i\n",syscall_no);
+    DEBUG_PRINT("Entering syscall dispatch with syscall %i\n",syscall_no);
     panic("System call not implemented\n");
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         panic("NO SYS");

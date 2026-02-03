@@ -39,8 +39,7 @@ static void purge_dead_processes();
 
 static void look_for_process();
 
-extern void context_switch(struct register_state *old, struct register_state *new, bool user_process, void* memory_map);
-
+extern void context_switch(struct register_state* old, struct register_state* new, bool user_process, void* memory_map);
 
 
 /*
@@ -49,20 +48,19 @@ extern void context_switch(struct register_state *old, struct register_state *ne
 void sched_init() {
     kprintf("Initializing Scheduler...\n");
 
-    for(size_t i = 0; i <= cpus_online; i++ ){
+    for (size_t i = 0; i <= cpus_online; i++) {
         singly_linked_list_init(&dead_processes[i], 0);
     }
 
     initlock(&sched_global_lock, SCHED_LOCK);
 
-    for(size_t i = 0; i <= cpus_online; i++ ){
+    for (size_t i = 0; i <= cpus_online; i++) {
         initlock(&purge_lock[i], SCHED_LOCK);
     }
 
     initlock(&sched_sleep_lock, SCHED_LOCK);
     doubly_linked_list_init(&global_sleep_queue);
     for (uint32_t i = 0; i < cpu_count; i++) {
-
 #ifdef _DFS_
         queue_init(&local_run_queues[i], QUEUE_MODE_FIFO, "dfs");
 #endif
@@ -99,10 +97,11 @@ _Noreturn void scheduler_main(void) {
  * Yield the scheduler , swap registers and jump back into the mouth of the scheduler
  */
 void sched_yield() {
-    struct process *process = my_cpu()->running_process;
+    struct process* process = my_cpu()->running_process;
     process->current_state = PROCESS_READY;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
-    context_switch(my_cpu()->running_process->current_register_state, my_cpu()->scheduler_state, false,kernel_pg_map->top_level);
+    context_switch(my_cpu()->running_process->current_register_state, my_cpu()->scheduler_state, false,
+                   kernel_pg_map->top_level);
 }
 
 /*
@@ -114,9 +113,8 @@ void sched_yield() {
  * give it some sweet sweet cpu time.
  */
 void sched_run() {
-    struct cpu *cpu = my_cpu();
+    struct cpu* cpu = my_cpu();
     if (cpu->local_run_queue->head == NULL) {
-
         timer_sleep(1500);
 
 #ifdef _DFS_
@@ -142,11 +140,16 @@ void sched_run() {
     /*
      * If this is an x86 machine set the tss
      */
-    cpu->tss->rsp0 = (uint64_t) cpu->running_process->kernel_stack + STACK_SIZE;
+    cpu->tss->rsp0 = (uint64_t)cpu->running_process->kernel_stack + STACK_SIZE;
 #endif
-    DEBUG_PRINT("CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n",cpu->running_process->page_map->top_level);
-    set_user_gs_stack(cpu->running_process->stack,cpu);
-    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type == USER_THREAD,cpu->running_process->page_map->top_level);
+    DEBUG_PRINT("CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n", cpu->running_process->page_map->top_level);
+    if (cpu->running_process->process_type == USER_PROCESS) {
+        set_user_gs_stack(cpu->running_process->stack, cpu);
+    }
+
+    context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,
+                   cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type ==
+                   USER_THREAD, cpu->running_process->page_map->top_level);
 }
 
 /*
@@ -154,13 +157,14 @@ void sched_run() {
  * into scheduler context
  */
 void sched_preempt() {
-    struct cpu *cpu = my_cpu();
-    struct process *process = cpu->running_process;
+    struct cpu* cpu = my_cpu();
+    struct process* process = cpu->running_process;
     process->ticks_taken += process->start_time;
     process->start_time = 0;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
     process->current_state = PROCESS_READY;
-    context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state,false,kernel_pg_map->top_level);
+    context_switch(my_cpu()->running_process->current_register_state, cpu->scheduler_state,false,
+                   kernel_pg_map->top_level);
 }
 
 /*
@@ -168,23 +172,24 @@ void sched_preempt() {
  * you don't end up with the classic sleep on condition but condition already changed before you went to sleep.
  *  This is fine for now but I'm commenting so it is visible both for others and for me later
  */
-void sched_sleep(void *sleep_channel) {
-    struct process *process = current_process();
+void sched_sleep(void* sleep_channel) {
+    struct process* process = current_process();
     doubly_linked_list_insert_head(&global_sleep_queue, process);
     process->sleep_channel = sleep_channel;
     process->current_state = PROCESS_SLEEPING;
     process->ticks_taken += process->start_time;
     process->start_time = timer_get_current_count();
-    context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state,false,kernel_pg_map->top_level);
+    context_switch(my_cpu()->running_process->current_register_state, process->current_cpu->scheduler_state,false,
+                   kernel_pg_map->top_level);
 }
 
-void sched_wakeup(const void *wakeup_channel) {
+void sched_wakeup(const void* wakeup_channel) {
     acquire_spinlock(&sched_sleep_lock);
-    struct doubly_linked_list_node *node = global_sleep_queue.head;
+    struct doubly_linked_list_node* node = global_sleep_queue.head;
     if (node == NULL) {
         return;
     }
-    struct process *process = node->data;
+    struct process* process = node->data;
     while (node && process) {
         process = node->data;
 
@@ -203,33 +208,29 @@ void sched_wakeup(const void *wakeup_channel) {
  * Attempts to steal a process from a rival processor, only bother stealing if a run-queue is longer than 2 nodes
  */
 void sched_claim_process() {
-    struct cpu *this_cpu = my_cpu();
+    struct cpu* this_cpu = my_cpu();
     for (size_t i = 0; i < cpus_online; i++) {
-
         if (cpu_list[i].cpu_id == this_cpu->cpu_id) {
             continue;
         }
 
         acquire_spinlock(cpu_list[i].local_run_queue->spinlock);
 
-        struct queue *queue = cpu_list[i].local_run_queue;
+        struct queue* queue = cpu_list[i].local_run_queue;
 
         if (queue->node_count == 0) {
             goto done;
         }
 
         if (queue->node_count > 2) {
-
             enqueue(this_cpu->local_run_queue, queue->tail, queue->tail->priority);
             this_cpu->local_run_queue->tail = this_cpu->local_run_queue->tail->prev;
             this_cpu->local_run_queue->node_count--;
             goto done;
-
         }
 
-        done:
+    done:
         release_spinlock(cpu_list[i].local_run_queue->spinlock);
-
     }
 }
 
@@ -238,26 +239,26 @@ void sched_claim_process() {
  */
 __attribute__((noreturn))
 void sched_exit() {
-    struct cpu *cpu = my_cpu();
-    struct process *process = cpu->running_process;
+    struct cpu* cpu = my_cpu();
+    struct process* process = cpu->running_process;
     singly_linked_list_insert_head(&dead_processes[cpu->cpu_id], process);
     my_cpu()->running_process = NULL;
-    context_switch(process->current_register_state, cpu->scheduler_state, false,kernel_pg_map->top_level);
+    context_switch(process->current_register_state, cpu->scheduler_state, false, kernel_pg_map->top_level);
 }
 
 /*
  * Purge dead processes from the dead list, this will not be kept if I decide to add the posix wait() functionality
  */
 static void purge_dead_processes() {
-    struct cpu *current_cpu = my_cpu();
+    struct cpu* current_cpu = my_cpu();
     if (dead_processes[current_cpu->cpu_id].node_count == 0) {
         return;
     }
     acquire_spinlock(&purge_lock[current_cpu->cpu_id]);
-    const struct singly_linked_list_node *node = dead_processes[current_cpu->cpu_id].head;
-    kprintf("Purging Procs on CPU %i\n",my_cpu()->cpu_id);
+    const struct singly_linked_list_node* node = dead_processes[current_cpu->cpu_id].head;
+    kprintf("Purging Procs on CPU %i\n", my_cpu()->cpu_id);
     while (node != NULL) {
-        struct process *p = node->data;
+        struct process* p = node->data;
 
         free_process(node->data);
         singly_linked_list_remove_head(&dead_processes[current_cpu->cpu_id]);
@@ -271,7 +272,7 @@ static void purge_dead_processes() {
  * queue
  */
 static void look_for_process() {
-    struct cpu *cpu = my_cpu();
+    struct cpu* cpu = my_cpu();
     acquire_spinlock(&sched_global_lock);
 
     if (sched_global_queue.node_count == 0) {
@@ -279,7 +280,7 @@ static void look_for_process() {
         return;
     }
 
-    struct process *process = sched_global_queue.head->data;
+    struct process* process = sched_global_queue.head->data;
     dequeue(&sched_global_queue);
     enqueue(cpu->local_run_queue, process, process->priority);
     release_spinlock(&sched_global_lock);
@@ -287,22 +288,21 @@ static void look_for_process() {
 
 //#ifdef _DPS_
 static void promote_processes() {
-    struct cpu *cpu = my_cpu();
-    struct queue *local_runqueue = cpu->local_run_queue;
+    struct cpu* cpu = my_cpu();
+    struct queue* local_runqueue = cpu->local_run_queue;
     acquire_spinlock(local_runqueue->spinlock);
-    struct queue_node *current = local_runqueue->head;
+    struct queue_node* current = local_runqueue->head;
 
     if (current == NULL) {
         release_spinlock(local_runqueue->spinlock);
         return;
     }
-
 }
 
 
-void global_enqueue_process(struct process *process) {
+void global_enqueue_process(struct process* process) {
     acquire_spinlock(&sched_global_lock);
-    enqueue(&sched_global_queue,process, process->priority);
+    enqueue(&sched_global_queue, process, process->priority);
     release_spinlock(&sched_global_lock);
 }
 
