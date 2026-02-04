@@ -3,6 +3,7 @@ extern panic
 extern set_syscall_stack
 global syscall_entry
 syscall_entry:
+    cli
     swapgs
     mov gs:16, rsp
     mov rsp, gs:0
@@ -17,6 +18,7 @@ syscall_entry:
     push r12
     push r13
     push r14
+    push r15
 
     ; Save syscall arguments
     push r9
@@ -40,6 +42,7 @@ syscall_entry:
     pop r9
 
     ; Restore callee-saved registers
+    pop r15
     pop r14
     pop r13
     pop r12
