@@ -3,7 +3,6 @@ extern panic
 extern set_syscall_stack
 global syscall_entry
 syscall_entry:
-    cli
     swapgs
     mov gs:16, rsp
     mov rsp, gs:0
@@ -53,7 +52,11 @@ syscall_entry:
     pop rcx              ; user RIP
     pop r11              ; user RFLAGS
 
+
     mov rsp, gs:16
     swapgs
+    shl rcx, 16
+    sar rcx, 16
+    cld
     ; RAX already contains return value
     sysretq              ; return to user mode
