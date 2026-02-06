@@ -40,7 +40,10 @@ static void _gdt_init_long_mode_entry(struct gdt_segment_desc *seg, bool code,
     seg->flags_l = code; // 1 iff long-mode code segment.
     seg->flags_db = 0;
 }
-
+#define IRQ_STACK_SIZE 16384
+static uint8_t irq_stack1[IRQ_STACK_SIZE] __attribute__((aligned(16)));
+static uint8_t irq_stack2[IRQ_STACK_SIZE] __attribute__((aligned(16)));
+static uint8_t irq_stack3[IRQ_STACK_SIZE] __attribute__((aligned(16)));
 static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
     struct gdt_system_segment_desc *tss_desc = (struct gdt_system_segment_desc *)seg;
 
@@ -50,8 +53,8 @@ static void _gdt_init_long_mode_tss_entry(struct gdt_segment_desc *seg) {
     tss_desc->base_1 = base;
     tss_desc->base_2 = base >> 16;
     tss_desc->base_3 = base >> 24;
-    tss_desc->limit_1 = limit;
-    tss_desc->limit_2 = limit >> 16;
+    tss_desc->limit_1 = limit - 1;
+    tss_desc->limit_2 = (limit - 1)>> 16;
     tss_desc->flags_g = 0; // Limit is in bytes, not pages.
 
     // Can be AVAIL or BUSY; this doesn't matter since we don't use HW task

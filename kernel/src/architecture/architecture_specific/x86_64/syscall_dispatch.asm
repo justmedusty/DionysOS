@@ -4,6 +4,8 @@ extern set_syscall_stack
 global syscall_entry
 syscall_entry:
     swapgs
+    cli
+    cld
     mov gs:16, rsp
     mov rsp, gs:0
 
@@ -27,10 +29,11 @@ syscall_entry:
     push rsi
     push rdi
 
-    ; Dispatcher arguments
-    mov rdi, rax      ; syscall number
-    xor rbp, rbp
-    call system_call_dispatch
+   ; prepare C ABI
+   mov rdi, rax          ; syscall number
+   xor rbp, rbp
+   and rsp, -16          ; align stack
+   call system_call_dispatch
 
     ; Restore syscall arguments
     pop rdi
@@ -55,8 +58,9 @@ syscall_entry:
 
     mov rsp, gs:16
     swapgs
-    shl rcx, 16
-    sar rcx, 16
-    cld
+    ; Clear unsafe RFLAGS bits
+    and r11, ~(1<<10)      ; DF
+    and r11, ~(1<<8)       ; TF
+    or  r11, (1<<9)        ; IF must be 1
     ; RAX already contains return value
     sysretq              ; return to user mode
