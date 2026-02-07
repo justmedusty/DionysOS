@@ -85,7 +85,7 @@ enum system_segment_type {
  *
  * Described in Intel SDM, Vol. 3-A, Sec. 3.5.
  */
-struct gdt_system_segment_desc {
+ struct  gdt_system_segment_desc {
     uint16_t limit_1;
     uint16_t base_1;
     uint8_t base_2;
