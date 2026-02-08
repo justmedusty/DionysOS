@@ -848,6 +848,7 @@ int64_t open(char *path) {
 
     if (handle < 0) {
         return KERN_NOT_FOUND;
+        panic("NOT FOUND\n");
     }
 
     return handle;

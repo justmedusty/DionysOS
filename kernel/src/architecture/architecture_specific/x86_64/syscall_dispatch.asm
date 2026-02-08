@@ -10,8 +10,9 @@ syscall_entry:
     mov rsp, gs:0
 
     ; Save user return state FIRST
-    push r11             ; user RFLAGS
     push rcx             ; user RIP
+    push r11             ; user RFLAGS
+
 
     ; Save callee-saved registers
     push rbx
@@ -52,15 +53,12 @@ syscall_entry:
     pop rbx
 
     ; Restore user return state
-    pop rcx              ; user RIP
     pop r11              ; user RFLAGS
+    pop rcx              ; user RIP
 
 
     mov rsp, gs:16
     swapgs
-    ; Clear unsafe RFLAGS bits
-    and r11, ~(1<<10)      ; DF
-    and r11, ~(1<<8)       ; TF
-    or  r11, (1<<9)        ; IF must be 1
+
     ; RAX already contains return value
     sysretq              ; return to user mode
