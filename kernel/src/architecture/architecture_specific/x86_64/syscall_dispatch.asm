@@ -4,10 +4,8 @@ extern set_syscall_stack
 global syscall_entry
 syscall_entry:
     swapgs
-    cli
-    cld
-    mov gs:16, rsp
-    mov rsp, gs:0
+    mov [gs:16], rsp
+    mov rsp, [gs:0]
 
     ; Save user return state FIRST
     push rcx             ; user RIP
@@ -57,8 +55,8 @@ syscall_entry:
     pop rcx              ; user RIP
 
 
-    mov rsp, gs:16
+    mov rsp, [gs:16]
     swapgs
 
     ; RAX already contains return value
-    sysretq              ; return to user mode
+    o64 sysret              ; return to user mode
