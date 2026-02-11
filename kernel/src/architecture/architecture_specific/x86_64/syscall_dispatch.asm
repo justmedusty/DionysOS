@@ -31,7 +31,6 @@ syscall_entry:
    ; prepare C ABI
    mov rdi, rax          ; syscall number
    xor rbp, rbp
-   and rsp, -16          ; align stack
    call system_call_dispatch
 
     ; Restore syscall arguments

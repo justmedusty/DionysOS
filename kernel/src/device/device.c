@@ -25,7 +25,6 @@ const char *device_major_strings[NUM_DEVICE_MAJOR_CLASSIFICATIONS] = {
         [DEVICE_MAJOR_USB_CONTROLLER] = "USB_CONTROLLER",
         [DEVICE_MAJOR_WIFI_ADAPTER] = "WIFI_ADAPTER",
         [DEVICE_MAJOR_TMPFS] = "TMPFS",
-        [DEVICE_MAJOR_FRAMEBUFFER] = "FRAMEBUFFER",
 };
 
 char *device_minor_to_string(uint64_t minor) {
