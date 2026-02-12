@@ -101,6 +101,7 @@ void insert_device_into_kernel_tree(struct device *device) {
         device_group = alloc_new_device_group(device_major);
     }
 
+    DEBUG_PRINT("insert_device_into_kernel_tree: device name : %s\n",device->name);
     insert_device_into_device_group(device, device_group);
 }
 
