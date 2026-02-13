@@ -316,8 +316,7 @@ int64_t vnode_open(char *path) {
         vnode = vnode->mounted_vnode;
     }
 
-    struct virtual_handle *new_handle = kmalloc(sizeof(struct virtual_handle));
-    memset(new_handle, 0, sizeof(struct virtual_handle));
+    struct virtual_handle *new_handle = kzmalloc(sizeof(struct virtual_handle));
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
@@ -847,10 +846,11 @@ int64_t open(char *path) {
     const int64_t handle = vnode_open(path);
 
     if (handle < 0) {
+        DEBUG_PRINT("open: Returning with error opening path %s\n",path);
         return KERN_NOT_FOUND;
         panic("NOT FOUND\n");
     }
-
+    DEBUG_PRINT("open: Returning handle - %i\n", handle);
     return handle;
 }
 

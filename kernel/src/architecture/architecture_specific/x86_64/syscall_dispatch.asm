@@ -3,6 +3,7 @@ extern panic
 extern set_syscall_stack
 global syscall_entry
 syscall_entry:
+    cli
     swapgs
     mov [gs:16], rsp
     mov rsp, [gs:0]
@@ -58,4 +59,5 @@ syscall_entry:
     swapgs
 
     ; RAX already contains return value
+    sti
     o64 sysret              ; return to user mode

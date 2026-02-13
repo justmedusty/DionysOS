@@ -9,11 +9,13 @@
 void* syscall_stack[MAX_CPUS];
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
-    DEBUG_PRINT("Entering syscall dispatch with syscall %i\n",syscall_no);
+    DEBUG_PRINT("system_call_dispatch: Entering syscall dispatch with syscall %i\n",syscall_no);
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         panic("NO SYS");
         return KERN_NO_SYS;
     }
+
+    int64_t ret = 0;
 
 
     switch (syscall_no) {
@@ -21,15 +23,21 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
         close(args.arg1);
         return KERN_SUCCESS;
     case SYS_CREATE:
-        return create((char*)args.arg1, (char*)args.arg2, args.arg3);
+        ret = create((char*)args.arg1, (char*)args.arg2, args.arg3);
+        goto exit;
     case SYS_WRITE:
-        return write(args.arg1, (char*)args.arg2, args.arg3);
+        DEBUG_PRINT("system_call_dispatch: write syscall with args %i %s %i\n",args.arg1,args.arg2,args.arg3);
+        ret = write(args.arg1, (char*)args.arg2, args.arg3);
+        goto exit;
     case SYS_READ:
-        return read(args.arg1, (char*)args.arg2, args.arg3);
+        ret = read(args.arg1, (char*)args.arg2, args.arg3);
+        goto exit;
     case SYS_SEEK:
-        return seek(args.arg1, args.arg2);
+        ret = seek(args.arg1, args.arg2);
+        goto exit;
     case SYS_OPEN:
-        return open((char*)args.arg1);
+        ret = open((char*)args.arg1);
+        goto exit;
     case SYS_MOUNT:
         return mount((char*)args.arg1, (char*)args.arg2);
     case SYS_UNMOUNT:
@@ -37,13 +45,16 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
     case SYS_RENAME:
         return rename((char*)args.arg1, (char*)args.arg2);
     case SYS_EXIT:
-        kprintf("EXIT!");
+        DEBUG_PRINT("system_call_dispatch: exit syscall");
         exit();
-
         return KERN_SUCCESS;
     default:
         return KERN_NO_SYS; // Return an error for unknown syscalls
     }
+
+    exit:
+    DEBUG_PRINT("system_call_dispatch: Returning from syscall %i with return value %n",syscall_no,ret);
+    return ret;
 }
 
 void register_syscall_dispatch() {

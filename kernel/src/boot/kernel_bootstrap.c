@@ -43,7 +43,7 @@ void welcome_message() {
 void setup_init() {
     struct process *process = alloc_process(PROCESS_READY,true,NULL);
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
-    DEBUG_PRINT("NEW PROCESS PAGE MAP -> %x.64\n",process->page_map->top_level);
+    DEBUG_PRINT("setup_init: NEW PROCESS PAGE MAP -> %x.64\n",process->page_map->top_level);
 
     int64_t ret = load_elf(process,"/bin/init",0,elfinfo);
 
@@ -95,7 +95,7 @@ void kernel_bootstrap() {
     register_syscall_dispatch();
     kprintf("System Call Dispatcher Set\n");
     kprintf_color(CYAN, "Kernel Boot Complete\n");
-    DEBUG_PRINT("Kernel page map %x.64\n",kernel_pg_map->top_level);
+    DEBUG_PRINT("kernel_bootstrap: Kernel page map %x.64\n",kernel_pg_map->top_level);
     kthread_init();
     ready = 1;
     setup_init();
