@@ -59,5 +59,4 @@ syscall_entry:
     swapgs
 
     ; RAX already contains return value
-    sti
     o64 sysret              ; return to user mode

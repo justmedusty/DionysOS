@@ -66,6 +66,7 @@ override KCFLAGS += \
   	-D_DEBUG_\
    	-D_CREATE_RAMDISK_\
    	-DMAX_CPUS=32\
+   	-DFORCE_DEADLOCKS\
    	-fanalyzer \
    	-Wno-unused-variable \
    	-Wno-unused-function \

@@ -81,6 +81,10 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     doubly_linked_list_init(process->page_map->vm_regions);
     doubly_linked_list_init(process->handle_list->handle_list);
 
+    if (init) {
+        DEBUG_PRINT("alloc_process: Handle list lock %i\n",process->handle_list->handle_list->lock.locked);
+    }
+
     return process;
 }
 

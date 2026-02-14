@@ -10,6 +10,7 @@ void* syscall_stack[MAX_CPUS];
 
 int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
     DEBUG_PRINT("system_call_dispatch: Entering syscall dispatch with syscall %i\n",syscall_no);
+    current_process()->inside_kernel = true;
     if (syscall_no < MIN_SYS || syscall_no > MAX_SYS) {
         panic("NO SYS");
         return KERN_NO_SYS;
@@ -45,7 +46,7 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
     case SYS_RENAME:
         return rename((char*)args.arg1, (char*)args.arg2);
     case SYS_EXIT:
-        DEBUG_PRINT("system_call_dispatch: exit syscall");
+        DEBUG_PRINT("system_call_dispatch: exit syscall\n");
         exit();
         return KERN_SUCCESS;
     default:
@@ -53,7 +54,8 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
     }
 
     exit:
-    DEBUG_PRINT("system_call_dispatch: Returning from syscall %i with return value %n",syscall_no,ret);
+    DEBUG_PRINT("system_call_dispatch: Returning from syscall %i with return value %i\n",syscall_no,ret);
+    current_process()->inside_kernel = false;
     return ret;
 }
 

@@ -15,8 +15,8 @@
 * I added a simple node_count since I think this will be useful to have at some point or other.
  */
 
-void doubly_linked_list_init(struct doubly_linked_list *list) {
-    initlock(&list->lock,DOUBLY_LINKED_LIST_LOCK);
+void doubly_linked_list_init(struct doubly_linked_list* list) {
+    initlock(&list->lock, DOUBLY_LINKED_LIST_LOCK);
     list->head = NULL;
     list->tail = NULL;
     list->node_count = 0;
@@ -24,47 +24,46 @@ void doubly_linked_list_init(struct doubly_linked_list *list) {
 
 void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data) {
     acquire_spinlock(&list->lock);
-    struct doubly_linked_list_node* new_node =kmalloc(sizeof(struct doubly_linked_list_node));;
+    struct doubly_linked_list_node* new_node = kmalloc(sizeof(struct doubly_linked_list_node));;
     new_node->data = data;
 
-    if(list->node_count == 0) {
-      list->head = new_node;
-      list->tail = NULL;
-      list->node_count++;
+    if (list->node_count == 0) {
+        list->head = new_node;
+        list->tail = NULL;
+        list->node_count++;
         release_spinlock(&list->lock);
-      return;
+        return;
     }
 
-     if(list->node_count == 1) {
-       list->tail = new_node;
-       list->head->next = new_node;
-       list->tail->prev = list->head;
-       list->node_count++;
-         release_spinlock(&list->lock);
-       return;
-     }
+    if (list->node_count == 1) {
+        list->tail = new_node;
+        list->head->next = new_node;
+        list->tail->prev = list->head;
+        list->node_count++;
+        release_spinlock(&list->lock);
+        return;
+    }
 
-     list->tail->next = new_node;
-     new_node->prev = list->tail;
-     list->tail = new_node;
-     list->node_count++;
+    list->tail->next = new_node;
+    new_node->prev = list->tail;
+    list->tail = new_node;
+    list->node_count++;
     release_spinlock(&list->lock);
-
 }
 
 void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data) {
     acquire_spinlock(&list->lock);
-    struct doubly_linked_list_node* new_head =kmalloc(sizeof(struct doubly_linked_list_node));
+    struct doubly_linked_list_node* new_head = kmalloc(sizeof(struct doubly_linked_list_node));
     new_head->data = data;
 
-    if(list->node_count == 0) {
-      list->head = new_head;
+    if (list->node_count == 0) {
+        list->head = new_head;
         new_head->next = NULL;
         new_head->prev = NULL;
-      list->tail = NULL;
-      list->node_count++;
+        list->tail = NULL;
+        list->node_count++;
         release_spinlock(&list->lock);
-      return;
+        return;
     }
 
     new_head->next = list->head;
@@ -78,35 +77,36 @@ void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data)
 
 void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {
     acquire_spinlock(&list->lock);
-    if(list->node_count == 0) {
+    if (list->node_count == 0) {
+        release_spinlock(&list->lock);
         return;
     }
 
-    if(list->node_count == 1) {
-      kfree(list->head);
-      list->head = NULL;
-      list->tail = NULL;
-      list->node_count--;
+    if (list->node_count == 1) {
+        kfree(list->head);
+        list->head = NULL;
+        list->tail = NULL;
+        list->node_count--;
         release_spinlock(&list->lock);
-      return;
+        return;
     }
 
-     list->tail = list->tail->prev;
-     kfree(list->tail->next);
-     list->tail->next = NULL;
-     list->node_count--;
+    list->tail = list->tail->prev;
+    kfree(list->tail->next);
+    list->tail->next = NULL;
+    list->node_count--;
     release_spinlock(&list->lock);
-     return;
+    return;
 }
 
 void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     acquire_spinlock(&list->lock);
-    if(list->node_count == 0) {
+    if (list->node_count == 0) {
         release_spinlock(&list->lock);
         return;
     }
 
-    if(list->node_count == 1) {
+    if (list->node_count == 1) {
         kfree(list->head);
         list->head = NULL;
         list->tail = NULL;
@@ -123,7 +123,7 @@ void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     return;
 }
 
-void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,struct doubly_linked_list_node* node) {
+void doubly_linked_list_remove_node_by_address(struct doubly_linked_list* list, struct doubly_linked_list_node* node) {
     acquire_spinlock(&list->lock);
     if (node->next == NULL && node->prev == NULL) {
         list->head = NULL;
@@ -150,10 +150,9 @@ void doubly_linked_list_remove_node_by_address(struct doubly_linked_list *list,s
     node->next->prev = node->prev;
     list->node_count--;
     release_spinlock(&list->lock);
-
 }
 
-void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list *list, const void *data) {
+void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list* list, const void* data) {
     acquire_spinlock(&list->lock);
     const struct doubly_linked_list_node* node = list->head;
 
@@ -203,10 +202,11 @@ void doubly_linked_list_destroy(struct doubly_linked_list* list,bool free_data) 
     struct doubly_linked_list_node* current = list->head;
     while (current != NULL) {
         struct doubly_linked_list_node* next = current->next;
-        if(free_data){
+        if (free_data) {
             //TODO
             //We may want to pass a function pointer that handles this in the case of it being a more complex data structure
-            kfree(current->data); // this is really iffy since we do not know what data is so I will put it behind a bool
+            kfree(current->data);
+            // this is really iffy since we do not know what data is so I will put it behind a bool
         }
         kfree(current);
         current = next;

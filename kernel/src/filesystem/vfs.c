@@ -292,6 +292,8 @@ int64_t vnode_open(char *path) {
     struct process *process = current_process();
 
     struct virtual_handle_list *list = process->handle_list;
+
+    DEBUG_PRINT("vnode_open: handle_list lock %i PID %i\n",list->handle_list->lock.locked,process->process_id);
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
 
     const int8_t ret = get_new_file_handle(list);
@@ -320,10 +322,11 @@ int64_t vnode_open(char *path) {
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
-    new_handle->handle_id = (uint64_t)
-    ret;
+    new_handle->handle_id = (uint64_t) ret;
 
+    DEBUG_PRINT("vnode_open: Before handle insert\n");
     doubly_linked_list_insert_head(list->handle_list, new_handle);
+    DEBUG_PRINT("vnode_open: After handle insert\n");
     list->num_handles++;
     return ret;
 }
@@ -571,15 +574,15 @@ int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, c
 
 
 int64_t vnode_write(struct vnode *vnode, const uint64_t offset, const uint64_t bytes, const char *buffer) {
-    DEBUG_PRINT("THERE\n");
+    DEBUG_PRINT("vnode_write: Entering\n");
     acquire_spinlock(vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("writing to a directory");
     }
     int32_t ret =vnode->vnode_ops->write(vnode, offset, buffer, bytes);
-    DEBUG_PRINT("DONE\n");
+    DEBUG_PRINT("vnode_write: Post write\n");
     release_spinlock(vnode->node_lock);
-    DEBUG_PRINT("DONE2\n");
+    DEBUG_PRINT("vnode_write: Post release node lock\n");
     return ret;
 }
 
