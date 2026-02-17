@@ -113,6 +113,7 @@ void sched_yield() {
  * give it some sweet sweet cpu time.
  */
 void sched_run() {
+    DEBUG_PRINT("sched_run: entering\n");
     struct cpu* cpu = my_cpu();
     if (cpu->local_run_queue->head == NULL) {
         timer_sleep(1500);
@@ -130,6 +131,7 @@ void sched_run() {
     }
 
     cpu->running_process = cpu->local_run_queue->head->data;
+    DEBUG_PRINT("sched_run: New pid : %i\nstart_time %i : current time %i\ninside_kernel: %i\nstack %x.64\nkernel_stack %x.64\ncurrent_working_dir %s\npage_map %x.64\n",cpu->running_process->process_id,cpu->running_process->start_time,timer_get_current_count(),cpu->running_process->inside_kernel,cpu->running_process->stack,cpu->running_process->kernel_stack,cpu->running_process->current_working_dir->vnode_name,cpu->running_process->page_map->top_level);
     cpu->running_process->current_cpu = cpu;
     cpu->running_process->current_state = PROCESS_RUNNING;
 
@@ -142,7 +144,7 @@ void sched_run() {
      */
     cpu->tss->rsp0 = (uint64_t)cpu->running_process->kernel_stack + STACK_SIZE;
 #endif
-    DEBUG_PRINT("CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n", cpu->running_process->page_map->top_level);
+    DEBUG_PRINT("sched_run: CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n", cpu->running_process->page_map->top_level);
 
     context_switch(cpu->scheduler_state, cpu->running_process->current_register_state,
                    cpu->running_process->process_type == USER_PROCESS || cpu->running_process->process_type ==
@@ -154,6 +156,7 @@ void sched_run() {
  * into scheduler context
  */
 void sched_preempt() {
+    DEBUG_PRINT("sched_preempt: entering\n");
     struct cpu* cpu = my_cpu();
     struct process* process = cpu->running_process;
     process->ticks_taken += process->start_time;
@@ -205,6 +208,7 @@ void sched_wakeup(const void* wakeup_channel) {
  * Attempts to steal a process from a rival processor, only bother stealing if a run-queue is longer than 2 nodes
  */
 void sched_claim_process() {
+    DEBUG_PRINT("sched_claim_process: entering\n");
     struct cpu* this_cpu = my_cpu();
     for (size_t i = 0; i < cpus_online; i++) {
         if (cpu_list[i].cpu_id == this_cpu->cpu_id) {
@@ -247,6 +251,7 @@ void sched_exit() {
  * Purge dead processes from the dead list, this will not be kept if I decide to add the posix wait() functionality
  */
 static void purge_dead_processes() {
+    DEBUG_PRINT("purge_dead_processes: Entering\n");
     struct cpu* current_cpu = my_cpu();
     if (dead_processes[current_cpu->cpu_id].node_count == 0) {
         return;

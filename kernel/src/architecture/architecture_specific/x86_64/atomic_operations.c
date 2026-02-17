@@ -28,7 +28,7 @@ void arch_atomic_swap(uint64_t *field, uint64_t new_value){
     // past this point, to ensure that the critical section's memory
     // references happen after the lock is acquired.
     __sync_synchronize(); /* for x86 this is just an mfence instruction , you can also put an empty inline asm function and declare it as changing memory */
-}
+ }
 
 bool arch_atomic_swap_or_return(uint64_t *field, uint64_t new_value){
     // The xchg is atomic.

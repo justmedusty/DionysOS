@@ -40,6 +40,7 @@ int32_t exec(char *path_to_executable, char **argv) {
 }
 
 struct process *alloc_process(uint64_t state, bool user, struct process *parent) {
+    DEBUG_PRINT("alloc_process: User proc : %i\n",user);
     struct process *process = kzmalloc(sizeof(struct process));
     bool init = parent == NULL ? true : false;
 
@@ -47,6 +48,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->syscall_stack = (void*) (uint64_t)kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
     process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
+
 
     process->page_map = kzmalloc(sizeof(struct virt_map));
     process->page_map->top_level = alloc_virtual_map();
@@ -80,6 +82,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
 
     doubly_linked_list_init(process->page_map->vm_regions);
     doubly_linked_list_init(process->handle_list->handle_list);
+
 
     if (init) {
         DEBUG_PRINT("alloc_process: Handle list lock %i\n",process->handle_list->handle_list->lock.locked);

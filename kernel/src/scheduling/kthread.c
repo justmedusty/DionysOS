@@ -37,27 +37,27 @@ void kthread_init() {
 
     vfs_root.vnode_active_references++;
 
-    proc->handle_list = kmalloc(sizeof(struct virtual_handle_list));
+    proc->handle_list = kzmalloc(sizeof(struct virtual_handle_list));
 
     proc->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list));
 
     doubly_linked_list_init(proc->handle_list->handle_list);
 
 
-    struct virt_map *kthread_map = kmalloc(sizeof(struct virt_map));
+    struct virt_map *kthread_map = kzmalloc(sizeof(struct virt_map));
     kthread_map->top_level = kernel_pg_map->top_level;
     proc->page_map = kthread_map;
 
     proc->parent_process_id = 0;
     proc->process_type = KERNEL_THREAD;
-    proc->current_register_state = kmalloc(sizeof(struct register_state));
+    proc->current_register_state = kzmalloc(sizeof(struct register_state));
     proc->process_id = get_kthread_pid();
     memset(proc->current_register_state, 0, sizeof(struct register_state));
 
     /*
      * Create dedicated region, share kernel page table but have their own region for stack
      */
-    void *stack = kmalloc(DEFAULT_STACK_SIZE);
+    void *stack = kzmalloc(DEFAULT_STACK_SIZE);
     /*
      * A lot of the flags here are not actually needed since there is no new mappings
      */

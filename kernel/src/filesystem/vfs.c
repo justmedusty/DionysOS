@@ -702,7 +702,7 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
-
+    acquire_spinlock(&list->handle_list->lock);
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
@@ -710,7 +710,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
             return i;
         }
     }
-
+    release_spinlock(&list->handle_list->lock);
     return KERN_MAX_REACHED;
 }
 
