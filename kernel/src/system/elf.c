@@ -78,7 +78,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         return KERN_BAD_DESCRIPTOR;
     }
 
-DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header->e_type,header->e_machine,
+DEBUG_PRINT("load_elf: e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header->e_type,header->e_machine,
     header->e_version,
     (unsigned long)header->e_entry,
     (unsigned long)header->e_phoff,
@@ -119,9 +119,9 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     elf64_phdr *program_header;
     for (size_t i = 0; i < header->e_phnum; i++) {
         size_t program_header_offset = header->e_phoff + (i * sizeof(elf64_phdr));
-        DEBUG_PRINT("I %i HEAD OFFSET %i PROGRAM HEADER OFFSET %i\n",i,header->e_phoff,program_header_offset);
+        DEBUG_PRINT("load_elf: I %i HEAD OFFSET %i PROGRAM HEADER OFFSET %i\n",i,header->e_phoff,program_header_offset);
         program_header = (elf64_phdr *) ((size_t) elf_file + program_header_offset);
-        DEBUG_PRINT("P TYPE IS %i\n",program_header->p_type);
+        DEBUG_PRINT("load_elf: P TYPE IS %i\n",program_header->p_type);
         switch (program_header->p_type) {
             case PT_LOAD:
                 uint64_t memory_protection = 0;
@@ -152,25 +152,25 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
 
                 uint64_t page_count = ALIGN_UP(program_header->p_memsz + aligned_diff, PAGE_SIZE) / PAGE_SIZE;
 
-                DEBUG_PRINT("PAGE COUNT %i MEM SIZE %x.64 ALIGNED DIFF %x.64 ALIGNED ADDRES %x.64 PVIRT %x.64 BASE %x.64\n",page_count,program_header->p_memsz,aligned_diff,aligned_address,program_header->p_vaddr,base_address);
+                DEBUG_PRINT("load_elf: PAGE COUNT %i MEM SIZE %x.64 ALIGNED DIFF %x.64 ALIGNED ADDRES %x.64 PVIRT %x.64 BASE %x.64\n",page_count,program_header->p_memsz,aligned_diff,aligned_address,program_header->p_vaddr,base_address);
                 for (size_t j = 0; j < page_count; j++) {
                     uint64_t *physical_page = umalloc(1);
                     serial_printf("MAPPING PAGE %x.64 TO VA %x.64\n",physical_page, (uint64_t *) (uint64_t)(aligned_address + (uint64_t) (j * PAGE_SIZE)));
                     arch_map_single_page(process->page_map->top_level, (uint64_t) physical_page,
                                   (uint64_t *) (( uint64_t)(aligned_address +  (j * PAGE_SIZE))), memory_protection);
-                    DEBUG_PRINT("VA %x.64 PROTECTION %x.64\n",(uint64_t *) (( uint64_t)(aligned_address +  (j * PAGE_SIZE))),memory_protection);
-                    DEBUG_PRINT("PHYSICAL %x.64 J %i\n",physical_page,j);
+                    DEBUG_PRINT("load_elf: VA %x.64 PROTECTION %x.64\n",(uint64_t *) (( uint64_t)(aligned_address +  (j * PAGE_SIZE))),memory_protection);
+                    DEBUG_PRINT("load_elf: PHYSICAL %x.64 J %i\n",physical_page,j);
 
                 }
 
                 warn_printf("enter\n");
-                DEBUG_PRINT("FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
+                DEBUG_PRINT("load_elf: FOREIGN MAPPING NOW! ALIGNED ADDR %x.64\n",aligned_address);
                 arch_map_foreign(process->page_map->top_level, (uint64_t *) aligned_address, page_count);
-                DEBUG_PRINT("FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE);
+                DEBUG_PRINT("load_elf: FOREIGN %x.64",KERNEL_FOREIGN_MAP_BASE);
                 memcpy(((void *)((uint64_t) KERNEL_FOREIGN_MAP_BASE)),elf_file + program_header->p_offset,program_header->p_filesz);
                 memset((void *) KERNEL_FOREIGN_MAP_BASE + aligned_diff + program_header->p_filesz, 0,
                        program_header->p_memsz - program_header->p_filesz);
-                DEBUG_PRINT("unmap size: %i\n",PAGE_SIZE * page_count);
+                DEBUG_PRINT("load_elf: unmap size: %i\n",PAGE_SIZE * page_count);
                 arch_unmap_foreign(PAGE_SIZE * page_count);
                 warn_printf("exit\n");
                 break;
@@ -182,7 +182,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
                 info->ld_path = (char *) ((uint64_t) elf_file + program_header->p_filesz);
                 break;
             default:
-                DEBUG_PRINT("Unknown elf section!\n");
+                DEBUG_PRINT("load_elf: Unknown elf section!\n");
                 break;
         }
     }
@@ -192,7 +192,7 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
 
 #ifdef __x86_64__
     process->current_register_state->rip = header->e_entry;
-    DEBUG_PRINT("ENTRY ADDRESS : %x.64\n",header->e_entry);
+    DEBUG_PRINT("load_elf: ENTRY ADDRESS : %x.64\n",header->e_entry);
     process->current_register_state->rsp = (uint64_t) (process->kernel_stack + DEFAULT_STACK_SIZE);
     process->current_register_state->rbp = USER_STACK_TOP;
 #endif
@@ -210,8 +210,9 @@ DEBUG_PRINT(" e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e
     }
 #endif
 
-    DEBUG_PRINT("LOAD SUCCESSFUL! ENTRY IS %x.64 PAGE TABLE IS %x.64\n",info->at_entry,process->page_map->top_level);
+    DEBUG_PRINT("load_elf: LOAD SUCCESSFUL! ENTRY IS %x.64 PAGE TABLE IS %x.64\n",info->at_entry,process->page_map->top_level);
     kfree(header);
+    DEBUG_PRINT("load_elf: Freed\n");
     return KERN_SUCCESS;
 }
 

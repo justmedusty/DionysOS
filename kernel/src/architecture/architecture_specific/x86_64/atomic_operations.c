@@ -6,7 +6,7 @@
 #include "include/architecture/x86_64/asm_functions.h"
 #include "include/architecture/x86_64/pit.h"
 
-#define DEADLOCK_DETECTION_THRESHOLD 10000000
+#define DEADLOCK_DETECTION_THRESHOLD 100000000
 void arch_atomic_swap(uint64_t *field, uint64_t new_value){
     uint64_t loops = 0;
     // The xchg is atomic.
