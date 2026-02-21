@@ -47,6 +47,10 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
         return rename((char*)args.arg1, (char*)args.arg2);
     case SYS_EXIT:
         DEBUG_PRINT("system_call_dispatch: exit syscall\n");
+#ifdef __x86_64__
+        asm("swapgs");
+#endif
+
         exit();
         return KERN_SUCCESS;
     default:
