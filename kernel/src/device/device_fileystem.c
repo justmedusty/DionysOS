@@ -49,6 +49,7 @@ void device_node_free(struct device_node *node) {
 }
 
 struct device *vnode_to_device(struct vnode *vnode) {
+    DEBUG_PRINT("vnode_to_device: name %s type %i fs obj %x.64\n",vnode->vnode_name,vnode->vnode_type,vnode->filesystem_object);
     if (vnode->vnode_type != VNODE_BLOCK_DEV && vnode->vnode_type != VNODE_CHAR_DEV && vnode->vnode_type !=
         VNODE_NET_DEV) {
         return NULL;
