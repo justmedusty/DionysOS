@@ -58,7 +58,6 @@ struct process {
     bool interrupt_state; //for use in saving/restoring interrupt state with spinlocks
     void *stack;
     void *kernel_stack;
-    void *syscall_stack;
     void *sleep_channel;
     struct virtual_handle_list *handle_list;
     struct virt_map *page_map;

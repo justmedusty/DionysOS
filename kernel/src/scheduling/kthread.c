@@ -46,6 +46,7 @@ void kthread_init() {
 
     struct virt_map *kthread_map = kzmalloc(sizeof(struct virt_map));
     kthread_map->top_level = kernel_pg_map->top_level;
+    DEBUG_PRINT("kthread_init: top level = %x.64\n",kthread_map->top_level);
     proc->page_map = kthread_map;
 
     proc->parent_process_id = 0;

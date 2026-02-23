@@ -90,7 +90,3 @@ void* kernel_to_user_pointer(void* pointer) {
     return pointer;
 }
 
-void set_syscall_stack() {
-    uint64_t* syscall_stack = current_process()->syscall_stack;
-    asm volatile("mov %%rsp, %0" : "=m"(syscall_stack) : "r"(syscall_stack) : "memory");
-}
