@@ -25,7 +25,7 @@ all-hdd: $(IMAGE_NAME).hdd
 
 .PHONY: run-gdb
 run-gdb: $(IMAGE_NAME).iso
-	qemu-system-x86_64 -M q35 -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d guest_errors,int,cpu_reset -D qemu_debug.log
+	qemu-system-x86_64 -M q35,smm=off -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) -cdrom $(IMAGE_NAME).iso -boot d -serial mon:stdio -s -S -d guest_errors,int,cpu_reset -D qemu_debug.log
 .PHONY: run-x86
 run-x86: $(IMAGE_NAME).iso
 	qemu-system-x86_64 -M q35,smm=off -smp $(DEFAULT_CPU_COUNT) -m $(MEMORY) \

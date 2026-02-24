@@ -91,10 +91,10 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
 }
 
 void free_process(struct process *process) {
-
     kfree(process->kernel_stack);
 
     if ((process->page_map->top_level != kernel_pg_map->top_level)) {
+        DEBUG_PRINT("free_process: freeing user page map\n");
         arch_dealloc_page_table(process->page_map->top_level);
         free_virtual_map(process->page_map->top_level);
         doubly_linked_list_destroy(process->page_map->vm_regions,true);
