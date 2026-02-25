@@ -92,11 +92,10 @@ void page_fault() {
     uint64_t page_map = rcr3();
     uint64_t cpu_no = my_cpu()->cpu_number;
     err_printf("Page Fault Occurred With Access %x.64 within page map %x.64 on CPU %i\n", faulting_address,page_map,cpu_no);
-    panic("Page Fault!");
-    if (IS_USER_ADDRESS(faulting_address)) {
+    if (IS_USER_ADDRESS(faulting_address) && my_cpu()->running_process->process_type != KERNEL_THREAD) {
         sched_exit();
     }
-
+    panic("Page Fault!");
 }
 
 // Exception 16: Floating Point Error
@@ -107,7 +106,6 @@ void floating_point_error() {
 // Exception 17: Alignment Check
 void alignment_check() {
     panic("Alignment Check Occurred\n");
-    
 }
 
 // Exception 18: Machine Check

@@ -52,8 +52,8 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
 #endif
 
         exit();
-        return KERN_SUCCESS;
     default:
+        err_printf("BAD SYSCALL %i\n",syscall_no);
         return KERN_NO_SYS; // Return an error for unknown syscalls
     }
 
