@@ -94,6 +94,6 @@ void arch_initialise_cpu( struct limine_smp_info *smp_info) {
 }
 
 void switch_current_kernel_stack(struct process *incoming_process){
-    tss_set_kernel_stack(incoming_process->kernel_stack,my_cpu());
+    tss_set_kernel_stack((void*)((uint64_t) incoming_process->kernel_stack + DEFAULT_STACK_SIZE),my_cpu());
 }
 #endif

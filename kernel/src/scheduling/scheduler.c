@@ -142,7 +142,7 @@ void sched_run() {
     /*
      * If this is an x86 machine set the tss
      */
-    cpu->tss->rsp0 = (uint64_t)cpu->running_process->kernel_stack + STACK_SIZE;
+    cpu->tss->rsp0 = (uint64_t)cpu->running_process->kernel_stack + DEFAULT_STACK_SIZE;
 #endif
     DEBUG_PRINT("sched_run: CONTEXT SWITCH: NEW PAGE TABLE -> %x.64\n", cpu->running_process->page_map->top_level);
 

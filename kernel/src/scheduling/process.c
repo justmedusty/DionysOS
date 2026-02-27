@@ -44,7 +44,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     struct process *process = kzmalloc(sizeof(struct process));
     bool init = parent == NULL ? true : false;
 
-    process->kernel_stack =  (void*) (uint64_t)kzmalloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
+    process->kernel_stack =  (void*) (uint64_t)kzmalloc(DEFAULT_STACK_SIZE);
     process->handle_list = kzmalloc(sizeof(struct virtual_handle_list *));
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
 
@@ -74,7 +74,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
         process->effective_priority = HIGH;
         process->parent_process_id = 0;
 #ifdef __x86_64__
-    process->current_register_state->rsp = (uint64_t) process->kernel_stack;
+    process->current_register_state->rsp = (uint64_t) process->kernel_stack + DEFAULT_STACK_SIZE;
 #endif
     }
 
@@ -91,24 +91,35 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
 }
 
 void free_process(struct process *process) {
+    DEBUG_PRINT("free_process: start for process %i\n",process->process_id);
+    DEBUG_PRINT("free_process: free kernel stack %x.64\n",process->kernel_stack);
     kfree(process->kernel_stack);
 
     if ((process->page_map->top_level != kernel_pg_map->top_level)) {
         DEBUG_PRINT("free_process: freeing user page map\n");
         arch_dealloc_page_table(process->page_map->top_level);
+        DEBUG_PRINT("free_process: freeing page map\n");
         free_virtual_map(process->page_map->top_level);
+        DEBUG_PRINT("free_process: freeing page map regions linked list\n");
         doubly_linked_list_destroy(process->page_map->vm_regions,true);
+        DEBUG_PRINT("free_process: freeing user stack\n");
         ufree(process->stack);
+        DEBUG_PRINT("free_process: freeing page map \n");
         kfree(process->page_map);
+        DEBUG_PRINT("free_process: freeing vm regions list\n");
         kfree(process->page_map->vm_regions);
     }
-
+    DEBUG_PRINT("free_process: freeing handle list\n");
     doubly_linked_list_destroy(process->handle_list->handle_list,true);
+    DEBUG_PRINT("free_process: freeing handle list top level\n");
     kfree(process->handle_list->handle_list);
+    DEBUG_PRINT("free_process: freeing handle list top top level\n");
     kfree(process->handle_list);
+    DEBUG_PRINT("free_process: freeing register state\n");
     kfree(process->current_register_state);
-
+    DEBUG_PRINT("free_process: freeing process struct\n");
     kfree(process);
+    DEBUG_PRINT("free_process: end for process %i\n",process->process_id);
 }
 
 __attribute__((noreturn))
