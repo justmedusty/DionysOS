@@ -194,9 +194,6 @@ void *krealloc(void *address, uint64_t new_size) {
 
 
 void kfree(void *address) {
-    if (address == (void *)0xFFFF80028AD20000) {
-        kprintf("HERE ON CPU %i\n",my_cpu()->cpu_id);
-    }
     acquire_spinlock(&alloc_lock);
     _kfree(address);
     release_spinlock(&alloc_lock);

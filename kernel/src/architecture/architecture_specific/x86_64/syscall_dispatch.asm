@@ -5,7 +5,8 @@ global syscall_entry
 syscall_entry:
     cli
     swapgs
-    mov [gs:16], rsp
+    ;save current user stack into r15
+    mov r15, rsp
     mov rsp, [gs:0]
 
     ; Save user return state FIRST
@@ -55,7 +56,7 @@ syscall_entry:
     pop rcx              ; user RIP
 
 
-    mov rsp, [gs:16]
+    mov rsp, r15
     swapgs
 
     ; RAX already contains return value
