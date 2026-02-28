@@ -16,8 +16,17 @@
 
 struct framebuffer main_framebuffer;
 #define MAIN_FB 0
-
-
+int64_t framebuffer_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes);
+struct device_vnode_ops framebuffer_vnode_ops = {
+    .write = framebuffer_write,
+    .read = NULL,
+    .close = NULL,
+    .remove = NULL,
+    .unlink = NULL,
+    .open = NULL,
+    .rename = NULL,
+    .link = NULL
+};
 struct framebuffer_ops framebuffer_ops = {
         .clear = fb_ops_clear,
         .draw_string = fb_ops_draw_string,
@@ -28,6 +37,7 @@ struct framebuffer_ops framebuffer_ops = {
 
 struct device_ops framebuffer_device_ops = {
         .framebuffer_ops = &framebuffer_ops,
+        .vnode_ops = &framebuffer_vnode_ops,
         .get_status = NULL,
         .configure = NULL,
         .init = NULL,
@@ -1048,12 +1058,15 @@ void kprintf_color(uint32_t color, char *str, ...) {
 
 
 void framebuffer_init() {
+
     insert_device_into_kernel_tree(&framebuffer_device);
 }
 
 
 
 int64_t framebuffer_write(struct vnode *vnode, uint64_t offset, const char *buffer, uint64_t bytes) {
+
+    panic("HERE\n");
     if (vnode->vnode_type != VNODE_CHAR_DEV) {
         return KERN_WRONG_TYPE;
     }
@@ -1067,6 +1080,10 @@ int64_t framebuffer_write(struct vnode *vnode, uint64_t offset, const char *buff
     if (!priv) {
         return KERN_WRONG_TYPE;
     }
+
+    panic("");
+
+
 
 
 }
