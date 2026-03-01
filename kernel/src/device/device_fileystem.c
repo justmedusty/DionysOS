@@ -8,6 +8,7 @@
 #include "include/memory/kmalloc.h"
 #include "include/data_structures/binary_tree.h"
 #include "include/definitions/string.h"
+#include "include/drivers/display/framebuffer.h"
 struct filesystem_info device_filesystem_info = {0};
 struct vnode *dev_fs_root;
 struct spinlock dev_fs_root_lock;
@@ -110,6 +111,14 @@ int64_t device_write(struct vnode *vnode, uint64_t offset, const char *buffer, u
     if (!device->driver) {
         return KERN_DEVICE_NOT_READY;
     }
+        switch (device->device_major) {
+            case DEVICE_MAJOR_FRAMEBUFFER:
+            device->driver->device_ops->framebuffer_ops->draw_string(device,GREEN,(char *) buffer);
+            return KERN_SUCCESS;
+            default:
+            return KERN_DEVICE_NOT_READY;
+        }
+
 
     return device->driver->device_ops->vnode_ops->write(vnode, offset, buffer, bytes);
 }
