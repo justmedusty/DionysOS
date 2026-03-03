@@ -80,6 +80,7 @@ int64_t add_device_to_devfs_tree(struct device* device) {
     }
 
     dev_fs_root->vnode_children[dev_fs_root->num_children++] = node;
+    node->filesystem_object = device;
     release_spinlock(&dev_fs_root_lock);
     return KERN_SUCCESS;
 }
@@ -104,10 +105,12 @@ int64_t device_write(struct vnode* vnode, uint64_t offset, const char* buffer, u
     struct device* device = vnode_to_device(vnode);
 
     if (!device) {
+        panic("bad handle");
         return KERN_BAD_HANDLE;
     }
 
     if (!device->driver) {
+        panic("bad driver");
         return KERN_DEVICE_NOT_READY;
     }
     switch (device->device_major) {
