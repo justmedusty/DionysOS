@@ -122,8 +122,8 @@ int main(int argc, char *argv[]) {
         sys_exit();
         for (;;) { __asm__ __volatile__("pause"); }
     }
-
-    sys_write(handle, "Hello World!\n", 13);
+    char *msg = "testing";
+    sys_write(handle, "Init process is now online...\n", 30);
     sys_exit();
     for (;;) { __asm__ __volatile__("pause"); }
 }

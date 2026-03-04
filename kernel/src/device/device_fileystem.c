@@ -56,7 +56,6 @@ struct device* vnode_to_device(struct vnode* vnode) {
         VNODE_NET_DEV) {
         return NULL;
     }
-    //TODO fix this, it is null currently at least FB might be for all devices
     struct device* device = vnode->filesystem_object;
 
     //Redundant? I will probably change this later and add a system for pointer errors
