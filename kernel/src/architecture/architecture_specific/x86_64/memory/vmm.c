@@ -312,27 +312,39 @@ static void* get_next_level(void* table, uint64_t index) {
 
 void free_page_tables(p4d_t* pgdir) {
     for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
+        DEBUG_PRINT("Getting pud...\n");
         pud_t* pud = get_next_level(pgdir, p4d_idx);
         if (!pud) continue;
+        DEBUG_PRINT("Found pud...\n");
         for (size_t pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
+            DEBUG_PRINT("Getting pmd...\n");
             pmd_t* pmd = get_next_level((pud), pud_idx);
-            if (!pmd) continue;\
-
+            if (!pmd) continue;
+            DEBUG_PRINT("Found pmd...\n");
             for (size_t pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
+                DEBUG_PRINT("Getting pte...\n");
                 pte_t* pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
-
+                DEBUG_PRINT("Found pte...\n");
                 for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
                     if (pte[pte_idx] & PTE_P) {
-                        void* page = (void*)PTE_ADDR(pte[pte_idx]);
+                        DEBUG_PRINT("Getting page...\n");
+                        void* page = (void*)(PTE_ADDR(pte[pte_idx]));
+                        DEBUG_PRINT("Freeing page... Page is %x.64...\n",page);
                         kfree((page));
                         pte[pte_idx] = 0;
                     }
                 }
+                pmd[pmd_idx] = 0;
+                DEBUG_PRINT("Free pte...\n");
                 kfree(pte);
             }
+            pud[pud_idx] = 0;
+            DEBUG_PRINT("Free pmd...\n");
             kfree(pmd);
         }
+        pgdir[p4d_idx] = 0;
+        DEBUG_PRINT("Free pud...\n");
         kfree(pud);
     }
 }
