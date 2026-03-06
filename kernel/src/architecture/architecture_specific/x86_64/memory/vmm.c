@@ -326,26 +326,33 @@ void free_page_tables(p4d_t* pgdir) {
                 pte_t* pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
                 DEBUG_PRINT("Found pte...\n");
+                pte_t *virt_pte = Phys2Virt(pte);
                 for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
-                    if (pte[pte_idx] & PTE_P) {
+                    if (virt_pte[pte_idx] & PTE_P) {
                         DEBUG_PRINT("Getting page...\n");
-                        void* page = (void*)(PTE_ADDR(pte[pte_idx]));
+                        void* page = (void*)(PTE_ADDR(virt_pte[pte_idx]));
                         DEBUG_PRINT("Freeing page... Page is %x.64...\n",page);
-                        kfree((page));
-                        pte[pte_idx] = 0;
+                        DEBUG_PRINT("Freed page...\n",page);
+                        virt_pte[pte_idx] = 0;
                     }
                 }
-                pmd[pmd_idx] = 0;
+                DEBUG_PRINT("Set pmd to 0...\n");
+                pmd_t *virt_pmd = Phys2Virt(pmd);
+                virt_pmd[pmd_idx] = 0;
                 DEBUG_PRINT("Free pte...\n");
-                kfree(pte);
+                kfree(virt_pte);
             }
-            pud[pud_idx] = 0;
+            DEBUG_PRINT("Set pud to 0...\n");
+            pud_t *virt_pud = Phys2Virt(pud);
+            virt_pud[pud_idx] = 0;
             DEBUG_PRINT("Free pmd...\n");
-            kfree(pmd);
+            kfree(Phys2Virt(pmd));
         }
-        pgdir[p4d_idx] = 0;
+        p4d_t *virt_p4d = Phys2Virt(pgdir);
+        DEBUG_PRINT("Set p4d to 0...\n");
+        virt_p4d[p4d_idx] = 0;
         DEBUG_PRINT("Free pud...\n");
-        kfree(pud);
+        kfree(Phys2Virt(pud));
     }
 }
 
