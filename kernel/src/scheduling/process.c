@@ -163,6 +163,7 @@ int64_t fork(uint64_t flags, uint64_t aux_arguments) {
 
     struct process *new_process = alloc_process(PROCESS_READY,true, current);
 
+    //TODO copy register state so it jmps to the right spot
 #ifdef __x86_64__
     new_process->current_register_state->rsp = (uint64_t) new_process->stack;
 #endif
