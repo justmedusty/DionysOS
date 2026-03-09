@@ -310,6 +310,7 @@ static void* get_next_level(void* table, uint64_t index) {
     return (void*)(PTE_ADDR(entries[index]));
 }
 
+
 void free_page_tables(p4d_t* pgdir) {
     for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
         DEBUG_PRINT("Getting pud...\n");
@@ -329,10 +330,15 @@ void free_page_tables(p4d_t* pgdir) {
                 pte_t *virt_pte = Phys2Virt(pte);
                 for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
                     if (virt_pte[pte_idx] & PTE_P) {
-                        DEBUG_PRINT("Getting page...\n");
-                        void* page = (void*)(PTE_ADDR(virt_pte[pte_idx]));
-                        DEBUG_PRINT("Freeing page... Page is %x.64...\n",page);
-                        DEBUG_PRINT("Freed page...\n",page);
+                        void* page_phys = (void*)(PTE_ADDR(virt_pte[pte_idx]));
+                        // Check if page is in user space
+                        if (virt_pte[pte_idx] & PTE_U) {
+                            DEBUG_PRINT("Freeing page... Page is %x.64...\n", page_phys);
+                            kfree(Phys2Virt(page_phys));
+                            DEBUG_PRINT("Freed page...\n");
+                        } else {
+                            DEBUG_PRINT("Skipping kernel space page %x.64...\n", page_phys);
+                        }
                         virt_pte[pte_idx] = 0;
                     }
                 }
