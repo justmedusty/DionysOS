@@ -315,14 +315,20 @@ void free_page_tables(p4d_t* pgdir) {
     for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
         DEBUG_PRINT("Getting pud...\n");
         pud_t* pud = get_next_level(pgdir, p4d_idx);
+        uintptr_t p4d_base = (uintptr_t)p4d_idx << 39;
+        if (p4d_base > USER_STACK_TOP) break;
         if (!pud) continue;
         DEBUG_PRINT("Found pud...\n");
         for (size_t pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
+            uintptr_t pud_base = p4d_base | ((uintptr_t)pud_idx << 30);
+            if (pud_base > USER_STACK_TOP) break;
             DEBUG_PRINT("Getting pmd...\n");
             pmd_t* pmd = get_next_level((pud), pud_idx);
             if (!pmd) continue;
             DEBUG_PRINT("Found pmd...\n");
             for (size_t pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
+                uintptr_t pmd_base = pud_base | ((uintptr_t)pmd_idx << 21);
+                if (pmd_base > USER_STACK_TOP) break;
                 DEBUG_PRINT("Getting pte...\n");
                 pte_t* pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
