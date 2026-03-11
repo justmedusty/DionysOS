@@ -310,60 +310,47 @@ static void* get_next_level(void* table, uint64_t index) {
     return (void*)(PTE_ADDR(entries[index]));
 }
 
-
+//TODO they may be minor memory leakage here , investigate
 void free_page_tables(p4d_t* pgdir) {
     for (size_t p4d_idx = 0; p4d_idx < ENTRIES_PER_TABLE; p4d_idx++) {
-        DEBUG_PRINT("Getting pud...\n");
         pud_t* pud = get_next_level(pgdir, p4d_idx);
         uintptr_t p4d_base = (uintptr_t)p4d_idx << 39;
         if (p4d_base > USER_STACK_TOP) break;
         if (!pud) continue;
-        DEBUG_PRINT("Found pud...\n");
         for (size_t pud_idx = 0; pud_idx < ENTRIES_PER_TABLE; pud_idx++) {
             uintptr_t pud_base = p4d_base | ((uintptr_t)pud_idx << 30);
             if (pud_base > USER_STACK_TOP) break;
-            DEBUG_PRINT("Getting pmd...\n");
             pmd_t* pmd = get_next_level((pud), pud_idx);
             if (!pmd) continue;
-            DEBUG_PRINT("Found pmd...\n");
             for (size_t pmd_idx = 0; pmd_idx < ENTRIES_PER_TABLE; pmd_idx++) {
                 uintptr_t pmd_base = pud_base | ((uintptr_t)pmd_idx << 21);
                 if (pmd_base > USER_STACK_TOP) break;
-                DEBUG_PRINT("Getting pte...\n");
                 pte_t* pte = get_next_level((pmd), pmd_idx);
                 if (!pte) continue;
-                DEBUG_PRINT("Found pte...\n");
                 pte_t *virt_pte = Phys2Virt(pte);
                 for (size_t pte_idx = 0; pte_idx < ENTRIES_PER_TABLE; pte_idx++) {
                     if (virt_pte[pte_idx] & PTE_P) {
                         void* page_phys = (void*)(PTE_ADDR(virt_pte[pte_idx]));
                         // Check if page is in user space
                         if (virt_pte[pte_idx] & PTE_U) {
-                            DEBUG_PRINT("Freeing page... Page is %x.64...\n", page_phys);
-                            kfree(Phys2Virt(page_phys));
-                            DEBUG_PRINT("Freed page...\n");
+                            ufree((page_phys));
                         } else {
-                            DEBUG_PRINT("Skipping kernel space page %x.64...\n", page_phys);
+
                         }
                         virt_pte[pte_idx] = 0;
                     }
                 }
-                DEBUG_PRINT("Set pmd to 0...\n");
+
                 pmd_t *virt_pmd = Phys2Virt(pmd);
                 virt_pmd[pmd_idx] = 0;
-                DEBUG_PRINT("Free pte...\n");
                 kfree(virt_pte);
             }
-            DEBUG_PRINT("Set pud to 0...\n");
             pud_t *virt_pud = Phys2Virt(pud);
             virt_pud[pud_idx] = 0;
-            DEBUG_PRINT("Free pmd...\n");
             kfree(Phys2Virt(pmd));
         }
         p4d_t *virt_p4d = Phys2Virt(pgdir);
-        DEBUG_PRINT("Set p4d to 0...\n");
         virt_p4d[p4d_idx] = 0;
-        DEBUG_PRINT("Free pud...\n");
         kfree(Phys2Virt(pud));
     }
 }
