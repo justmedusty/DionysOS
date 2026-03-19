@@ -295,15 +295,15 @@ int64_t vnode_open(char *path) {
 
     DEBUG_PRINT("vnode_open: handle_list lock %i PID %i\n",list->handle_list->lock.locked,process->process_id);
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
-
+    DEBUG_PRINT("vnode_open: Before get_new_file_handle\n");
     const int8_t ret = get_new_file_handle(list);
-
+    DEBUG_PRINT("vnode_open: After get_new_file_handle\n");
     if (ret < 0) {
         return KERN_MAX_REACHED;
     }
-
+    DEBUG_PRINT("vnode_open: Before vnode_lookup\n");
     struct vnode *vnode = vnode_lookup(path);
-
+    DEBUG_PRINT("vnode_open: After vnode_lookup\n");
     if (vnode == NULL) {
         return KERN_NOT_FOUND;
     }
@@ -317,8 +317,9 @@ int64_t vnode_open(char *path) {
     if (vnode->is_mount_point) {
         vnode = vnode->mounted_vnode;
     }
-
+    DEBUG_PRINT("vnode_open: Before kzmalloc call\n");
     struct virtual_handle *new_handle = kzmalloc(sizeof(struct virtual_handle));
+    DEBUG_PRINT("vnode_open: After kzmalloc call\n");
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
@@ -706,7 +707,7 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
-
+            release_spinlock(&list->handle_list->lock);
             return i;
         }
     }
