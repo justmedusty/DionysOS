@@ -14,7 +14,7 @@ void initlock(struct spinlock *spinlock, uint64_t id) {
     spinlock->locked = 0;
     spinlock->cpu = 0;
 }
-
+//TODO check int flag instead of just turning them back on
 void acquire_spinlock(struct spinlock *spinlock) {
     if (bsp == true) {
         /*
