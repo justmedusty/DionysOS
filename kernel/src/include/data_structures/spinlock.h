@@ -7,11 +7,15 @@
 #include <include/architecture/arch_cpu.h>
 // Mutual exclusion lock.
 //Making this 256 bytes, trying to force power of 2 alignment will make things easier later
+
+#define INTERRUPTS_ON 1
+#define INTERRUPTS_OFF 0
+
 struct spinlock{
     uint64_t locked;
     uint64_t id;
     struct cpu *cpu;
-    void *reserved;
+    uint64_t interrupts;
 };
 
 //bootstrap bool so we can avoid cpu stuff while boostrapping
