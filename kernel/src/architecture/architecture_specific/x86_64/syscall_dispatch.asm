@@ -58,6 +58,5 @@ syscall_entry:
 
     mov rsp, r15
     swapgs
-    sti
     ; RAX already contains return value
     o64 sysret              ; return to user mode
