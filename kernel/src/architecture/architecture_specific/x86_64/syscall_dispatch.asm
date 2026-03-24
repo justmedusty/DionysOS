@@ -3,7 +3,6 @@ extern panic
 extern set_syscall_stack
 global syscall_entry
 syscall_entry:
-    cli
     swapgs
     ;save current user stack into r15
     mov r15, rsp
