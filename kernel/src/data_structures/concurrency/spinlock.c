@@ -13,7 +13,7 @@ void initlock(struct spinlock *spinlock, uint64_t id) {
     spinlock->id = id;
     spinlock->locked = 0;
     spinlock->cpu = 0;
-    spinlock->interrupts = INTERRUPTS_ON;
+    spinlock->recursion_depth = 0;
 }
 //TODO check int flag instead of just turning them back on
 void acquire_spinlock(struct spinlock *spinlock) {
@@ -28,31 +28,25 @@ void acquire_spinlock(struct spinlock *spinlock) {
     } else{
         //Allow recursive locking
         if(spinlock->cpu == my_cpu()){
+            spinlock->recursion_depth++;
             return;
         }
     }
+    disable_interrupts();
     arch_atomic_swap(&spinlock->locked, 1);
-
-    if (are_interrupts_enabled()) {
-        spinlock->interrupts = INTERRUPTS_ON;
-    }else {
-        spinlock->interrupts = INTERRUPTS_OFF;
-    }
-
-    if (spinlock->interrupts == INTERRUPTS_ON) {
-        disable_interrupts();
-    }
-
     spinlock->cpu = my_cpu();
 }
 
 void release_spinlock(struct spinlock *spinlock) {
-    spinlock->cpu = NULL;
-    spinlock->locked = 0;
-    if (spinlock->interrupts == INTERRUPTS_ON) {
-        enable_interrupts();
+    if (spinlock->recursion_depth > 0) {
+        spinlock->recursion_depth--;
     }
 
+    if (spinlock->recursion_depth == 0) {
+        spinlock->cpu = NULL;
+        spinlock->locked = 0;
+        enable_interrupts();
+    }
 }
 
 bool try_lock(struct spinlock *spinlock) {
