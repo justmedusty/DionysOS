@@ -14,6 +14,7 @@
 #include "include/scheduling/process.h"
 #include "include/definitions/elf.h"
 
+#include "include/data_structures/doubly_linked_list.h"
 #include "include/definitions/definitions.h"
 #include "include/drivers/serial/uart.h"
 #include "include/definitions/definitions.h"
@@ -77,6 +78,8 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         }
         return KERN_BAD_DESCRIPTOR;
     }
+
+    warn_printf("LOCKED %i\n", process->handle_list->handle_list->lock.locked);
 
 DEBUG_PRINT("load_elf: e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header->e_type,header->e_machine,
     header->e_version,
