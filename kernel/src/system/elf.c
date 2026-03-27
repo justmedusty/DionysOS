@@ -52,9 +52,11 @@ void *elf_section_get(void *elf, const char *name) {
 }
 
 int64_t load_elf(struct process *process, char *path, size_t base_address, elf_info *info) {
+
     if (!path) {
         return KERN_BAD_HANDLE;
     }
+    DEBUG_PRINT("load_elf LOCK %i\n",process->handle_list->handle_list->lock.locked);
     bool init = false;
     elf64_hdr *header = kzmalloc(sizeof(elf64_hdr));
     //This must be init setup
@@ -62,8 +64,9 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         init = true;
         my_cpu()->running_process = process;
     }
-
+//TODO lock getting switched on permanently seems to happen in here
     int64_t handle = vnode_open(path);
+
     if (handle < 0) {
         panic("INIT NOT FOUND!\n");
         if (init) {
@@ -71,15 +74,15 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         }
         return KERN_BAD_HANDLE;
     }
-
+    DEBUG_PRINT("load_elf LOCK %i\n",process->handle_list->handle_list->lock.locked);
     if (read(handle, (char *) header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
         if (init) {
             my_cpu()->running_process = NULL;
         }
         return KERN_BAD_DESCRIPTOR;
     }
+    DEBUG_PRINT("load_elf LOCK %i\n",process->handle_list->handle_list->lock.locked);
 
-    warn_printf("LOCKED %i\n", process->handle_list->handle_list->lock.locked);
 
 DEBUG_PRINT("load_elf: e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=0x%x.64 e_phoff=0x%x.64 e_shoff=0x%x.64 e_flags=0x%x.64 e_ehsize=%i e_phentsize=%i e_phnum=%i e_shentsize=%i e_shnum=%i e_shstrndx=%i\n",header->e_type,header->e_machine,
     header->e_version,
@@ -100,7 +103,6 @@ DEBUG_PRINT("load_elf: e_type=%x.64 e_machine=0x%x.64 e_version=0x%x.64 e_entry=
         }
         return KERN_WRONG_TYPE;
     }
-
     if (header->e_ident[EI_CLASS] != EI_ARCH_CLASS || header->e_ident[EI_DATA] != EI_ARCH_DATA ||
         header->e_ident[EI_VERSION] != EV_CURRENT || header->e_ident[EI_OSABI] != ELFOSABI_SYSV ||
         header->e_machine != EI_ARCH_MACHINE || header->e_phentsize != sizeof(elf64_phdr)) {

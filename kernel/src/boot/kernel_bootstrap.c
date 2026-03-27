@@ -44,7 +44,6 @@ void setup_init() {
     struct process *process = alloc_process(PROCESS_READY,true,NULL);
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
     DEBUG_PRINT("setup_init: NEW PROCESS PAGE MAP -> %x.64\n",process->page_map->top_level);
-
     int64_t ret = load_elf(process,"/bin/init",0,elfinfo);
 
     if (ret != KERN_SUCCESS) {

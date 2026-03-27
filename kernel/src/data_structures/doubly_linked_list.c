@@ -72,7 +72,6 @@ void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data)
     new_head->prev = NULL;
     list->node_count++;
     release_spinlock(&list->lock);
-    return;
 }
 
 void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {
@@ -96,7 +95,6 @@ void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {
     list->tail->next = NULL;
     list->node_count--;
     release_spinlock(&list->lock);
-    return;
 }
 
 void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
@@ -120,7 +118,6 @@ void doubly_linked_list_remove_head(struct doubly_linked_list* list) {
     list->head->prev = NULL;
     list->node_count--;
     release_spinlock(&list->lock);
-    return;
 }
 
 void doubly_linked_list_remove_node_by_address(struct doubly_linked_list* list, struct doubly_linked_list_node* node) {

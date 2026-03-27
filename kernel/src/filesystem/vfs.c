@@ -290,14 +290,10 @@ int32_t vnode_remove(struct vnode *vnode, char *path) {
  */
 int64_t vnode_open(char *path) {
     struct process *process = current_process();
-
     struct virtual_handle_list *list = process->handle_list;
-
-    DEBUG_PRINT("vnode_open: handle_list lock %i PID %i\n",list->handle_list->lock.locked,process->process_id);
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
-    DEBUG_PRINT("vnode_open: Before get_new_file_handle\n");
     const int8_t ret = get_new_file_handle(list);
-    DEBUG_PRINT("vnode_open: After get_new_file_handle\n");
+
     if (ret < 0) {
         return KERN_MAX_REACHED;
     }
@@ -307,7 +303,7 @@ int64_t vnode_open(char *path) {
     if (vnode == NULL) {
         return KERN_NOT_FOUND;
     }
-
+    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     if(vnode->filesystem_info){
         vnode->filesystem_info->filesystem_reference_count++;
     }
@@ -318,17 +314,19 @@ int64_t vnode_open(char *path) {
         vnode = vnode->mounted_vnode;
     }
     DEBUG_PRINT("vnode_open: Before kzmalloc call\n");
+    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     struct virtual_handle *new_handle = kzmalloc(sizeof(struct virtual_handle));
     DEBUG_PRINT("vnode_open: After kzmalloc call\n");
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
     new_handle->handle_id = (uint64_t) ret;
-
+    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     DEBUG_PRINT("vnode_open: Before handle insert\n");
     doubly_linked_list_insert_head(list->handle_list, new_handle);
     DEBUG_PRINT("vnode_open: After handle insert\n");
     list->num_handles++;
+    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     return ret;
 }
 
@@ -703,15 +701,12 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
-    acquire_spinlock(&list->handle_list->lock);
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
-            release_spinlock(&list->handle_list->lock);
             return i;
         }
     }
-    release_spinlock(&list->handle_list->lock);
     return KERN_MAX_REACHED;
 }
 
