@@ -701,12 +701,15 @@ static struct vnode *parse_path(char *path) {
 
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
+    acquire_spinlock(&list->handle_list->lock);
     for (int8_t i = 0; i < NUM_HANDLES; i++) {
         if (!(list->handle_id_bitmap & BIT(i))) {
             list->handle_id_bitmap |= BIT(i);
+            release_spinlock(&list->handle_list->lock);
             return i;
         }
     }
+    release_spinlock(&list->handle_list->lock);
     return KERN_MAX_REACHED;
 }
 
@@ -743,16 +746,19 @@ void vunlock(struct vnode *vnode) {
 
 struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
+
+    acquire_spinlock(&current_process()->handle_list->handle_list->lock);
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
 
     while (node != NULL) {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
+            release_spinlock(&current_process()->handle_list->handle_list->lock);
             return handle->vnode;
         }
         node = node->next;
     }
-
+    release_spinlock(&current_process()->handle_list->handle_list->lock);
     return NULL;
 }
 
