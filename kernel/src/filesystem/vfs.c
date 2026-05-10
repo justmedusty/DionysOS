@@ -323,10 +323,16 @@ int64_t vnode_open(char *path) {
     new_handle->handle_id = (uint64_t) ret;
     DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     DEBUG_PRINT("vnode_open: Before handle insert\n");
+    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     doubly_linked_list_insert_head(list->handle_list, new_handle);
     DEBUG_PRINT("vnode_open: After handle insert\n");
     list->num_handles++;
     DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
+
+    if (list->handle_list->lock.locked) {
+        err_printf("BUG FOUND WEE WOO WEE WOO\n");
+    }
+
     return ret;
 }
 

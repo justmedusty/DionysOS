@@ -25,12 +25,12 @@ void acquire_spinlock(struct spinlock *spinlock) {
          */
         return;
         // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
-    } else{
-        //Allow recursive locking
-        if(spinlock->cpu == my_cpu()){
-            spinlock->recursion_depth++;
-            return;
-        }
+    }
+
+    //Allow recursive locking
+    if(spinlock->cpu == my_cpu()){
+        spinlock->recursion_depth++;
+        return;
     }
     disable_interrupts();
     arch_atomic_swap(&spinlock->locked, 1);
@@ -45,6 +45,7 @@ void release_spinlock(struct spinlock *spinlock) {
     if (spinlock->recursion_depth == 0) {
         spinlock->cpu = NULL;
         spinlock->locked = 0;
+        __sync_synchronize();
         enable_interrupts();
     }
 }

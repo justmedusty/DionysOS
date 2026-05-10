@@ -150,6 +150,7 @@ void doubly_linked_list_remove_node_by_address(struct doubly_linked_list* list, 
 }
 
 void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list* list, const void* data) {
+    panic("");
     acquire_spinlock(&list->lock);
     const struct doubly_linked_list_node* node = list->head;
 
@@ -194,6 +195,7 @@ void doubly_linked_list_remove_node_by_data_address(struct doubly_linked_list* l
 
 
 void doubly_linked_list_destroy(struct doubly_linked_list* list,bool free_data) {
+
     if (list == NULL) return;
     acquire_spinlock(&list->lock);
     struct doubly_linked_list_node* current = list->head;

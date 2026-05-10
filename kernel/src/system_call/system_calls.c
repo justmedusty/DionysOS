@@ -50,7 +50,7 @@ int64_t system_call_dispatch(int64_t syscall_no, struct syscall_args args) {
 #ifdef __x86_64__
         asm("swapgs");
 #endif
-
+        DEBUG_PRINT("Process exiting...\n");
         exit();
     default:
         err_printf("BAD SYSCALL %i\n",syscall_no);
