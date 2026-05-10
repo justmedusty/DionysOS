@@ -746,7 +746,7 @@ void vunlock(struct vnode *vnode) {
 
 struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
-
+    DEBUG_PRINT("CURRENT PRCOCESS PID %i TYPE %i HANDLE LIST ADDR %x.64\n",current_process()->process_id,current_process()->process_type,current_process()->handle_list);
     acquire_spinlock(&current_process()->handle_list->handle_list->lock);
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
 
@@ -816,16 +816,19 @@ struct virtual_handle *find_handle(int64_t handle_id) {
  */
 
 int64_t write(uint64_t handle, char *buffer, uint64_t bytes) {
+    DEBUG_PRINT("BEFORE handle_to_vnode...\n");
     struct vnode *handle_vnode = handle_to_vnode(handle);
+    DEBUG_PRINT("AFTER handle_to_vnode...\n");
     if (!handle_vnode) {
         return KERN_NOT_FOUND;
     }
-
+    DEBUG_PRINT("BEFORE handle_to_offset...\n");
     const int64_t offset = handle_to_offset(handle);
-
+    DEBUG_PRINT("AFTER handle_to_offset...\n");
     if (offset < 0) {
         return offset;
     }
+
 
 
     return vnode_write(handle_vnode, offset, bytes, buffer);
