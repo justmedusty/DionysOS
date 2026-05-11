@@ -7,7 +7,8 @@
 #include "include/architecture/x86_64/pit.h"
 
 #define DEADLOCK_DETECTION_THRESHOLD 1000000000
-void arch_atomic_swap(uint64_t *field, uint64_t new_value){
+bool arch_atomic_swap(uint64_t *field, uint64_t new_value){
+    bool ret = true;
     uint64_t loops = 0;
     // The xchg is atomic.
     while(xchg(field, new_value) != 0) {
@@ -17,6 +18,7 @@ void arch_atomic_swap(uint64_t *field, uint64_t new_value){
 #ifdef FORCE_DEADLOCKS
                 *field = new_value;
                 err_printf("Deadlock detected, FORCE_DEADLOCKS defined so force changing field to desired value\n");
+            ret = false;
                 break;
 #else
             panic("Deadlock detected\n");
@@ -28,6 +30,7 @@ void arch_atomic_swap(uint64_t *field, uint64_t new_value){
     // past this point, to ensure that the critical section's memory
     // references happen after the lock is acquired.
     __sync_synchronize(); /* for x86 this is just an mfence instruction , you can also put an empty inline asm function and declare it as changing memory */
+    return ret;
  }
 
 bool arch_atomic_swap_or_return(uint64_t *field, uint64_t new_value){

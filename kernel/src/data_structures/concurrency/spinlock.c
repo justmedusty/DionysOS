@@ -34,12 +34,18 @@ void acquire_spinlock(struct spinlock *spinlock) {
     }
 
     disable_interrupts();
-    arch_atomic_swap(&spinlock->locked, 1);
+    bool ret = arch_atomic_swap(&spinlock->locked, 1);
+    if (!ret) {
+        if (spinlock->holding_process != NULL && current_process() != NULL && my_cpu() != NULL){
+            err_printf("HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->locked);
+            serial_printf("HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->locked);
+            err_printf("Deadlock found , holding process is %i , holding cpu is %i\nNew process is %i, new cpu is %i\n",spinlock->holding_process->process_id,spinlock->cpu,current_process()->process_id,my_cpu()->cpu_id);
+            serial_printf("Deadlock found , holding process is %i , holding cpu is %i\nNew process is %i, new cpu is %i\n",spinlock->holding_process->process_id,spinlock->cpu,current_process()->process_id,my_cpu()->cpu_id);
+        }
+
+    }
     spinlock->cpu = my_cpu();
     spinlock->holding_process = current_process();
-    if (spinlock->holding_process != NULL) {
-        err_printf("Holding process is now process %i\n", spinlock->holding_process->process_id);
-    }
 
 }
 
@@ -52,6 +58,7 @@ void release_spinlock(struct spinlock *spinlock) {
         spinlock->cpu = NULL;
         spinlock->holding_process = NULL;
         spinlock->locked = 0;
+        spinlock->recursion_depth = 0;
         enable_interrupts();
     }
 }
