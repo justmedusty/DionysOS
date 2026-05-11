@@ -52,6 +52,7 @@ void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data)
 }
 
 void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data) {
+    serial_printf("LOCK ADDRESS BEFORE ACQUIRE %x.64\n",&list->lock);
     acquire_spinlock(&list->lock);
     struct doubly_linked_list_node* new_head = kmalloc(sizeof(struct doubly_linked_list_node));
     new_head->data = data;
@@ -63,6 +64,7 @@ void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data)
         list->tail = NULL;
         list->node_count++;
         release_spinlock(&list->lock);
+        serial_printf("LOCK ADDRESS AFTER RELEASE %x.64\n",&list->lock);
         return;
     }
 
@@ -72,6 +74,7 @@ void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data)
     new_head->prev = NULL;
     list->node_count++;
     release_spinlock(&list->lock);
+    serial_printf("LOCK ADDRESS AFTER RELEASE %x.64\n",&list->lock);
 }
 
 void doubly_linked_list_remove_tail(struct doubly_linked_list* list) {

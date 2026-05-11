@@ -16,6 +16,7 @@ struct spinlock{
     uint64_t id;
     struct cpu *cpu;
     uint64_t recursion_depth;
+    struct process *holding_process;
 };
 
 //bootstrap bool so we can avoid cpu stuff while boostrapping

@@ -28,13 +28,19 @@ void acquire_spinlock(struct spinlock *spinlock) {
     }
 
     //Allow recursive locking
-    if(spinlock->cpu == my_cpu()){
+    if(spinlock->cpu == my_cpu() && spinlock->holding_process == current_process()){
         spinlock->recursion_depth++;
         return;
     }
+
     disable_interrupts();
     arch_atomic_swap(&spinlock->locked, 1);
     spinlock->cpu = my_cpu();
+    spinlock->holding_process = current_process();
+    if (spinlock->holding_process != NULL) {
+        err_printf("Holding process is now process %i\n", spinlock->holding_process->process_id);
+    }
+
 }
 
 void release_spinlock(struct spinlock *spinlock) {
@@ -44,8 +50,8 @@ void release_spinlock(struct spinlock *spinlock) {
 
     if (spinlock->recursion_depth == 0) {
         spinlock->cpu = NULL;
+        spinlock->holding_process = NULL;
         spinlock->locked = 0;
-        __sync_synchronize();
         enable_interrupts();
     }
 }
