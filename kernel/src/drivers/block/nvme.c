@@ -994,7 +994,7 @@ void setup_nvme_device(struct pci_device *pci_device) {
     nvme_controller->device_major = DEVICE_MAJOR_NVME;
     nvme_controller->device_minor = device_minor_map[DEVICE_MAJOR_NVME]++;
     nvme_controller->device_class = NVME_PCI_CLASS;
-    nvme_controller->lock = kmalloc(sizeof(struct spinlock));
+    nvme_controller->lock = kzmalloc(sizeof(struct spinlock));
     nvme_controller->device_type = DEVICE_TYPE_BLOCK;
     ksprintf(nvme_controller->name, "nvmectlr%i", controller_count++);
     //NVMe controller internal struct

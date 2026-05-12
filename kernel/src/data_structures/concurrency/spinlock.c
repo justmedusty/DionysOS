@@ -10,6 +10,10 @@
 bool bsp = true;
 
 void initlock(struct spinlock *spinlock, uint64_t id) {
+    if ((uint64_t )spinlock ==  0xFFFF8001C8C00018 || (uint64_t )spinlock ==  0xFFFF8001C8C60E80 ) {
+        err_printf("INIT ~ LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->id,spinlock->locked);
+        serial_printf("INIT ~ LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->id,spinlock->locked);
+    }
     spinlock->id = id;
     spinlock->locked = 0;
     spinlock->cpu = 0;
@@ -27,6 +31,9 @@ void acquire_spinlock(struct spinlock *spinlock) {
         // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
     }
 
+    if ((uint64_t )spinlock ==  0xFFFF8001C8C60E80) {
+        serial_printf("BAD SPINLOCK ACQUIRED\n");
+    }
     //Allow recursive locking
     if(spinlock->cpu == my_cpu() && spinlock->holding_process == current_process()){
         spinlock->recursion_depth++;
@@ -37,8 +44,8 @@ void acquire_spinlock(struct spinlock *spinlock) {
     bool ret = arch_atomic_swap(&spinlock->locked, 1);
     if (!ret) {
 
-        err_printf("LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->locked);
-        serial_printf("LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->locked);
+        err_printf("LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->id,spinlock->locked);
+        serial_printf("LOCK ADDR %x.64 HOLDING PROC %x.64 CPU %x.64 RECURSION DEPTH %i ID %i LOCKED %i\n",spinlock,spinlock->holding_process,spinlock->cpu,spinlock->recursion_depth,spinlock->id,spinlock->locked);
         if (spinlock->holding_process != NULL && current_process() != NULL && my_cpu() != NULL){
             err_printf("Deadlock found , holding process is %i , holding cpu is %i\nNew process is %i, new cpu is %i\n",spinlock->holding_process->process_id,spinlock->cpu,current_process()->process_id,my_cpu()->cpu_id);
             serial_printf("Deadlock found , holding process is %i , holding cpu is %i\nNew process is %i, new cpu is %i\n",spinlock->holding_process->process_id,spinlock->cpu,current_process()->process_id,my_cpu()->cpu_id);
@@ -51,6 +58,9 @@ void acquire_spinlock(struct spinlock *spinlock) {
 }
 
 void release_spinlock(struct spinlock *spinlock) {
+    if ((uint64_t )spinlock ==  0xFFFF8001C8C60E80) {
+        serial_printf("BAD SPINLOCK RELEASED\n");
+    }
     if (spinlock->recursion_depth > 0) {
         spinlock->recursion_depth--;
     }

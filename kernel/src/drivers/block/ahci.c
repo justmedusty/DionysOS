@@ -337,7 +337,7 @@ void setup_ahci_device(struct pci_device *pci_device) {
     ahci_controller->device_major = DEVICE_MAJOR_AHCI;
     ahci_controller->device_minor = device_minor_map[DEVICE_MAJOR_AHCI]++;
     ahci_controller->device_class = AHCI_CLASS;
-    ahci_controller->lock = kmalloc(sizeof(struct spinlock));
+    ahci_controller->lock = kzmalloc(sizeof(struct spinlock));
     ahci_controller->device_type = DEVICE_TYPE_BLOCK;
     ahci_controller->pci_device = pci_device;
     ksprintf(ahci_controller->name, "ahcictlr%i", controller_count++);
