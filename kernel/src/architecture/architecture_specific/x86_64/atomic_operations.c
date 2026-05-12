@@ -18,6 +18,7 @@ bool arch_atomic_swap(uint64_t *field, uint64_t new_value){
 #ifdef FORCE_DEADLOCKS
                 *field = new_value;
                 err_printf("Deadlock detected, FORCE_DEADLOCKS defined so force changing field to desired value\n");
+                serial_printf("Deadlock detected, FORCE_DEADLOCKS defined so force changing field to desired value\n");
             ret = false;
                 break;
 #else
