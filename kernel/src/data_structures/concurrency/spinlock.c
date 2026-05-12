@@ -31,7 +31,7 @@ void acquire_spinlock(struct spinlock *spinlock) {
         // don't bother with spinlocks during bootstrap because my_cpu won't work until the cpu setup is complete
     }
 
-    if ((uint64_t )spinlock ==  0xFFFF8001C8C60E80) {
+  if ((uint64_t )spinlock ==  0xFFFF8001C8C00018 || (uint64_t )spinlock ==  0xFFFF8001C8C60E80 ) {
         serial_printf("BAD SPINLOCK ACQUIRED\n");
     }
     //Allow recursive locking
@@ -58,7 +58,7 @@ void acquire_spinlock(struct spinlock *spinlock) {
 }
 
 void release_spinlock(struct spinlock *spinlock) {
-    if ((uint64_t )spinlock ==  0xFFFF8001C8C60E80) {
+    if ((uint64_t )spinlock ==  0xFFFF8001C8C00018 || (uint64_t )spinlock ==  0xFFFF8001C8C60E80 ) {
         serial_printf("BAD SPINLOCK RELEASED\n");
     }
     if (spinlock->recursion_depth > 0) {
