@@ -65,7 +65,7 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         my_cpu()->running_process = process;
     }
 //TODO lock getting switched on permanently seems to happen in here
-    int64_t handle = vnode_open(path);
+    int64_t handle = open(path);
 
     if (handle < 0) {
         panic("INIT NOT FOUND!\n");
