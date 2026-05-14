@@ -54,7 +54,7 @@ void doubly_linked_list_insert_tail(struct doubly_linked_list* list, void* data)
 void doubly_linked_list_insert_head(struct doubly_linked_list* list, void* data) {
     serial_printf("LOCK ADDRESS BEFORE ACQUIRE %x.64\n",&list->lock);
     acquire_spinlock(&list->lock);
-    struct doubly_linked_list_node* new_head = kmalloc(sizeof(struct doubly_linked_list_node));
+    struct doubly_linked_list_node* new_head = kzmalloc(sizeof(struct doubly_linked_list_node));
     new_head->data = data;
 
     if (list->node_count == 0) {

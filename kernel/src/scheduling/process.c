@@ -49,6 +49,7 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
     process->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list *));
 
 
+
     process->page_map = kzmalloc(sizeof(struct virt_map));
     process->page_map->top_level = alloc_virtual_map();
     map_kernel_address_space(process->page_map->top_level);
@@ -81,6 +82,8 @@ struct process *alloc_process(uint64_t state, bool user, struct process *parent)
 
     doubly_linked_list_init(process->page_map->vm_regions);
     doubly_linked_list_init(process->handle_list->handle_list);
+
+
 
     return process;
 }

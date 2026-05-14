@@ -45,7 +45,13 @@ void setup_init() {
     elf_info *elfinfo = kzmalloc(sizeof(elf_info));
     DEBUG_PRINT("setup_init: NEW PROCESS PAGE MAP -> %x.64\n",process->page_map->top_level);
     int64_t ret = load_elf(process,"/bin/init",0,elfinfo);
+    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
+        panic("HERE SETUP INIT\n");
+    }
 
+    if (process->handle_list->handle_list->lock.locked != 0) {
+        panic("HERE SETUP INIT\n");
+    }
     if (ret != KERN_SUCCESS) {
         free_process(process);
         kfree(elfinfo);

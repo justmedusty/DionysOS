@@ -122,7 +122,7 @@ struct virtual_handle {
 struct virtual_handle_list {
     struct doubly_linked_list *handle_list;
     uint64_t num_handles;
-    uint32_t handle_id_bitmap;
+    uint64_t handle_id_bitmap;
 };
 
 struct vnode_operations {

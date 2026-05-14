@@ -292,8 +292,13 @@ int64_t vnode_open(char *path) {
     struct process *process = current_process();
     struct virtual_handle_list *list = process->handle_list;
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
+    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
+        panic("HERE BEFORE\n");
+    }
     const int8_t ret = get_new_file_handle(list);
-
+    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
+        panic("HERE AFTER\n");
+    }
     if (ret < 0) {
         return KERN_MAX_REACHED;
     }
@@ -329,6 +334,10 @@ int64_t vnode_open(char *path) {
     list->num_handles++;
     DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
 
+    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
+        panic("HERE AFTER\n");
+    }
+
     if (list->handle_list->lock.locked) {
         err_printf("BUG FOUND WEE WOO WEE WOO\n");
     }
@@ -338,7 +347,7 @@ int64_t vnode_open(char *path) {
 
 
 void vnode_close(uint64_t handle) {
-    struct process *process = my_cpu()->running_process;
+    struct process *process = current_process();
     struct virtual_handle_list *list = process->handle_list;
     struct doubly_linked_list_node *node = list->handle_list->head;
 
@@ -561,7 +570,6 @@ int64_t vnode_unmount_path(char *path) {
 
 
 int64_t vnode_read(struct vnode *vnode, const uint64_t offset, uint64_t bytes, char *buffer) {
-    DEBUG_PRINT("HERE\n");
     acquire_spinlock(vnode->node_lock);
     if (vnode->is_mount_point) {
         panic("reading a directory");
@@ -708,11 +716,12 @@ static struct vnode *parse_path(char *path) {
 //simple iteration
 static int8_t get_new_file_handle(struct virtual_handle_list *list) {
     acquire_spinlock(&list->handle_list->lock);
-    for (int8_t i = 0; i < NUM_HANDLES; i++) {
-        if (!(list->handle_id_bitmap & BIT(i))) {
-            list->handle_id_bitmap |= BIT(i);
+    for (uint64_t i = 0; i < 64ULL; i++) {
+        if (!(list->handle_id_bitmap & (1ULL << i))) {
+            //This shift seems to be causing the corruption but only sometimes
+            list->handle_id_bitmap |= (1ULL << i);
             release_spinlock(&list->handle_list->lock);
-            return i;
+            return (int8_t) i;
         }
     }
     release_spinlock(&list->handle_list->lock);
@@ -752,19 +761,20 @@ void vunlock(struct vnode *vnode) {
 
 struct vnode *handle_to_vnode(uint64_t handle_id) {
     struct vnode *ret;
+    struct process *process = current_process();
     DEBUG_PRINT("CURRENT PRCOCESS PID %i TYPE %i HANDLE LIST ADDR %x.64\n",current_process()->process_id,current_process()->process_type,current_process()->handle_list);
-    acquire_spinlock(&current_process()->handle_list->handle_list->lock);
+   acquire_spinlock(&process->handle_list->handle_list->lock);
     struct doubly_linked_list_node *node = current_process()->handle_list->handle_list->head;
 
     while (node != NULL) {
         const struct virtual_handle *handle = node->data;
         if (handle->handle_id == handle_id) {
-            release_spinlock(&current_process()->handle_list->handle_list->lock);
+           release_spinlock(&process->handle_list->handle_list->lock);
             return handle->vnode;
         }
         node = node->next;
     }
-    release_spinlock(&current_process()->handle_list->handle_list->lock);
+    release_spinlock(&process->handle_list->handle_list->lock);
     return NULL;
 }
 

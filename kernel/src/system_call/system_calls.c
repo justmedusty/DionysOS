@@ -73,9 +73,12 @@ void* user_to_kernel_pointer(void* pointer) {
     //shed off the rest if this is some unaligned object so we can work with page aligned address
     struct process* user_process = current_process();
     phys_addr = walk_page_directory(user_process->page_map->top_level, phys_addr, 0);
+
     if (phys_addr) {
         return phys_addr;
     }
+    
+    return NULL;
 }
 
 void* kernel_to_user_pointer(void* pointer) {

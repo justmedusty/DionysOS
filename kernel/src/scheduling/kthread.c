@@ -31,16 +31,12 @@ static uint64_t get_kthread_pid(){
 void kthread_init() {
     struct process *proc = kzmalloc(sizeof(struct process));
 
+
     proc->current_cpu = my_cpu();
-
     proc->current_working_dir = &vfs_root;
-
     vfs_root.vnode_active_references++;
-
     proc->handle_list = kzmalloc(sizeof(struct virtual_handle_list));
-
     proc->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list));
-
     doubly_linked_list_init(proc->handle_list->handle_list);
 
 
@@ -95,7 +91,7 @@ void kthread_main() {
     uint8_t cpu_no = my_cpu()->cpu_number;
     serial_printf("kthread active on cpu %i\n", cpu_no);
     serial_printf("Timer ticks %i\n", timer_get_current_count());
-    char *buffer = kmalloc(PAGE_SIZE);
+    char *buffer = kzmalloc(PAGE_SIZE);
     kthread_work(NULL,NULL);
     int64_t handle = open("/temp/procfs/kernel_messages");
     if (handle < 0) {

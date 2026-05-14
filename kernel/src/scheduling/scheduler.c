@@ -97,6 +97,11 @@ _Noreturn void scheduler_main(void) {
  * Yield the scheduler , swap registers and jump back into the mouth of the scheduler
  */
 void sched_yield() {
+    //Don't yield if the local rq is empty
+    if (my_cpu()->local_run_queue->head == NULL) {
+        return;
+    }
+
     struct process* process = my_cpu()->running_process;
     process->current_state = PROCESS_READY;
     enqueue(my_cpu()->local_run_queue, process, process->priority);
