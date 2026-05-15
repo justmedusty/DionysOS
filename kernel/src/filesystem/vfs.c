@@ -718,9 +718,13 @@ static int8_t get_new_file_handle(struct virtual_handle_list *list) {
     acquire_spinlock(&list->handle_list->lock);
     for (uint64_t i = 0; i < 64ULL; i++) {
         if (!(list->handle_id_bitmap & (1ULL << i))) {
+            uint64_t id = list->handle_list->lock.id;
             //This shift seems to be causing the corruption but only sometimes
             list->handle_id_bitmap |= (1ULL << i);
             release_spinlock(&list->handle_list->lock);
+            if (list->handle_list->lock.id != id) {
+                panic("corruption");
+            }
             return (int8_t) i;
         }
     }
