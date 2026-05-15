@@ -292,13 +292,9 @@ int64_t vnode_open(char *path) {
     struct process *process = current_process();
     struct virtual_handle_list *list = process->handle_list;
     /* At the time of writing this I have not fleshed this out yet but I think this will be allocated on creation so no need to null check it */
-    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
-        panic("HERE BEFORE\n");
-    }
+
     const int8_t ret = get_new_file_handle(list);
-    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
-        panic("HERE AFTER\n");
-    }
+
     if (ret < 0) {
         return KERN_MAX_REACHED;
     }
@@ -333,10 +329,6 @@ int64_t vnode_open(char *path) {
     DEBUG_PRINT("vnode_open: After handle insert\n");
     list->num_handles++;
     DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
-
-    if (process->handle_list->handle_list->lock.id != DOUBLY_LINKED_LIST_LOCK) {
-        panic("HERE AFTER\n");
-    }
 
     if (list->handle_list->lock.locked) {
         err_printf("BUG FOUND WEE WOO WEE WOO\n");
