@@ -106,7 +106,7 @@ void arch_unmap_foreign(uint64_t size) {
  */
 struct virtual_region* create_region(const uint64_t start_address, const uint64_t size_pages, const uint64_t type, const uint64_t perms,const bool contiguous){
 
-    struct virtual_region* virtual_region = (struct virtual_region*)kmalloc(sizeof(struct virtual_region));
+    struct virtual_region* virtual_region = (struct virtual_region*)kzmalloc(sizeof(struct virtual_region));
     virtual_region->va = start_address;
     virtual_region->end_addr = start_address + (size_pages * PAGE_SIZE);
     virtual_region->ref_count = 1;
@@ -121,7 +121,7 @@ struct virtual_region* create_region(const uint64_t start_address, const uint64_
  */
 void attach_region(struct virt_map *map,struct virtual_region *region){
     if(map->vm_regions == NULL){
-        map->vm_regions = kmalloc(sizeof(struct doubly_linked_list));
+        map->vm_regions = kzmalloc(sizeof(struct doubly_linked_list));
         doubly_linked_list_init(map->vm_regions);
     }
     doubly_linked_list_insert_tail(map->vm_regions,region);
@@ -139,12 +139,12 @@ void attach_region(struct virt_map *map,struct virtual_region *region){
          * Using kmalloc and removing the offset because kmalloc is locked phys_alloc is not
          * This is ugly and I will likely change it in the future
          */
-        arch_map_pages(map->top_level,(uint64_t)kmalloc((uint64_t)Virt2Phys(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
+        arch_map_pages(map->top_level,(uint64_t)kzmalloc((uint64_t)Virt2Phys(region->num_pages)), (uint64_t *) region->va,region->perms,region->num_pages);
         return;
     }
 
     for (size_t i = 0; i < region->num_pages; i++) {
-        map_pages(map->top_level,(uint64_t) kmalloc((uint64_t)Virt2Phys(1)),(uint64_t *) region->va + (i * PAGE_SIZE),region->perms,1);
+        map_pages(map->top_level,(uint64_t) kzmalloc((uint64_t)Virt2Phys(1)),(uint64_t *) region->va + (i * PAGE_SIZE),region->perms,1);
     }
 
 }
