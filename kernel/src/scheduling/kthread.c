@@ -37,6 +37,7 @@ void kthread_init() {
     vfs_root.vnode_active_references++;
     proc->handle_list = kzmalloc(sizeof(struct virtual_handle_list));
     proc->handle_list->handle_list = kzmalloc(sizeof(struct doubly_linked_list));
+    DEBUG_PRINT("list %x.64\n doubly linked list %x.64\n",proc->handle_list,proc->handle_list->handle_list);
     doubly_linked_list_init(proc->handle_list->handle_list);
 
 

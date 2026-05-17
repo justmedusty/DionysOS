@@ -315,13 +315,13 @@ int64_t vnode_open(char *path) {
         vnode = vnode->mounted_vnode;
     }
     DEBUG_PRINT("vnode_open: Before kzmalloc call\n");
-    DEBUG_PRINT("LOCK %i\n",list->handle_list->lock.locked);
     struct virtual_handle *new_handle = kzmalloc(sizeof(struct virtual_handle));
     DEBUG_PRINT("vnode_open: After kzmalloc call\n");
     new_handle->vnode = vnode;
     new_handle->process = process;
     new_handle->offset = 0;
     new_handle->handle_id = (uint64_t) ret;
+    DEBUG_PRINT("LIST ADDRESS %x.64 NUM HANDLES ADDRESS %x.64 LOCK FIELD ADDRESS\n",list->handle_list, &list->num_handles,&list->handle_list->lock);
     list->num_handles++;
     doubly_linked_list_insert_head(list->handle_list, new_handle);
 
@@ -695,6 +695,7 @@ static struct vnode *parse_path(char *path) {
     if (current_vnode->is_mount_point) {
         current_vnode = current_vnode->mounted_vnode;
     }
+
 
     kfree(current_token);
     release_spinlock(&vfs_lock);
