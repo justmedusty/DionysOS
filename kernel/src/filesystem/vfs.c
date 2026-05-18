@@ -61,7 +61,7 @@ void vfs_init() {
     vfs_root.vnode_parent = NULL;
     vfs_root.vnode_ops = NULL;
     vfs_root.vnode_filesystem_id = VNODE_FS_VNODE_ROOT;
-    vfs_root.node_lock = kmalloc(sizeof (struct spinlock));
+    vfs_root.node_lock = kzmalloc(sizeof (struct spinlock));
     kprintf("Virtual Filesystem Initialized\n");
     serial_printf("VFS initialized\n");
 }
@@ -73,7 +73,7 @@ void vfs_init() {
 struct vnode *vnode_alloc() {
     acquire_spinlock(&list_lock);
     if (vnode_static_pool.head == NULL) {
-        struct vnode *new_node = kmalloc(sizeof(struct vnode));
+        struct vnode *new_node = kzmalloc(sizeof(struct vnode));
         DEBUG_PRINT("VNODE ALLOC %x.64\n", new_node);
         release_spinlock(&list_lock);
         new_node->node_lock = kzmalloc(sizeof(struct spinlock));
@@ -133,6 +133,7 @@ void vnode_free(struct vnode *vnode) {
     /* If it is part of the static pool, put it back, otherwise free it  */
     if (vnode->vnode_flags & VNODE_STATIC_POOL) {
         kfree(vnode->node_lock);
+        vnode->node_lock = NULL;
         singly_linked_list_insert_tail(&vnode_static_pool, vnode);
         release_spinlock(&list_lock);
         return;
@@ -148,6 +149,7 @@ void vnode_free(struct vnode *vnode) {
         kfree(vnode->vnode_children);
     }
     kfree(vnode->node_lock);
+    vnode->node_lock = NULL;
     kfree(vnode);
     release_spinlock(&list_lock);
 }
@@ -325,10 +327,6 @@ int64_t vnode_open(char *path) {
     list->num_handles++;
     doubly_linked_list_insert_head(list->handle_list, new_handle);
 
-
-    if (list->handle_list->lock.locked) {
-        panic("BUG FOUND WEE WOO WEE WOO\n");
-    }
 
     return ret;
 }

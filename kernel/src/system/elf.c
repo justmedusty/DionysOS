@@ -75,6 +75,10 @@ int64_t load_elf(struct process *process, char *path, size_t base_address, elf_i
         return KERN_BAD_HANDLE;
     }
     DEBUG_PRINT("load_elf LOCK %i\n",process->handle_list->handle_list->lock.locked);
+    /*
+     *WEE WOO WEE WOO
+     * This is where the corruption is happening
+     */
     if (read(handle, (char *) header, sizeof(elf64_hdr) != KERN_SUCCESS)) {
         if (init) {
             my_cpu()->running_process = NULL;

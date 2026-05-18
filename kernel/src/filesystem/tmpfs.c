@@ -416,7 +416,7 @@ static struct vnode *tmpfs_node_to_vnode(struct tmpfs_node *node) {
     vnode->vnode_size = node->tmpfs_node_size;
     vnode->vnode_type = node->node_type;
     vnode->vnode_inode_number = node->tmpfs_node_number;
-    vnode->node_lock = kmalloc(sizeof (struct spinlock));
+    vnode->node_lock = kzmalloc(sizeof (struct spinlock));
     initlock(vnode->node_lock,VFS_LOCK);
     safe_strcpy(vnode->vnode_name, node->node_name, VFS_MAX_NAME_LENGTH);
     return vnode;
